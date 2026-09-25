@@ -1,0 +1,273 @@
+{
+  "title": "WebToMind",
+  "saveToWebToMind": "保存到 WebToMind",
+  "header": {
+    "visitWebsite": "访问官网",
+    "dragToMove": "拖动调整位置",
+    "more": "更多",
+    "close": "关闭",
+    "summarize": "总结当前页面",
+    "summarizing": "总结中...",
+    "loading": "加载中...",
+    "loginRequired": "请先登录后使用",
+    "workspaceDisabled": "在工作台页面无法使用",
+    "quickAsk": "快捷提问"
+  },
+  "tabs": {
+    "summary": "总结",
+    "mindmap": "思维导图",
+    "chat": "对话"
+  },
+  "actions": {
+    "summarize": "一键总结",
+    "regenerate": "重新生成",
+    "copy": "复制",
+    "copyMarkdown": "复制Markdown",
+    "copyPlainText": "复制纯文本",
+    "copied": "已复制",
+    "export": "导出",
+    "save": "保存",
+    "saveToWorkspace": "保存到工作台",
+    "saving": "保存中...",
+    "open": "打开",
+    "share": "分享",
+    "selectProject": "选择项目"
+  },
+  "status": {
+    "idle": "点击按钮开始总结",
+    "extracting": "正在提取内容...",
+    "summarizing": "AI 正在总结...",
+    "analyzing": "AI 正在分析内容...",
+    "generating": "AI生成中...",
+    "complete": "完成",
+    "error": "出错了",
+    "loading": "加载中...",
+    "untitledPage": "未命名页面"
+  },
+  "welcome": {
+    "title": "欢迎使用 WebToMind",
+    "description": "登录后即可解锁全部功能",
+    "loginButton": "登录 / 注册",
+    "featureSummarize": "智能总结",
+    "featureSummarizeDesc": "一键将网页内容转为思维导图",
+    "featureTranslate": "文章翻译",
+    "featureTranslateDesc": "支持中英文互译，保留原文结构",
+    "featureChat": "快捷提问",
+    "featureChatDesc": "基于页面内容与 AI 实时对话",
+    "featureBookmark": "书签采集",
+    "featureBookmarkDesc": "自动采集 Twitter / 浏览器书签"
+  },
+  "workspace": {
+    "title": "你已经在这里了！",
+    "description": "在 WebToMind 上，插件暂时休息一下",
+    "hint": "去其他网站试试，一键捕获你的想法"
+  },
+  "empty": {
+    "title": "准备开始",
+    "description": "选择一个功能，快速开始使用",
+    "summary": "暂无总结内容",
+    "mindmap": "暂无思维导图",
+    "chat": "开始与 AI 对话",
+    "noData": "暂无数据",
+    "actionSummarize": "总结页面",
+    "actionSummarizeDesc": "一键生成思维导图总结",
+    "actionTranslate": "翻译文章",
+    "actionTranslateDesc": "翻译为中文/英文",
+    "actionChat": "快捷提问",
+    "actionChatDesc": "基于页面内容对话",
+    "actionBookmark": "书签采集",
+    "actionBookmarkDesc": "在扩展弹窗中开启自动采集"
+  },
+  "chatPanel": {
+    "title": "快捷对话",
+    "description": "基于当前页面上下文，快速向 AI 提问",
+    "placeholder": "输入你的问题，Enter 发送，Shift+Enter 换行",
+    "send": "发送",
+    "sending": "发送中...",
+    "user": "你",
+    "assistant": "AI"
+  },
+  "errors": {
+    "title": "错误",
+    "extractFailed": "提取内容失败",
+    "summarizeFailed": "总结失败",
+    "saveFailed": "保存失败",
+    "saveFailedWithError": "保存失败: {{error}}",
+    "saveFailedRetry": "保存失败,请重试",
+    "loginRequired": "请先登录后再保存",
+    "networkError": "网络错误",
+    "unknown": "发生未知错误"
+  },
+  "userCenter": {
+    "title": "个人中心",
+    "back": "返回",
+    "loggedIn": "已登录",
+    "notLoggedIn": "未登录",
+    "login": "登录",
+    "loginOrRegister": "登录 / 注册",
+    "logout": "退出登录",
+    "openWorkspace": "打开工作台",
+    "founderMember": "WebToMind 创始成员",
+    "daysJoined": "已加入 {{days}} 天",
+    "loginPromptTitle": "登录以使用全部功能",
+    "loginPromptDesc": "登录后可同步总结与工作台内容，多设备继续使用",
+    "plan": "当前套餐",
+    "free": "免费版",
+    "pro": "Pro 版",
+    "usage": "今日使用",
+    "usageCount": "{{used}} / {{total}} 次",
+    "upgrade": "升级 Pro",
+    "settings": "设置",
+    "language": "语言",
+    "theme": "主题",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "themeSystem": "跟随系统",
+    "help": "帮助",
+    "feedback": "反馈",
+    "about": "关于",
+    "bookmarkMonitor": "书签自动采集",
+    "twitterBookmark": "推特/X 书签",
+    "browserBookmark": "浏览器书签",
+    "localMarkdownExport": "推特书签保存为本地 Markdown",
+    "localMarkdownDirectory": "保存目录（下载目录下子目录）",
+    "localMarkdownDirectoryHint": "例如：WebToMind/TwitterBookmarks。文件将保存到浏览器默认下载目录中的该子目录。",
+    "localMarkdownUseNative": "使用 Native Messaging 保存到系统目录",
+    "localMarkdownNativeDirectory": "系统目录（绝对路径）",
+    "localMarkdownNativeDirectoryHint": "例如：/Users/yourname/Documents/WebToMind。未安装 Host 时会自动回退到下载目录模式。",
+    "bookmarkHint": "开启后，收藏推文或添加浏览器书签时会自动保存到工作台",
+    "memberOnlyBookmarkHint": "书签自动采集为会员专属功能，请升级套餐后使用",
+    "quickReplyPrompt": "快捷回复风格",
+    "quickReplyPromptPlaceholder": "选择一个默认回复风格",
+    "quickReplyCustomPromptButton": "自定义 Prompt",
+    "quickReplyCustomPromptInputPlaceholder": "例如：用鲁迅的风格进行回复，语气克制但有锋芒",
+    "quickReplyCustomPromptHint": "用自然语言描述你想要的回复风格即可，比如语气、身份、表达方式。留空则使用上方风格模板。",
+    "quickReplyStyleGroups": {
+      "basic": "基础风格",
+      "fun": "趣味腔调"
+    },
+    "quickReplyStyleExampleLabel": "示例：",
+    "quickReplyStyles": {
+      "natural": {
+        "label": "自然真实",
+        "description": "像真人顺手发出的回复，稳妥、自然、适合大多数场景。",
+        "example": "这点我也有同感，关键还是看怎么落地。"
+      },
+      "friendly": {
+        "label": "友好共情",
+        "description": "先理解对方，再表达观点，适合互动和缓和语气。",
+        "example": "能理解你这么想，其实这点真的挺有共鸣的。"
+      },
+      "professional": {
+        "label": "专业克制",
+        "description": "信息密度高、判断清晰，适合行业讨论和理性表达。",
+        "example": "这个判断有道理，不过关键变量可能还在执行层。"
+      },
+      "sharp": {
+        "label": "犀利直接",
+        "description": "态度鲜明、结论先行，但不过度攻击。",
+        "example": "问题不在表面，在底层逻辑一开始就偏了。"
+      },
+      "witty": {
+        "label": "机智幽默",
+        "description": "带一点梗和反差，适合轻松表达，但不会太油。",
+        "example": "这波属于把问题精准投喂给未来的自己。"
+      },
+      "analytical": {
+        "label": "分析拆解",
+        "description": "抓住逻辑和前提，适合补充视角或拆解观点。",
+        "example": "如果顺着这个前提往下推，后面的结论其实就很自然了。"
+      },
+      "tvb": {
+        "label": "TVB 腔",
+        "description": "带一点熟人式点评和轻微戏剧感，像一句有戏味的港剧对白。",
+        "example": "你咁样讲，我反而更加想睇下后面会点发展。"
+      },
+      "translated": {
+        "label": "翻译腔",
+        "description": "像外语内容译成中文后的表达，规整、克制、略带书面节奏。",
+        "example": "这或许正是问题最令人难以忽视的部分。"
+      },
+      "japanese-translated": {
+        "label": "日系翻译腔",
+        "description": "温和、克制、略有字幕翻译感，适合轻柔表达。",
+        "example": "原来如此，这样一来就让人无法轻易忽视了呢。"
+      },
+      "qiongyao": {
+        "label": "四娘腔",
+        "description": "情绪更饱满、修辞更精致，但仍控制在短回复范围内。",
+        "example": "这短短一句话里，竟藏着如此锋利又潮湿的情绪。"
+      },
+      "deadpan": {
+        "label": "冷面吐槽",
+        "description": "表面平静，实际带一点暗劲和反差幽默。",
+        "example": "嗯，听起来像是一个绝不会出问题的计划。"
+      },
+      "classical-chinese": {
+        "label": "文言文腔",
+        "description": "带一点古意和凝练感，但仍保持现代人一眼能懂。",
+        "example": "此言不谬，然其后患亦不可不察。"
+      },
+      "taiwan-drama": {
+        "label": "台剧腔",
+        "description": "温柔、细腻、带一点拉扯感，像一句台剧里的情绪对白。",
+        "example": "你明明知道这样讲，我就会更在意欸。"
+      },
+      "dongbei": {
+        "label": "东北腔",
+        "description": "爽快、热闹、像熟人唠嗑，但不至于太粗。",
+        "example": "哎妈呀，你这话一出来，味儿一下就对了。"
+      },
+      "headteacher": {
+        "label": "班主任腔",
+        "description": "像在认真教育你，但底色还是为你好。",
+        "example": "我现在不说你，回头你自己也得明白这事儿不对。"
+      },
+      "web-novel": {
+        "label": "网文腔",
+        "description": "一句话带点戏感和上头感，适合抓人眼球。",
+        "example": "这一刻，他终于意识到，真正的问题才刚刚开始。"
+      },
+      "euro-translated": {
+        "label": "欧译腔",
+        "description": "像欧洲文本译成中文后的表达，稍显庄重，带一点文学翻译味。",
+        "example": "这并非偶然，而是一种几乎注定会发生的偏移。"
+      },
+      "ceo": {
+        "label": "霸总腔",
+        "description": "气场很足、很有掌控感，像一句强势但不油腻的发言。",
+        "example": "这件事到这里为止，接下来按我说的做。"
+      },
+      "tsundere": {
+        "label": "傲娇腔",
+        "description": "嘴上嫌弃，心里在意，带一点别扭的可爱感。",
+        "example": "别误会，我可不是特地来认同你的，只是你这次刚好说对了。"
+      },
+      "internet-mouthpiece": {
+        "label": "网友嘴替腔",
+        "description": "像把大家心里那句最想说的话直接说了出来。",
+        "example": "你这不就是把所有人憋着没说的那句直接讲出来了吗。"
+      },
+      "leader-speech": {
+        "label": "领导讲话腔",
+        "description": "郑重、正式、像在定调和做总结，但尽量不空话。",
+        "example": "这个问题的方向已经很清楚了，接下来重点就在执行。"
+      },
+      "cyber-priest": {
+        "label": "赛博神父腔",
+        "description": "庄严、神秘、带一点数字时代的布道感。",
+        "example": "数据已然降下启示，而你终将理解这行代码的命运。"
+      }
+    },
+    "savePrompt": "保存 Prompt",
+    "savingPrompt": "保存中...",
+    "quickReplyPromptSaved": "已保存提示",
+    "quickReplyPromptUnsaved": "未保存修改",
+    "quickReplyPromptHint": "选择风格后将自动应用到快捷回复与快捷评论生成"
+  },
+  "upgrade": {
+    "title": "保存次数已达上限",
+    "description": "您已达到免费版保存上限（{{used}}/{{max}}次）。升级到 Pro 版解锁无限保存。",
+    "button": "升级套餐"
+  }
+}

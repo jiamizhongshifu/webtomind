@@ -1,0 +1,19 @@
+# Cloudflare Workers 配置
+
+name = "ai-mind-mapper-api"
+main = "api-proxy.ts"
+compatibility_date = "2024-01-01"
+
+# 启用 workers.dev 子域名
+workers_dev = true
+
+# 环境变量（生产环境）
+[vars]
+ALLOWED_ORIGINS = "chrome-extension://*,https://webtomind.com,https://www.webtomind.com"
+
+# 部署说明：
+# 1. 安装 wrangler: npm install -g wrangler
+# 2. 登录: wrangler login
+# 3. 设置密钥: wrangler secret put GEMINI_API_KEY
+# 4. 设置代理密钥: wrangler secret put PROXY_API_KEY
+# 5. 部署: wrangler deploy

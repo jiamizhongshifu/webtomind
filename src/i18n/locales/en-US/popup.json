@@ -1,0 +1,106 @@
+{
+  "title": "WebToMind",
+  "subtitle": "Extension handles capture/summarize, deep editing is on boards",
+  "status": {
+    "ready": "Ready",
+    "summarizing": "Summarizing...",
+    "success": "Summary complete",
+    "error": "Summary failed"
+  },
+  "actions": {
+    "summarize": "Open capture card",
+    "summarizeNoLogin": "Open capture card (no login required)",
+    "summarizeSelection": "Summarize selection",
+    "openSidepanel": "Open Side Panel",
+    "openWorkspace": "Open Workspace",
+    "settings": "Settings",
+    "loginOrRegister": "Log in / Sign up",
+    "syncToCloud": "Sync local data to your account",
+    "syncing": "Syncing..."
+  },
+  "auth": {
+    "loginRequired": "Please log in to access all features",
+    "loggedIn": "Logged in"
+  },
+  "settings": {
+    "title": "Quick settings",
+    "description": "Manage extension switches directly from the popup.",
+    "memberOnlyHint": "Bookmark and local export switches are available for paid plans.",
+    "imageCollector": {
+      "label": "Image capture",
+      "description": "Show save controls when hovering images and videos."
+    },
+    "translationTarget": {
+      "label": "Translation language",
+      "description": "Choose the default target language for selection translation.",
+      "options": {
+        "auto": "Auto",
+        "zh-CN": "Simplified Chinese",
+        "en-US": "English",
+        "ja-JP": "Japanese",
+        "ko-KR": "Korean"
+      }
+    },
+    "browserBookmark": {
+      "label": "Browser bookmarks",
+      "description": "Sync new browser bookmarks into WebToMind."
+    },
+    "twitterBookmark": {
+      "label": "X bookmarks",
+      "description": "Monitor and collect bookmarks from X."
+    },
+    "localMarkdownExport": {
+      "label": "Local Markdown export",
+      "description": "Export collected X bookmarks to Markdown files."
+    },
+    "localMarkdownUseNative": {
+      "label": "Native local save",
+      "description": "Use Native Messaging to save into a system folder."
+    }
+  },
+  "workspace": {
+    "title": "You're already here!",
+    "description": "The extension takes a break on WebToMind",
+    "hint": "Try other websites to capture your ideas"
+  },
+  "sync": {
+    "syncing": "Syncing...",
+    "success": "Sync complete! Synced {{summaries}} summaries, {{shortcuts}} shortcuts",
+    "failed": "Sync failed"
+  },
+  "tips": {
+    "title": "Tips",
+    "rightClick": "Tip: Right-click on page to quickly summarize",
+    "shortcut": "Shortcut: Ctrl+Shift+Y (macOS: Cmd+Shift+Y)"
+  },
+  "pageInfo": {
+    "title": "Page Info",
+    "url": "URL",
+    "contentType": "Content Type",
+    "article": "Article",
+    "video": "Video",
+    "pdf": "PDF",
+    "unknown": "Unknown"
+  },
+  "quickActions": {
+    "title": "Quick Actions",
+    "ask": "Quick Ask",
+    "summarizeCurrentPage": "Summarize Page",
+    "translateArticle": "Translate Article",
+    "openCaptureCard": "Open Capture Card",
+    "summarizeArticle": "Summarize Article",
+    "summarizeVideo": "Summarize Video",
+    "extractText": "Extract Text"
+  },
+  "user": {
+    "login": "Log in",
+    "upgrade": "Upgrade to Pro",
+    "quota": "Remaining today: {{count}}"
+  },
+  "errors": {
+    "noContent": "No summarizable content detected",
+    "notSupported": "This page is not supported",
+    "networkError": "Network error. Please retry",
+    "openFloatingFailedRetry": "Failed to open capture card. Please refresh the page and retry."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "免费在线拼豆图案生成器",
+  "short_name": "拼豆生成器",
+  "description": "上传照片一键转拼豆图纸，支持 8 套品牌色板、自动去背景、材料统计与 PNG、CSV、PDF 导出。",
+  "start_url": "/zh-CN/tools/pindou-pattern-maker",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fffdf8",
+  "theme_color": "#17110d",
+  "icons": [
+    {
+      "src": "/icons/pindou-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/pindou-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

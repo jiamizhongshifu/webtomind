@@ -1,0 +1,27 @@
+:root {
+  --plugin-bg-canvas: #f8fafc;
+  --plugin-bg-subtle: #f1f5f9;
+  --plugin-bg-card: var(--neutral-0);
+
+  --plugin-text-primary: #0f172a;
+  --plugin-text-secondary: #475569;
+  --plugin-text-muted: #64748b;
+  --plugin-text-inverse: var(--neutral-0);
+
+  --plugin-border-soft: #e2e8f0;
+  --plugin-border-default: #cbd5e1;
+  --plugin-border-strong: #94a3b8;
+
+  --plugin-brand-primary: var(--brand-indigo-500);
+  --plugin-brand-primary-hover: var(--brand-indigo-600);
+  --plugin-brand-touch: var(--brand-terracotta-500);
+
+  --plugin-action-primary-bg: var(--brand-indigo-500);
+  --plugin-action-primary-hover: var(--brand-indigo-600);
+  --plugin-action-primary-text: var(--neutral-0);
+
+  --plugin-action-secondary-bg: #f1f5f9;
+  --plugin-action-secondary-hover: #e2e8f0;
+  --plugin-action-secondary-text: #0f172a;
+  --plugin-action-secondary-border: #e2e8f0;
+}

@@ -1,0 +1,352 @@
+.create-side-nav-sessions {
+  display: flex;
+  flex: 0 0 auto;
+  min-height: 0;
+  flex-direction: column;
+  gap: 4px;
+  margin: auto 0 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--product-border-soft);
+}
+
+.create-side-nav-sessions-heading {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  padding-inline: 8px;
+  color: var(--product-text-muted);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
+}
+
+.create-side-nav-sessions-heading:hover,
+.create-side-nav-sessions-heading:focus-visible {
+  outline: none;
+  color: var(--product-text-primary);
+  background: color-mix(in srgb, var(--product-text-primary) 6%, transparent);
+}
+
+.create-side-nav-sessions-heading svg {
+  width: 15px;
+  height: 15px;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.create-side-nav-sessions-heading[aria-expanded='false'] svg {
+  transform: rotate(-90deg);
+}
+
+.create-side-nav-session-new {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 4px 7px;
+  border-radius: 14px;
+  color: var(--product-text-primary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 720;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
+}
+
+.create-side-nav-session-new:hover,
+.create-side-nav-session-new:focus-visible {
+  outline: none;
+  background: color-mix(in srgb, var(--product-text-primary) 7%, transparent);
+}
+
+.create-side-nav-session-new-icon {
+  display: inline-grid;
+  flex: 0 0 40px;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--product-border-soft);
+  border-radius: 12px;
+  background: var(--product-surface-subtle);
+}
+
+.create-side-nav-session-new-icon svg {
+  width: 19px;
+  height: 19px;
+}
+
+.create-side-nav-session-list {
+  display: grid;
+  min-height: 0;
+  max-height: 168px;
+  gap: 3px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  animation: create-side-nav-session-list-in 180ms
+    cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes create-side-nav-session-list-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.create-side-nav-session-list::-webkit-scrollbar {
+  display: none;
+}
+
+.create-side-nav-session-card-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 32px;
+  align-items: center;
+  min-height: 52px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  transition:
+    color 140ms ease,
+    border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.create-side-nav-session-card {
+  display: grid;
+  min-width: 0;
+  min-height: 50px;
+  grid-template-columns: 40px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 5px 2px 5px 6px;
+  color: var(--product-text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 650;
+  transition: color 140ms ease;
+}
+
+.create-side-nav-session-card:hover,
+.create-side-nav-session-card:focus-visible {
+  outline: none;
+  color: var(--product-text-primary);
+}
+
+.create-side-nav-session-card-shell:hover,
+.create-side-nav-session-card-shell:focus-within {
+  background: color-mix(in srgb, var(--product-text-primary) 5%, transparent);
+}
+
+.create-side-nav-session-card-shell.is-active {
+  color: var(--product-text-primary);
+  border-color: var(--product-border-soft);
+  background: color-mix(in srgb, var(--product-text-primary) 10%, transparent);
+}
+
+.create-side-nav-session-card.is-active {
+  color: var(--product-text-primary);
+}
+
+.create-side-nav-session-more {
+  width: 30px;
+  min-width: 30px;
+  height: 30px;
+  opacity: 0;
+  color: var(--product-text-muted);
+  transition:
+    color 140ms ease,
+    background-color 140ms ease,
+    opacity 140ms ease;
+}
+
+.create-side-nav-session-more svg {
+  width: 17px;
+  height: 17px;
+}
+
+.create-side-nav-session-card-shell:hover .create-side-nav-session-more,
+.create-side-nav-session-card-shell:focus-within .create-side-nav-session-more,
+.create-side-nav-session-card-shell.is-active .create-side-nav-session-more,
+.create-side-nav-session-more[aria-expanded='true'] {
+  opacity: 1;
+}
+
+.create-side-nav-session-more:hover,
+.create-side-nav-session-more:focus-visible {
+  color: var(--product-text-primary);
+  background: color-mix(in srgb, var(--product-text-primary) 9%, transparent);
+}
+
+.create-side-nav-session-thumb {
+  position: relative;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--product-border-soft);
+  border-radius: 11px;
+  background: var(--product-surface-subtle);
+  color: var(--product-text-muted);
+}
+
+.create-side-nav-session-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.create-side-nav-session-thumb svg {
+  width: 17px;
+  height: 17px;
+}
+
+.create-side-nav-session-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.create-side-nav-session-menu {
+  width: 220px;
+  overflow: hidden;
+  border: 1px solid var(--product-border-soft);
+  border-radius: 14px;
+  padding: 6px;
+  background: var(--product-surface-elevated, var(--product-surface));
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+}
+
+.create-side-nav-session-menu > [role='menuitem'] {
+  display: flex;
+  width: 100%;
+  min-height: 44px;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  border-radius: 9px;
+  padding: 0 12px;
+  color: var(--product-text-primary);
+  background: transparent;
+  text-align: left;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.create-side-nav-session-menu > [role='menuitem']:hover,
+.create-side-nav-session-menu > [role='menuitem']:focus-visible,
+.create-side-nav-session-menu > [role='menuitem'][data-highlighted] {
+  outline: none;
+  background: color-mix(in srgb, var(--product-text-primary) 7%, transparent);
+}
+
+.create-side-nav-session-menu > [role='menuitem'] svg {
+  width: 17px;
+  height: 17px;
+  color: var(--product-text-muted);
+}
+
+.create-side-nav-session-menu > [role='menuitem'].danger {
+  color: var(--product-danger, #f05d67);
+}
+
+.create-side-nav-session-menu > [role='menuitem'].danger svg {
+  color: currentColor;
+}
+
+.create-side-nav-session-menu > [role='menuitem'][data-disabled] {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.create-side-nav-session-menu-separator {
+  height: 1px;
+  margin: 5px -6px;
+  background: var(--product-border-soft);
+}
+
+.create-side-nav-session-menu > p[role='alert'] {
+  margin: 5px 8px 6px;
+  color: var(--product-danger, #f05d67);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.create-side-nav-sessions.is-collapsed {
+  align-items: center;
+  gap: 6px;
+  padding-top: 12px;
+}
+
+.create-side-nav-sessions.is-collapsed .create-side-nav-sessions-heading,
+.create-side-nav-sessions.is-collapsed
+  .create-side-nav-session-new
+  > span:last-child,
+.create-side-nav-sessions.is-collapsed .create-side-nav-session-title {
+  display: none;
+}
+
+.create-side-nav-sessions.is-collapsed .create-side-nav-session-new {
+  width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  padding: 0;
+}
+
+.create-side-nav-sessions.is-collapsed .create-side-nav-session-new-icon {
+  flex-basis: 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+}
+
+.create-side-nav-sessions.is-collapsed .create-side-nav-session-list {
+  max-height: 168px;
+  justify-items: center;
+  gap: 4px;
+}
+
+.create-side-nav-sessions.is-collapsed .create-side-nav-session-card-shell {
+  display: block;
+  width: 52px;
+  min-height: 52px;
+  border-radius: 14px;
+}
+
+.create-side-nav-sessions.is-collapsed .create-side-nav-session-card {
+  width: 52px;
+  min-height: 52px;
+  grid-template-columns: 40px;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 14px;
+}
+
+.create-side-nav-sessions.is-collapsed .create-side-nav-session-thumb {
+  width: 40px;
+  height: 40px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .create-side-nav-sessions-heading svg,
+  .create-side-nav-session-list {
+    animation: none;
+    transition: none;
+  }
+}

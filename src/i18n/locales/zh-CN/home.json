@@ -1,0 +1,406 @@
+{
+  "nav": {
+    "goToWorkspace": "进入工作台",
+    "login": "登录",
+    "getStarted": "免费开始",
+    "language": "语言",
+    "workflow": "出图流程",
+    "useCases": "使用场景",
+    "tools": "工具",
+    "comfyChecker": "ComfyUI 检查",
+    "skills": "技能",
+    "blog": "博客",
+    "updates": "更新"
+  },
+  "languagePrompt": {
+    "ariaLabel": "语言切换提示",
+    "message": "选择语言，查看适合你的 WebToMind 内容。",
+    "selectLabel": "选择语言",
+    "continue": "继续",
+    "loading": "切换中…",
+    "dismiss": "关闭语言提示"
+  },
+  "reactivation": {
+    "title": "用案例一键复现你的下一张商业图",
+    "description": "从 Prompt 案例库挑一个配方，带入创作台直接生成，成功结果可保存复用。",
+    "ctaCreate": "去创作",
+    "ctaPricing": "查看会员",
+    "dismiss": "稍后再说"
+  },
+  "creditsUpgrade": {
+    "exhaustedTitle": "积分已用完",
+    "exhaustedDescription": "升级会员，继续创作不中断",
+    "freeTitle": "免费版额度有限",
+    "freeDescription": "升级会员解锁更多积分与高级功能",
+    "cta": "立即升级",
+    "dismiss": "关闭升级提示"
+  },
+  "hero": {
+    "badge": "视觉创意工作流（Visual Prompt Studio）",
+    "title": "看图选择，",
+    "titleHighlight": "生成可复现提示词",
+    "description": "WebToMind 专注 AI 图片创作：上传参考图自动反推 prompt，从角色、姿态、服装、镜头、写真风格中按 slot 组合，一键生成可复现、可编辑、可再次出图的高质量图片。",
+    "ctaAuth": "浏览可复用图片 Prompt",
+    "ctaUnauth": "浏览可复用图片 Prompt",
+    "installExtension": "进入工作台",
+    "stats": {
+      "users": "活跃用户",
+      "content": "生成图片",
+      "rating": "用户评分"
+    }
+  },
+  "hotCases": {
+    "label": "精选案例",
+    "title": "直接浏览我们的精选图片 Prompt",
+    "description": "这里展示 WebToMind 人工筛选的高质量案例。每张图都可以打开查看 prompt、模型和生成思路，再进入工作台继续复用。",
+    "viewAll": "查看全部案例",
+    "cardCta": "查看 Prompt",
+    "fallbackNote": "案例接口暂时不可用，先展示本地精选示例。",
+    "fallback": {
+      "poster": {
+        "title": "视觉 Prompt OS 海报",
+        "prompt": "把参考图、视觉 slot 和生成结果串成一张可复现工作流主视觉。",
+        "meta": "WebToMind · Visual Prompt"
+      },
+      "workflow": {
+        "title": "从参考图到成品",
+        "prompt": "上传参考图后，自动拆分角色、场景、镜头和风格，再生成可继续编辑的结果。",
+        "meta": "Workflow · Reference to Image"
+      },
+      "stickers": {
+        "title": "社媒视觉元素包",
+        "prompt": "用 Y2K 拼贴、荧光标签和图形元素快速做出可传播的封面视觉。",
+        "meta": "Social Cover · Collage"
+      },
+      "magazine": {
+        "title": "杂志封面 Prompt",
+        "prompt": "把人物、标题、排版和光影拆成可复用结构，快速复刻同系列封面。",
+        "meta": "Cover · Editorial"
+      },
+      "product": {
+        "title": "商品 KV 视觉",
+        "prompt": "围绕商品主体生成广告级主视觉，适合电商、品牌海报和社媒投放。",
+        "meta": "Commerce · KV"
+      },
+      "character": {
+        "title": "角色一致性工作流",
+        "prompt": "保存角色卡和参考图，在多场景中稳定复用同一套角色视觉设定。",
+        "meta": "Character · Consistency"
+      }
+    }
+  },
+  "caseCollections": {
+    "ariaLabel": "按创作场景浏览案例",
+    "viewCategory": "查看此类案例",
+    "portrait": {
+      "label": "人像 / 写真",
+      "title": "先命中人物气质",
+      "description": "适合头像、写真、角色真人化和系列人物视觉。"
+    },
+    "commerce": {
+      "label": "商品 / 海报",
+      "title": "把卖点变成主视觉",
+      "description": "覆盖商品主图、品牌 KV、封面海报和可投放广告。"
+    },
+    "character": {
+      "label": "角色 / 游戏",
+      "title": "快速复用世界观资产",
+      "description": "适合角色设定、游戏 UI、Q 版元素和社媒传播图。"
+    },
+    "poster": {
+      "label": "海报 / 社媒",
+      "title": "快速找到可传播版式",
+      "description": "适合小红书首图、活动海报、封面和品牌宣发。"
+    },
+    "workflow": {
+      "label": "工作流 / 复用",
+      "title": "从参考图延展成系列",
+      "description": "适合参考图反推、slot 组合、历史重编和批量迭代。"
+    }
+  },
+  "newsletter": {
+    "label": "案例周报",
+    "title": "每周收到热门图片案例和可复制 Prompt",
+    "description": "留下邮箱，我们会把新上架的高质量案例、热门 prompt 和可复现工作流定期发给你。",
+    "emailLabel": "邮箱地址",
+    "placeholder": "you@example.com",
+    "submit": "订阅案例周报",
+    "submitting": "提交中",
+    "success": "已订阅。下一期热门案例会发送到你的邮箱。",
+    "duplicate": "这个邮箱已经订阅过了。下一期周报会继续发送给你。",
+    "invalid": "请输入有效的邮箱地址。",
+    "error": "订阅失败，请稍后再试。",
+    "privacy": "只发送 WebToMind 热门案例与产品更新，可随时退订。"
+  },
+  "pipeline": {
+    "label": "工作流主线",
+    "title": "从参考图到成品，四步闭环",
+    "description": "围绕「可复现的视觉创作」设计，每张图都能回溯、编辑、再生成。",
+    "steps": [
+      {
+        "title": "反推",
+        "description": "上传参考图，AI 自动反推提示词，按 slot 拆分入个人素材库。"
+      },
+      {
+        "title": "组合",
+        "description": "从角色 / 表情 / 姿态 / 服装 / 场景 / 镜头 / 写真风格 / 版式 16 个 slot 自由拼组合。"
+      },
+      {
+        "title": "生成",
+        "description": "多模型图片生成链路，失败自动退还积分，适合稳定批量创作。"
+      },
+      {
+        "title": "迭代",
+        "description": "历史预览 + 重新编辑，任何一张作品都能继续微调再出图。"
+      }
+    ]
+  },
+  "workflow": {
+    "step1": {
+      "title": "提供素材",
+      "desc": "参考图 · slot · 提示词"
+    },
+    "step2": {
+      "title": "AI 编排",
+      "desc": "反推 · 拼组 · 编译",
+      "status": "AI 正在编排"
+    },
+    "step3": {
+      "title": "生成作品",
+      "desc": "封面 · 人像 · 海报",
+      "status": "可直接复现"
+    },
+    "sources": {
+      "webpage": "参考图",
+      "video": "Slot 拼图",
+      "image": "提示词"
+    },
+    "outputs": {
+      "article": "封面图",
+      "script": "人像写真",
+      "graphic": "海报设计",
+      "ready": "可复现"
+    }
+  },
+  "features": {
+    "label": "核心功能",
+    "title": "可视化提示词工作台",
+    "description": "把提示词工程从「拼字符串」变成「看图选积木」，让每张图都能复现、编辑、批量产出",
+    "items": [
+      {
+        "title": "看图选 slot",
+        "description": "16 个 slot（角色 / 表情 / 姿态 / 服装 / 鞋履 / 配饰 / 场景 / 写真风格 / 光影 / 画面影响 / 版式 / 镜头 / 景别 / 妆容）可视化拼组合"
+      },
+      {
+        "title": "AI 反推参考图",
+        "description": "上传任意图片，AI 自动按 slot 拆分出可复用提示词，一次反推多张素材入库"
+      },
+      {
+        "title": "个人素材库",
+        "description": "公开运营库 + 我的素材双层，上传素材仅本人可见，任意编辑 / 删除 / 重生缩略图"
+      },
+      {
+        "title": "一键 AI 生成缩略图",
+        "description": "上传图原图缩略风格不统一？批量串行 AI 重生，失败自动重试，进度面板全程跟踪"
+      },
+      {
+        "title": "多模型图片生成",
+        "description": "多模型链路自动调度与失败重试，兜底完成后自动退还异常扣费积分"
+      },
+      {
+        "title": "历史预览 + 重新编辑",
+        "description": "任意历史作品点开预览，「重新编辑」一键回到当时的 slot 组合 + prompt + 模型设置"
+      },
+      {
+        "title": "自定义 Prompt 模式",
+        "description": "Auto 模式从 slot 组合自动编译；Custom 模式直接写自己的提示词，两者随时切换"
+      },
+      {
+        "title": "ChatGPT-style 项目指令",
+        "description": "每个项目设一段自定义指令，所有对话 Agent 自动加载，定制专属创作助手"
+      },
+      {
+        "title": "中英双语 prompt",
+        "description": "反推一次返回中英双版，UI 与 prompt 后缀句随语言切换，国际项目零摩擦"
+      }
+    ]
+  },
+  "comingSoon": {
+    "label": "即将推出",
+    "title": "更强大的创作能力",
+    "videoScript": {
+      "title": "AI 视频脚本",
+      "description": "从素材到分镜，脚本自动产出"
+    }
+  },
+  "scenarios": {
+    "label": "谁在使用",
+    "title": "为高频 AI 出图场景设计",
+    "description": "角色设定、商品图、封面海报和社媒视觉，都能用同一套可复现工作流稳定生成。",
+    "items": [
+      {
+        "title": "AI 图片创作者",
+        "description": "把灵感图拆成可复用 prompt，稳定做系列化作品",
+        "examples": ["参考图反推", "角色一致性", "同风格批量出图"]
+      },
+      {
+        "title": "电商与商品视觉",
+        "description": "围绕商品、模特、场景和版式快速生成多套视觉方案",
+        "examples": ["商品 KV", "模特换装", "场景化海报"]
+      },
+      {
+        "title": "社媒与封面设计",
+        "description": "用固定 slot 组合保持风格统一，快速产出封面、头像和配图",
+        "examples": ["小红书封面", "短视频缩略图", "活动海报"]
+      }
+    ]
+  },
+  "testimonials": {
+    "label": "社会证明",
+    "title": "真实图片创作者如何使用 WebToMind",
+    "description": "来自角色设定、商品视觉和社媒创作场景的典型反馈。",
+    "items": [
+      {
+        "quote": "以前每次改图都要重新写 prompt，现在点开历史图就能回到当时的 slot 组合继续出图。",
+        "author": "Neil",
+        "role": "AI 角色创作者",
+        "result": "系列图返工时间明显下降"
+      },
+      {
+        "quote": "参考图反推后可以把服装、姿态、镜头拆开复用，做商品图不再靠一次次试错。",
+        "author": "Hassan",
+        "role": "商品视觉设计师",
+        "result": "单品视觉方案更快成组"
+      },
+      {
+        "quote": "团队终于能共享一套可复用的角色、场景和版式资产，不用每个人从空 prompt 开始。",
+        "author": "Chen",
+        "role": "创意运营",
+        "result": "团队出图风格更稳定"
+      },
+      {
+        "quote": "最有用的是重新编辑历史结果，客户要微调表情、服装或背景时不用重做整套图。",
+        "author": "Uni",
+        "role": "社媒设计师",
+        "result": "客户修改响应更快"
+      }
+    ]
+  },
+  "methods": {
+    "label": "出图方法论",
+    "title": "可复用的 AI 图片工作流 SOP",
+    "description": "不只生成图片，也把 prompt、参考图和历史结果组织成可复用系统。",
+    "items": [
+      {
+        "title": "为什么 AI 出图不稳定，通常是 prompt 资产没有结构",
+        "description": "把一次性 prompt 拆成角色、姿态、服装、镜头、场景、风格等可管理 slot。",
+        "bullets": [
+          "从参考图反推出可复用描述",
+          "用 slot 组合替代整段 prompt 重写",
+          "把成功结果沉淀为下一次出图资产"
+        ]
+      },
+      {
+        "title": "从参考图到成品：AI 图片创作 SOP",
+        "description": "适用于角色图、商品图、封面图和社媒视觉的统一生产链路。",
+        "bullets": [
+          "参考图上传与 prompt 反推",
+          "视觉 slot 组合与模型参数确认",
+          "历史结果回溯、重编辑与批量迭代"
+        ]
+      }
+    ]
+  },
+  "advantages": {
+    "label": "为什么选择 WebToMind",
+    "title": "专为 AI 图片创作者设计，从参考图到可复现成品",
+    "items": [
+      {
+        "title": "不是一次性 prompt 框",
+        "desc": "把 prompt 拆成可管理、可组合、可复用的视觉资产",
+        "highlight": "结构化出图"
+      },
+      {
+        "title": "不是纯聊天生成",
+        "desc": "从参考图反推、slot 组合到历史重编辑，完整覆盖出图闭环",
+        "highlight": "可复现闭环"
+      },
+      {
+        "title": "更适合系列图",
+        "desc": "角色、服装、场景和镜头可以跨项目复用，降低风格漂移",
+        "highlight": "风格稳定"
+      },
+      {
+        "title": "更适合团队协作",
+        "desc": "公共素材库和个人素材库并行，团队能共享成功组合",
+        "highlight": "资产沉淀"
+      },
+      {
+        "title": "多模型出图",
+        "desc": "按质量、尺寸和模型能力选择路径，失败结果可见并支持恢复",
+        "highlight": "模型调度"
+      },
+      {
+        "title": "历史可重编辑",
+        "desc": "任何一张历史图都能回到当时设置，继续微调而不是从零开始",
+        "highlight": "持续迭代"
+      }
+    ]
+  },
+  "trust": {
+    "label": "信任与合规",
+    "title": "你的图片资产，始终由你掌控",
+    "description": "为 AI 图片生产场景提供清晰、可管理的资产边界。",
+    "items": [
+      {
+        "title": "参考图与作品归用户管理",
+        "description": "你上传的参考图、生成结果和私有素材库都按账号隔离管理。"
+      },
+      {
+        "title": "隐私策略透明",
+        "description": "清晰标注数据用途与处理边界，减少黑盒风险。"
+      },
+      {
+        "title": "出图记录可追溯",
+        "description": "历史结果保留 prompt、slot 和模型设置，方便复盘与再生成。"
+      }
+    ]
+  },
+  "faq": {
+    "label": "常见问题",
+    "title": "你可能关心的问题",
+    "description": "关于 AI 图片工作流、适用人群与资产策略的快速回答。",
+    "items": [
+      {
+        "q": "WebToMind 现在主要解决什么问题？",
+        "a": "WebToMind 现在专注 AI 图片创作，把参考图反推、视觉 slot 组合、图片生成、历史重编辑做成一套可复现工作流。"
+      },
+      {
+        "q": "适合哪些人使用？",
+        "a": "适合 AI 图片创作者、商品视觉团队、社媒设计师，以及需要稳定批量出图的运营团队。"
+      },
+      {
+        "q": "为什么要用 slot 而不是直接写 prompt？",
+        "a": "slot 能把角色、表情、姿态、服装、镜头、光影和版式拆开管理，方便复用、替换和批量迭代。"
+      },
+      {
+        "q": "我的参考图和生成图片归谁管理？",
+        "a": "归用户管理。公开素材库和你的私有素材库分开，私有上传仅在你的账号下使用。"
+      }
+    ]
+  },
+  "cta": {
+    "title": "让 AI 出图变得可控可复现",
+    "description": "免费注册，立即体验视觉提示词工作台\n上传参考图 → AI 反推 → 看图组合 → 一键生成，每张作品都能回溯再编辑",
+    "ctaAuth": "浏览可复用图片 Prompt",
+    "ctaUnauth": "浏览可复用图片 Prompt",
+    "workspace": "进入工作台"
+  },
+  "footer": {
+    "terms": "服务条款",
+    "privacy": "隐私政策",
+    "contact": "联系我们",
+    "followX": "关注官方 X",
+    "copyright": "© 2026 WebToMind. All rights reserved."
+  }
+}

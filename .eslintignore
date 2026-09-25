@@ -1,0 +1,13 @@
+# Build outputs
+dist/
+server/dist/
+node_modules/
+server/node_modules/
+
+# Generated files
+*.d.ts
+apps/toolcraft-template/src/toolcraft/
+
+# Read-only historical debug snapshots may use legacy encodings and are not
+# part of the shipped application or lint baseline.
+scripts/archive/root-debug/

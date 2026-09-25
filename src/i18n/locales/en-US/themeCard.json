@@ -1,0 +1,182 @@
+{
+  "plaza": {
+    "kicker": "WebToMind Theme Cards",
+    "title": "Theme Card Plaza",
+    "subtitle": "Start from a ready-made theme card, fill the grid, then share or generate supporting visuals when you need them.",
+    "create": "Create a card",
+    "browseByType": "Browse by Type",
+    "cardCount": "{{count}} card",
+    "cardCount_plural": "{{count}} cards",
+    "featuredTitle": "Featured Theme Cards",
+    "featuredDesc": "Choose a card, then fill each grid in the editor.",
+    "trendingTitle": "Trending Theme Cards",
+    "trendingDesc": "Shareable formats for creators, product teams and visual notes.",
+    "seoTitle": "Theme Card Plaza | WebToMind",
+    "seoDescription": "Browse ready-made WebToMind theme cards for portraits, products, characters, social covers, stickers and poster workflows."
+  },
+  "tools": {
+    "add": "Add Items",
+    "templates": "Templates",
+    "upload": "Upload",
+    "settings": "Settings"
+  },
+  "panel": {
+    "addDesc": "Select a case, upload or official visual cue, then click a grid slot to place it.",
+    "slotProgress": "Slot {{current}} / {{total}}",
+    "selectSlotFirst": "Select a slot",
+    "searchItems": "Search items...",
+    "templateDesc": "Switch the official theme card and its grid labels.",
+    "searchTemplates": "Search templates...",
+    "templateTabsAria": "Theme template categories",
+    "featured": "Featured",
+    "community": "Community",
+    "forYou": "For You",
+    "uploadTabsAria": "Upload sources",
+    "local": "Local",
+    "myUploads": "My Uploads",
+    "uploadFromDevice": "Upload from Device",
+    "continueUpload": "Continue Upload",
+    "useUpload": "Use",
+    "replaceUpload": "Replace",
+    "deleteUpload": "Delete",
+    "emptyUploads": "No local uploads yet. Uploaded images will appear here.",
+    "uploadHint": "Local uploads stay on your device and are not included in shared links.",
+    "uploadMemoryOnly": "This browser cannot persist upload records. The current upload stays in this page only.",
+    "rows": "Rows",
+    "columns": "Columns",
+    "showLabels": "Show Labels",
+    "resetGrid": "Reset Grid"
+  },
+  "stage": {
+    "back": "WebToMind",
+    "copied": "Copied",
+    "shareLink": "Share link",
+    "preparing": "Preparing",
+    "download": "Download",
+    "generate": "Generate",
+    "downloadError": "PNG download failed in this browser. Copy the share link instead.",
+    "titleLabel": "Card title",
+    "titleAria": "Edit theme card title",
+    "titlePlaceholder": "Enter card title",
+    "clickToAdd": "Click to Add",
+    "fillExamples": "Fill with examples",
+    "clear": "Clear",
+    "clearSelected": "Clear selected",
+    "copyPrompt": "Copy generation prompt",
+    "assistKicker": "Assisted generation",
+    "assistTitle": "Use AI only when you need a thumbnail",
+    "assistDesc": "\"{{label}}\" is selected. Use assisted generation to create a placeholder image for this slot.",
+    "assistEmptyTitle": "Select a slot to use assisted generation",
+    "assistEmptyDesc": "The grid starts empty. Click any slot to edit its label, add an image, or generate a placeholder for that slot.",
+    "model": "Model",
+    "imageSize": "Image size",
+    "promptLabel": "Generation prompt",
+    "promptAria": "Prompt starter generated from this theme card",
+    "defaultFooterText": "A reusable WebToMind visual direction for the next image.",
+    "footerTextLabel": "Footer note",
+    "footerTextAria": "Edit theme card footer note",
+    "footerTextPlaceholder": "Write the direction this theme card should express",
+    "restorePrompt": "Restore generated prompt",
+    "generateInCreate": "Generate in Create",
+    "seoTitle": "Theme card templates for shareable visual workflows",
+    "canvasAria": "Theme card canvas",
+    "toolsAria": "Theme card tools",
+    "sectionsAria": "Editor sections",
+    "selectLabel": "Select {{label}}",
+    "editLabelAria": "Edit {{label}} label",
+    "uploadedImage": "Uploaded image",
+    "localUpload": "Local upload",
+    "promptCase": "Prompt case"
+  },
+  "templates": {
+    "taste": {
+      "title": "Personal Taste Theme Card",
+      "shortTitle": "Personal Taste",
+      "category": "Starter",
+      "description": "A balanced starter card for creators who want a clear visual direction before opening the studio."
+    },
+    "portrait": {
+      "title": "Portrait Theme Card",
+      "shortTitle": "Portrait",
+      "category": "Portrait",
+      "description": "Pick the portrait styling, lighting, camera and face details before filling the card."
+    },
+    "product": {
+      "title": "Product Photography Theme Card",
+      "shortTitle": "Product Shoot",
+      "category": "Product",
+      "description": "Shape a product photography card with studio light, clean framing, ecommerce layout and selling-point texture."
+    },
+    "character": {
+      "title": "Character Design Theme Card",
+      "shortTitle": "Character",
+      "category": "Character",
+      "description": "Build a character concept card with a recognizable subject, world context, pose and profile layout."
+    },
+    "gpt-image-2": {
+      "title": "GPT Image 2 Theme Card",
+      "shortTitle": "GPT Image 2",
+      "category": "Model",
+      "description": "A clean card template for high-control commercial visuals, readable layouts and reusable image prompts."
+    },
+    "nano-banana": {
+      "title": "Nano Banana Theme Card",
+      "shortTitle": "Nano Banana",
+      "category": "Model",
+      "description": "A fast card starter for reference-style iterations, lifestyle portraits and shareable visual ideas."
+    },
+    "seedream": {
+      "title": "Seedream Scene Theme Card",
+      "shortTitle": "Seedream",
+      "category": "Model",
+      "description": "A scene card for high-aesthetic realistic images, clean lighting and polished commercial outputs."
+    },
+    "midjourney": {
+      "title": "Cinematic Mood Theme Card",
+      "shortTitle": "Midjourney",
+      "category": "Cinematic",
+      "description": "A stylized card for cinematic posters, editorial worlds and mood-heavy visual exploration."
+    },
+    "social-cover": {
+      "title": "Social Cover Theme Card",
+      "shortTitle": "Social Cover",
+      "category": "Social",
+      "description": "A social media cover card for tutorial thumbnails, launch posts, Xiaohongshu covers and creator campaigns."
+    },
+    "anime-avatar": {
+      "title": "Anime Avatar Theme Card",
+      "shortTitle": "Anime Avatar",
+      "category": "Avatar",
+      "description": "An anime avatar card for profile pictures, character headshots, soft illustration styles and clean portraits."
+    },
+    "sticker": {
+      "title": "Sticker Pack Theme Card",
+      "shortTitle": "Sticker",
+      "category": "Sticker",
+      "description": "A compact card for cute 3D mascot stickers, reaction packs and simple shareable characters."
+    },
+    "cinematic-poster": {
+      "title": "Movie Poster Theme Card",
+      "shortTitle": "Cinematic Poster",
+      "category": "Poster",
+      "description": "A cinematic poster card for moody posters, movie-style key visuals and dramatic image examples."
+    }
+  },
+  "gridLabels": {
+    "taste": ["Favorite Style", "Best Lighting", "Dream Background", "Signature Composition", "Favorite Subject", "Layout I Reuse", "Lens Feel", "Detail I Love", "Wildcard"],
+    "portrait": ["Favorite Portrait", "Best Lighting", "Face Mood", "Pose", "Background", "Lens", "Color", "Reference", "Wildcard"],
+    "product": ["Hero Shot", "Best Texture", "Packaging", "Lighting", "Background", "Scale Detail", "Ecommerce Angle", "Campaign Visual", "Wildcard"],
+    "character": ["Main Character", "Side Profile", "Outfit", "World", "Pose", "Prop", "Expression", "Color Key", "Wildcard"],
+    "gpt-image-2": ["Best Prompt", "Readable Text", "Product Visual", "Portrait", "Layout", "Reference Use", "Before/After", "Campaign", "Wildcard"],
+    "nano-banana": ["Fast Idea", "Reference", "Lifestyle", "Portrait", "Product", "Social Post", "Iteration", "Color Mood", "Wildcard"],
+    "seedream": ["Scene", "Lighting", "Texture", "Architecture", "Portrait", "Landscape", "Commercial", "Mood", "Wildcard"],
+    "midjourney": ["Cinematic Mood", "Poster Shot", "World", "Character", "Lighting", "Color Grade", "Lens", "Detail", "Wildcard"],
+    "social-cover": ["Hero Cover", "Title Space", "Creator Face", "Product", "Hook Visual", "Background", "Sticker", "Color", "Wildcard"],
+    "anime-avatar": ["Avatar", "Expression", "Hair", "Outfit", "Lighting", "Background", "Color", "Detail", "Wildcard"],
+    "sticker": ["Happy", "Thinking", "Surprised", "Angry", "Thanks", "OK", "Working", "Celebrate", "Sad", "Love", "Sleepy", "Wildcard"],
+    "cinematic-poster": ["Main Poster", "Lead Character", "Antagonist", "World", "Conflict", "Title Space", "Color Grade", "Key Prop", "Wildcard"]
+  },
+  "grid": {
+    "slotFallback": "Slot {{number}}"
+  }
+}

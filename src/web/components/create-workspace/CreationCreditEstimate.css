@@ -1,0 +1,32 @@
+.creation-submit-cluster {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 2px;
+}
+
+.creation-credit-estimate {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 5px;
+  padding: 0 6px;
+  color: var(--creation-credit-estimate-text, rgba(255, 255, 255, 0.74));
+  font-size: 12px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.creation-credit-estimate > svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  color: var(--creation-credit-estimate-accent, #a78bfa);
+}
+
+/* 内嵌到生成按钮里时取消独立间距，由按钮整体控制 padding。 */
+.creation-credit-estimate.is-embedded {
+  padding: 0;
+}

@@ -1,0 +1,273 @@
+{
+  "title": "WebToMind",
+  "saveToWebToMind": "Save to WebToMind",
+  "header": {
+    "visitWebsite": "Visit website",
+    "dragToMove": "Drag to move",
+    "more": "More",
+    "close": "Close",
+    "summarize": "Summarize this page",
+    "summarizing": "Summarizing...",
+    "loading": "Loading...",
+    "loginRequired": "Please log in first",
+    "workspaceDisabled": "Not available on workspace page",
+    "quickAsk": "Quick Ask"
+  },
+  "tabs": {
+    "summary": "Summary",
+    "mindmap": "Mind Map",
+    "chat": "Chat"
+  },
+  "actions": {
+    "summarize": "Summarize",
+    "regenerate": "Regenerate",
+    "copy": "Copy",
+    "copyMarkdown": "Copy Markdown",
+    "copyPlainText": "Copy Plain Text",
+    "copied": "Copied",
+    "export": "Export",
+    "save": "Save",
+    "saveToWorkspace": "Save to Workspace",
+    "saving": "Saving...",
+    "open": "Open",
+    "share": "Share",
+    "selectProject": "Select project"
+  },
+  "status": {
+    "idle": "Click to start summarizing",
+    "extracting": "Extracting content...",
+    "summarizing": "AI is summarizing...",
+    "analyzing": "AI is analyzing content...",
+    "generating": "AI generating...",
+    "complete": "Complete",
+    "error": "Error occurred",
+    "loading": "Loading...",
+    "untitledPage": "Untitled page"
+  },
+  "welcome": {
+    "title": "Welcome to WebToMind",
+    "description": "Log in to unlock all features",
+    "loginButton": "Log in / Sign up",
+    "featureSummarize": "Smart Summary",
+    "featureSummarizeDesc": "Convert any page into a mind map",
+    "featureTranslate": "Article Translation",
+    "featureTranslateDesc": "Translate between Chinese and English",
+    "featureChat": "Quick Ask AI",
+    "featureChatDesc": "Chat with AI based on page content",
+    "featureBookmark": "Bookmark Capture",
+    "featureBookmarkDesc": "Auto-collect Twitter & browser bookmarks"
+  },
+  "workspace": {
+    "title": "You're already here!",
+    "description": "The extension takes a break on WebToMind",
+    "hint": "Try other websites to capture your ideas"
+  },
+  "empty": {
+    "title": "Ready to start",
+    "description": "Pick an action to get started",
+    "summary": "No summary yet",
+    "mindmap": "No mind map yet",
+    "chat": "Start chatting with AI",
+    "noData": "No data",
+    "actionSummarize": "Summarize page",
+    "actionSummarizeDesc": "Generate a mind map summary",
+    "actionTranslate": "Translate article",
+    "actionTranslateDesc": "Translate to Chinese / English",
+    "actionChat": "Quick ask",
+    "actionChatDesc": "Chat based on page content",
+    "actionBookmark": "Bookmark capture",
+    "actionBookmarkDesc": "Enable auto-capture in popup"
+  },
+  "chatPanel": {
+    "title": "Quick Chat",
+    "description": "Ask AI with the current page context",
+    "placeholder": "Ask anything. Enter to send, Shift+Enter for newline",
+    "send": "Send",
+    "sending": "Sending...",
+    "user": "You",
+    "assistant": "AI"
+  },
+  "errors": {
+    "title": "Error",
+    "extractFailed": "Failed to extract content",
+    "summarizeFailed": "Summary failed",
+    "saveFailed": "Failed to save",
+    "saveFailedWithError": "Failed to save: {{error}}",
+    "saveFailedRetry": "Failed to save, please try again",
+    "loginRequired": "Please log in before saving",
+    "networkError": "Network error",
+    "unknown": "An unknown error occurred"
+  },
+  "userCenter": {
+    "title": "Profile",
+    "back": "Back",
+    "loggedIn": "Logged in",
+    "notLoggedIn": "Not logged in",
+    "login": "Log in",
+    "loginOrRegister": "Log in / Sign up",
+    "logout": "Log out",
+    "openWorkspace": "Open Workspace",
+    "founderMember": "WebToMind Founding Member",
+    "daysJoined": "Joined {{days}} days ago",
+    "loginPromptTitle": "Log in to access all features",
+    "loginPromptDesc": "Sync summaries and workspace content after you sign in",
+    "plan": "Current Plan",
+    "free": "Free",
+    "pro": "Pro",
+    "usage": "Today's Usage",
+    "usageCount": "{{used}} / {{total}}",
+    "upgrade": "Upgrade to Pro",
+    "settings": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "help": "Help",
+    "feedback": "Feedback",
+    "about": "About",
+    "bookmarkMonitor": "Auto-capture Bookmarks",
+    "twitterBookmark": "Twitter/X Bookmarks",
+    "browserBookmark": "Browser Bookmarks",
+    "localMarkdownExport": "Save Twitter bookmarks as local Markdown",
+    "localMarkdownDirectory": "Save directory (under Downloads)",
+    "localMarkdownDirectoryHint": "Example: WebToMind/TwitterBookmarks. Files will be saved under your browser default Downloads folder.",
+    "localMarkdownUseNative": "Use Native Messaging for system directory",
+    "localMarkdownNativeDirectory": "System directory (absolute path)",
+    "localMarkdownNativeDirectoryHint": "Example: /Users/yourname/Documents/WebToMind. If host is unavailable, it will fall back to Downloads mode automatically.",
+    "bookmarkHint": "When enabled, bookmarked tweets or browser bookmarks will be automatically saved to workspace",
+    "memberOnlyBookmarkHint": "Auto-capture bookmarks is a members-only feature. Please upgrade your plan.",
+    "quickReplyPrompt": "Quick Reply Style",
+    "quickReplyPromptPlaceholder": "Choose a default reply style",
+    "quickReplyCustomPromptButton": "Custom Prompt",
+    "quickReplyCustomPromptInputPlaceholder": "Example: Reply in Lu Xun's style, restrained but sharp",
+    "quickReplyCustomPromptHint": "Just describe the tone or style you want in natural language, such as voice, identity, or expression. Leave it empty to use the selected style template.",
+    "quickReplyStyleGroups": {
+      "basic": "Basic Styles",
+      "fun": "Fun Tones"
+    },
+    "quickReplyStyleExampleLabel": "Example: ",
+    "quickReplyStyles": {
+      "natural": {
+        "label": "Natural",
+        "description": "Feels like a real person replying naturally. Safe and versatile for most situations.",
+        "example": "I feel the same about this — it really comes down to execution."
+      },
+      "friendly": {
+        "label": "Friendly",
+        "description": "Warm and empathetic. Good for softening tone and encouraging interaction.",
+        "example": "I totally get where you're coming from, and this really does resonate."
+      },
+      "professional": {
+        "label": "Professional",
+        "description": "Clear, restrained, and information-dense. Best for rational or industry discussion.",
+        "example": "That’s a fair take, though the real variable may still be execution."
+      },
+      "sharp": {
+        "label": "Sharp",
+        "description": "Direct and opinionated, but still controlled and publishable.",
+        "example": "The issue isn’t the surface — the logic underneath was off from the start."
+      },
+      "witty": {
+        "label": "Witty",
+        "description": "Adds a bit of humor and contrast without becoming too cheesy.",
+        "example": "This is one of those decisions that future-you will definitely remember."
+      },
+      "analytical": {
+        "label": "Analytical",
+        "description": "Focuses on logic, assumptions, and implications. Useful for viewpoint breakdowns.",
+        "example": "Once you follow that premise through, the conclusion becomes pretty inevitable."
+      },
+      "tvb": {
+        "label": "TVB Style",
+        "description": "A touch of familiar commentary and light drama, like a punchy Hong Kong TV line.",
+        "example": "The way you put it only makes me more curious about what comes next."
+      },
+      "translated": {
+        "label": "Translated Style",
+        "description": "Reads like polished translated Chinese: restrained, neat, and slightly literary in rhythm.",
+        "example": "This may well be the part that proves hardest to ignore."
+      },
+      "japanese-translated": {
+        "label": "JP Subtitle Style",
+        "description": "Gentle, restrained, and slightly subtitle-like in rhythm.",
+        "example": "I see… that really does make it hard to simply look away, doesn’t it?"
+      },
+      "qiongyao": {
+        "label": "Melodramatic",
+        "description": "More emotional and polished in wording, but still kept short and reply-friendly.",
+        "example": "In this single sentence, there is something both sharp and strangely tender."
+      },
+      "deadpan": {
+        "label": "Deadpan",
+        "description": "Calm on the surface, with a subtle layer of dry humor underneath.",
+        "example": "Yeah, that sounds like a plan that definitely cannot go wrong."
+      },
+      "classical-chinese": {
+        "label": "Classical Chinese",
+        "description": "Adds a touch of old-style elegance and brevity while staying understandable at a glance.",
+        "example": "此言固是，然其后患亦不可不察。"
+      },
+      "taiwan-drama": {
+        "label": "Taiwan Drama",
+        "description": "Gentle and emotionally layered, like a short line from a Taiwanese drama.",
+        "example": "You know if you say it like that, I’m only going to care even more."
+      },
+      "dongbei": {
+        "label": "Dongbei Style",
+        "description": "Straightforward, lively, and chatty like a familiar conversation.",
+        "example": "Man, the second you said that, the whole vibe just clicked."
+      },
+      "headteacher": {
+        "label": "Headteacher",
+        "description": "Sounds like serious advice with a mildly lecturing tone, but still means well.",
+        "example": "I’m telling you this now so one day you’ll understand why it mattered."
+      },
+      "web-novel": {
+        "label": "Web Novel",
+        "description": "Adds a little dramatic hook and page-turning energy to a short reply.",
+        "example": "At that moment, the real story had only just begun."
+      },
+      "euro-translated": {
+        "label": "Euro Translation",
+        "description": "Slightly formal and literary, like translated European prose in Chinese.",
+        "example": "This was not an accident, but a drift that was almost destined to happen."
+      },
+      "ceo": {
+        "label": "CEO Style",
+        "description": "Confident, forceful, and in control, like a short statement that owns the room.",
+        "example": "We’re done debating this — from here, we execute."
+      },
+      "tsundere": {
+        "label": "Tsundere",
+        "description": "Sounds dismissive on the surface, but secretly caring underneath.",
+        "example": "Don’t get the wrong idea — you just happened to be right this time."
+      },
+      "internet-mouthpiece": {
+        "label": "Internet Mouthpiece",
+        "description": "Feels like the exact line everyone wanted to say but didn’t type first.",
+        "example": "You basically just posted the one sentence everyone else was thinking."
+      },
+      "leader-speech": {
+        "label": "Leader Speech",
+        "description": "Formal and directional, like a short summary with a bit of authority.",
+        "example": "The direction is clear now — what matters next is disciplined execution."
+      },
+      "cyber-priest": {
+        "label": "Cyber Priest",
+        "description": "A little solemn, mystical, and prophetic, like digital-age sermon energy.",
+        "example": "The data has already delivered its revelation; the rest is only a matter of time."
+      }
+    },
+    "savePrompt": "Save Prompt",
+    "savingPrompt": "Saving...",
+    "quickReplyPromptSaved": "Saved",
+    "quickReplyPromptUnsaved": "Unsaved changes",
+    "quickReplyPromptHint": "Selected style will be applied to quick reply and quote-comment generation"
+  },
+  "upgrade": {
+    "title": "Save Limit Reached",
+    "description": "You've reached the free plan limit ({{used}}/{{max}} saves). Upgrade to Pro for unlimited saves.",
+    "button": "Upgrade Plan"
+  }
+}

@@ -1,0 +1,669 @@
+/*
+ * Shared theme boundary for the image and video creation studios.
+ *
+ * The legacy studio layouts were authored against a dark-only palette. Keep
+ * their layout rules in the page styles and centralize light-theme surfaces,
+ * text, borders and interaction states here so both studios stay in sync.
+ */
+html:not(.dark) {
+  --studio-canvas: #f6f7f9;
+  --studio-surface: rgba(255, 255, 255, 0.94);
+  --studio-surface-solid: #ffffff;
+  --studio-surface-subtle: #f0f2f5;
+  --studio-surface-hover: #e8edf4;
+  --studio-border: rgba(23, 32, 47, 0.11);
+  --studio-border-strong: rgba(23, 32, 47, 0.22);
+  --studio-text: #171a20;
+  --studio-text-secondary: #5f6876;
+  --studio-text-muted: #7b8491;
+  --studio-accent: #1671d9;
+  --studio-accent-hover: #0d63c5;
+  --studio-accent-soft: #eaf3ff;
+  --studio-accent-ink: #0c3d73;
+  --studio-danger: #b42318;
+  --studio-warning: #94510b;
+  --studio-shadow:
+    0 22px 64px rgba(34, 46, 66, 0.12), 0 1px 2px rgba(34, 46, 66, 0.06);
+  --studio-popover-shadow:
+    0 28px 80px rgba(29, 42, 62, 0.18), 0 2px 8px rgba(29, 42, 62, 0.08);
+}
+
+html:not(.dark) :is(.image-studio-v2, .video-studio-v2) {
+  color-scheme: light;
+  color: var(--studio-text);
+  background: var(--studio-canvas);
+}
+
+/* Shared navigation: undo the video route's former dark-only nav override. */
+html:not(.dark) .video-studio-v2 .create-side-nav {
+  border-right-color: var(--product-border-soft, rgba(23, 32, 47, 0.09));
+  color: var(--product-text-primary, #171a20);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 12px 0 36px rgba(42, 50, 64, 0.055);
+}
+
+html:not(.dark)
+  .video-studio-v2
+  .create-side-nav
+  :is(.create-side-nav-brand, nav, nav a),
+html:not(.dark) .video-studio-v2 .create-side-nav .create-side-nav-user strong {
+  color: var(--product-text-primary, #171a20);
+}
+
+html:not(.dark)
+  .video-studio-v2
+  .create-side-nav
+  :is(.create-side-nav-group-label, .create-side-nav-user em) {
+  color: var(--product-text-muted, #737b86);
+}
+
+html:not(.dark)
+  .video-studio-v2
+  .create-side-nav
+  nav
+  a:is(:hover, :focus-visible, .active) {
+  color: var(--product-text-primary, #171a20);
+  background: var(--product-surface-subtle, #f1f3f5);
+}
+
+/* Shared composer and generation affordance. */
+html:not(.dark)
+  :is(.image-studio-v2, .video-studio-v2)
+  .creation-generate-button {
+  color: var(--studio-accent-ink);
+  background: var(--studio-accent-soft);
+}
+
+html:not(.dark)
+  :is(.image-studio-v2, .video-studio-v2)
+  .creation-generate-button-surface {
+  color: #ffffff;
+  background: var(--studio-accent);
+  box-shadow: 0 6px 16px rgba(22, 113, 217, 0.24);
+}
+
+html:not(.dark)
+  :is(.image-studio-v2, .video-studio-v2)
+  .creation-generate-button:is(:hover, :focus-visible):not(:disabled) {
+  background: #dcecff;
+}
+
+html:not(.dark)
+  :is(.image-studio-v2, .video-studio-v2)
+  .creation-generate-button:is(:hover, :focus-visible):not(:disabled)
+  .creation-generate-button-surface {
+  background: var(--studio-accent-hover);
+}
+
+html:not(.dark) .image-studio-v2 .image-studio-composer > small.is-guidance {
+  color: var(--studio-text-muted);
+}
+
+/* Image studio */
+html:not(.dark) .image-studio-v2 .creator-image-studio-shell {
+  color: var(--studio-text);
+  background: var(--studio-canvas);
+}
+
+html:not(.dark) .image-studio-v2 .recipe-preset-heading-icon {
+  color: #ffffff;
+  background: var(--studio-accent);
+}
+
+html:not(.dark) .image-studio-v2 .recipe-preset-gallery > header h2 {
+  color: var(--studio-text);
+}
+
+html:not(.dark)
+  .image-studio-v2
+  .recipe-preset-gallery
+  > header
+  :is(p, .recipe-preset-eyebrow) {
+  color: var(--studio-text-secondary);
+}
+
+html:not(.dark) .image-studio-v2 .recipe-preset-card {
+  border-color: var(--studio-border);
+  background: var(--studio-surface-solid);
+  box-shadow: 0 18px 36px rgba(34, 46, 66, 0.11);
+}
+
+html:not(.dark) .image-studio-v2 .recipe-preset-card:is(:hover, :focus-visible),
+html:not(.dark) .image-studio-v2 .recipe-preset-card[data-active='true'] {
+  border-color: rgba(22, 113, 217, 0.62);
+  box-shadow: 0 24px 54px rgba(34, 67, 108, 0.18);
+}
+
+html:not(.dark) .image-studio-v2 .recipe-preset-skeleton {
+  background: linear-gradient(110deg, #eef1f5 22%, #fafbfc 38%, #eef1f5 54%);
+  background-size: 220% 100%;
+}
+
+html:not(.dark) .image-studio-composer {
+  --creation-credit-estimate-text: var(--studio-text-secondary);
+  --creation-credit-estimate-accent: #7c3aed;
+
+  border-color: var(--studio-border);
+  background: var(--studio-surface);
+  box-shadow: var(--studio-shadow);
+  backdrop-filter: saturate(1.08) blur(18px);
+}
+
+html:not(.dark) .image-studio-composer:focus-within {
+  border-color: rgba(22, 113, 217, 0.34);
+  box-shadow:
+    var(--studio-shadow),
+    0 0 0 3px rgba(22, 113, 217, 0.11);
+}
+
+html:not(.dark) .image-studio-composer textarea {
+  color: var(--studio-text);
+  scrollbar-color: rgba(23, 32, 47, 0.2) transparent;
+}
+
+html:not(.dark) .image-studio-composer textarea::placeholder {
+  color: var(--studio-text-muted) !important;
+}
+
+html:not(.dark) .image-studio-tool-trigger {
+  color: var(--studio-text-secondary);
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark) .image-studio-tool-trigger:is(:hover, :focus-visible),
+html:not(.dark) .image-studio-tool-trigger[data-active='true'] {
+  color: var(--studio-accent-ink);
+  background: var(--studio-accent-soft);
+}
+
+html:not(.dark) .image-studio-tool-thumbnail {
+  box-shadow: inset 0 0 0 1px var(--studio-border);
+}
+
+html:not(.dark) .image-studio-composer > small.is-error,
+html:not(.dark) .image-session-error {
+  color: var(--studio-danger);
+}
+
+html:not(.dark) .image-studio-composer > small.is-status {
+  color: var(--studio-text-secondary);
+}
+
+html:not(.dark) .image-studio-tool-popover {
+  border-color: var(--studio-border);
+  color: var(--studio-text);
+  background: var(--studio-surface-solid);
+  box-shadow: var(--studio-popover-shadow);
+}
+
+html:not(.dark) .image-studio-popover-header {
+  border-bottom-color: var(--studio-border);
+  background: var(--studio-surface-solid);
+}
+
+html:not(.dark)
+  :is(
+    .image-studio-option-list > button:hover,
+    .image-studio-board-list > button:hover,
+    .image-studio-board-list > button[data-active='true'],
+    .image-studio-recipe-groups button:hover,
+    .image-studio-recipe-groups button:focus-visible,
+    .image-studio-recipe-groups button[data-active='true']
+  ) {
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark)
+  :is(
+    .image-studio-option-list small,
+    .image-studio-board-list small,
+    .image-studio-reference-panel > small,
+    .image-studio-reference-summary small,
+    .image-studio-random-recipe small,
+    .image-studio-recipe-groups small,
+    .image-studio-recipe-groups section > span,
+    .image-studio-recipe-assets > header span,
+    .image-studio-recipe-selected,
+    .image-studio-more-panel section > span
+  ) {
+  color: var(--studio-text-muted);
+}
+
+html:not(.dark)
+  :is(
+    .image-studio-option-icon,
+    .image-studio-board-cover,
+    .image-studio-reference-summary > span,
+    .image-studio-reference-actions button,
+    .image-studio-board-actions button,
+    .image-studio-more-actions button,
+    .image-studio-random-recipe,
+    .image-studio-recipe-assets > header button,
+    .image-studio-segmented button,
+    .image-studio-prompt-library button
+  ) {
+  color: var(--studio-text-secondary);
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark) .image-studio-recipe-index {
+  border-right-color: var(--studio-border);
+}
+
+html:not(.dark) .image-studio-clear-recipe {
+  color: var(--studio-danger);
+}
+
+html:not(.dark)
+  :is(.image-studio-recipe-asset-grid button, .image-studio-ratio-grid button) {
+  color: var(--studio-text-secondary);
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark)
+  :is(
+    .image-studio-recipe-asset-grid button[data-active='true'],
+    .image-studio-ratio-grid button[data-active='true']
+  ) {
+  border-color: var(--studio-accent);
+  color: var(--studio-accent-ink);
+}
+
+html:not(.dark) .image-studio-asset-placeholder {
+  background: #e7ebf0;
+}
+
+html:not(.dark)
+  :is(
+    .image-studio-recipe-asset-grid button > svg,
+    .image-studio-segmented button[data-active='true']
+  ) {
+  color: #ffffff;
+  background: var(--studio-accent);
+}
+
+/* Image session/result states */
+html:not(.dark) .image-session-turn {
+  border-bottom-color: var(--studio-border);
+}
+
+html:not(.dark)
+  :is(
+    .image-session-prompt-scroll,
+    .image-session-prompt-copy-shell,
+    .image-session-image-skeleton
+  ) {
+  border-color: var(--studio-border);
+  color: var(--studio-text);
+  background: var(--studio-surface-solid);
+}
+
+html:not(.dark) .image-session-prompt-scroll p {
+  color: var(--studio-text);
+}
+
+html:not(.dark) .image-session-prompt-scroll.is-copyable:hover {
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark)
+  :is(
+    .image-session-prompt-model,
+    .image-session-prompt-meta span,
+    .image-session-prompt-meta em,
+    .image-session-prompt-panel > button,
+    .image-session-task-actions button,
+    .image-session-turn-actions button
+  ) {
+  color: var(--studio-text-secondary);
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark)
+  :is(
+    .image-session-task-actions button:hover,
+    .image-session-turn-actions button:hover
+  ) {
+  color: var(--studio-text);
+  background: var(--studio-surface-hover);
+}
+
+html:not(.dark) .image-session-turn-actions button.is-primary {
+  color: #fff;
+  background: var(--studio-accent, #e05436);
+}
+
+html:not(.dark) .image-session-turn-actions button.is-primary:hover {
+  color: #fff;
+  background: var(--studio-accent-strong, #c9472c);
+}
+
+html:not(.dark) .image-session-image-skeleton::after {
+  background: linear-gradient(
+    105deg,
+    transparent 34%,
+    rgba(255, 255, 255, 0.4) 46%,
+    rgba(255, 255, 255, 0.82) 50%,
+    rgba(255, 255, 255, 0.4) 54%,
+    transparent 66%
+  );
+}
+
+html:not(.dark) .image-session-image-skeleton > div {
+  color: var(--studio-text-muted);
+}
+
+html:not(.dark) .image-session-result-grid figure {
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark) .image-session-activation-milestone {
+  border-color: rgba(27, 122, 72, 0.16);
+  color: #185c35;
+  background: #edf8f1;
+}
+
+html:not(.dark) .image-session-activation-milestone > svg {
+  color: #20834c;
+}
+
+html:not(.dark) .image-session-activation-milestone small {
+  color: #4d745e;
+}
+
+html:not(.dark) .activation-context-banner {
+  border-color: rgba(224, 84, 54, 0.22);
+  color: #7a2f1d;
+  background: #fdf1ec;
+}
+
+html:not(.dark) .activation-context-banner > svg {
+  color: #c9472c;
+}
+
+html:not(.dark) .activation-teaching-hint {
+  border-color: rgba(35, 109, 199, 0.2);
+  color: #1f3f63;
+  background: #eef5fd;
+}
+
+html:not(.dark) .activation-teaching-hint__icon svg {
+  color: #2f6fc4;
+}
+
+html:not(.dark) .activation-teaching-hint small {
+  color: #4c6a8a;
+}
+
+html:not(.dark) .image-session-result-menu {
+  border-color: var(--studio-border);
+  background: var(--studio-surface-solid);
+  box-shadow: var(--studio-popover-shadow);
+}
+
+html:not(.dark) .image-session-result-menu button {
+  color: var(--studio-text-secondary);
+}
+
+html:not(.dark) .image-session-result-menu button:is(:hover, :focus-visible) {
+  color: var(--studio-text);
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark) :is(.image-session-missing, .image-session-loading) {
+  color: var(--studio-text-muted);
+  background: var(--studio-surface-subtle);
+}
+
+/* Video studio */
+html:not(.dark) .video-studio-v2,
+html:not(.dark) .video-studio-v2 .create-workspace-page {
+  color: var(--studio-text);
+  background: var(--studio-canvas);
+}
+
+html:not(.dark) .video-studio-intro > span,
+html:not(.dark) .video-studio-option-icon {
+  color: #ffffff;
+  background: var(--studio-accent);
+}
+
+html:not(.dark) :is(.video-studio-intro h1, .video-studio-results h1) {
+  color: var(--studio-text);
+}
+
+html:not(.dark) :is(.video-studio-intro p, .video-studio-results header p) {
+  color: var(--studio-text-secondary);
+}
+
+html:not(.dark) .video-studio-composer {
+  --creation-credit-estimate-text: var(--studio-text-secondary);
+  --creation-credit-estimate-accent: #7c3aed;
+
+  border-color: var(--studio-border);
+  color: var(--studio-text);
+  background: var(--studio-surface);
+  box-shadow: var(--studio-shadow);
+  backdrop-filter: saturate(1.08) blur(18px);
+}
+
+html:not(.dark) .video-studio-composer:focus-within {
+  border-color: rgba(22, 113, 217, 0.34);
+  box-shadow:
+    var(--studio-shadow),
+    0 0 0 3px rgba(22, 113, 217, 0.11);
+}
+
+html:not(.dark) .video-studio-composer > textarea {
+  color: var(--studio-text);
+  scrollbar-color: rgba(23, 32, 47, 0.2) transparent;
+}
+
+html:not(.dark) .video-studio-composer > textarea::placeholder {
+  color: var(--studio-text-muted);
+}
+
+html:not(.dark) .video-studio-tool-trigger {
+  color: var(--studio-text-secondary);
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark) .video-studio-tool-trigger:is(:hover, :focus-visible),
+html:not(.dark) .video-studio-tool-trigger[data-active='true'],
+html:not(.dark) .video-studio-tool-trigger[aria-expanded='true'] {
+  color: var(--studio-accent-ink);
+  background: var(--studio-accent-soft);
+}
+
+html:not(.dark)
+  :is(
+    .video-studio-tool-trigger,
+    .video-studio-tool-popover button,
+    .video-studio-result-card
+  ):focus-visible {
+  outline-color: var(--studio-accent);
+}
+
+html:not(.dark) .video-studio-tool-popover {
+  border-color: var(--studio-border);
+  color: var(--studio-text);
+  background: var(--studio-surface-solid);
+  box-shadow: var(--studio-popover-shadow);
+}
+
+html:not(.dark) .video-studio-popover-header {
+  border-bottom-color: var(--studio-border);
+  background: var(--studio-surface-solid);
+}
+
+html:not(.dark)
+  :is(
+    .video-studio-option-list > button:hover,
+    .video-studio-option-list > button:focus-visible,
+    .video-studio-option-list > button[aria-selected='true']
+  ) {
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark)
+  :is(
+    .video-studio-option-list small,
+    .video-studio-reference-summary small,
+    .video-studio-reference-kind > header small,
+    .video-studio-frame-card > header small,
+    .video-studio-panel-note,
+    .video-studio-duration-value span,
+    .video-studio-duration-range,
+    .video-studio-message,
+    .video-studio-results > header > div:first-child > span,
+    .video-studio-active-status small,
+    .video-studio-result-copy small
+  ) {
+  color: var(--studio-text-muted);
+}
+
+html:not(.dark) .video-studio-reference-summary > span {
+  color: var(--studio-text-secondary);
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark) .video-studio-reference-kind + .video-studio-reference-kind {
+  border-top-color: var(--studio-border);
+}
+
+html:not(.dark)
+  :is(
+    .video-studio-reference-grid article,
+    .video-studio-frame-preview,
+    .video-studio-result-media
+  ) {
+  color: var(--studio-text-muted);
+  background: #e9edf2;
+}
+
+html:not(.dark) .video-studio-reference-grid article.is-audio {
+  color: var(--studio-accent);
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(22, 113, 217, 0.16),
+      transparent 54%
+    ),
+    #e9edf2;
+}
+
+html:not(.dark) .video-studio-panel-note.is-warning {
+  color: var(--studio-warning);
+}
+
+html:not(.dark)
+  :is(
+    .video-studio-reference-add-actions button,
+    .video-studio-frame-actions button,
+    .video-studio-random
+  ) {
+  color: var(--studio-text-secondary);
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark) .video-studio-segmented {
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark) .video-studio-segmented button {
+  color: var(--studio-text-secondary);
+}
+
+html:not(.dark) .video-studio-segmented button[data-active='true'] {
+  color: var(--studio-accent-ink);
+  background: var(--studio-surface-solid);
+  box-shadow: 0 1px 4px rgba(29, 42, 62, 0.1);
+}
+
+html:not(.dark) .video-studio-frame-card {
+  border-color: var(--studio-border);
+  background: var(--studio-surface-solid);
+}
+
+html:not(.dark) .video-studio-ratio-grid button {
+  color: var(--studio-text-secondary);
+  background: var(--studio-surface-subtle);
+}
+
+html:not(.dark) .video-studio-ratio-grid button[data-active='true'] {
+  border-color: var(--studio-accent);
+  color: var(--studio-accent-ink);
+}
+
+html:not(.dark) .video-studio-duration-value {
+  color: var(--studio-text);
+}
+
+html:not(.dark) .video-studio-duration-slider [role='slider'] {
+  border-color: var(--studio-accent);
+  background: var(--studio-accent);
+  box-shadow: 0 0 0 5px rgba(22, 113, 217, 0.12);
+}
+
+html:not(.dark) .video-studio-optimize-now {
+  color: #ffffff;
+  background: var(--studio-accent);
+}
+
+html:not(.dark) .video-studio-optimize {
+  color: var(--studio-text-secondary);
+}
+
+html:not(.dark) .video-studio-message.is-error {
+  color: var(--studio-danger);
+}
+
+html:not(.dark) .video-studio-active-status {
+  color: var(--studio-text-secondary);
+}
+
+html:not(.dark) :is(.video-studio-result-card, .video-studio-result-skeleton) {
+  border-color: var(--studio-border);
+  background: var(--studio-surface-solid);
+}
+
+html:not(.dark) .video-studio-result-card:is(:hover, :focus-visible) {
+  border-color: var(--studio-border-strong);
+}
+
+html:not(.dark) .video-studio-result-media > span {
+  color: var(--studio-accent-ink);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+html:not(.dark) .video-studio-result-skeleton {
+  color: var(--studio-text-muted);
+  background:
+    linear-gradient(
+      105deg,
+      transparent 35%,
+      rgba(255, 255, 255, 0.78) 50%,
+      transparent 65%
+    ),
+    #edf0f4;
+  background-size: 220% 100%;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  html:not(.dark) :is(.image-studio-composer, .video-studio-composer) {
+    background: var(--studio-surface-solid);
+    backdrop-filter: none;
+  }
+}
+
+@media (prefers-contrast: more) {
+  html:not(.dark)
+    :is(
+      .image-studio-composer,
+      .video-studio-composer,
+      .image-studio-tool-popover,
+      .video-studio-tool-popover
+    ) {
+    border-color: rgba(23, 32, 47, 0.38);
+  }
+}

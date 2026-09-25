@@ -1,0 +1,112 @@
+.creation-generate-button {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  gap: 7px;
+  padding: 4px;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow: none;
+  font: inherit;
+  white-space: nowrap;
+  transition:
+    background 150ms ease,
+    opacity 150ms ease;
+}
+
+.creation-generate-button.is-labeled {
+  padding-right: 13px;
+}
+
+/* 合并积分预估后的发送按钮：左侧积分段 + 右侧圆形发送键，视觉上是一个整体。 */
+.creation-generate-button.has-estimate {
+  padding-left: 12px;
+}
+
+.creation-generate-button-estimate {
+  display: inline-flex;
+  min-height: 32px;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  color: inherit;
+  font-size: 12px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.creation-generate-button-estimate svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 16px;
+  color: var(--creation-credit-estimate-accent, #a78bfa);
+}
+
+.creation-generate-button.has-estimate .creation-generate-button-label {
+  padding-left: 2px;
+}
+
+.creation-generate-button-label {
+  font-size: 13px;
+  font-weight: 720;
+  line-height: 1;
+}
+
+.creation-generate-button-surface {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  color: #11100f;
+  background: #f7f6f3;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+  transition:
+    transform 150ms ease,
+    background 150ms ease;
+}
+
+.creation-generate-button-surface svg {
+  width: 16px;
+  height: 16px;
+}
+
+.creation-generate-button:is(:hover, :focus-visible):not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.creation-generate-button:is(:hover, :focus-visible):not(:disabled)
+  .creation-generate-button-surface {
+  transform: translateY(-1px) scale(1.035);
+  background: #fff;
+}
+
+.creation-generate-button:focus-visible {
+  outline: 2px solid #75b9ff;
+  outline-offset: 2px;
+}
+
+.creation-generate-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.creation-generate-button[aria-busy='true'] {
+  cursor: progress;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creation-generate-button,
+  .creation-generate-button-surface {
+    transition: none;
+  }
+}

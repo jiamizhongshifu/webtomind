@@ -1,0 +1,112 @@
+.creator-prompt-case-lightbox {
+  --media-overlay-controls-layer: 4;
+  --media-overlay-navigation-layer: 8;
+}
+
+.creator-prompt-case-lightbox-actions {
+  position: fixed;
+  top: max(76px, calc(env(safe-area-inset-top) + 18px));
+  right: 18px;
+  z-index: var(--media-overlay-controls-layer);
+  display: inline-flex;
+  gap: 8px;
+}
+
+.creator-prompt-case-lightbox-zoom {
+  position: fixed;
+  top: auto;
+  bottom: max(22px, calc(env(safe-area-inset-bottom) + 18px));
+  left: 50%;
+  z-index: var(--media-overlay-controls-layer);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--media-overlay-control-border);
+  border-radius: 999px;
+  background: var(--media-overlay-panel-bg);
+  color: var(--media-overlay-foreground);
+  backdrop-filter: blur(10px);
+  transform: translateX(-50%);
+}
+
+.image-create-page-with-side-nav .creator-prompt-case-lightbox-zoom {
+  left: 50%;
+}
+
+.creator-prompt-case-lightbox-zoom button,
+.creator-prompt-case-lightbox-actions button,
+.creator-prompt-case-lightbox-nav {
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid var(--media-overlay-control-border);
+  border-radius: 999px;
+  background: var(--media-overlay-control-bg);
+  color: var(--media-overlay-foreground);
+  cursor: pointer;
+}
+
+.creator-prompt-case-lightbox-zoom button {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  color: inherit;
+}
+
+.creator-prompt-case-lightbox-zoom button:hover,
+.creator-prompt-case-lightbox-actions button:hover,
+.creator-prompt-case-lightbox-nav:hover {
+  background: var(--media-overlay-control-hover-bg);
+}
+
+.creator-prompt-case-lightbox-zoom button:focus-visible,
+.creator-prompt-case-lightbox-actions button:focus-visible,
+.creator-prompt-case-lightbox-nav:focus-visible {
+  outline: 3px solid var(--media-overlay-foreground);
+  outline-offset: 3px;
+}
+
+.creator-prompt-case-lightbox-zoom :is(button, span),
+.creator-prompt-case-lightbox-actions button,
+.creator-prompt-case-lightbox-nav {
+  color: var(--media-overlay-foreground);
+}
+
+.creator-prompt-case-lightbox-zoom svg,
+.creator-prompt-case-lightbox-actions svg,
+.creator-prompt-case-lightbox-nav svg {
+  color: inherit;
+  stroke: currentColor;
+}
+
+.creator-prompt-case-lightbox-zoom span {
+  min-width: 46px;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 760;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.creator-prompt-case-lightbox-actions button {
+  width: 38px;
+  height: 38px;
+}
+
+.creator-prompt-case-lightbox-nav {
+  position: fixed;
+  top: 50%;
+  z-index: var(--media-overlay-navigation-layer);
+  width: 46px;
+  height: 58px;
+  transform: translateY(-50%);
+}
+
+.creator-prompt-case-lightbox-nav.prev,
+.image-create-page-with-side-nav .creator-prompt-case-lightbox-nav.prev {
+  left: 18px;
+}
+
+.creator-prompt-case-lightbox-nav.next {
+  right: 18px;
+}

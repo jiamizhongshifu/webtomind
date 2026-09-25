@@ -1,0 +1,96 @@
+.reactivation-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 12px auto 0;
+  width: min(1080px, calc(100% - 32px));
+  padding: 14px 18px;
+  border: 1px solid var(--web-border-soft, rgba(20, 20, 20, 0.12));
+  border-radius: 14px;
+  background: var(--web-bg-card, #ffffff);
+  box-shadow: 0 1px 2px rgba(20, 20, 20, 0.04);
+}
+
+.reactivation-banner__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.reactivation-banner__title {
+  display: block;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--web-text-primary, #141414);
+}
+
+.reactivation-banner__description {
+  margin: 3px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--web-text-secondary, #555);
+}
+
+.reactivation-banner__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.reactivation-banner__dismiss {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--web-text-muted, #888);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.reactivation-banner__dismiss:hover {
+  background: var(--web-bg-subtle, #f7f7f7);
+  color: var(--web-text-primary, #141414);
+}
+
+.reactivation-banner__dismiss:focus-visible {
+  outline: 2px solid var(--web-brand-primary, #b45309);
+  outline-offset: 2px;
+}
+
+@media (max-width: 640px) {
+  .reactivation-banner {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+    width: calc(100% - 24px);
+  }
+
+  .reactivation-banner__actions {
+    width: 100%;
+  }
+
+  .reactivation-banner__actions .ui-button {
+    flex: 1;
+    min-height: 44px;
+  }
+
+  .reactivation-banner__dismiss {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reactivation-banner {
+    transition: none;
+    animation: none;
+  }
+}

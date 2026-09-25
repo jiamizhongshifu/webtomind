@@ -1,0 +1,821 @@
+/* Account route styles extracted from image-create.css. */
+
+.create-account-route {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255, 117, 83, 0.1), transparent 28%),
+    #f7f4ef;
+}
+
+.create-account-main {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(360px, 1.1fr);
+  gap: 18px;
+  align-items: start;
+  width: min(1160px, calc(100vw - var(--create-side-nav-offset) - 48px));
+  margin-left: calc(
+    var(--create-side-nav-width) +
+      max(32px, (100vw - var(--create-side-nav-width) - 1160px) / 2)
+  );
+  padding: 28px 0 96px;
+  color: #1b1715;
+}
+
+.create-account-main h1,
+.create-account-main h2,
+.create-account-main p {
+  margin: 0;
+}
+
+.create-account-hero,
+.create-account-invite-card,
+.create-account-section {
+  border: 1px solid rgba(23, 17, 13, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 253, 248, 0.92);
+  box-shadow: 0 14px 36px rgba(23, 17, 13, 0.06);
+}
+
+.create-account-hero {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: minmax(300px, 0.92fr) minmax(0, 1.08fr);
+  gap: 20px;
+  align-items: stretch;
+  padding: 24px;
+}
+
+.create-account-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.create-account-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border: 2px solid #ff5a45;
+  border-radius: 999px;
+  background: #fff4e8;
+  color: #d4472f;
+}
+
+.create-account-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.create-account-profile h1 {
+  margin-top: 2px;
+  font-size: clamp(24px, 5vw, 34px);
+  line-height: 1.05;
+}
+
+.create-account-identity-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 7px;
+}
+
+.create-account-identity-line span {
+  color: rgba(45, 35, 30, 0.58);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.create-account-identity-line em {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border: 1px solid rgba(255, 90, 69, 0.2);
+  border-radius: 999px;
+  background: rgba(255, 90, 69, 0.1);
+  color: #bd3b28;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.create-account-plan-card {
+  display: flex;
+  grid-column: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border-radius: 18px;
+  background: #1b1715;
+  color: #fffaf2;
+}
+
+.create-account-plan-card.ui-card {
+  padding: 16px;
+  border: 0;
+  border-radius: 18px;
+  background: #1b1715;
+  box-shadow: none;
+}
+
+.create-account-plan-card span,
+.create-account-credit-grid span,
+.create-account-invite-stats span {
+  display: block;
+  color: rgba(255, 250, 242, 0.66);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.create-account-plan-card strong {
+  display: block;
+  margin-top: 4px;
+  font-size: 22px;
+}
+
+.create-account-plan-card .create-account-plan-action,
+.create-account-invite-card button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: #ff5a45;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 900;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.create-account-plan-card .create-account-plan-action.ui-button {
+  padding: 0 14px;
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fffaf2;
+  box-shadow: none;
+}
+
+.create-account-credit-grid {
+  display: grid;
+  grid-column: 2;
+  grid-row: 1 / span 3;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  align-self: stretch;
+}
+
+.create-account-credit-grid > div {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(23, 17, 13, 0.08);
+  border-radius: 18px;
+  background: rgba(23, 17, 13, 0.035);
+}
+
+.create-account-credit-total {
+  grid-column: 1 / -1;
+  background: rgba(255, 90, 69, 0.1) !important;
+}
+
+.create-account-credit-grid span {
+  color: rgba(45, 35, 30, 0.55);
+}
+
+.create-account-credit-grid strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.create-account-primary-action {
+  grid-column: 1;
+  width: 100%;
+  min-height: 50px;
+  font-size: 15px;
+}
+
+.create-account-invite-card {
+  display: grid;
+  grid-column: 1;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 22px;
+  background: #331f05;
+  color: #fff7e8;
+}
+
+.create-account-invite-card.ui-card {
+  padding: 22px;
+  border: 1px solid rgba(23, 17, 13, 0.1);
+  border-radius: 24px;
+  background: #331f05;
+  box-shadow: 0 14px 36px rgba(23, 17, 13, 0.06);
+}
+
+.create-account-section-icon,
+.create-account-row-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgba(255, 90, 69, 0.12);
+  color: #ff5a45;
+}
+
+.create-account-invite-card h2,
+.create-account-section h2 {
+  margin-top: 10px;
+  font-size: 18px;
+}
+
+.create-account-invite-card p,
+.create-account-section-heading p,
+.create-account-list-row p,
+.create-account-support p {
+  margin-top: 4px;
+  color: rgba(45, 35, 30, 0.58);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.create-account-invite-card p {
+  color: rgba(255, 247, 232, 0.7);
+}
+
+.create-account-invite-stats {
+  text-align: right;
+}
+
+.create-account-invite-stats strong {
+  display: block;
+  font-size: 22px;
+}
+
+.create-account-invite-card button {
+  grid-column: 1 / -1;
+  width: 100%;
+  background: #ff7d2f;
+  color: var(--brand-coral-contrast, #25110c);
+}
+
+.create-account-section {
+  padding: 20px;
+}
+
+.create-account-section:nth-of-type(3) {
+  grid-column: 2;
+}
+
+.create-account-section:nth-of-type(4),
+.create-account-support,
+.create-account-legal {
+  grid-column: 1 / -1;
+}
+
+.create-account-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.create-account-history-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  flex: 0 0 auto;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 90, 69, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 90, 69, 0.08);
+  color: #d4472f;
+  font-size: 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.create-account-list,
+.create-account-history-list,
+.create-account-support {
+  display: grid;
+  gap: 0;
+}
+
+.create-account-list-row,
+.create-account-history-row,
+.create-account-support a,
+.create-account-support button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 12px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(23, 17, 13, 0.08);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  text-decoration: none;
+}
+
+.create-account-list-row:last-child,
+.create-account-history-row:last-child,
+.create-account-support > *:last-child {
+  border-bottom: 0;
+}
+
+.create-account-list-row > div,
+.create-account-history-row > div,
+.create-account-support span {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.create-account-list-row--choice > .create-account-choice-label {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.create-account-list-row--choice > .create-account-preference-select {
+  width: clamp(124px, 56%, 220px);
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 clamp(124px, 56%, 220px);
+}
+
+.create-account-list-row > .ui-button {
+  min-width: max-content;
+  flex: 0 0 auto;
+}
+
+.create-account-list-row strong,
+.create-account-history-row strong,
+.create-account-support strong {
+  display: block;
+  font-size: 15px;
+}
+
+.create-account-list-row select {
+  min-width: 132px;
+  min-height: 38px;
+  padding: 0 34px 0 12px;
+  border: 1px solid rgba(23, 17, 13, 0.1);
+  border-radius: 12px;
+  background: #fff;
+  color: #1b1715;
+  font-weight: 800;
+}
+
+.create-account-history-row {
+  justify-content: space-between;
+}
+
+.create-account-history-row span {
+  display: block;
+  margin-top: 3px;
+  color: rgba(45, 35, 30, 0.52);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.create-account-history-row em {
+  flex: 0 0 auto;
+  color: #5f6269;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.create-account-history-row em.is-positive {
+  color: #149b5f;
+}
+
+.create-account-history-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-product-guidance);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(22, 16, 12, 0.42);
+  backdrop-filter: blur(4px);
+}
+
+.create-account-history-modal {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  width: min(560px, calc(100vw - 32px));
+  max-height: min(760px, calc(100dvh - 48px));
+  overflow: hidden;
+  border: 1px solid rgba(23, 17, 13, 0.12);
+  border-radius: 24px;
+  background: #fffdf8;
+  box-shadow: 0 28px 80px rgba(23, 17, 13, 0.22);
+  color: #1b1715;
+}
+
+.create-account-history-modal-head {
+  padding: 22px 24px 10px;
+}
+
+.create-account-history-modal-head h2 {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.1;
+}
+
+.create-account-history-modal-head p {
+  margin: 6px 0 0;
+  color: rgba(45, 35, 30, 0.56);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.create-account-history-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 1;
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(23, 17, 13, 0.06);
+  color: rgba(23, 17, 13, 0.62);
+  cursor: pointer;
+}
+
+.create-account-history-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 24px 12px;
+  scrollbar-width: none;
+}
+
+.create-account-history-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.create-account-history-tabs button {
+  min-height: 34px;
+  flex: 0 0 auto;
+  padding: 0 15px;
+  border: 1px solid rgba(23, 17, 13, 0.08);
+  border-radius: 999px;
+  background: rgba(23, 17, 13, 0.04);
+  color: rgba(23, 17, 13, 0.62);
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.create-account-history-tabs button.active {
+  border-color: rgba(23, 17, 13, 0.88);
+  background: #17110d;
+  color: #fffaf4;
+}
+
+.create-account-history-modal-list {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 24px;
+}
+
+.create-account-history-modal-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+  gap: 12px;
+  justify-content: stretch;
+}
+
+.create-account-history-kind {
+  display: inline-grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(23, 17, 13, 0.06);
+}
+
+.create-account-history-kind::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(23, 17, 13, 0.42);
+}
+
+.create-account-history-modal-row.is-generation .create-account-history-kind {
+  background: rgba(255, 90, 69, 0.1);
+}
+
+.create-account-history-modal-row.is-generation
+  .create-account-history-kind::before {
+  background: #ff5a45;
+}
+
+.create-account-history-modal-row.is-refund .create-account-history-kind,
+.create-account-history-modal-row.is-system .create-account-history-kind {
+  background: rgba(20, 155, 95, 0.1);
+}
+
+.create-account-history-modal-row.is-refund
+  .create-account-history-kind::before,
+.create-account-history-modal-row.is-system
+  .create-account-history-kind::before {
+  background: #149b5f;
+}
+
+.create-account-history-modal-row.is-task .create-account-history-kind {
+  background: rgba(255, 125, 47, 0.14);
+}
+
+.create-account-history-modal-row.is-task .create-account-history-kind::before {
+  background: #ff7d2f;
+}
+
+.create-account-history-modal-foot {
+  display: flex;
+  justify-content: center;
+  padding: 14px 24px 20px;
+  border-top: 1px solid rgba(23, 17, 13, 0.08);
+}
+
+.create-account-history-modal-foot button {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #17110d;
+  color: #fffaf4;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.create-account-history-modal-foot button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.create-account-history-modal-foot span {
+  color: rgba(45, 35, 30, 0.5);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.create-account-muted {
+  padding: 16px 0 4px;
+  color: rgba(45, 35, 30, 0.56);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.create-account-support {
+  padding: 0 20px;
+}
+
+.create-account-support button {
+  width: 100%;
+  color: #d4472f;
+  font-size: 15px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.create-account-legal {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 22px 0 0;
+  color: rgba(45, 35, 30, 0.5);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.create-account-legal a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (max-width: 920px) {
+  .create-account-main {
+    display: block;
+    width: min(760px, calc(100% - 32px));
+    margin-right: auto;
+    margin-left: auto;
+    padding-top: 20px;
+    padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  }
+
+  .create-account-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .create-account-plan-card,
+  .create-account-credit-grid,
+  .create-account-primary-action {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .create-account-credit-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .create-account-credit-total {
+    grid-column: span 2;
+  }
+
+  .create-account-invite-card,
+  .create-account-section {
+    margin-top: 18px;
+  }
+}
+
+@media (max-width: 560px) {
+  .create-account-route {
+    background: #f7f4ef;
+  }
+
+  .create-account-main {
+    width: min(100% - 24px, 680px);
+    padding-top: 14px;
+  }
+
+  .create-account-hero,
+  .create-account-invite-card,
+  .create-account-section {
+    border-radius: 20px;
+  }
+
+  .create-account-invite-card.ui-card {
+    border-radius: 20px;
+  }
+
+  .create-account-hero {
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .create-account-credit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .create-account-credit-total {
+    grid-column: 1 / -1;
+  }
+
+  .create-account-invite-card {
+    grid-template-columns: 1fr;
+  }
+
+  .create-account-invite-stats {
+    text-align: left;
+  }
+
+  .create-account-list-row {
+    align-items: flex-start;
+  }
+
+  .create-account-list-row--choice {
+    align-items: center;
+  }
+
+  .create-account-list-row select {
+    margin-top: 1px;
+  }
+
+  .create-account-history-modal {
+    width: 100%;
+    max-height: min(74dvh, 680px);
+    border-radius: 22px;
+  }
+
+  .create-account-history-modal-head {
+    padding: 20px 18px 8px;
+  }
+
+  .create-account-history-tabs,
+  .create-account-history-modal-list {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
+
+  .create-account-history-modal-row {
+    grid-template-columns: 30px minmax(0, 1fr) auto;
+  }
+
+  .create-account-history-modal-foot {
+    padding: 12px 18px 18px;
+  }
+}
+
+/* Account surfaces use their own warm palette, so they need an explicit
+   semantic dark layer instead of inheriting light card colors. */
+.dark .create-account-route {
+  background:
+    radial-gradient(
+      circle at 20% 0%,
+      rgba(255, 117, 83, 0.08),
+      transparent 28%
+    ),
+    var(--product-canvas, #0b0b0b);
+}
+
+.dark .create-account-main {
+  color: var(--product-text-primary, #ededed);
+}
+
+.dark .create-account-hero,
+.dark .create-account-section {
+  border-color: var(--product-border-soft, rgba(255, 255, 255, 0.12));
+  background: var(--product-surface, #1a1a1a);
+  box-shadow: none;
+}
+
+.dark .create-account-identity-line span,
+.dark .create-account-section-heading p,
+.dark .create-account-list-row p,
+.dark .create-account-support p,
+.dark .create-account-muted,
+.dark .create-account-history-row span,
+.dark .create-account-history-modal-head p,
+.dark .create-account-history-modal-foot span {
+  color: var(--product-text-secondary, #b0b0b0);
+}
+
+.dark .create-account-credit-grid > div {
+  border-color: var(--product-border-soft, rgba(255, 255, 255, 0.12));
+  background: var(--product-surface-subtle, #222222);
+}
+
+.dark .create-account-credit-total {
+  background: rgba(255, 117, 83, 0.16) !important;
+}
+
+.dark .create-account-credit-grid span {
+  color: var(--product-text-secondary, #b0b0b0);
+}
+
+.dark .create-account-invite-card button {
+  color: #24130c;
+}
+
+.dark .create-account-list-row,
+.dark .create-account-history-row,
+.dark .create-account-support a,
+.dark .create-account-support button,
+.dark .create-account-history-modal-foot {
+  border-color: var(--product-border-soft, rgba(255, 255, 255, 0.12));
+}
+
+.dark .create-account-list-row select,
+.dark .create-account-history-modal {
+  border-color: var(--product-border-soft, rgba(255, 255, 255, 0.12));
+  background: var(--product-surface-elevated, #222222);
+  color: var(--product-text-primary, #ededed);
+}
+
+.dark .create-account-history-close,
+.dark .create-account-history-tabs button,
+.dark .create-account-history-kind {
+  border-color: var(--product-border-soft, rgba(255, 255, 255, 0.12));
+  background: var(--product-surface-subtle, #2a2a2a);
+  color: var(--product-text-secondary, #b0b0b0);
+}
+
+.dark .create-account-history-tabs button.active,
+.dark .create-account-history-modal-foot button {
+  background: var(--product-action-bg, #ededed);
+  color: var(--product-action-text, #111111);
+}
+
+.dark .create-account-history-link,
+.dark .create-account-support button {
+  color: #ff9a84;
+}
+
+.dark .create-account-legal {
+  color: var(--product-text-secondary, #b0b0b0);
+}

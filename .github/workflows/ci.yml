@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  pull_request:
+    paths-ignore:
+      - README.md
+      - AGENTS.md
+      - CLAUDE.md
+      - Design.md
+      - TECH_STACK.md
+      - .gitignore
+      - .vscode/**
+      - docs/**
+      - outputs/**
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - README.md
+      - AGENTS.md
+      - CLAUDE.md
+      - Design.md
+      - TECH_STACK.md
+      - .gitignore
+      - .vscode/**
+      - docs/**
+      - outputs/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Cancel only PR iterations. On main pushes, GitHub gives an older queued
+  # run priority over a newer in-progress one, which permanently canceled the
+  # newest main commit's auto-deploy. Main runs must complete in order instead.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  # Single check job: lint/type-check/build gates + full unit test suite in one
+  # job to cut billed runner minutes. The old layout (verify + 6 test shards)
+  # billed ~18 min/run; this layout bills ~9.
+  check:
+    runs-on: ubuntu-latest
+    # Success path runs ~10.5 min; the cap only bounds worst-case hang billing.
+    timeout-minutes: 20
+    env:
+      VITE_SUPABASE_URL: https://ci-build.supabase.co
+      VITE_SUPABASE_ANON_KEY: ci-build-anon-key
+      VITE_PUBLIC_SITE_URL: https://webtomind.com
+      VITE_CREATE_WORKSPACE_FLAGS: create_shell_v2,image_studio_v2,moodboards_v1,pricing_workspace_v2,visual_search_v1,activation_journey_v1
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 8.15.0
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Persist vite/vitest transform + deps-optimizer cache (17MB) across runs.
+      # Cache miss falls back to cold transform; key follows lockfile + config.
+      - uses: actions/cache@v4
+        with:
+          path: node_modules/.vite
+          key: vite-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml', 'vitest.config.ts') }}
+          restore-keys: |
+            vite-cache-${{ runner.os }}-
+
+      - run: pnpm runtime:check
+      - run: pnpm check:api-marketplace-migrations
+      - run: pnpm lint
+      - run: pnpm type-check:all
+      - run: pnpm --dir server build
+      - run: pnpm test:release-integrity
+      - run: pnpm release:contracts:source
+      - run: pnpm test:security-audit
+      - run: pnpm security:audit-production
+      - run: pnpm build:web:prod-parity
+      - run: pnpm exec vitest run --maxWorkers=2 --reporter=dot
+

@@ -1,0 +1,87 @@
+{
+  "title": "设置",
+  "sections": {
+    "general": "通用",
+    "appearance": "外观",
+    "ai": "AI 设置",
+    "shortcuts": "快捷键",
+    "storage": "存储",
+    "about": "关于"
+  },
+  "general": {
+    "language": "语言",
+    "languageDescription": "选择界面显示语言",
+    "autoSummarize": "自动总结",
+    "autoSummarizeDescription": "打开页面时自动开始总结",
+    "notifications": "通知",
+    "notificationsDescription": "允许扩展发送通知"
+  },
+  "appearance": {
+    "theme": "主题",
+    "themeDescription": "选择界面主题",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "themeSystem": "跟随系统",
+    "fontSize": "字体大小",
+    "fontSizeSmall": "小",
+    "fontSizeMedium": "中",
+    "fontSizeLarge": "大"
+  },
+  "ai": {
+    "model": "AI 模型",
+    "modelDescription": "选择用于总结的 AI 模型",
+    "summaryLength": "总结长度",
+    "summaryLengthShort": "简短",
+    "summaryLengthMedium": "适中",
+    "summaryLengthLong": "详细",
+    "summaryStyle": "总结风格",
+    "summaryStyleBullet": "要点列表",
+    "summaryStyleParagraph": "段落",
+    "summaryStyleMindmap": "思维导图"
+  },
+  "shortcuts": {
+    "summarize": "总结页面",
+    "openPanel": "打开侧边栏",
+    "openWorkspace": "打开工作台"
+  },
+  "storage": {
+    "cacheSize": "缓存大小",
+    "clearCache": "清除缓存",
+    "clearCacheDescription": "清除所有本地缓存数据",
+    "clearCacheConfirm": "确定要清除所有缓存吗？",
+    "exportData": "导出数据",
+    "exportDataDescription": "导出所有保存的数据",
+    "importData": "导入数据",
+    "importDataDescription": "从文件导入数据"
+  },
+  "about": {
+    "version": "版本",
+    "checkUpdate": "检查更新",
+    "changelog": "更新日志",
+    "privacy": "隐私政策",
+    "terms": "服务条款",
+    "feedback": "意见反馈",
+    "rateUs": "给我们评分"
+  },
+  "imageSettings": {
+    "title": "创建图片",
+    "model": "图片模型:",
+    "aspectRatio": "宽高比:",
+    "quality": "图片质量:",
+    "style": "图片风格:",
+    "auto": "自动",
+    "styles": {
+      "ghibli": "吉卜力",
+      "pixar": "皮克斯",
+      "cartoon": "卡通",
+      "pixel": "像素"
+    },
+    "styleLabels": {
+      "ghibli": "吉卜力风格",
+      "pixar": "皮克斯风格",
+      "cartoon": "卡通风格",
+      "pixel": "像素风格"
+    },
+    "resolution": "分辨率"
+  }
+}

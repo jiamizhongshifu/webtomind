@@ -1,0 +1,287 @@
+.create-gallery-hover-panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 9px;
+  opacity: 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.62), transparent 38%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.72), transparent 55%);
+  transition: opacity 0.16s ease;
+}
+
+.create-gallery-category-tabs {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid rgba(23, 17, 13, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 250, 242, 0.72);
+}
+
+.create-gallery-category-tabs button {
+  display: inline-flex;
+  min-width: 64px;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(36, 25, 22, 0.64);
+  font-weight: 800;
+}
+
+.create-gallery-category-tabs button[aria-selected='true'] {
+  background: #241916;
+  color: #fffaf2;
+  box-shadow: 0 5px 14px rgba(36, 25, 22, 0.16);
+}
+
+.dark .create-gallery-category-tabs {
+  border-color: rgba(255, 247, 235, 0.12);
+  background: rgba(255, 247, 235, 0.055);
+}
+
+.dark .create-gallery-category-tabs button {
+  color: rgba(255, 250, 242, 0.66);
+}
+
+.dark .create-gallery-category-tabs button[aria-selected='true'] {
+  background: #fff7eb;
+  color: #17110d;
+}
+
+.create-gallery-card:hover .create-gallery-hover-panel,
+.create-gallery-card:focus-within .create-gallery-hover-panel {
+  opacity: 1;
+}
+
+.create-gallery-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+.create-gallery-actions button {
+  display: inline-flex;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(10, 8, 7, 0.72);
+  color: #fffaf2;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+
+.create-gallery-actions button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.create-gallery-actions button:hover,
+.create-gallery-actions button:focus-visible {
+  outline: 0;
+  background: #fffaf2;
+  color: #17110d;
+}
+
+.create-gallery-actions button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.create-gallery-more-button {
+  display: none;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(10, 8, 7, 0.78);
+  color: #fffaf2;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(10px);
+}
+
+@media (max-width: 1024px), (hover: none), (pointer: coarse) {
+  .create-gallery-route .create-gallery-hover-panel {
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 8px;
+    opacity: 1;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.38), transparent 48%);
+  }
+
+  .create-gallery-route .create-gallery-actions,
+  .create-gallery-route .create-gallery-hover-copy {
+    display: none;
+  }
+
+  .create-gallery-route .create-gallery-more-button {
+    display: inline-flex;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    min-height: 44px;
+    padding: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .create-gallery-category-tabs {
+    width: 100%;
+  }
+
+  .create-gallery-category-tabs button {
+    flex: 1;
+    min-height: 44px;
+  }
+}
+
+.create-gallery-action-sheet {
+  width: min(420px, 100%);
+  justify-self: center;
+  align-self: end;
+  margin: 18px max(12px, env(safe-area-inset-left))
+    calc(18px + env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-right));
+  border: 1px solid rgba(23, 17, 13, 0.1);
+  border-radius: 16px;
+  background: #fffaf2;
+  box-shadow: 0 24px 64px rgba(35, 24, 16, 0.2);
+}
+
+.create-gallery-action-sheet .ui-action-sheet__header {
+  min-height: 44px;
+  align-items: center;
+  padding: 12px 14px 8px 18px;
+  color: rgba(36, 25, 22, 0.62);
+}
+
+.create-gallery-action-sheet .ui-action-sheet__title {
+  color: rgba(36, 25, 22, 0.62);
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.create-gallery-action-sheet .ui-action-sheet__body {
+  display: grid;
+  gap: 8px;
+  padding: 8px 12px 12px;
+}
+
+.create-gallery-action-sheet .ui-icon-button,
+.create-gallery-action-sheet .ui-action-sheet__body > button {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  border: 1px solid rgba(23, 17, 13, 0.1);
+  background: #fff;
+  color: #241916;
+  cursor: pointer;
+}
+
+.create-gallery-action-sheet .ui-icon-button {
+  width: 44px;
+  justify-content: center;
+  border-radius: 999px;
+}
+
+.create-gallery-action-sheet .ui-action-sheet__body > button {
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-weight: 850;
+  text-align: left;
+}
+
+.create-gallery-action-sheet .ui-action-sheet__body > button:disabled {
+  cursor: wait;
+  opacity: 0.62;
+}
+
+.create-gallery-filter-sheet {
+  width: min(440px, 100%);
+  justify-self: center;
+  align-self: end;
+  margin: 18px max(12px, env(safe-area-inset-left))
+    calc(18px + env(safe-area-inset-bottom))
+    max(12px, env(safe-area-inset-right));
+  border: 1px solid rgba(23, 17, 13, 0.1);
+  border-radius: 18px;
+  background: #fffaf2;
+  box-shadow: 0 24px 64px rgba(35, 24, 16, 0.2);
+}
+
+.create-gallery-filter-sheet .ui-action-sheet__body {
+  display: grid;
+  gap: 12px;
+  padding: 8px 12px 12px;
+}
+
+.create-gallery-filter-sheet__models {
+  display: grid;
+  gap: 6px;
+  max-height: min(46dvh, 360px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.create-gallery-filter-sheet .ui-action-sheet__body button {
+  min-height: 48px;
+  justify-content: flex-start;
+}
+
+.create-gallery-filter-sheet__models button[aria-pressed='true'] {
+  background: rgba(224, 84, 54, 0.11);
+  color: #9f3f29;
+}
+
+.create-gallery-filter-sheet__models button .ui-button__icon:last-child {
+  margin-left: auto;
+}
+
+.create-gallery-hover-copy {
+  display: grid;
+  gap: 4px;
+  color: #fffaf2;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.45);
+}
+
+.create-gallery-hover-copy strong {
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.create-gallery-hover-copy span {
+  color: rgba(255, 250, 242, 0.76);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.create-gallery-hover-copy p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: rgba(255, 250, 242, 0.82);
+  font-size: 12px;
+  line-height: 1.45;
+}

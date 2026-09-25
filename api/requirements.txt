@@ -1,0 +1,4 @@
+# Vercel Python Functions Dependencies
+# Package name on PyPI is notebooklm-py, imports as notebooklm
+notebooklm-py>=0.2.1
+httpx>=0.25.0

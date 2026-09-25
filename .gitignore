@@ -1,0 +1,143 @@
+node_modules
+.vercel
+dist/
+server/dist/
+server/public/
+tmp/
+apps/extension/node_modules/
+apps/extension/dist/
+
+# Python local environment and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env*.local
+.env.*.local
+.dev.vars
+.dev.vars.*
+*.env
+server/.env
+workers/.dev.vars
+workers/.dev.vars.*
+workers/python/.env
+workers/.wrangler/
+
+# Runtime secrets and credentials
+.runtime/
+*.pem
+*.key
+*.p12
+secrets/
+credentials.json
+workers/python/config/bootstrap.json
+workers/python/data/
+workers/python/scripts/cookie_input.json
+workers/python/scripts/cookie_base64.txt
+workers/python/scripts/google_cookies.json
+
+# Claude local config
+.claude/settings.local.json
+.claude/skills/
+.claude/worktrees/
+nul
+
+# Playwright MCP logs
+.playwright-mcp/
+.playwright-cli/
+
+# Claude temp files
+tmpclaude-*
+
+# Logs and output
+*logs_result.json
+*logs_result*.json
+lint_output.txt
+
+# Release packages
+webtomind-*.zip
+*.zip
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp/debug/analysis files
+temp_article.html
+test-request.json
+test-response.txt
+youmind-*.json
+
+# One-off fix/debug scripts
+fix.js
+fix.cjs
+fix_file.ts
+fix_props.py
+fix_type.py
+find_mismatch.js
+parse_ast.js
+test.js
+ts_check.js
+replace_core.py
+
+# TS compilation logs
+ts_errors*.log
+tsc.log
+
+# Temp code backups
+_tmp_*.ts
+_tmp_*.js
+
+# Non-project files
+竞品用户反馈/
+*.pdf
+twitter-shuju.md
+youmind-to-webtomind-content-pack.md
+
+# Stale one-off docs
+audit_report.md
+REFACTOR_REPORT.md
+REFACTOR_SUMMARY.md
+MIGRATION_COMPLETE.md
+DEPLOYMENT_SUMMARY_*.md
+REDIRECT_FIX_QUICK_GUIDE.md
+CHROME_STORE_LISTING.md
+
+# Test artifacts
+artifacts/
+playwright-report/
+test-results/
+output/
+outputs/
+
+# Local temporary upstream clones
+_tmp_codex_full/
+_tmp_codex_upstream/
+clone-output/
+target-recon/
+
+# 上次误提交的 IDE 临时文件
+.cursor/
+server/.claude/
+server/.kiro/
+server/.windsurf/
+supabase/.temp/
+
+# 本地 smoke 产物（图片/证据），不入库
+scripts/.smoke/

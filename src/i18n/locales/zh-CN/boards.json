@@ -1,0 +1,95 @@
+{
+  "boards": {
+    "title": "项目",
+    "skills": "技能",
+    "create": "创意工作台",
+    "description": "管理您的知识空间",
+    "createProject": "创建新项目",
+    "editProject": "编辑项目",
+    "deleteProject": "删除项目",
+    "inbox": "收件箱",
+    "allProjects": "所有项目",
+    "noProjects": "暂无项目",
+    "noArchivedProjects": "暂无已归档项目",
+    "confirmDelete": "确定要删除该项目吗？其中的素材将被移动到收件箱。",
+    "fields": {
+      "name": "项目名称",
+      "description": "描述",
+      "icon": "图标",
+      "color": "颜色",
+      "placeholder": "请输入项目名称..."
+    },
+    "projectSettings": {
+      "instructionsLabel": "指令",
+      "instructionsHint": "设置此项目的背景信息并自定义 Agent 的回复方式。",
+      "memoryLabel": "记忆",
+      "memoryDefault": "默认",
+      "memoryHint": "该项目可以访问外部聊天的记忆，反之亦然。此设置无法更改。"
+    },
+    "onboarding": {
+      "close": "关闭",
+      "welcome": "欢迎加入 WebToMind!",
+      "scenarioPrompt": "你接下来主要想做什么?(可随时切换,不限制)",
+      "recommended": "推荐",
+      "visualTitle": "视觉创作",
+      "visualDesc": "AI 出图 / 反推参考图 / 看图组合 / 风格复现",
+      "chatTitle": "通用对话",
+      "chatDesc": "项目素材整理 / Agent 对话助理 / 文档协作",
+      "skip": "跳过引导",
+      "back": "返回",
+      "visualNextTitle": "准备开始视觉创作",
+      "visualNextDesc": "我们带你进入视觉提示词工作台 — 看图组合 16 个 slot，一键生成可复现图片。上传一张参考图试试 AI 反推。",
+      "chatNextTitle": "工作台已就绪",
+      "chatNextDesc": "在项目里和 Agent 对话,整理素材;在项目设置里可以写自定义指令,所有对话自动加载。",
+      "goToStudio": "进入创意工作台",
+      "goToBoards": "开始使用工作台"
+    },
+    "stats": {
+      "summaries": "素材",
+      "conversations": "对话"
+    },
+    "createFailed": "创建项目失败",
+    "deleteFailed": "删除项目失败",
+    "updateFailed": "更新项目失败",
+    "loadFailed": "加载项目失败",
+    "confirm": "更新",
+    "cancel": "取消",
+    "recentContent": "最近添加",
+    "smartCreate": "智能创建 AI",
+    "active": "活跃中",
+    "archived": "已归档",
+    "actions": {
+      "edit": "编辑",
+      "favorite": "收藏",
+      "unfavorite": "取消收藏",
+      "archive": "归档",
+      "unarchive": "取消归档",
+      "delete": "删除"
+    },
+    "favorites": "收藏夹",
+    "recent": "近期项目",
+    "sort": {
+      "updatedDesc": "最后更新 (↓)",
+      "updatedAsc": "最后更新 (↑)",
+      "createdDesc": "创建日期 (↓)",
+      "createdAsc": "创建日期 (↑)",
+      "nameAsc": "项目名称 (A-Z)",
+      "nameDesc": "项目名称 (Z-A)"
+    },
+    "listHeader": {
+      "name": "项目名称",
+      "lastUpdated": "最后更新",
+      "created": "创建日期"
+    }
+  },
+  "userMenu": {
+    "user": "用户",
+    "founderMember": "创始成员",
+    "daysJoined": "已加入 {{days}} 天",
+    "language": "语言",
+    "backToHome": "返回首页",
+    "signOut": "退出登录",
+    "credits": "积分",
+    "dailyCredits": "每日额度"
+  }
+}

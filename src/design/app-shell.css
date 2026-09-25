@@ -1,0 +1,663 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 99%;
+    --foreground: 0 0% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 0 0% 9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 12%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 0 0% 96%;
+    --accent-foreground: 0 0% 12%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 85%;
+    --input: 0 0% 82%;
+    --ring: 0 0% 9%;
+    --radius: 0.75rem;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+    --shadow-sm: none;
+    --shadow-md:
+      0 2px 8px -2px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+    --shadow-lg:
+      0 8px 24px -6px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+    --shadow-xl:
+      0 16px 40px -8px rgba(0, 0, 0, 0.16), 0 4px 10px rgba(0, 0, 0, 0.06);
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 1rem;
+    --space-lg: 1.5rem;
+    --space-xl: 2rem;
+    --space-2xl: 3rem;
+    --space-3xl: 4rem;
+    --space-4xl: 6rem;
+    --transition-fast: var(--motion-fast) var(--ease-standard);
+    --transition-base: var(--motion-base) var(--ease-standard);
+    --transition-slow: var(--motion-slow) var(--ease-standard);
+    --font-sans: var(--font-ui);
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 48%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .workspace-shell-root {
+    @apply w-full flex flex-col md:flex-row bg-slate-50 dark:bg-slate-900 overflow-hidden;
+  }
+
+  .workspace-shell-root--embedded {
+    @apply h-full;
+  }
+
+  .workspace-shell-root--screen {
+    @apply h-screen;
+  }
+
+  .workspace-toast-layer {
+    @apply fixed right-5 top-20 z-[200] max-w-[calc(100vw-2.5rem)];
+  }
+
+  .workspace-toast {
+    @apply break-words px-4 py-2 rounded-lg border shadow-lg text-sm font-medium;
+  }
+
+  .workspace-toast--error {
+    @apply border-red-800 bg-red-700 text-red-50 dark:border-red-700 dark:bg-red-950 dark:text-red-100;
+  }
+
+  .workspace-toast--success {
+    @apply border-emerald-800 bg-emerald-700 text-emerald-50 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-100;
+  }
+
+  .workspace-shell-sidebar {
+    @apply hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex-shrink-0 select-none;
+  }
+
+  .workspace-shell-brand {
+    @apply p-6;
+  }
+
+  .workspace-shell-brand-button {
+    @apply flex items-center gap-2 hover:opacity-80 transition-opacity;
+  }
+
+  .workspace-shell-brand-text {
+    @apply text-slate-900 dark:text-slate-100 font-bold text-xl tracking-tight;
+  }
+
+  .workspace-shell-quick-actions {
+    @apply px-3 mb-2 space-y-1;
+  }
+
+  .workspace-shell-action-button,
+  .workspace-shell-nav-button,
+  .workspace-shell-project-button {
+    @apply w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all;
+  }
+
+  .workspace-shell-action-button,
+  .workspace-shell-nav-button,
+  .workspace-shell-project-button {
+    @apply text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100;
+  }
+
+  .workspace-shell-action-button {
+    @apply text-slate-500;
+  }
+
+  .workspace-shell-action-icon,
+  .workspace-shell-nav-icon {
+    @apply w-5 h-5;
+  }
+
+  .workspace-shell-action-label {
+    @apply text-sm;
+  }
+
+  .workspace-shell-nav {
+    @apply flex-1 px-3 space-y-1;
+  }
+
+  .workspace-shell-nav-button--active,
+  .workspace-shell-project-button--active {
+    @apply bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium;
+  }
+
+  .workspace-shell-project-section {
+    @apply pt-4 pb-2;
+  }
+
+  .workspace-shell-project-section-title {
+    @apply px-3 text-[11px] font-bold text-muted-foreground dark:text-slate-500 uppercase tracking-wider mb-2;
+  }
+
+  .workspace-shell-project-list {
+    @apply space-y-0.5 overflow-y-auto custom-scrollbar;
+  }
+
+  .workspace-shell-project-list--favorites {
+    @apply max-h-[200px];
+  }
+
+  .workspace-shell-project-list--recent {
+    @apply max-h-[300px];
+  }
+
+  .workspace-shell-project-button {
+    @apply text-sm;
+  }
+
+  .workspace-shell-project-icon {
+    @apply text-base;
+  }
+
+  .workspace-shell-project-name {
+    @apply truncate flex-1 text-left;
+  }
+
+  .workspace-shell-user-panel {
+    @apply p-4 border-t border-slate-100 dark:border-slate-700 bg-slate-50/10 dark:bg-slate-800/50;
+  }
+
+  .workspace-shell-user-popover-anchor {
+    @apply relative;
+  }
+
+  .workspace-shell-user-trigger {
+    @apply flex items-center justify-between p-2 rounded-xl transition-all cursor-pointer hover:bg-white dark:hover:bg-slate-700;
+  }
+
+  .workspace-shell-user-trigger--open {
+    @apply bg-white dark:bg-slate-700 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600;
+  }
+
+  .workspace-shell-user-summary {
+    @apply flex items-center gap-3 overflow-hidden;
+  }
+
+  .workspace-shell-avatar-sm {
+    @apply w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 border border-white flex-shrink-0 shadow-sm flex items-center justify-center text-white font-bold text-xs uppercase overflow-hidden;
+  }
+
+  .workspace-shell-avatar-md {
+    @apply w-12 h-12 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 border-2 border-white shadow-md flex items-center justify-center text-white font-bold text-lg uppercase overflow-hidden;
+  }
+
+  .workspace-shell-avatar-image {
+    @apply block w-full h-full rounded-full object-cover;
+  }
+
+  .workspace-shell-user-copy {
+    @apply flex flex-col min-w-0;
+  }
+
+  .workspace-shell-user-name {
+    @apply text-sm font-bold text-slate-900 dark:text-slate-100 truncate;
+  }
+
+  .workspace-shell-user-email {
+    @apply text-xs text-muted-foreground dark:text-slate-500 truncate;
+  }
+
+  .workspace-shell-user-plan-row {
+    @apply flex items-center gap-1.5;
+  }
+
+  .workspace-shell-plan-badge {
+    @apply px-1.5 py-0.5 font-bold rounded uppercase;
+  }
+
+  .workspace-shell-plan-badge--sm {
+    @apply text-[10px] font-semibold rounded-md tracking-wider;
+  }
+
+  .workspace-shell-plan-badge--paid {
+    @apply bg-gradient-to-r from-blue-500 to-indigo-500 text-white;
+  }
+
+  .workspace-shell-plan-badge--free {
+    @apply bg-blue-50 text-blue-600;
+  }
+
+  .workspace-shell-plan-badge--free-solid {
+    @apply bg-blue-600 text-white;
+  }
+
+  .workspace-shell-chevron {
+    @apply w-4 h-4 text-muted-foreground;
+  }
+
+  .workspace-shell-chevron-wrap {
+    @apply transition-transform duration-base;
+  }
+
+  .workspace-shell-chevron-wrap--open {
+    @apply rotate-180;
+  }
+
+  .workspace-shell-popover {
+    @apply absolute bottom-full left-0 right-[-16px] bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-visible z-[100] transition-all duration-base;
+  }
+
+  .workspace-shell-popover--open {
+    @apply opacity-100 visible translate-y-0;
+  }
+
+  .workspace-shell-popover--closed {
+    @apply opacity-0 invisible translate-y-2 pointer-events-none;
+  }
+
+  .workspace-shell-popover-bridge {
+    @apply absolute -bottom-3 left-0 right-0 h-3;
+  }
+
+  .workspace-shell-popover-head {
+    @apply p-4 bg-slate-50/50 dark:bg-slate-700/50 border-b border-slate-100 dark:border-slate-600;
+  }
+
+  .workspace-shell-popover-user-row {
+    @apply flex items-center gap-3 mb-3;
+  }
+
+  .workspace-shell-popover-name-row {
+    @apply flex items-center gap-2;
+  }
+
+  .workspace-shell-popover-name {
+    @apply font-bold text-slate-900 dark:text-slate-100 truncate;
+  }
+
+  .workspace-shell-founder-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-100 rounded-full text-[11px] font-bold text-amber-700 shadow-sm mb-1;
+  }
+
+  .workspace-shell-founder-icon {
+    @apply w-3.5 h-3.5 text-amber-500;
+  }
+
+  .workspace-shell-popover-body {
+    @apply p-4 space-y-4;
+  }
+
+  .workspace-shell-credit-card {
+    @apply bg-slate-50 dark:bg-slate-700 rounded-xl p-3 border border-slate-100 dark:border-slate-600;
+  }
+
+  .workspace-shell-credit-row {
+    @apply flex items-center justify-between mb-2;
+  }
+
+  .workspace-shell-credit-row--muted {
+    @apply mt-3 text-[10px] text-muted-foreground;
+  }
+
+  .workspace-shell-credit-label {
+    @apply text-xs font-bold text-slate-500 uppercase tracking-tight;
+  }
+
+  .workspace-shell-credit-value {
+    @apply text-xs font-bold text-blue-600;
+  }
+
+  .workspace-shell-credit-link {
+    @apply p-0.5 text-muted-foreground hover:text-blue-500 transition-colors;
+  }
+
+  .workspace-shell-credit-link-icon {
+    @apply w-3.5 h-3.5;
+  }
+
+  .workspace-shell-progress-track {
+    @apply w-full h-1.5 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden;
+  }
+
+  .workspace-shell-progress-fill {
+    @apply h-full bg-blue-500 rounded-full transition-all duration-500;
+  }
+
+  .workspace-shell-upgrade-button {
+    @apply w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-bold transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2;
+  }
+
+  .workspace-shell-upgrade-icon {
+    @apply w-4 h-4 text-amber-400 fill-amber-400;
+  }
+
+  .workspace-shell-menu {
+    @apply px-2 py-2 border-t border-slate-100 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/30;
+  }
+
+  .workspace-shell-menu-grid {
+    @apply grid grid-cols-1 gap-0.5;
+  }
+
+  .workspace-shell-menu-item {
+    @apply w-full flex items-center gap-3 px-3 py-2 rounded-lg text-slate-600 hover:bg-white dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100 transition-all text-sm;
+  }
+
+  .workspace-shell-menu-icon {
+    @apply w-4 h-4 text-muted-foreground;
+  }
+
+  .workspace-shell-menu-item:hover .workspace-shell-menu-icon--settings {
+    @apply text-blue-500;
+  }
+
+  .workspace-shell-menu-item:hover .workspace-shell-menu-icon--trash {
+    @apply text-red-500;
+  }
+
+  .workspace-shell-menu-item:hover .workspace-shell-menu-icon--download {
+    @apply text-indigo-500;
+  }
+
+  .workspace-shell-menu-item:hover .workspace-shell-menu-icon--plugin {
+    @apply text-purple-500;
+  }
+
+  .workspace-shell-menu-item:hover .workspace-shell-menu-icon--home {
+    @apply text-amber-500;
+  }
+
+  .workspace-shell-menu-item:hover .workspace-shell-menu-icon--contact {
+    @apply text-green-500;
+  }
+
+  .workspace-shell-menu-spacer {
+    @apply h-2;
+  }
+
+  .workspace-shell-signout {
+    @apply p-2 border-t border-slate-100 dark:border-slate-700;
+  }
+
+  .workspace-shell-signout-button {
+    @apply w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all text-sm font-medium;
+  }
+
+  .workspace-shell-signout-icon {
+    @apply w-4 h-4;
+  }
+
+  .workspace-shell-mobile-header {
+    @apply md:hidden flex-shrink-0 bg-white/95 dark:bg-slate-900/95 border-b border-slate-200 dark:border-slate-800 shadow-sm backdrop-blur supports-[backdrop-filter]:bg-white/85 dark:supports-[backdrop-filter]:bg-slate-900/85;
+  }
+
+  .workspace-shell-mobile-header-inner {
+    @apply px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-3;
+  }
+
+  .workspace-shell-mobile-topbar {
+    @apply flex items-center justify-between gap-3;
+  }
+
+  .workspace-shell-mobile-brand-button {
+    @apply flex min-w-0 items-center gap-2.5 rounded-2xl pr-2 text-left active:scale-[0.98] transition-transform;
+  }
+
+  .workspace-shell-mobile-logo {
+    @apply shrink-0 rounded-xl shadow-sm;
+  }
+
+  .workspace-shell-mobile-brand-copy {
+    @apply min-w-0;
+  }
+
+  .workspace-shell-mobile-kicker {
+    @apply text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500;
+  }
+
+  .workspace-shell-mobile-title {
+    @apply truncate text-base font-bold text-slate-950 dark:text-slate-100;
+  }
+
+  .workspace-shell-mobile-actions {
+    @apply flex items-center gap-2;
+  }
+
+  .workspace-shell-mobile-primary-action {
+    @apply inline-flex h-10 items-center gap-1.5 rounded-full bg-slate-950 px-3.5 text-sm font-semibold text-white shadow-sm active:scale-95 dark:bg-white dark:text-slate-950;
+  }
+
+  .workspace-shell-mobile-action-icon,
+  .workspace-shell-mobile-nav-icon {
+    @apply h-4 w-4;
+  }
+
+  .workspace-shell-mobile-avatar-button {
+    @apply flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white text-sm font-bold uppercase text-slate-700 shadow-sm active:scale-95 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100;
+  }
+
+  .workspace-shell-mobile-avatar {
+    @apply flex h-full w-full items-center justify-center rounded-full;
+  }
+
+  .workspace-shell-mobile-nav {
+    @apply mt-3 overflow-x-auto pb-0.5;
+  }
+
+  .workspace-shell-mobile-nav .ui-navigation-list {
+    @apply flex-nowrap gap-2;
+  }
+
+  .workspace-shell-mobile-nav .ui-navigation-link {
+    @apply h-9 shrink-0 rounded-full border border-slate-200 bg-white px-3 text-sm font-medium text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300;
+  }
+
+  .workspace-shell-mobile-nav .ui-navigation-link--active {
+    @apply border-transparent bg-slate-100 font-semibold text-slate-950 shadow-none dark:bg-slate-800 dark:text-slate-100;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent !important;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 transparent;
+}
+
+.pricing-product-os {
+  background:
+    radial-gradient(
+      circle at 18% 0%,
+      rgba(31, 45, 92, 0.42),
+      transparent 34rem
+    ),
+    radial-gradient(
+      circle at 88% 18%,
+      rgba(148, 60, 39, 0.36),
+      transparent 28rem
+    ),
+    #080808 !important;
+  color: #f8fafc;
+}
+
+.pricing-product-os nav {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(8, 8, 8, 0.88) !important;
+}
+
+.pricing-product-os h1,
+.pricing-product-os h2,
+.pricing-product-os h3 {
+  letter-spacing: 0 !important;
+}
+
+.pricing-product-os .rounded-3xl,
+.pricing-product-os .rounded-2xl {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+
+.pricing-product-os button {
+  border-radius: 999px;
+}
+
+/* Shared visual asset lightbox, reused by /create and workspace detail. */
+.creator-prompt-case-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-product-lightbox, 230);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 72px 24px 32px;
+  background: var(--product-scrim-bg, rgba(0, 0, 0, 0.86));
+  backdrop-filter: blur(10px);
+}
+
+.creator-prompt-case-lightbox-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  cursor: grab;
+  overscroll-behavior: contain;
+  touch-action: none;
+  user-select: none;
+}
+
+.creator-prompt-case-lightbox-stage[data-dragging='true'] {
+  cursor: grabbing;
+}
+
+.creator-prompt-case-lightbox-stage > img {
+  display: block;
+  width: auto;
+  max-width: none;
+  height: auto;
+  max-height: none;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.46);
+  transform-origin: center center;
+  transition: transform 0.12s ease-out;
+  will-change: transform;
+  cursor: inherit;
+}
+
+.creator-prompt-case-lightbox-stage[data-dragging='true'] > img {
+  transition: none;
+}
+
+@media (max-width: 640px) {
+  .creator-prompt-case-lightbox {
+    padding: 80px 10px 24px;
+  }
+
+  .creator-prompt-case-lightbox-zoom {
+    top: 16px;
+    left: 12px;
+    transform: none;
+  }
+
+  .creator-prompt-case-lightbox-zoom button {
+    width: 34px;
+    height: 34px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-shimmer {
+    animation: none;
+  }
+
+  .animate-fadeIn {
+    animation: none;
+    opacity: 1;
+  }
+}

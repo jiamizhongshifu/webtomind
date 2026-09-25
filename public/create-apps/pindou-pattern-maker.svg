@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800" role="img" aria-labelledby="title desc">
+  <title id="title">WebToMind pindou pattern maker cover</title>
+  <desc id="desc">A bead grid pattern preview with color swatches and export controls.</desc>
+  <rect width="1200" height="800" fill="#fff8e8"/>
+  <defs>
+    <pattern id="grid" width="38" height="38" patternUnits="userSpaceOnUse">
+      <path d="M 38 0 L 0 0 0 38" fill="none" stroke="#24160f" stroke-opacity=".08" stroke-width="2"/>
+    </pattern>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#24160f" flood-opacity=".16"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+  <circle cx="176" cy="150" r="112" fill="#f47f2c" opacity=".18"/>
+  <circle cx="990" cy="666" r="150" fill="#2f7a4c" opacity=".14"/>
+  <rect x="118" y="96" width="964" height="608" rx="46" fill="#fffcf2" filter="url(#shadow)" stroke="#24160f" stroke-opacity=".12"/>
+  <rect x="178" y="158" width="520" height="430" rx="22" fill="#17110d"/>
+  <g transform="translate(222 202)">
+    <rect width="432" height="342" rx="14" fill="#fffaf0"/>
+    <rect x="0" y="0" width="18" height="18" fill="#f7f4ea"/>
+    <g stroke="#17110d" stroke-opacity=".12" stroke-width="1">
+      <path d="M18 0v342M36 0v342M54 0v342M72 0v342M90 0v342M108 0v342M126 0v342M144 0v342M162 0v342M180 0v342M198 0v342M216 0v342M234 0v342M252 0v342M270 0v342M288 0v342M306 0v342M324 0v342M342 0v342M360 0v342M378 0v342M396 0v342M414 0v342"/>
+      <path d="M0 18h432M0 36h432M0 54h432M0 72h432M0 90h432M0 108h432M0 126h432M0 144h432M0 162h432M0 180h432M0 198h432M0 216h432M0 234h432M0 252h432M0 270h432M0 288h432M0 306h432M0 324h432"/>
+    </g>
+    <g>
+      <circle cx="198" cy="90" r="36" fill="#f59ac0"/>
+      <circle cx="234" cy="90" r="36" fill="#f59ac0"/>
+      <circle cx="180" cy="126" r="36" fill="#d83b33"/>
+      <circle cx="216" cy="126" r="36" fill="#d83b33"/>
+      <circle cx="252" cy="126" r="36" fill="#d83b33"/>
+      <circle cx="198" cy="162" r="36" fill="#d83b33"/>
+      <circle cx="234" cy="162" r="36" fill="#d83b33"/>
+      <circle cx="216" cy="198" r="36" fill="#7a4f32"/>
+      <circle cx="306" cy="234" r="27" fill="#2b64b5"/>
+      <circle cx="324" cy="252" r="18" fill="#75bfe6"/>
+      <circle cx="90" cy="234" r="27" fill="#ffd33d"/>
+      <circle cx="108" cy="252" r="18" fill="#f47f2c"/>
+    </g>
+  </g>
+  <g transform="translate(754 178)">
+    <text x="0" y="0" fill="#17110d" font-family="Arial, sans-serif" font-size="54" font-weight="800">Pindou</text>
+    <text x="0" y="60" fill="#17110d" font-family="Arial, sans-serif" font-size="54" font-weight="800">Pattern</text>
+    <text x="0" y="118" fill="#6b5a4f" font-family="Arial, sans-serif" font-size="24">photo to bead grid</text>
+    <g transform="translate(0 168)">
+      <rect width="236" height="56" rx="28" fill="#17110d"/>
+      <text x="118" y="36" text-anchor="middle" fill="#fff9e8" font-family="Arial, sans-serif" font-size="22" font-weight="700">Export PNG</text>
+    </g>
+    <g transform="translate(0 258)">
+      <rect width="280" height="56" rx="18" fill="#fff3c4" stroke="#24160f" stroke-opacity=".12"/>
+      <circle cx="34" cy="28" r="12" fill="#d83b33"/>
+      <text x="62" y="36" fill="#17110d" font-family="Arial, sans-serif" font-size="20" font-weight="700">P04 Red · 128</text>
+      <rect y="76" width="280" height="56" rx="18" fill="#e7f7dc" stroke="#24160f" stroke-opacity=".12"/>
+      <circle cx="34" cy="104" r="12" fill="#4da45a"/>
+      <text x="62" y="112" fill="#17110d" font-family="Arial, sans-serif" font-size="20" font-weight="700">P07 Green · 74</text>
+      <rect y="152" width="280" height="56" rx="18" fill="#e5f4ff" stroke="#24160f" stroke-opacity=".12"/>
+      <circle cx="34" cy="180" r="12" fill="#2b64b5"/>
+      <text x="62" y="188" fill="#17110d" font-family="Arial, sans-serif" font-size="20" font-weight="700">P10 Blue · 52</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,356 @@
+:root {
+  /* Dayos 无色精密风：品牌色全部中性化（主操作=黑，强调靠绿/黄由 Tailwind 调色板提供） */
+  --brand-terracotta-50: #f5f5f5;
+  --brand-terracotta-100: #ebebeb;
+  --brand-terracotta-400: #3a3a3a;
+  --brand-terracotta-500: #1a1a1a;
+  --brand-terracotta-600: #000000;
+
+  --brand-coral-50: #f5f5f5;
+  --brand-coral-100: #ebebeb;
+  --brand-coral-400: #2a2a2a;
+  --brand-coral-500: #111111;
+  --brand-coral-600: #000000;
+
+  --brand-indigo-50: #f4f4f5;
+  --brand-indigo-100: #e8e8ea;
+  --brand-indigo-400: #3a3a3f;
+  --brand-indigo-500: #18181b;
+  --brand-indigo-600: #000000;
+
+  --neutral-0: #ffffff;
+  --neutral-100: #f7f7f8;
+  --neutral-150: #f1f1f2;
+  --neutral-200: #e6e6e8;
+  --neutral-600: #a8a8ac;
+  --neutral-700: #8a8a8e;
+  --neutral-800: #56565a;
+  --neutral-900: #1f1f22;
+  --neutral-950: #121214;
+
+  --state-success-bg: #ecfdf3;
+  --state-success-text: #166534;
+  --state-success-line: #bbf7d0;
+  --state-warning-bg: #fff7ed;
+  --state-warning-text: #c2410c;
+  --state-warning-line: #fed7aa;
+  --state-error-bg: #fef2f2;
+  --state-error-text: #b91c1c;
+  --state-error-line: #fecaca;
+  --state-info-bg: #eff6ff;
+  --state-info-text: #1d4ed8;
+  --state-info-line: #bfdbfe;
+
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* Dayos 精密风：内联卡片扁平（靠描边分隔），仅浮层保留克制阴影 */
+  --shadow-sm: none;
+  --shadow-md:
+    0 2px 8px -2px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-lg:
+    0 8px 24px -6px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+  --shadow-xl:
+    0 16px 40px -8px rgba(0, 0, 0, 0.16), 0 4px 10px rgba(0, 0, 0, 0.06);
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  --space-4xl: 64px;
+  --space-5xl: 96px;
+
+  /*
+   * Product grid system.
+   * Based on a 12-column modular grid with an 8px baseline. Keep these as the
+   * single source of truth for create/workspace surfaces so page-local layouts
+   * do not drift into unrelated widths and gaps.
+   */
+  --grid-baseline: 8px;
+  --grid-leading: 24px;
+  --grid-columns: 12;
+  --grid-gutter: clamp(16px, 1.45vw, 24px);
+  --grid-margin: clamp(16px, 3vw, 48px);
+  --grid-content-max: 1440px;
+  --grid-content-wide: 1680px;
+  --grid-card-min: 176px;
+  --grid-card-compact-min: 150px;
+  --grid-card-comfortable-min: 220px;
+  --grid-card-wide-min: 280px;
+  --grid-gap-xs: 8px;
+  --grid-gap-sm: 12px;
+  --grid-gap-md: 16px;
+  --grid-gap-lg: 24px;
+  --grid-gap-xl: 32px;
+
+  --motion-press: 100ms;
+  --motion-fast: 120ms;
+  --motion-reduced: 160ms;
+  --motion-base: 150ms;
+  --motion-slow: 200ms;
+  --motion-feedback: 220ms;
+  --motion-slower: 300ms;
+
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+
+  --font-brand:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    sans-serif;
+  --font-ui:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    sans-serif;
+  --font-body:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --type-display-size: 3rem;
+  --type-display-line: 1.05;
+  --type-display-tracking: -0.025em;
+  --type-h1-size: 2.5rem;
+  --type-h1-line: 1.1;
+  --type-h1-tracking: -0.02em;
+  --type-h2-size: 1.75rem;
+  --type-h2-line: 1.2;
+  --type-h2-tracking: -0.015em;
+  --type-h3-size: 1.25rem;
+  --type-h3-line: 1.3;
+  --type-h3-tracking: -0.01em;
+  --type-h4-size: 1rem;
+  --type-h4-line: 1.4;
+  --type-h4-tracking: 0;
+  --type-body-lg-size: 1rem;
+  --type-body-lg-line: 1.7;
+  --type-body-size: 0.875rem;
+  --type-body-line: 1.6;
+  --type-body-tracking: 0;
+  --type-body-sm-size: 0.8125rem;
+  --type-body-sm-line: 1.5;
+  --type-body-sm-tracking: 0.005em;
+  --type-caption-size: 0.75rem;
+  --type-caption-line: 1.4;
+  --type-caption-tracking: 0.01em;
+
+  /* WebToMind product OS tokens */
+  --product-canvas: #f4f5f5;
+  --product-canvas-raised: #fafafa;
+  --product-surface: #ffffff;
+  --product-surface-subtle: #f7f7f7;
+  --product-panel: rgba(255, 255, 255, 0.96);
+  --product-panel-solid: #ffffff;
+  --product-border-soft: rgba(20, 20, 20, 0.08);
+  --product-border-default: rgba(20, 20, 20, 0.14);
+  --product-border-strong: rgba(20, 20, 20, 0.24);
+  --product-contrast-border: rgba(20, 20, 20, 0.48);
+  --product-text-primary: #141414;
+  --product-text-secondary: #4b4b4b;
+  --product-text-muted: #737373;
+  --product-text-inverse: #ffffff;
+  --beam-cta-foreground: #fffaf2;
+  --media-overlay-foreground: #fffaf2;
+  --media-overlay-control-bg: rgba(255, 255, 255, 0.12);
+  --media-overlay-control-hover-bg: rgba(255, 255, 255, 0.24);
+  --media-overlay-control-border: rgba(255, 255, 255, 0.2);
+  --media-overlay-panel-bg: rgba(20, 20, 20, 0.68);
+  --media-overlay-canvas: #0f0d0b;
+  --product-action-bg: #141414;
+  --product-action-hover: #2a2a2a;
+  --product-action-text: #ffffff;
+  --product-action-muted: #f1f1f1;
+  --product-warning: #f0c35b;
+  --product-warning-soft: #fff5db;
+  --product-success: #2f7a4c;
+  --product-success-soft: #eaf7ee;
+  --product-task-bg: #141414;
+  --product-task-panel: #1c1b19;
+  --product-task-border: rgba(255, 245, 219, 0.1);
+  --product-task-text: #fff5db;
+  --product-task-muted: rgba(255, 245, 219, 0.66);
+  --product-toast-bg: #141414;
+  --product-toast-text: #ffffff;
+  --product-toast-border: rgba(255, 255, 255, 0.18);
+  --product-image-card-bg: #f4f4f4;
+  --product-image-card-border: rgba(20, 20, 20, 0.12);
+  --product-image-card-hover: rgba(20, 20, 20, 0.28);
+  --product-dock-bg: rgba(255, 255, 255, 0.96);
+  --product-dock-border: rgba(20, 20, 20, 0.14);
+  --product-dock-shadow: 0 18px 48px rgba(20, 20, 20, 0.18);
+  --product-overlay-bg: var(--product-panel-solid);
+  --product-scrim-bg: rgba(0, 0, 0, 0.48);
+  --product-focus-ring: 0 0 0 3px rgba(47, 122, 76, 0.22);
+  --z-product-banner: 72;
+  --z-product-dock: 80;
+  --z-product-nav: 80;
+  --z-product-popover: 90;
+  --z-product-composer: 110;
+  --z-product-modal: 140;
+  --z-product-toast: 150;
+  /* Fullscreen media sits above ordinary preview and blocking dialogs. */
+  --z-product-lightbox: 230;
+  --z-product-guidance: 180;
+  --z-product-preview: 190;
+  --z-product-blocking: 220;
+  --z-product-critical-modal: 240;
+  --z-product-menu-portal: 360;
+  --z-product-admin-modal: 1000;
+  --z-product-consent: 1200;
+  --z-product-auth: 1300;
+  --z-modal: var(--z-product-modal);
+}
+
+.dark {
+  --product-canvas: #0e0c0a;
+  --product-canvas-raised: #171310;
+  --product-surface: #191512;
+  --product-surface-subtle: #211c17;
+  --product-panel: rgba(25, 21, 18, 0.96);
+  --product-panel-solid: #191512;
+  --product-border-soft: rgba(255, 247, 235, 0.12);
+  --product-border-default: rgba(255, 247, 235, 0.18);
+  --product-border-strong: rgba(255, 247, 235, 0.28);
+  --product-contrast-border: rgba(255, 247, 235, 0.42);
+  --product-text-primary: #fff7eb;
+  --product-text-secondary: rgba(255, 247, 235, 0.82);
+  --product-text-muted: rgba(255, 247, 235, 0.68);
+  --product-text-inverse: #17110d;
+  --beam-cta-foreground: #fffaf2;
+  --media-overlay-foreground: #fffaf2;
+  --media-overlay-control-bg: rgba(255, 255, 255, 0.12);
+  --media-overlay-control-hover-bg: rgba(255, 255, 255, 0.24);
+  --media-overlay-control-border: rgba(255, 255, 255, 0.2);
+  --media-overlay-panel-bg: rgba(20, 20, 20, 0.68);
+  --media-overlay-canvas: #0f0d0b;
+  --product-action-bg: #fff7eb;
+  --product-action-hover: #f4e7d5;
+  --product-action-text: #17110d;
+  --product-action-muted: rgba(255, 247, 235, 0.1);
+  --product-warning: #ffd37a;
+  --product-warning-soft: rgba(255, 211, 122, 0.16);
+  --product-success: #7ee29b;
+  --product-success-soft: rgba(126, 226, 155, 0.13);
+  --product-task-bg: #151311;
+  --product-task-panel: #1d1915;
+  --product-task-border: rgba(255, 247, 235, 0.16);
+  --product-task-text: #fff7eb;
+  --product-task-muted: rgba(255, 247, 235, 0.68);
+  --product-toast-bg: #211c17;
+  --product-toast-text: #fff7eb;
+  --product-toast-border: rgba(255, 247, 235, 0.24);
+  --product-image-card-bg: rgba(255, 247, 235, 0.07);
+  --product-image-card-border: rgba(255, 247, 235, 0.16);
+  --product-image-card-hover: rgba(255, 247, 235, 0.3);
+  --product-dock-bg: rgba(18, 15, 13, 0.96);
+  --product-dock-border: rgba(255, 247, 235, 0.18);
+  --product-dock-shadow: 0 18px 48px rgba(0, 0, 0, 0.34);
+  --product-overlay-bg: var(--product-panel-solid);
+  --product-scrim-bg: rgba(0, 0, 0, 0.62);
+  --product-focus-ring: 0 0 0 3px rgba(255, 139, 96, 0.24);
+  --state-success-bg: rgba(126, 226, 155, 0.13);
+  --state-success-text: #7ee29b;
+  --state-success-line: rgba(126, 226, 155, 0.28);
+  --state-warning-bg: rgba(255, 211, 122, 0.15);
+  --state-warning-text: #ffd37a;
+  --state-warning-line: rgba(255, 211, 122, 0.3);
+  --state-error-bg: rgba(255, 156, 139, 0.13);
+  --state-error-text: #ff9c8b;
+  --state-error-line: rgba(255, 156, 139, 0.32);
+  --state-info-bg: rgba(125, 175, 255, 0.14);
+  --state-info-text: #9ec5ff;
+  --state-info-line: rgba(125, 175, 255, 0.32);
+}
+
+.product-grid-wrap {
+  width: min(var(--grid-content-max), calc(100% - var(--grid-margin) * 2));
+  margin-inline: auto;
+}
+
+.product-grid-wrap--wide {
+  width: min(var(--grid-content-wide), calc(100% - var(--grid-margin) * 2));
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  row-gap: var(--grid-leading);
+}
+
+.product-card-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, var(--grid-card-wide-min)), 1fr)
+  );
+  gap: var(--grid-gap-lg);
+}
+
+.product-grid-band {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  column-gap: var(--grid-gutter);
+  row-gap: var(--grid-leading);
+  align-items: start;
+}
+
+@supports not (grid-template-columns: subgrid) {
+  .product-grid-band {
+    grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+  }
+}
+
+.workspace-grid-wrap {
+  width: min(var(--grid-content-max), calc(100% - var(--grid-margin) * 2));
+  margin-inline: auto;
+}
+
+.workspace-project-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, var(--grid-card-wide-min)), var(--grid-card-wide-min))
+  );
+  gap: var(--grid-gap-lg);
+  justify-content: start;
+}
+
+.workspace-recent-media-card {
+  width: calc(var(--grid-leading) * 5.2);
+  height: calc(var(--grid-leading) * 6.5);
+  aspect-ratio: 4 / 5;
+  min-height: 0;
+  background: rgba(226, 232, 240, 0.55);
+}
+
+.workspace-recent-text-card {
+  width: calc(var(--grid-leading) * 5.2);
+  height: calc(var(--grid-leading) * 6.5);
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+}
+
+.workspace-project-thumb-card {
+  width: calc(var(--grid-leading) * 4);
+  height: calc(var(--grid-leading) * 5);
+  aspect-ratio: 4 / 5;
+  flex: 0 0 auto;
+}
+
+.workspace-project-thumb-card.ui-media-tile {
+  display: flex;
+}
+
+.workspace-project-list-row {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+  gap: var(--grid-gap-md);
+}

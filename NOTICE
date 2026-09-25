@@ -1,0 +1,25 @@
+WebToMind
+Copyright (C) 2026 WebToMind contributors
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU Affero General Public License as published by the Free
+Software Foundation, version 3 of the License only (AGPL-3.0-only). See the
+LICENSE file for the full text.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+
+Trademarks
+----------
+The license grants rights to the source code only. It does not grant permission
+to use the "WebToMind" name, logos or other brand assets to identify a
+derivative work or a hosted service. Deployments that are not operated by the
+WebToMind project must use their own name and branding.
+
+Third-party components
+----------------------
+Dependencies installed through pnpm keep their own licenses, listed in each
+package under node_modules. The container in infra/watermarks-remover builds on
+an upstream image referenced by digest in its Dockerfile and is subject to that
+image's license.

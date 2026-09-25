@@ -1,0 +1,218 @@
+.home-nav {
+  position: fixed;
+  z-index: var(--z-product-nav);
+  top: 0;
+  right: 0;
+  left: 0;
+  padding: 12px 24px;
+  border-bottom: 1px solid transparent;
+  background: color-mix(in srgb, var(--web-bg-canvas) 94%, transparent);
+  color: var(--web-text-primary);
+  transition:
+    background-color var(--motion-base) var(--ease-standard),
+    border-color var(--motion-base) var(--ease-standard);
+}
+
+.home-nav.scrolled {
+  border-bottom-color: var(--web-border-soft);
+  background: color-mix(in srgb, var(--web-bg-card) 96%, transparent);
+}
+
+.home-nav .nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(100%, 1280px);
+  margin: 0 auto;
+}
+
+.home-nav .nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.home-nav .nav-logo-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+}
+
+.home-nav .nav-logo-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.home-nav .nav-logo-text {
+  color: var(--web-text-primary);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.home-nav .nav-actions,
+.home-nav .nav-links-desktop {
+  display: flex;
+  align-items: center;
+}
+
+.home-nav .nav-actions {
+  gap: 8px;
+}
+
+.nav-lang-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  z-index: var(--z-product-popover);
+  min-width: 140px;
+  border: 1px solid var(--product-border-default, rgba(20, 20, 20, 0.14));
+  border-radius: var(--radius-lg);
+  background: var(--product-overlay-bg, #ffffff);
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+}
+
+.nav-lang-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--product-text-secondary, #4b4b4b);
+  padding: 0 12px;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.nav-lang-menu-item:hover,
+.nav-lang-menu-item:focus-visible {
+  background: var(--product-surface-subtle, #f7f7f7);
+  color: var(--product-text-primary, #141414);
+}
+
+.nav-lang-menu-item:focus-visible {
+  outline: 2px solid var(--product-accent-action-bg, #2f7df6);
+  outline-offset: -2px;
+}
+
+.nav-lang-menu-item.is-current {
+  color: var(--brand-terracotta-500, #943c27);
+  font-weight: 600;
+}
+
+.nav-lang-menu-check {
+  width: 16px;
+  height: 16px;
+}
+
+.home-nav .nav-links-desktop {
+  gap: 2px;
+  margin-right: 6px;
+}
+
+.home-nav .nav-link-item {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 9px;
+  color: var(--web-text-secondary);
+  font-size: 14px;
+  font-weight: 550;
+  line-height: 40px;
+  text-decoration: none;
+  transition:
+    background-color var(--motion-fast) var(--ease-standard),
+    color var(--motion-fast) var(--ease-standard);
+}
+
+.home-nav .nav-link-item:hover,
+.home-nav .nav-link-item:focus-visible {
+  background: var(--web-bg-subtle);
+  color: var(--web-text-primary);
+}
+
+.home-nav .nav-link-cta {
+  color: var(--web-text-primary);
+  font-weight: 650;
+}
+
+.home-nav .nav-button-glass {
+  min-height: 44px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.home-nav .nav-language-button {
+  width: 44px;
+  height: 44px;
+}
+
+.home-nav .nav-button-primary {
+  border-color: var(--web-action-primary-bg);
+  background: var(--web-action-primary-bg);
+  color: var(--web-action-primary-text);
+}
+
+.home-nav .nav-button-primary:hover,
+.home-nav .nav-button-primary:focus-visible {
+  background: var(--web-action-primary-hover);
+}
+
+.home-nav .nav-button-secondary {
+  border-color: var(--web-border-default);
+  background: transparent;
+  color: var(--web-text-secondary);
+}
+
+.home-nav .nav-button-secondary:hover,
+.home-nav .nav-button-secondary:focus-visible {
+  border-color: var(--web-border-strong);
+  background: var(--web-bg-subtle);
+  color: var(--web-text-primary);
+}
+
+@media (max-width: 1024px) {
+  .home-nav .nav-links-desktop {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .home-nav {
+    padding: 10px 16px;
+  }
+
+  .home-nav .nav-container {
+    gap: 8px;
+  }
+
+  .home-nav .nav-logo-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .home-nav .nav-logo-text {
+    font-size: 18px;
+  }
+
+  .home-nav .nav-button-secondary {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-nav,
+  .home-nav * {
+    scroll-behavior: auto !important;
+    transition-duration: var(--motion-reduced, 160ms) !important;
+    transition-property: opacity, color, background-color, border-color !important;
+  }
+}

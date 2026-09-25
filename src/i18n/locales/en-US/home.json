@@ -1,0 +1,418 @@
+{
+  "nav": {
+    "goToWorkspace": "Go to Workspace",
+    "login": "Log In",
+    "getStarted": "Get Started Free",
+    "language": "Language",
+    "workflow": "Image Workflow",
+    "useCases": "Use Cases",
+    "tools": "Tools",
+    "comfyChecker": "ComfyUI Check",
+    "skills": "Skills",
+    "blog": "Blog",
+    "updates": "Updates"
+  },
+  "languagePrompt": {
+    "ariaLabel": "Language selection prompt",
+    "message": "Choose a language to view WebToMind content for your preference.",
+    "selectLabel": "Choose a language",
+    "continue": "Continue",
+    "loading": "Switching…",
+    "dismiss": "Dismiss language prompt"
+  },
+  "reactivation": {
+    "title": "Reproduce your next commercial image from a case",
+    "description": "Pick a prompt case, bring it into the studio with one click, and save results that work.",
+    "ctaCreate": "Start creating",
+    "ctaPricing": "View plans",
+    "dismiss": "Not now"
+  },
+  "creditsUpgrade": {
+    "exhaustedTitle": "Credits are running low!",
+    "exhaustedDescription": "All credits used. Upgrade to keep creating.",
+    "freeTitle": "Free plan limits",
+    "freeDescription": "Upgrade for more credits and advanced features",
+    "cta": "Upgrade",
+    "dismiss": "Dismiss upgrade prompt"
+  },
+  "hero": {
+    "badge": "Visual Prompt Studio",
+    "title": "Pick Visuals,",
+    "titleHighlight": "Get Reproducible Prompts",
+    "description": "WebToMind is built for AI image creation. Upload a reference image, reverse-engineer the prompt, combine visual slots for character, pose, wardrobe, lens, scene and style, then generate images you can revisit, edit and re-run anytime.",
+    "ctaAuth": "Browse Image Prompts",
+    "ctaUnauth": "Browse Image Prompts",
+    "installExtension": "Open Workspace",
+    "stats": {
+      "users": "Active Users",
+      "content": "Images Generated",
+      "rating": "User Rating"
+    }
+  },
+  "hotCases": {
+    "label": "Featured Cases",
+    "title": "Browse our selected image prompts",
+    "description": "A hand-picked WebToMind case shelf. Open any image to inspect the prompt, model and generation logic, then continue remixing in the workspace.",
+    "viewAll": "View all cases",
+    "cardCta": "View prompt",
+    "fallbackNote": "The case feed is temporarily unavailable, so local examples are shown.",
+    "fallback": {
+      "poster": {
+        "title": "Visual Prompt OS Poster",
+        "prompt": "Connect reference images, visual slots and generated outputs into a reproducible workflow visual.",
+        "meta": "WebToMind · Visual Prompt"
+      },
+      "workflow": {
+        "title": "Reference to Final Image",
+        "prompt": "Upload a reference, split character, scene, lens and style into slots, then generate editable outputs.",
+        "meta": "Workflow · Reference to Image"
+      },
+      "stickers": {
+        "title": "Social Visual Element Kit",
+        "prompt": "Use Y2K collage, fluorescent labels and graphic fragments to create scroll-stopping cover visuals.",
+        "meta": "Social Cover · Collage"
+      },
+      "magazine": {
+        "title": "Magazine Cover Prompt",
+        "prompt": "Split subject, headline, layout and lighting into a reusable structure for repeatable cover series.",
+        "meta": "Cover · Editorial"
+      },
+      "product": {
+        "title": "Product KV Visual",
+        "prompt": "Generate ad-grade key visuals around a product hero for ecommerce, brand posters and social campaigns.",
+        "meta": "Commerce · KV"
+      },
+      "character": {
+        "title": "Character Consistency Workflow",
+        "prompt": "Save character cards and references, then reuse the same visual identity across multiple scenes.",
+        "meta": "Character · Consistency"
+      }
+    }
+  },
+  "caseCollections": {
+    "ariaLabel": "Browse cases by creation scenario",
+    "viewCategory": "View this category",
+    "portrait": {
+      "label": "Portrait / Fashion",
+      "title": "Start from the character mood",
+      "description": "For avatars, portraits, live-action character looks and repeatable people visuals."
+    },
+    "commerce": {
+      "label": "Commerce / Posters",
+      "title": "Turn selling points into key visuals",
+      "description": "For product shots, brand KVs, covers, posters and ad-ready visuals."
+    },
+    "character": {
+      "label": "Characters / Games",
+      "title": "Reuse worldbuilding assets faster",
+      "description": "For character sheets, game UI, chibi assets and social-ready graphics."
+    },
+    "poster": {
+      "label": "Posters / Social",
+      "title": "Find scroll-ready compositions faster",
+      "description": "For social covers, campaign posters, editorial covers and launch visuals."
+    },
+    "workflow": {
+      "label": "Workflow / Remix",
+      "title": "Extend one reference into a series",
+      "description": "For reference reverse, slot combinations, history re-edits and batch iteration."
+    }
+  },
+  "newsletter": {
+    "label": "Case Digest",
+    "title": "Get trending image cases and reusable prompts",
+    "description": "Leave your email and receive newly published cases, high-signal prompts and reproducible image workflows on a regular cadence.",
+    "emailLabel": "Email address",
+    "placeholder": "you@example.com",
+    "submit": "Subscribe",
+    "submitting": "Submitting",
+    "success": "Subscribed. The next case digest will arrive in your inbox.",
+    "duplicate": "This email is already subscribed. The next digest will still arrive in your inbox.",
+    "invalid": "Enter a valid email address.",
+    "error": "Subscription failed. Please try again later.",
+    "privacy": "Only WebToMind case digests and product updates. Unsubscribe anytime."
+  },
+  "pipeline": {
+    "label": "Core Workflow",
+    "title": "From Reference to Output in 4 Steps",
+    "description": "Designed for reproducible visual creation — every image stays revisitable, editable, regeneratable.",
+    "steps": [
+      {
+        "title": "Reverse",
+        "description": "Upload a reference image. AI reverse-engineers prompts and files them across slots in your library."
+      },
+      {
+        "title": "Combine",
+        "description": "Mix and match across 16 slots: character, expression, pose, wardrobe, scene, lens, style, image effects, layout..."
+      },
+      {
+        "title": "Generate",
+        "description": "Multi-model image generation with automatic credit refunds when generation fails."
+      },
+      {
+        "title": "Iterate",
+        "description": "History preview + Re-edit on any past output — jump back to the exact slot combo and prompt."
+      }
+    ]
+  },
+  "workflow": {
+    "step1": {
+      "title": "Provide Inputs",
+      "desc": "Reference · Slots · Prompts"
+    },
+    "step2": {
+      "title": "AI Orchestrates",
+      "desc": "Reverse · Combine · Compile",
+      "status": "AI Orchestrating"
+    },
+    "step3": {
+      "title": "Generate Outputs",
+      "desc": "Covers · Portraits · Posters",
+      "status": "Ready to Publish"
+    },
+    "sources": {
+      "webpage": "Reference",
+      "video": "Slot Combo",
+      "image": "Prompt"
+    },
+    "outputs": {
+      "article": "Cover",
+      "script": "Portrait",
+      "graphic": "Poster",
+      "ready": "Reproducible"
+    }
+  },
+  "features": {
+    "label": "Core Features",
+    "title": "Visual Prompt Studio",
+    "description": "Turn prompt engineering from string-wrangling into picking visual building blocks — every image is reproducible, editable, batchable",
+    "items": [
+      {
+        "title": "Pick by Slot",
+        "description": "16 visual slots (character / expression / pose / wardrobe / shoes / accessory / scene / style / lighting / image effects / layout / lens / framing / makeup) — combine like building blocks"
+      },
+      {
+        "title": "Reverse-Engineer References",
+        "description": "Upload any image; AI extracts reusable prompts split by slot. Batch-import multiple assets from a single image"
+      },
+      {
+        "title": "Personal Asset Library",
+        "description": "Curated public library + your private uploads, side by side. Edit / delete / regenerate any thumbnail anytime"
+      },
+      {
+        "title": "Batch AI Thumbnail Generation",
+        "description": "Upload originals not matching the catalog look? Serial AI regeneration with progress tracking + auto retry on failure"
+      },
+      {
+        "title": "Multi-Model Image Generation",
+        "description": "Automatic multi-model routing and retry logic, with credits refunded after failed generations"
+      },
+      {
+        "title": "History + Re-Edit",
+        "description": "Click any past output; one-click jump back to the exact slot combo, prompt, model and settings used"
+      },
+      {
+        "title": "Custom Prompt Mode",
+        "description": "Auto mode compiles from slot combo; Custom mode lets you write the prompt yourself. Switch anytime"
+      },
+      {
+        "title": "ChatGPT-Style Project Instructions",
+        "description": "Set a custom instruction per project; all agent conversations auto-inject it as system context"
+      },
+      {
+        "title": "Bilingual Prompts",
+        "description": "Reverse returns CN+EN versions in one shot. UI and prompt suffixes switch with your language. Zero friction for international projects"
+      }
+    ]
+  },
+  "comingSoon": {
+    "label": "Coming Soon",
+    "title": "More Powerful Creation Capabilities",
+    "videoScript": {
+      "title": "AI Video Script",
+      "description": "From materials to storyboard, auto-generate scripts"
+    }
+  },
+  "scenarios": {
+    "label": "Who Uses It",
+    "title": "Built for High-Frequency AI Image Work",
+    "description": "Character systems, ecommerce visuals, covers, posters and social graphics can all run through one reproducible image workflow.",
+    "items": [
+      {
+        "title": "AI Image Creators",
+        "description": "Turn reference images into reusable prompts and stable visual series",
+        "examples": [
+          "Reference reverse",
+          "Character consistency",
+          "Same-style batches"
+        ]
+      },
+      {
+        "title": "Ecommerce Visual Teams",
+        "description": "Generate product, model, scene and layout variations faster",
+        "examples": [
+          "Product key visuals",
+          "Model outfit changes",
+          "Scene posters"
+        ]
+      },
+      {
+        "title": "Social Cover Designers",
+        "description": "Keep a consistent style while producing covers, thumbnails and campaign images",
+        "examples": [
+          "Xiaohongshu covers",
+          "Short-video thumbnails",
+          "Campaign posters"
+        ]
+      }
+    ]
+  },
+  "testimonials": {
+    "label": "Social Proof",
+    "title": "How Real Image Creators Use WebToMind",
+    "description": "Signals from character, product and social image workflows.",
+    "items": [
+      {
+        "quote": "Before, every revision meant rewriting the prompt. Now I open a past image and continue from the exact slot combo.",
+        "author": "Neil",
+        "role": "AI Character Creator",
+        "result": "Series-image rework time dropped"
+      },
+      {
+        "quote": "Reference reverse lets us reuse wardrobe, pose and lens details separately, so product image tests feel controlled.",
+        "author": "Hassan",
+        "role": "Product Visual Designer",
+        "result": "Product concepts ship in cleaner sets"
+      },
+      {
+        "quote": "The team can finally share characters, scenes and layouts without everyone starting from a blank prompt.",
+        "author": "Chen",
+        "role": "Creative Operator",
+        "result": "Team output style became more stable"
+      },
+      {
+        "quote": "Re-editing history is the killer feature. When a client asks for a different expression or background, we do not restart.",
+        "author": "Uni",
+        "role": "Social Designer",
+        "result": "Client revisions move faster"
+      }
+    ]
+  },
+  "methods": {
+    "label": "Image Method",
+    "title": "Reusable SOPs for AI Image Workflows",
+    "description": "The product organizes prompts, references and history into a reusable image system.",
+    "items": [
+      {
+        "title": "Why AI images drift: the prompt assets are not structured",
+        "description": "Break one-off prompts into character, pose, wardrobe, lens, scene and style slots.",
+        "bullets": [
+          "Reverse reusable descriptions from references",
+          "Use slot swaps instead of full prompt rewrites",
+          "Turn successful outputs into future assets"
+        ]
+      },
+      {
+        "title": "From reference to final image: an AI image SOP",
+        "description": "A unified path for character images, product visuals, covers and social graphics.",
+        "bullets": [
+          "Upload references and reverse-engineer prompts",
+          "Confirm visual slots and model settings",
+          "Revisit history, re-edit and batch iterate"
+        ]
+      }
+    ]
+  },
+  "advantages": {
+    "label": "Why WebToMind",
+    "title": "Designed for AI Image Creators, from Reference to Reproducible Output",
+    "items": [
+      {
+        "title": "Not a one-off prompt box",
+        "desc": "Prompts become manageable, composable visual assets",
+        "highlight": "Structured Output"
+      },
+      {
+        "title": "Not just chat generation",
+        "desc": "Reference reverse, slot combining, generation and history re-editing live in one loop",
+        "highlight": "Reproducible Loop"
+      },
+      {
+        "title": "Better for visual series",
+        "desc": "Reuse characters, wardrobes, scenes and lenses across projects to reduce style drift",
+        "highlight": "Stable Style"
+      },
+      {
+        "title": "Better for teams",
+        "desc": "Public and private asset libraries let teams reuse successful visual combinations",
+        "highlight": "Asset Memory"
+      },
+      {
+        "title": "Multi-model generation",
+        "desc": "Choose paths by quality, size and model capability, with visible recovery for failed jobs",
+        "highlight": "Model Routing"
+      },
+      {
+        "title": "History stays editable",
+        "desc": "Any past image can return to its original settings for targeted changes",
+        "highlight": "Continuous Iteration"
+      }
+    ]
+  },
+  "trust": {
+    "label": "Trust & Compliance",
+    "title": "Your Image Assets Stay Under Your Control",
+    "description": "Clear asset boundaries for AI image production.",
+    "items": [
+      {
+        "title": "References and outputs are account-scoped",
+        "description": "Uploaded references, generated outputs and private assets stay under your account."
+      },
+      {
+        "title": "Transparent Data Policy",
+        "description": "Data usage and processing boundaries are clearly documented."
+      },
+      {
+        "title": "Generation history is traceable",
+        "description": "Outputs retain prompt, slot and model settings for review and re-generation."
+      }
+    ]
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Questions You Might Ask",
+    "description": "Quick answers on AI image workflows, fit, and asset policy.",
+    "items": [
+      {
+        "q": "What problem does WebToMind solve now?",
+        "a": "WebToMind now focuses on AI image creation: reference reverse, visual slot combining, image generation and history re-editing in one reproducible workflow."
+      },
+      {
+        "q": "Who is WebToMind for?",
+        "a": "It fits AI image creators, ecommerce visual teams, social designers and operations teams that need stable batch image output."
+      },
+      {
+        "q": "Why use slots instead of writing prompts directly?",
+        "a": "Slots split character, expression, pose, wardrobe, lens, lighting and layout into reusable pieces, making replacement and batch iteration easier."
+      },
+      {
+        "q": "Who manages my references and generated images?",
+        "a": "You do. Public assets and private uploads are separated, and private assets are used only under your account."
+      }
+    ]
+  },
+  "cta": {
+    "title": "Make AI Image Generation Controllable and Reproducible",
+    "description": "Sign up free — experience the Visual Prompt Studio\nUpload reference → AI reverse → pick visuals → generate. Every output stays revisitable, editable, regeneratable.",
+    "ctaAuth": "Browse Image Prompts",
+    "ctaUnauth": "Browse Image Prompts",
+    "workspace": "Open Workspace"
+  },
+  "footer": {
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "contact": "Contact Us",
+    "followX": "Follow Official X",
+    "copyright": "© 2026 WebToMind. All rights reserved."
+  }
+}

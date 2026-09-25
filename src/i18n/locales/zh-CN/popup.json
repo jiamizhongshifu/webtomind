@@ -1,0 +1,106 @@
+{
+  "title": "WebToMind",
+  "subtitle": "插件负责采集与总结，深度编辑在工作台",
+  "status": {
+    "ready": "准备就绪",
+    "summarizing": "正在总结...",
+    "success": "总结完成",
+    "error": "总结失败"
+  },
+  "actions": {
+    "summarize": "打开采集浮窗",
+    "summarizeNoLogin": "打开采集浮窗（无需登录）",
+    "summarizeSelection": "总结选中内容",
+    "openSidepanel": "打开侧边栏",
+    "openWorkspace": "打开工作台",
+    "settings": "设置",
+    "loginOrRegister": "登录 / 注册",
+    "syncToCloud": "同步本地数据到账号",
+    "syncing": "同步中..."
+  },
+  "auth": {
+    "loginRequired": "请先登录以使用全部功能",
+    "loggedIn": "已登录"
+  },
+  "settings": {
+    "title": "快捷设置",
+    "description": "直接在插件弹窗里管理常用开关。",
+    "memberOnlyHint": "书签采集和本地导出开关仅对付费会员开放。",
+    "imageCollector": {
+      "label": "采集图片",
+      "description": "鼠标悬停图片或视频时显示保存入口。"
+    },
+    "translationTarget": {
+      "label": "翻译语言",
+      "description": "统一设置选中文本翻译时的目标语言。",
+      "options": {
+        "auto": "自动",
+        "zh-CN": "简体中文",
+        "en-US": "English",
+        "ja-JP": "日本語",
+        "ko-KR": "한국어"
+      }
+    },
+    "browserBookmark": {
+      "label": "浏览器书签采集",
+      "description": "自动同步新建的浏览器书签到 WebToMind。"
+    },
+    "twitterBookmark": {
+      "label": "X 书签采集",
+      "description": "监控并采集 X 的书签内容。"
+    },
+    "localMarkdownExport": {
+      "label": "本地 Markdown 导出",
+      "description": "把采集到的 X 书签导出为 Markdown 文件。"
+    },
+    "localMarkdownUseNative": {
+      "label": "原生本地保存",
+      "description": "通过 Native Messaging 保存到系统目录。"
+    }
+  },
+  "workspace": {
+    "title": "你已经在这里了！",
+    "description": "在 WebToMind 上，插件暂时休息一下",
+    "hint": "去其他网站试试，一键捕获你的想法"
+  },
+  "sync": {
+    "syncing": "正在同步...",
+    "success": "同步完成！已同步 {{summaries}} 条总结，{{shortcuts}} 条快捷指令",
+    "failed": "同步失败"
+  },
+  "tips": {
+    "title": "提示",
+    "rightClick": "提示：右键点击页面也可以快速总结",
+    "shortcut": "快捷键：Ctrl+Shift+Y（macOS: Cmd+Shift+Y）"
+  },
+  "pageInfo": {
+    "title": "页面信息",
+    "url": "网址",
+    "contentType": "内容类型",
+    "article": "文章",
+    "video": "视频",
+    "pdf": "PDF",
+    "unknown": "未知"
+  },
+  "quickActions": {
+    "title": "快捷操作",
+    "ask": "快捷提问",
+    "summarizeCurrentPage": "总结当前页面",
+    "translateArticle": "翻译文章",
+    "openCaptureCard": "打开采集浮窗",
+    "summarizeArticle": "总结文章",
+    "summarizeVideo": "总结视频",
+    "extractText": "提取文本"
+  },
+  "user": {
+    "login": "登录",
+    "upgrade": "升级 Pro",
+    "quota": "今日剩余: {{count}} 次"
+  },
+  "errors": {
+    "noContent": "未检测到可总结的内容",
+    "notSupported": "当前页面不支持总结",
+    "networkError": "网络错误，请重试",
+    "openFloatingFailedRetry": "打开采集浮窗失败，请刷新当前页面后重试"
+  }
+}

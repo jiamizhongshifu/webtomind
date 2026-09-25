@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "opencli-usage": {
+      "source": "jackwener/opencli",
+      "sourceType": "github",
+      "computedHash": "e1d73a7c454605613c60bd44e5adbea2408ef374681bc013333f397c8423b277"
+    }
+  }
+}

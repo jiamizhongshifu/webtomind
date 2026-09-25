@@ -1,0 +1,58 @@
+{
+  "loading": "加载中...",
+  "header": {
+    "workspace": "工作台"
+  },
+  "extensionPage": {
+    "title": "在网页上使用 WebToMind",
+    "description": "请访问任意网页后点击插件，即可一键生成思维导图",
+    "goToWebsite": "前往 WebToMind"
+  },
+  "workspacePage": {
+    "title": "你已经在这里了！",
+    "description": "在 WebToMind 上，插件暂时休息一下",
+    "hint": "去其他网站试试，一键捕获你的想法"
+  },
+  "auth": {
+    "notLoggedIn": "未登录",
+    "loggedIn": "已登录",
+    "loginPrompt": "登录后即可使用全部功能",
+    "cloudSync": "登录后自动同步数据，多设备继续使用",
+    "loginButton": "登录 / 注册",
+    "supportedMethods": "支持 Google、邮箱等多种方式登录",
+    "syncDataPrompt": "登录后可同步到账号"
+  },
+  "actions": {
+    "summarize": "总结当前页面",
+    "summarizing": "总结中...",
+    "syncToCloud": "同步本地数据到账号",
+    "syncing": "同步中...",
+    "save": "保存",
+    "saving": "保存中...",
+    "saved": "已保存"
+  },
+  "sync": {
+    "syncing": "正在同步...",
+    "success": "同步完成！已同步 {{count}} 条总结",
+    "failed": "同步失败"
+  },
+  "status": {
+    "analyzing": "AI 正在分析内容...",
+    "generating": "AI生成中...",
+    "ready": "准备开始",
+    "clickToSummarize": "点击上方按钮总结当前页面",
+    "noData": "暂无数据"
+  },
+  "errors": {
+    "title": "错误",
+    "cannotGetTab": "无法获取当前标签页",
+    "untitledPage": "未命名页面",
+    "cannotConnectContent": "无法连接到页面内容脚本。请刷新页面后重试，或者检查当前页面是否支持内容提取（Chrome扩展页面和特殊页面不支持）",
+    "extractFailed": "提取内容失败",
+    "summarizeFailed": "总结失败",
+    "unknown": "发生未知错误",
+    "saveFailed": "保存失败: {{error}}",
+    "saveFailedRetry": "保存失败，请重试"
+  },
+  "slogan": "一键将网页内容转换为思维导图"
+}

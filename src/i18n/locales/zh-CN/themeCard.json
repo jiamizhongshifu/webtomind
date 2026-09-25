@@ -1,0 +1,182 @@
+{
+  "plaza": {
+    "kicker": "WebToMind 主题卡片",
+    "title": "主题卡片广场",
+    "subtitle": "从官方主题卡片开始，填充网格内容，再下载、分享，或在需要缩略图时用 AI 辅助生成。",
+    "create": "创建卡片",
+    "browseByType": "按类型浏览",
+    "cardCount": "{{count}} 张卡片",
+    "cardCount_plural": "{{count}} 张卡片",
+    "featuredTitle": "精选主题卡片",
+    "featuredDesc": "选择一个主题卡片，然后在编辑器里填充每个网格。",
+    "trendingTitle": "热门主题卡片",
+    "trendingDesc": "适合创作者、产品团队和视觉笔记的可分享格式。",
+    "seoTitle": "主题卡片广场 | WebToMind",
+    "seoDescription": "浏览 WebToMind 官方主题卡片，覆盖人像、商品、角色、社媒封面、贴纸和海报工作流。"
+  },
+  "tools": {
+    "add": "添加内容",
+    "templates": "主题模板",
+    "upload": "上传",
+    "settings": "设置"
+  },
+  "panel": {
+    "addDesc": "选择案例、上传图片或官方视觉元素，再点击右侧网格放入当前位置。",
+    "slotProgress": "第 {{current}} / {{total}} 格",
+    "selectSlotFirst": "先选格子",
+    "searchItems": "搜索内容...",
+    "templateDesc": "切换官方主题卡片，并同步调整网格标签。",
+    "searchTemplates": "搜索主题模板...",
+    "templateTabsAria": "主题模板分类",
+    "featured": "精选",
+    "community": "社区",
+    "forYou": "为你推荐",
+    "uploadTabsAria": "上传来源",
+    "local": "本地",
+    "myUploads": "我的上传",
+    "uploadFromDevice": "从设备上传",
+    "continueUpload": "继续上传",
+    "useUpload": "使用",
+    "replaceUpload": "替换",
+    "deleteUpload": "删除",
+    "emptyUploads": "还没有本地上传。上传后会出现在这里。",
+    "uploadHint": "本地上传只保存在当前设备，不会写入分享链接。",
+    "uploadMemoryOnly": "当前浏览器无法持久保存上传记录，本次仅保留在当前页面。",
+    "rows": "行数",
+    "columns": "列数",
+    "showLabels": "显示标签",
+    "resetGrid": "重置网格"
+  },
+  "stage": {
+    "back": "WebToMind",
+    "copied": "已复制",
+    "shareLink": "复制链接",
+    "preparing": "准备中",
+    "download": "下载",
+    "generate": "生成",
+    "downloadError": "当前浏览器无法下载 PNG，请改用复制分享链接。",
+    "titleLabel": "卡片标题",
+    "titleAria": "编辑主题卡片标题",
+    "titlePlaceholder": "输入卡片标题",
+    "clickToAdd": "点击添加",
+    "fillExamples": "填入示例",
+    "clear": "清空",
+    "clearSelected": "清空当前格",
+    "copyPrompt": "复制生成提示词",
+    "assistKicker": "辅助生成",
+    "assistTitle": "只在需要缩略图时使用 AI",
+    "assistDesc": "已选中「{{label}}」。可以用辅助生成模块生成这个格子的占位图。",
+    "assistEmptyTitle": "选择一个格子后再辅助生成",
+    "assistEmptyDesc": "右侧网格默认保持空白。点击任意格子后，可以编辑标签、添加图片，或生成当前格的占位图。",
+    "model": "模型",
+    "imageSize": "图片尺寸",
+    "promptLabel": "生成提示词",
+    "promptAria": "由主题卡片生成的提示词草稿",
+    "defaultFooterText": "用 WebToMind 记录这组视觉方向，随时复用到下一张图。",
+    "footerTextLabel": "底部文案",
+    "footerTextAria": "编辑主题卡片底部文案",
+    "footerTextPlaceholder": "写一句这张主题卡片想表达的方向",
+    "restorePrompt": "恢复自动提示词",
+    "generateInCreate": "前往创作页生成",
+    "seoTitle": "适合分享的主题卡片模板",
+    "canvasAria": "主题卡片画布",
+    "toolsAria": "主题卡片工具",
+    "sectionsAria": "编辑功能区",
+    "selectLabel": "选择{{label}}",
+    "editLabelAria": "编辑{{label}}标签",
+    "uploadedImage": "上传图片",
+    "localUpload": "本地上传",
+    "promptCase": "精选案例"
+  },
+  "templates": {
+    "taste": {
+      "title": "个人审美主题卡片",
+      "shortTitle": "个人审美",
+      "category": "入门",
+      "description": "适合创作者快速整理视觉方向的基础主题卡片。"
+    },
+    "portrait": {
+      "title": "人像主题卡片",
+      "shortTitle": "人像",
+      "category": "人像",
+      "description": "用于整理人像风格、灯光、镜头、表情和细节的主题卡片。"
+    },
+    "product": {
+      "title": "商品摄影主题卡片",
+      "shortTitle": "商品摄影",
+      "category": "商品",
+      "description": "用棚拍灯光、清晰构图、电商版式和卖点细节组织商品视觉。"
+    },
+    "character": {
+      "title": "角色设计主题卡片",
+      "shortTitle": "角色",
+      "category": "角色",
+      "description": "围绕角色主体、世界观、姿态、道具和色彩建立角色概念卡。"
+    },
+    "gpt-image-2": {
+      "title": "GPT Image 2 主题卡片",
+      "shortTitle": "GPT Image 2",
+      "category": "模型",
+      "description": "适合高可控商业视觉、可读版式和可复用图片提示词的主题卡片。"
+    },
+    "nano-banana": {
+      "title": "Nano Banana 主题卡片",
+      "shortTitle": "Nano Banana",
+      "category": "模型",
+      "description": "适合参考图迭代、生活方式人像和可分享视觉想法的快速卡片。"
+    },
+    "seedream": {
+      "title": "Seedream 场景主题卡片",
+      "shortTitle": "Seedream",
+      "category": "模型",
+      "description": "适合真实质感、高审美场景、干净灯光和商业输出的场景卡片。"
+    },
+    "midjourney": {
+      "title": "电影感主题卡片",
+      "shortTitle": "Midjourney",
+      "category": "电影感",
+      "description": "适合电影海报、编辑式世界观和强情绪视觉探索的主题卡片。"
+    },
+    "social-cover": {
+      "title": "社媒封面主题卡片",
+      "shortTitle": "社媒封面",
+      "category": "社媒",
+      "description": "适合教程封面、上线公告、小红书封面和创作者活动视觉。"
+    },
+    "anime-avatar": {
+      "title": "动漫头像主题卡片",
+      "shortTitle": "动漫头像",
+      "category": "头像",
+      "description": "适合头像、角色半身像、柔和插画风格和干净人像。"
+    },
+    "sticker": {
+      "title": "贴纸包主题卡片",
+      "shortTitle": "贴纸",
+      "category": "贴纸",
+      "description": "适合可爱 3D 形象、表情包和轻量分享角色。"
+    },
+    "cinematic-poster": {
+      "title": "电影海报主题卡片",
+      "shortTitle": "电影海报",
+      "category": "海报",
+      "description": "适合情绪化海报、电影式主视觉和戏剧化图片案例。"
+    }
+  },
+  "gridLabels": {
+    "taste": ["喜欢的风格", "最佳灯光", "理想背景", "常用构图", "喜欢的主体", "复用版式", "镜头质感", "细节偏好", "自由格"],
+    "portrait": ["喜欢的人像", "最佳灯光", "脸部情绪", "姿态", "背景", "镜头", "色彩", "参考图", "自由格"],
+    "product": ["商品主图", "材质细节", "包装", "灯光", "背景", "尺度细节", "电商角度", "活动视觉", "自由格"],
+    "character": ["主角色", "侧面设定", "服装", "世界观", "姿态", "道具", "表情", "色彩钥匙", "自由格"],
+    "gpt-image-2": ["最佳提示词", "可读文字", "商品视觉", "人像", "版式", "参考图使用", "前后对比", "营销活动", "自由格"],
+    "nano-banana": ["快速想法", "参考图", "生活方式", "人像", "商品", "社媒图", "迭代版本", "色彩氛围", "自由格"],
+    "seedream": ["场景", "灯光", "质感", "建筑", "人像", "风景", "商业视觉", "氛围", "自由格"],
+    "midjourney": ["电影氛围", "海报镜头", "世界观", "角色", "灯光", "调色", "镜头", "细节", "自由格"],
+    "social-cover": ["主封面", "标题空间", "创作者头像", "商品", "钩子视觉", "背景", "贴纸", "色彩", "自由格"],
+    "anime-avatar": ["头像", "表情", "发型", "服装", "灯光", "背景", "色彩", "细节", "自由格"],
+    "sticker": ["开心", "思考", "惊讶", "生气", "感谢", "OK", "工作中", "庆祝", "难过", "喜欢", "困倦", "自由格"],
+    "cinematic-poster": ["主海报", "主角", "反派", "世界观", "冲突", "标题空间", "调色", "关键道具", "自由格"]
+  },
+  "grid": {
+    "slotFallback": "第 {{number}} 格"
+  }
+}

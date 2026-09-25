@@ -1,0 +1,388 @@
+.pricing-product-os .pricing-payment-notice {
+  display: flex;
+  min-height: 50px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 0 auto 28px;
+  border: 1px solid var(--pricing-line);
+  border-radius: 16px;
+  padding: 11px 12px 11px 16px;
+  background: var(--pricing-surface);
+  color: var(--pricing-secondary);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.45;
+  box-shadow: var(--pricing-shadow-small);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.pricing-product-os .pricing-payment-notice.success {
+  border-color: rgba(24, 128, 56, 0.22);
+  background: color-mix(
+    in srgb,
+    var(--pricing-green) 8%,
+    var(--pricing-surface)
+  );
+  color: var(--pricing-green);
+}
+
+.pricing-product-os .pricing-payment-notice.warning {
+  border-color: rgba(181, 71, 8, 0.22);
+  background: color-mix(
+    in srgb,
+    var(--pricing-orange) 8%,
+    var(--pricing-surface)
+  );
+  color: var(--pricing-orange);
+}
+
+.pricing-product-os .pricing-payment-notice.error {
+  border-color: rgba(196, 50, 43, 0.22);
+  background: color-mix(in srgb, var(--pricing-red) 8%, var(--pricing-surface));
+  color: var(--pricing-red);
+}
+
+.pricing-product-os .pricing-surface-section,
+.pricing-product-os .pricing-extra-credit-card,
+.pricing-product-os .pricing-trust-card,
+.pricing-product-os .pricing-faq-item {
+  border: 1px solid var(--pricing-line) !important;
+  background: var(--pricing-surface) !important;
+  box-shadow: var(--pricing-shadow-small) !important;
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+}
+
+.pricing-product-os .pricing-credit-section {
+  margin-top: 26px !important;
+  border-radius: 28px !important;
+  padding: clamp(22px, 3vw, 34px) !important;
+}
+
+.pricing-product-os .pricing-credit-section h2 {
+  color: var(--pricing-ink) !important;
+  font-size: clamp(1.5rem, 2.5vw, 2rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.pricing-product-os .pricing-credit-section p {
+  color: var(--pricing-secondary) !important;
+}
+
+.pricing-product-os .pricing-credit-section > div:first-child > span {
+  border: 0 !important;
+  background: rgba(24, 128, 56, 0.1) !important;
+  color: var(--pricing-green) !important;
+}
+
+.pricing-product-os .pricing-usage-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 20px !important;
+}
+
+.pricing-product-os .pricing-usage-card {
+  min-height: 150px;
+  border: 1px solid var(--pricing-line) !important;
+  border-radius: 20px !important;
+  background: var(--pricing-surface-muted) !important;
+  padding: 18px !important;
+  box-shadow: none !important;
+}
+
+.pricing-product-os .pricing-usage-card > div:first-child {
+  color: var(--pricing-ink) !important;
+  font-size: 0.875rem;
+  font-weight: 650 !important;
+}
+
+.pricing-product-os .pricing-usage-card > div:nth-child(2) {
+  color: var(--pricing-blue) !important;
+  font-size: 1.75rem;
+  font-weight: 700 !important;
+  letter-spacing: -0.035em;
+  font-variant-numeric: tabular-nums;
+}
+
+.pricing-product-os .pricing-usage-card p {
+  color: var(--pricing-secondary) !important;
+}
+
+.pricing-product-os .pricing-extra-credit-card {
+  max-width: 800px;
+  margin-top: 24px !important;
+  border-color: rgba(0, 113, 227, 0.14) !important;
+  border-radius: 22px !important;
+  background:
+    linear-gradient(135deg, var(--pricing-blue-soft), transparent 72%),
+    var(--pricing-surface) !important;
+  padding: 20px 22px !important;
+}
+
+.pricing-product-os .pricing-extra-credit-card p {
+  color: var(--pricing-secondary) !important;
+}
+
+.pricing-product-os .pricing-extra-credit-card strong {
+  color: var(--pricing-ink) !important;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.pricing-product-os .pricing-extra-credit-card .pricing-primary-action {
+  min-height: 46px;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--pricing-blue) !important;
+  color: #ffffff !important;
+  font-weight: 650 !important;
+  box-shadow: none !important;
+  transition:
+    background-color 160ms ease,
+    transform 100ms ease-out;
+}
+
+.pricing-product-os .pricing-comparison-section,
+.pricing-product-os .pricing-trust-grid,
+.pricing-product-os .pricing-faq-section {
+  margin-top: clamp(56px, 7vw, 88px) !important;
+}
+
+.pricing-section-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.pricing-section-heading > div:first-child {
+  max-width: 760px;
+}
+
+.pricing-section-heading span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--pricing-blue) !important;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pricing-section-heading h2 {
+  margin: 0;
+  color: var(--pricing-ink) !important;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 1.02;
+}
+
+.pricing-section-heading p {
+  margin: 12px 0 0;
+  color: var(--pricing-secondary) !important;
+  font-size: 0.9375rem;
+  letter-spacing: -0.008em;
+  line-height: 1.6;
+}
+
+.pricing-comparison-scroll-hint {
+  display: none;
+  margin: -8px 0 12px;
+  color: var(--pricing-tertiary);
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+
+.pricing-product-os .pricing-comparison-scroll {
+  overflow: auto;
+  border-radius: 24px !important;
+  overscroll-behavior-x: contain;
+  scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pricing-product-os .pricing-comparison-table {
+  min-width: 744px;
+}
+
+.pricing-product-os .pricing-comparison-row {
+  display: grid;
+  grid-template-columns:
+    minmax(168px, 1.1fr)
+    repeat(var(--pricing-plan-count, 3), minmax(140px, 1fr));
+  border-color: var(--pricing-line) !important;
+}
+
+.pricing-product-os .pricing-comparison-row:first-child {
+  background: var(--pricing-surface-muted);
+}
+
+.pricing-product-os .pricing-comparison-row > div {
+  border-right: 1px solid var(--pricing-line);
+}
+
+.pricing-product-os .pricing-comparison-row > div:last-child {
+  border-right: 0;
+}
+
+.pricing-product-os .pricing-comparison-plan-cell,
+.pricing-product-os .pricing-comparison-value-cell {
+  color: var(--pricing-ink) !important;
+}
+
+.pricing-product-os .pricing-comparison-plan-cell .pricing-primary-action {
+  border-radius: 12px !important;
+  background: var(--pricing-blue) !important;
+  color: #ffffff !important;
+  font-weight: 650 !important;
+  box-shadow: none !important;
+  transition:
+    background-color 160ms ease,
+    transform 100ms ease-out;
+}
+
+.pricing-product-os .pricing-comparison-plan-cell button:active {
+  transform: scale(0.98);
+}
+
+.pricing-product-os .pricing-comparison-plan-cell button:disabled {
+  background: rgba(118, 118, 128, 0.12) !important;
+  color: var(--pricing-tertiary) !important;
+}
+
+.dark .pricing-product-os .pricing-comparison-plan-cell button:disabled {
+  color: #b6b6bc !important;
+}
+
+.pricing-product-os .pricing-trust-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pricing-product-os .pricing-trust-card {
+  min-height: 178px;
+  border-radius: 24px !important;
+  padding: 24px !important;
+  transition:
+    transform var(--pricing-spring),
+    box-shadow 220ms ease;
+}
+
+.pricing-product-os .pricing-trust-card > svg {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px;
+  background: var(--pricing-blue-soft);
+  padding: 9px;
+  color: var(--pricing-blue) !important;
+}
+
+.pricing-product-os .pricing-trust-card:nth-child(2) > svg {
+  background: rgba(255, 159, 10, 0.12);
+  color: #c76b00 !important;
+}
+
+.pricing-product-os .pricing-trust-card:nth-child(3) > svg {
+  background: rgba(175, 82, 222, 0.11);
+  color: #8944ab !important;
+}
+
+.dark .pricing-product-os .pricing-trust-card:nth-child(3) > svg {
+  background: rgba(175, 82, 222, 0.18);
+  color: #c084fc !important;
+}
+
+.pricing-product-os .pricing-trust-card h3 {
+  color: var(--pricing-ink) !important;
+  font-size: 1.0625rem;
+  font-weight: 650 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.pricing-product-os .pricing-trust-card p {
+  color: var(--pricing-secondary) !important;
+}
+
+.pricing-faq-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.pricing-product-os .pricing-faq-item {
+  align-self: start;
+  overflow: clip;
+  border-radius: 18px !important;
+  interpolate-size: allow-keywords;
+}
+
+.pricing-product-os .pricing-faq-item::details-content {
+  overflow: clip;
+  block-size: 0;
+  opacity: 0;
+  transition:
+    block-size 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    content-visibility 320ms allow-discrete,
+    opacity 180ms ease;
+}
+
+.pricing-product-os .pricing-faq-item[open]::details-content {
+  block-size: auto;
+  opacity: 1;
+}
+
+.pricing-product-os .pricing-faq-item summary {
+  display: flex;
+  min-height: 64px;
+  cursor: pointer;
+  list-style: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  color: var(--pricing-ink) !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pricing-product-os .pricing-faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.pricing-product-os .pricing-faq-item summary:active {
+  background: var(--pricing-surface-muted);
+}
+
+.pricing-product-os .pricing-faq-item summary svg {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: var(--pricing-surface-muted);
+  padding: 7px;
+  color: var(--pricing-secondary) !important;
+  transition: transform var(--pricing-spring);
+}
+
+.pricing-product-os .pricing-faq-item[open] summary svg {
+  transform: rotate(180deg);
+}
+
+.pricing-product-os .pricing-faq-answer {
+  margin: 0;
+  padding: 0 18px 20px;
+  color: var(--pricing-secondary) !important;
+  font-size: 0.8125rem;
+  line-height: 1.65;
+}
+
+.pricing-product-os :is(button, a, summary):focus-visible,
+.pricing-product-os .pricing-comparison-scroll:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--pricing-blue) 58%, transparent);
+  outline-offset: 3px;
+}

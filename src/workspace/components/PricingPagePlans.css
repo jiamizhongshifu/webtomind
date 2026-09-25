@@ -1,0 +1,327 @@
+.pricing-product-os .pricing-krea-plan-card {
+  position: relative;
+  isolation: isolate;
+  min-height: 610px !important;
+  overflow: hidden;
+  border: 1px solid var(--pricing-line) !important;
+  border-radius: 28px !important;
+  background: var(--pricing-surface) !important;
+  padding: clamp(22px, 2.1vw, 30px) !important;
+  color: var(--pricing-ink) !important;
+  box-shadow: var(--pricing-shadow-card) !important;
+  backdrop-filter: blur(24px) saturate(140%);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  transition:
+    transform var(--pricing-spring),
+    border-color 260ms ease,
+    box-shadow 260ms ease;
+}
+
+.pricing-product-os .pricing-krea-plan-card::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.5),
+    transparent 42%
+  );
+  content: '';
+  pointer-events: none;
+}
+
+.dark .pricing-product-os .pricing-krea-plan-card::before {
+  background: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.07),
+    transparent 42%
+  );
+}
+
+.pricing-product-os
+  .pricing-plan-grid
+  .pricing-krea-plan-card[data-popular='true'] {
+  border-color: rgba(0, 113, 227, 0.32) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(230, 242, 255, 0.92),
+    rgba(255, 255, 255, 0.9) 38%
+  ) !important;
+  box-shadow:
+    0 2px 8px rgba(0, 113, 227, 0.06),
+    0 30px 80px rgba(0, 113, 227, 0.13) !important;
+  transform: translateY(-8px) !important;
+}
+
+.dark
+  .pricing-product-os
+  .pricing-plan-grid
+  .pricing-krea-plan-card[data-popular='true'] {
+  background: linear-gradient(
+    180deg,
+    rgba(12, 51, 89, 0.88),
+    rgba(29, 29, 31, 0.92) 42%
+  ) !important;
+}
+
+.pricing-product-os .pricing-krea-plan-card[data-current='true'] {
+  border-color: var(--pricing-line-strong) !important;
+}
+
+.pricing-product-os .pricing-plan-intro {
+  padding-right: 72px;
+}
+
+.pricing-product-os .pricing-plan-name {
+  margin: 0;
+  color: var(--pricing-ink) !important;
+  font-size: clamp(1.4rem, 2vw, 1.75rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.035em !important;
+  line-height: 1.08;
+}
+
+.pricing-product-os .pricing-plan-tagline {
+  min-height: 48px;
+  margin-top: 10px !important;
+  color: var(--pricing-secondary) !important;
+  font-size: 0.875rem;
+  font-weight: 450;
+  letter-spacing: -0.006em;
+  line-height: 1.55 !important;
+}
+
+.pricing-product-os .pricing-krea-plan-badge {
+  position: absolute !important;
+  top: 22px !important;
+  right: 22px !important;
+  left: auto !important;
+  z-index: 2 !important;
+  display: inline-flex !important;
+  width: auto !important;
+  min-height: 28px !important;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 0 !important;
+  border-radius: 999px !important;
+  padding: 6px 10px !important;
+  color: #ffffff !important;
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.005em;
+  line-height: 1 !important;
+  text-align: center;
+  transform: none !important;
+  pointer-events: none;
+}
+
+.pricing-product-os .pricing-krea-plan-badge[data-tone='popular'] {
+  background: var(--pricing-blue) !important;
+  box-shadow: 0 5px 16px rgba(0, 113, 227, 0.22) !important;
+}
+
+.dark .pricing-product-os .pricing-krea-plan-badge[data-tone='popular'] {
+  background: #0a5fd4 !important;
+  box-shadow: 0 5px 16px rgba(10, 95, 212, 0.32) !important;
+}
+
+.pricing-product-os .pricing-krea-plan-badge[data-tone='best-value'] {
+  background: linear-gradient(135deg, #f59e0b, #f97316) !important;
+  box-shadow: 0 5px 16px rgba(245, 158, 11, 0.22) !important;
+}
+
+.pricing-product-os .pricing-krea-plan-badge[data-tone='current'] {
+  background: var(--pricing-ink) !important;
+  color: var(--pricing-canvas) !important;
+}
+
+.pricing-product-os .pricing-krea-plan-badge svg {
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+
+.pricing-product-os .pricing-krea-current-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.pricing-product-os .pricing-plan-price-block {
+  min-height: 126px;
+  margin-top: 28px !important;
+}
+
+.pricing-product-os .pricing-plan-price-row {
+  min-width: 0;
+  align-items: baseline !important;
+  gap: 6px !important;
+}
+
+.pricing-product-os .pricing-plan-currency {
+  color: var(--pricing-ink) !important;
+  font-size: 1.25rem !important;
+  font-weight: 650 !important;
+}
+
+.pricing-product-os .pricing-plan-price {
+  color: var(--pricing-ink) !important;
+  font-size: clamp(2.75rem, 4.6vw, 4.25rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.055em !important;
+  line-height: 0.95;
+  font-variant-numeric: tabular-nums;
+}
+
+.pricing-product-os .pricing-plan-list-price,
+.pricing-product-os .pricing-plan-period {
+  color: var(--pricing-tertiary) !important;
+  font-size: 0.8125rem;
+  font-weight: 550 !important;
+  white-space: nowrap;
+}
+
+.pricing-product-os .pricing-plan-annual-price,
+.pricing-product-os .pricing-plan-savings {
+  margin-top: 9px !important;
+  font-size: 0.8125rem;
+  font-weight: 600 !important;
+  line-height: 1.35;
+}
+
+.pricing-product-os .pricing-plan-annual-price {
+  color: var(--pricing-green) !important;
+}
+
+.pricing-product-os .pricing-plan-savings {
+  color: var(--pricing-blue) !important;
+}
+
+.pricing-product-os .pricing-krea-credit-box {
+  border: 1px solid var(--pricing-line) !important;
+  border-radius: 18px !important;
+  background: var(--pricing-surface-muted) !important;
+  padding: 16px !important;
+  box-shadow: none !important;
+}
+
+.pricing-product-os .pricing-credit-summary-value {
+  color: var(--pricing-ink) !important;
+  font-size: 0.875rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.pricing-product-os .pricing-plan-credit-badge {
+  border: 0;
+  border-radius: 999px !important;
+  background: rgba(118, 118, 128, 0.12) !important;
+  color: var(--pricing-secondary) !important;
+  font-size: 0.625rem;
+  font-weight: 650 !important;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.pricing-product-os
+  .pricing-krea-credit-box[data-tone='pro']
+  .pricing-plan-credit-badge {
+  background: var(--pricing-blue-soft) !important;
+  color: var(--pricing-blue) !important;
+}
+
+.pricing-product-os
+  .pricing-krea-credit-box[data-tone='max']
+  .pricing-plan-credit-badge {
+  background: rgba(175, 82, 222, 0.12) !important;
+  color: #8944ab !important;
+}
+
+.dark
+  .pricing-product-os
+  .pricing-krea-credit-box[data-tone='max']
+  .pricing-plan-credit-badge {
+  color: #d9a9f2 !important;
+}
+
+.pricing-product-os .pricing-credit-summary-description {
+  color: var(--pricing-secondary) !important;
+  font-size: 0.75rem;
+  line-height: 1.55 !important;
+}
+
+.pricing-product-os .pricing-plan-action {
+  margin-top: 20px !important;
+}
+
+.pricing-product-os .pricing-krea-plan-card .pricing-plan-action button,
+.pricing-product-os .pricing-krea-plan-card .pricing-plan-action a {
+  min-height: 50px;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: var(--pricing-blue) !important;
+  color: #ffffff !important;
+  font-size: 0.875rem;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em;
+  box-shadow: none !important;
+  transition:
+    background-color 160ms ease,
+    transform 100ms ease-out,
+    opacity 160ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pricing-product-os
+  .pricing-krea-plan-card[data-plan='free']
+  .pricing-plan-action
+  button:not(:disabled) {
+  background: var(--pricing-ink) !important;
+  color: var(--pricing-canvas) !important;
+}
+
+.pricing-product-os .pricing-krea-plan-card .pricing-plan-action button:active,
+.pricing-product-os .pricing-krea-plan-card .pricing-plan-action a:active,
+.pricing-product-os .pricing-primary-action:active {
+  transform: scale(0.98);
+}
+
+.pricing-product-os
+  .pricing-krea-plan-card
+  .pricing-plan-action
+  button:disabled {
+  background: rgba(118, 118, 128, 0.12) !important;
+  color: var(--pricing-tertiary) !important;
+  opacity: 1;
+}
+
+.dark
+  .pricing-product-os
+  .pricing-krea-plan-card
+  .pricing-plan-action
+  button:disabled {
+  color: #b6b6bc !important;
+}
+
+.pricing-product-os .pricing-krea-feature-list {
+  padding: 0;
+  list-style: none;
+}
+
+.pricing-product-os .pricing-plan-feature {
+  gap: 10px !important;
+  color: var(--pricing-secondary) !important;
+  font-size: 0.8125rem;
+  font-weight: 450;
+  line-height: 1.55 !important;
+}
+
+.pricing-product-os .pricing-plan-feature svg {
+  margin-top: 2px !important;
+  color: var(--pricing-green) !important;
+  stroke-width: 2.25;
+}

@@ -1,0 +1,95 @@
+{
+  "boards": {
+    "title": "Boards",
+    "skills": "Skills",
+    "create": "Creative Studio",
+    "description": "Manage your knowledge spaces",
+    "createProject": "Create Project",
+    "editProject": "Edit Project",
+    "deleteProject": "Delete Project",
+    "inbox": "Inbox",
+    "allProjects": "All Projects",
+    "noProjects": "No projects yet",
+    "noArchivedProjects": "No archived projects",
+    "confirmDelete": "Are you sure you want to delete this project? Materials will be moved to Inbox.",
+    "fields": {
+      "name": "Project Name",
+      "description": "Description",
+      "icon": "Icon",
+      "color": "Color",
+      "placeholder": "Enter project name..."
+    },
+    "projectSettings": {
+      "instructionsLabel": "Instructions",
+      "instructionsHint": "Set background context and customize how the agent responds for this project.",
+      "memoryLabel": "Memory",
+      "memoryDefault": "Default",
+      "memoryHint": "This project can access memory from other chats and vice versa. This setting cannot be changed."
+    },
+    "onboarding": {
+      "close": "Close",
+      "welcome": "Welcome to WebToMind!",
+      "scenarioPrompt": "What do you want to do first? (Switchable anytime)",
+      "recommended": "Recommended",
+      "visualTitle": "Visual Creation",
+      "visualDesc": "AI image gen / reverse-engineer references / slot combos / reproduce styles",
+      "chatTitle": "Chat & Research",
+      "chatDesc": "Project material organizing / agent assistant / doc collaboration",
+      "skip": "Skip intro",
+      "back": "Back",
+      "visualNextTitle": "Ready for visual creation",
+      "visualNextDesc": "We will take you to the Visual Prompt Studio — combine 16 slots, generate reproducible images. Try uploading a reference and reverse it with AI.",
+      "chatNextTitle": "Workspace is ready",
+      "chatNextDesc": "Chat with agents on your project; in project settings you can write custom instructions that auto-load on every conversation.",
+      "goToStudio": "Enter Creative Studio",
+      "goToBoards": "Start Using Workspace"
+    },
+    "stats": {
+      "summaries": "Summaries",
+      "conversations": "Conversations"
+    },
+    "createFailed": "Failed to create project",
+    "deleteFailed": "Failed to delete project",
+    "updateFailed": "Failed to update project",
+    "loadFailed": "Failed to load projects",
+    "confirm": "Update",
+    "cancel": "Cancel",
+    "recentContent": "Recently Added",
+    "smartCreate": "AI Smart Create",
+    "active": "Active",
+    "archived": "Archived",
+    "actions": {
+      "edit": "Edit",
+      "favorite": "Favorite",
+      "unfavorite": "Unfavorite",
+      "archive": "Archive",
+      "unarchive": "Unarchive",
+      "delete": "Delete"
+    },
+    "favorites": "Favorites",
+    "recent": "Recent",
+    "sort": {
+      "updatedDesc": "Last Updated (↓)",
+      "updatedAsc": "Last Updated (↑)",
+      "createdDesc": "Created Date (↓)",
+      "createdAsc": "Created Date (↑)",
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)"
+    },
+    "listHeader": {
+      "name": "Project Name",
+      "lastUpdated": "Last Updated",
+      "created": "Created"
+    }
+  },
+  "userMenu": {
+    "user": "User",
+    "founderMember": "Founding Member",
+    "daysJoined": "Joined {{days}} d",
+    "language": "Language",
+    "backToHome": "Home",
+    "signOut": "Sign Out",
+    "credits": "Credits",
+    "dailyCredits": "Daily"
+  }
+}

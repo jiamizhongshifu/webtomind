@@ -1,0 +1,146 @@
+.prompt-library-harness {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 32px;
+  padding: 32px;
+  background: #f7f6f4;
+  color: #211a16;
+}
+
+.prompt-library-harness-panel {
+  position: sticky;
+  top: 32px;
+  align-self: start;
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid rgba(65, 50, 42, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.86);
+}
+
+.prompt-library-harness-panel h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.05;
+}
+
+.prompt-library-harness-panel p {
+  margin: 0;
+  color: rgba(33, 26, 22, 0.68);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.prompt-library-harness-panel dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.prompt-library-harness-panel dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(65, 50, 42, 0.1);
+}
+
+.prompt-library-harness-panel dt,
+.prompt-library-harness-panel dd {
+  margin: 0;
+  font-size: 13px;
+}
+
+.prompt-library-harness-panel dt {
+  color: rgba(33, 26, 22, 0.56);
+}
+
+.prompt-library-harness-stage {
+  min-width: 0;
+  display: grid;
+  gap: 18px;
+  padding: 0 0 48px;
+}
+
+.prompt-library-harness-masonry {
+  padding: 20px 0 12px;
+}
+
+.prompt-library-harness-media {
+  overflow: hidden;
+}
+
+.prompt-library-harness-media-plane {
+  min-height: 100%;
+  display: grid;
+  align-content: end;
+  gap: 8px;
+  padding: 18px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0)),
+    linear-gradient(135deg, #e9dad0, #9cb8b2 48%, #2e3a42);
+}
+
+.prompt-library-harness-media[data-harness-media='2']
+  .prompt-library-harness-media-plane {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0)),
+    linear-gradient(135deg, #f0e5b8, #d68665 46%, #403349);
+}
+
+.prompt-library-harness-media[data-harness-media='3']
+  .prompt-library-harness-media-plane {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0)),
+    linear-gradient(135deg, #c9d7ef, #657a9f 45%, #171a22);
+}
+
+.prompt-library-harness-media-plane span,
+.prompt-library-harness-media-plane strong {
+  display: block;
+  color: #fff;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.34);
+}
+
+.prompt-library-harness-media-plane span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.prompt-library-harness-media-plane strong {
+  max-width: 18ch;
+  font-size: 20px;
+  line-height: 1.05;
+}
+
+.prompt-library-harness-state-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.prompt-library-harness-state-grid h2 {
+  margin-top: 0;
+}
+
+.prompt-library-harness-state-grid ul {
+  margin-bottom: 0;
+}
+
+@media (max-width: 820px) {
+  .prompt-library-harness {
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+
+  .prompt-library-harness-panel {
+    position: static;
+  }
+
+  .prompt-library-harness-state-grid {
+    grid-template-columns: 1fr;
+  }
+}

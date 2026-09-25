@@ -1,0 +1,42 @@
+# WebToMind
+
+> WebToMind is a free AI image creation workflow site for content creators and small teams: image-to-prompt reverse engineering, visual slot composition, multi-model image generation, and reproducible workflows. Key free tools include the bead pattern maker, image compressor, image upscaler, image splitter and watermark remover.
+
+## Free tools
+
+- [拼豆生成器（免费在线拼豆图案图纸生成）](https://webtomind.com/zh-CN/tools/pindou-pattern-maker): Free, no-registration bead pattern maker. Upload a photo or pixel art and generate a printable fuse-bead chart with 8 brand palettes (1502 standard color codes), dominant/average pixelation, background removal, color counts, PNG/CSV export and paginated PDF worksheets (50x50 cells per page). All processing happens in the browser; images are never uploaded.
+- [Bead Pattern Maker (EN)](https://webtomind.com/en-US/tools/pindou-pattern-maker): English version of the free perler bead pattern maker with 8 brand palettes and paginated PDF export.
+- [AI 图像放大器](https://webtomind.com/zh-CN/tools/image-upscaler): Enlarge reference images up to 2K or 4K before converting them into bead charts.
+- [图片压缩工具](https://webtomind.com/zh-CN/tools/image-compressor): Shrink PNG/JPG/WebP files locally before sharing charts.
+- [图像分割器](https://webtomind.com/zh-CN/tools/image-splitter): Slice large bead charts into printable sections.
+- [去水印工具](https://webtomind.com/zh-CN/tools/watermark-remover): Clean unwanted marks from reference images.
+- [ComfyUI Workflow Checker](https://webtomind.com/zh-CN/tools/comfyui-workflow-checker): Inspect ComfyUI workflows for model, LoRA, VAE, ControlNet and migration risks.
+
+## Bead pattern guides
+
+- [拼豆新手入门指南](https://webtomind.com/zh-CN/blog/pindou-beginner-guide): How to pick a palette, set grid width and control color count for your first printable chart.
+- [拼豆怎么熨：熨烫技巧与常见问题](https://webtomind.com/zh-CN/blog/pindou-ironing-guide): Temperature, technique and fixes for ironing fuse beads without warping.
+- [MARD 拼豆色号对照表（291 色）怎么用](https://webtomind.com/zh-CN/blog/mard-bead-color-chart): How to read MARD/COCO/Manman/Panpan/Mixiaowo color codes and buy exactly the colors you need.
+- [拼豆图纸怎么打印](https://webtomind.com/zh-CN/blog/pindou-printing-guide): Print settings, A4 pagination and blueprint tips for bead charts.
+- [拼豆尺寸怎么选：5mm 与 2.6mm 的区别](https://webtomind.com/zh-CN/blog/pindou-bead-size-guide): When to choose 5mm vs 2.6mm beads and 72 vs 168-color planning.
+
+## Pattern ideas by project
+
+- [拼豆宠物肖像图纸怎么做](https://webtomind.com/zh-CN/blog/bead-pattern-pet-portrait)
+- [拼豆同人角色图纸怎么做](https://webtomind.com/zh-CN/blog/bead-pattern-anime-fanart)
+- [拼豆亲子手工和课堂图纸怎么做](https://webtomind.com/zh-CN/blog/bead-pattern-kids-craft)
+- [拼豆像素画图纸怎么做](https://webtomind.com/zh-CN/blog/bead-pattern-pixel-art)
+
+## Core product
+
+- [AI 图片生成与 Prompt 案例库](https://webtomind.com/zh-CN/prompts): Reusable AI image prompts and visual recipes for image models.
+- [AI Image Prompt Library (EN)](https://webtomind.com/en-US/prompts)
+- [价格与积分套餐](https://webtomind.com/zh-CN/pricing)
+- [WebToMind Overview](https://webtomind.com/zh-CN/overview)
+
+## Facts
+
+- 拼豆生成器免费、无需注册；所有图片转换都在浏览器本地完成，原图不上传服务器。
+- 支持 8 套品牌色板：Perler、Hama、Artkal，以及 MARD、COCO、漫漫、盼盼、咪小窝 5 套中文品牌色板，共 1502 个标准色号。
+- 导出格式：PNG 图纸（带坐标与每格色号）、CSV 采购清单、PDF 制作说明（大图按 50×50 格分页）。
+- 图纸宽度 16-140 珠，最多 4-32 色；支持主色/平均色像素化、自动去背景、相似色合并、手工编辑、撤销/重做与分享码。

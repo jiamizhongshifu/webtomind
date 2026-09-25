@@ -1,0 +1,58 @@
+{
+  "loading": "Loading...",
+  "header": {
+    "workspace": "Workspace"
+  },
+  "extensionPage": {
+    "title": "Use WebToMind on web pages",
+    "description": "Visit any webpage and click the extension to generate a mind map",
+    "goToWebsite": "Go to WebToMind"
+  },
+  "workspacePage": {
+    "title": "You're already here!",
+    "description": "On WebToMind, the extension takes a break",
+    "hint": "Try other websites to capture your ideas"
+  },
+  "auth": {
+    "notLoggedIn": "Not logged in",
+    "loggedIn": "Logged in",
+    "loginPrompt": "Log in to access all features",
+    "cloudSync": "Sync your data across devices after you sign in",
+    "loginButton": "Log in / Sign up",
+    "supportedMethods": "Supports Google, email and more",
+    "syncDataPrompt": "Log in to sync data to your account"
+  },
+  "actions": {
+    "summarize": "Summarize this page",
+    "summarizing": "Summarizing...",
+    "syncToCloud": "Sync local data to your account",
+    "syncing": "Syncing...",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Saved"
+  },
+  "sync": {
+    "syncing": "Syncing...",
+    "success": "Sync complete! Synced {{count}} summaries",
+    "failed": "Sync failed"
+  },
+  "status": {
+    "analyzing": "AI is analyzing content...",
+    "generating": "AI generating...",
+    "ready": "Ready to start",
+    "clickToSummarize": "Click the button above to summarize",
+    "noData": "No data"
+  },
+  "errors": {
+    "title": "Error",
+    "cannotGetTab": "Cannot get current tab",
+    "untitledPage": "Untitled page",
+    "cannotConnectContent": "Cannot connect to page content script. Please refresh the page and try again, or check if the page supports content extraction (Chrome extension pages and special pages are not supported)",
+    "extractFailed": "Failed to extract content",
+    "summarizeFailed": "Summary failed",
+    "unknown": "An unknown error occurred",
+    "saveFailed": "Save failed: {{error}}",
+    "saveFailedRetry": "Save failed, please try again"
+  },
+  "slogan": "Convert web content to mind maps with one click"
+}

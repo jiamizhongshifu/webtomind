@@ -1,0 +1,35 @@
+services:
+  watermarks-remover:
+    # Pinned upstream core plus WebToMind's visible inpainting layer.
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: webtomind-watermarks-remover:visible
+    container_name: webtomind-watermarks-remover
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cpus: 1.0
+    mem_limit: 1g
+    pids_limit: 128
+    environment:
+      WATERMARKS_SERVER_API_KEY: ${WATERMARKS_SERVICE_API_KEY:?run pnpm watermarks:setup first}
+    ports:
+      - '127.0.0.1:8765:8765'
+    read_only: true
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test:
+        - CMD
+        - python3
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8765/health', timeout=2)
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

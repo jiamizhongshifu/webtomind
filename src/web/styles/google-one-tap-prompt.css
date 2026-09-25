@@ -1,0 +1,278 @@
+/*
+ * Google quick-login card — bottom-left floating prompt.
+ *
+ * Skips the native Google One Tap (whose position Google controls) and shows
+ * our own non-blocking card near the sidebar user/account area. It shares the
+ * --z-product-auth layer with the AuthModal so both can appear at once; it
+ * never covers the page with a scrim and is dismissible.
+ */
+
+.global-google-login-fallback {
+  position: fixed;
+  right: auto;
+  bottom: 78px;
+  left: 18px;
+  /* 与登录弹窗同一层级（--z-product-auth: 1300），但比弹窗蒙版高 1 层，
+     确保两者同时出现时卡片不被 scrim 盖住、仍然清晰可见。 */
+  z-index: calc(var(--z-product-auth, 1300) + 1);
+  box-sizing: border-box;
+  width: min(340px, calc(100vw - 36px));
+  max-height: calc(100dvh - 96px);
+  overflow-y: auto;
+  padding: 16px 52px 16px 16px;
+  border: 1px solid var(--product-border-default);
+  border-radius: 16px;
+  background: var(--product-panel-solid);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 2px 8px rgba(0, 0, 0, 0.05),
+    0 24px 64px rgba(0, 0, 0, 0.24);
+  color: var(--product-text-primary);
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-optical-sizing: auto;
+  animation: global-google-login-card-in 260ms
+    var(--ease-standard, cubic-bezier(0.2, 0, 0, 1)) both;
+}
+
+.dark .global-google-login-fallback {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    0 36px 90px rgba(0, 0, 0, 0.55);
+}
+
+.global-google-login-fallback-title {
+  display: block;
+  margin: 0;
+  padding-right: 28px;
+  color: var(--product-text-primary);
+  font-size: 15px;
+  font-weight: 720;
+  letter-spacing: -0.012em;
+  line-height: 1.3;
+}
+
+.global-google-login-fallback-subtitle {
+  margin: 5px 0 0;
+  color: var(--product-text-muted);
+  font-size: 12px;
+  font-weight: 460;
+  letter-spacing: -0.002em;
+  line-height: 1.5;
+}
+
+.global-google-login-fallback-button {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 12px;
+  padding: 0 42px;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full, 9999px);
+  background: var(--product-action-bg);
+  color: var(--product-action-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 720;
+  letter-spacing: -0.004em;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast, 120ms) ease,
+    transform 100ms ease-out,
+    opacity var(--motion-fast, 120ms) ease;
+}
+
+.global-google-login-fallback-button:hover {
+  background: var(--product-action-hover);
+}
+
+.global-google-login-fallback-button:active {
+  transform: scale(0.98);
+}
+
+.global-google-login-fallback-button:disabled {
+  cursor: wait;
+  opacity: 0.78;
+}
+
+.global-google-login-fallback-button:focus-visible {
+  outline: 2px solid
+    color-mix(in srgb, var(--product-text-primary) 55%, transparent);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.global-google-login-fallback-button-icon {
+  position: absolute;
+  top: 50%;
+  left: 10px;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  transform: translateY(-50%);
+  place-items: center;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.global-google-login-fallback-button-icon svg {
+  display: block;
+}
+
+.global-google-login-fallback-button-label {
+  display: inline-block;
+  color: inherit;
+}
+
+.global-google-login-fallback-close {
+  position: absolute;
+  z-index: 2;
+  top: 8px;
+  right: 6px;
+  display: inline-grid;
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  padding: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--product-text-muted);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast, 120ms) ease,
+    color var(--motion-fast, 120ms) ease,
+    transform 100ms ease-out;
+}
+
+.global-google-login-fallback-close:hover {
+  background: var(--product-surface-subtle);
+  color: var(--product-text-primary);
+}
+
+.global-google-login-fallback-close:active {
+  transform: scale(0.94);
+}
+
+.global-google-login-fallback-close:focus-visible {
+  outline: 2px solid
+    color-mix(in srgb, var(--product-text-primary) 55%, transparent);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+.global-google-login-error {
+  margin: 10px 0 0;
+  color: var(--state-error-text, #b91c1c);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.global-google-login-fallback--closing {
+  animation-name: global-google-login-card-out;
+  animation-duration: 180ms;
+  animation-fill-mode: forwards;
+}
+
+@keyframes global-google-login-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes global-google-login-card-out {
+  to {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+}
+
+@keyframes global-google-login-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes global-google-login-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* 桌面端侧栏约 220px，卡片整体移到侧栏右侧，不遮挡导航内容。 */
+@media (min-width: 821px) {
+  .global-google-login-fallback {
+    left: calc(var(--create-side-nav-width, 220px) + 14px);
+  }
+}
+
+/* Touch devices: keep the card clear of the bottom navigation. */
+@media (max-width: 640px) {
+  .global-google-login-fallback {
+    right: 12px;
+    bottom: calc(84px + env(safe-area-inset-bottom));
+    left: 12px;
+    width: auto;
+  }
+}
+
+@media (max-height: 560px) and (min-width: 641px) {
+  .global-google-login-fallback {
+    padding-block: 12px;
+  }
+
+  .global-google-login-fallback-button {
+    margin-top: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .global-google-login-fallback {
+    animation-name: global-google-login-fade-in;
+    animation-duration: 140ms;
+  }
+
+  .global-google-login-fallback--closing {
+    animation-name: global-google-login-fade-out;
+    animation-duration: 100ms;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .global-google-login-fallback {
+    background: var(--product-panel-solid);
+    box-shadow: var(--shadow-md);
+  }
+}
+
+@media (prefers-contrast: more) {
+  .global-google-login-fallback {
+    border-color: var(--product-contrast-border);
+  }
+
+  .global-google-login-fallback-button {
+    border-color: currentColor;
+  }
+
+  .global-google-login-fallback-button:focus-visible,
+  .global-google-login-fallback-close:focus-visible {
+    outline-color: currentColor;
+  }
+}

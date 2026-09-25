@@ -1,0 +1,90 @@
+name: Watermarks image security
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+  push:
+    paths:
+      - infra/watermarks-remover/Dockerfile
+      - infra/watermarks-remover/compose.yaml
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve pinned watermarks image
+        id: image
+        shell: bash
+        run: |
+          set -euo pipefail
+          image="$(sed -n 's/^FROM[[:space:]]\+\([^[:space:]]\+\).*$/\1/p' infra/watermarks-remover/Dockerfile)"
+          test -n "$image"
+          case "$image" in
+            *@sha256:*) ;;
+            *) echo 'Watermarks image must be pinned by digest.' >&2; exit 1 ;;
+          esac
+          echo "ref=$image" >> "$GITHUB_OUTPUT"
+
+      - name: Pull pinned watermarks base image
+        run: docker pull "${{ steps.image.outputs.ref }}"
+
+      - name: Build the production watermarks image
+        run: docker build --file infra/watermarks-remover/Dockerfile --tag webtomind-watermarks-remover:security infra/watermarks-remover
+
+      - name: Verify production runtime dependencies
+        run: >-
+          docker run --rm webtomind-watermarks-remover:security -c
+          'import cv2, importlib.metadata as m; assert m.version("msgpack") == "1.2.1"; assert m.version("setuptools") == "84.0.0"; assert hasattr(cv2, "inpaint")'
+
+      - name: Verify visible repair smoke image in production runtime
+        run: >-
+          docker run --rm webtomind-watermarks-remover:security -c
+          'import base64; from visible_inpaint import inpaint_visible_image; data=base64.b64decode("iVBORw0KGgoAAAANSUhEUgAAACAAAAAYCAIAAAAUMWhjAAAAP0lEQVRIx2PcwgAE7LRDLAxcDDQFoxaMWjBqwagFoxYMuAU2JR24pI70bKexD7gYRi0YFhYcOVGBuz1Br3wAAACpCH4xCy+RAAAAAElFTkSuQmCC"); output, report=inpaint_visible_image(data, ".png", {"visible_boxes":[{"x":0.625,"y":0.666666,"width":0.25,"height":0.208333}], "visible_padding_px":0, "visible_expand_px":0}); assert report["applied"] is True, report; assert output[:8] == bytes([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]), output[:8]'
+
+      - name: Export final watermarks root filesystem
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p watermarks-rootfs
+          container_id="$(docker create webtomind-watermarks-remover:security)"
+          cleanup() { docker rm "$container_id" >/dev/null; }
+          trap cleanup EXIT
+          docker export "$container_id" | tar -x -C watermarks-rootfs
+
+      - name: Generate watermarks image SBOM
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: watermarks-rootfs
+          format: cyclonedx
+          output: watermarks-image.sbom.json
+          version: v0.74.0
+          exit-code: '0'
+
+      - name: Scan watermarks image vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: watermarks-rootfs
+          format: table
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          version: v0.74.0
+          exit-code: '1'
+          skip-setup-trivy: true
+
+      - name: Upload watermarks image SBOM
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: watermarks-image-sbom
+          path: watermarks-image.sbom.json
+          if-no-files-found: error
+          retention-days: 30

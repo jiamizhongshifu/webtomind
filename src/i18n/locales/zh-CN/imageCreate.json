@@ -1,0 +1,965 @@
+{
+  "nav": {
+    "creativeWorkspace": "创意工作台",
+    "backToWorkspace": "返回工作台",
+    "comfyChecker": "ComfyUI 检查",
+    "login": "登录",
+    "credits": "积分",
+    "creditsLoading": "加载中",
+    "languageToggle": "切换到{{language}}",
+    "languageEnglish": "English",
+    "languageChinese": "中文",
+    "creditPromoBadge": "限时",
+    "creditPromoLabel": "限时优惠，点击查看积分套餐",
+    "profileMenu": {
+      "settings": "设置",
+      "logout": "退出登录"
+    }
+  },
+  "hero": {
+    "kicker": "视觉提示词工作台",
+    "title": "看图选择，自动生成可复现的提示词",
+    "description": "从角色、姿势、服装、背景和画风中选择素材，WebToMind 会把它们编译成完整的图片生成指令。"
+  },
+  "studioTabs": {
+    "visual": "看图选择",
+    "prompts": "Prompts"
+  },
+  "slots": {
+    "character": "人设",
+    "expression": "表情",
+    "pose": "姿态",
+    "top": "上装",
+    "bottom": "下装",
+    "shoes": "鞋履",
+    "background": "场景",
+    "productSubject": "产品主体",
+    "productSurface": "台面环境",
+    "composition": "构图方式",
+    "titleArea": "标题区",
+    "style": "写真风格",
+    "lighting": "光影",
+    "visualEffect": "画面影响",
+    "layoutDesign": "版式设计",
+    "accessory": "配饰",
+    "prop": "道具",
+    "lens": "镜头质感",
+    "shot": "景别",
+    "viewpoint": "机位与视角",
+    "makeup": "妆容"
+  },
+  "controls": {
+    "title": "创作参数",
+    "subtitle": "模型、比例、分辨率和批量设置会在生成前统一生效。",
+    "model": "AI 模型",
+    "aspect": "比例",
+    "size": "尺寸",
+    "resolution": "分辨率",
+    "sizeOptions": {
+      "auto": {
+        "label": "自动",
+        "detail": "模型决定尺寸"
+      },
+      "square1k": {
+        "label": "1:1",
+        "detail": "1024×1024 · 方图"
+      },
+      "landscape1536": {
+        "label": "3:2",
+        "detail": "1536×1024 · 横图"
+      },
+      "portrait1536": {
+        "label": "2:3",
+        "detail": "1024×1536 · 竖图"
+      },
+      "portrait3x4_1k": {
+        "label": "3:4",
+        "detail": "1152×1536 · 竖图"
+      },
+      "landscape4x3_1k": {
+        "label": "4:3",
+        "detail": "1536×1152 · 横图"
+      },
+      "portrait4x5_1k": {
+        "label": "4:5",
+        "detail": "1024×1280 · 竖图"
+      },
+      "landscape5x4_1k": {
+        "label": "5:4",
+        "detail": "1280×1024 · 横图"
+      },
+      "portrait9x16_1k": {
+        "label": "9:16",
+        "detail": "864×1536 · 手机竖图"
+      },
+      "landscape16x9_1k": {
+        "label": "16:9",
+        "detail": "1536×864 · 横图"
+      },
+      "ultrawide21x9_1k": {
+        "label": "21:9",
+        "detail": "1792×768 · 超宽横图"
+      },
+      "square2k": {
+        "label": "1:1",
+        "detail": "2048×2048 · 2K"
+      },
+      "landscape3x2_2k": {
+        "label": "3:2",
+        "detail": "2016×1344 · 2K 横图"
+      },
+      "portrait2x3_2k": {
+        "label": "2:3",
+        "detail": "1344×2016 · 2K 竖图"
+      },
+      "portrait3x4_2k": {
+        "label": "3:4",
+        "detail": "1536×2048 · 2K 竖图"
+      },
+      "landscape4x3_2k": {
+        "label": "4:3",
+        "detail": "2048×1536 · 2K 横图"
+      },
+      "portrait4x5_2k": {
+        "label": "4:5",
+        "detail": "1600×2000 · 2K 竖图"
+      },
+      "landscape5x4_2k": {
+        "label": "5:4",
+        "detail": "2000×1600 · 2K 横图"
+      },
+      "landscape2k": {
+        "label": "16:9",
+        "detail": "2048×1152 · 2K"
+      },
+      "portrait2k": {
+        "label": "9:16",
+        "detail": "1152×2048 · 2K 手机竖图"
+      },
+      "ultrawide21x9_2k": {
+        "label": "21:9",
+        "detail": "2688×1152 · 2K 超宽横图"
+      },
+      "square4k": {
+        "label": "1:1",
+        "detail": "2880×2880 · 4K 方图"
+      },
+      "landscape3x2_4k": {
+        "label": "3:2",
+        "detail": "3456×2304 · 4K 横图"
+      },
+      "portrait2x3_4k": {
+        "label": "2:3",
+        "detail": "2304×3456 · 4K 竖图"
+      },
+      "portrait3x4_4k": {
+        "label": "3:4",
+        "detail": "2304×3072 · 4K 竖图"
+      },
+      "landscape4x3_4k": {
+        "label": "4:3",
+        "detail": "3072×2304 · 4K 横图"
+      },
+      "portrait4x5_4k": {
+        "label": "4:5",
+        "detail": "2560×3200 · 4K 竖图"
+      },
+      "landscape5x4_4k": {
+        "label": "5:4",
+        "detail": "3200×2560 · 4K 横图"
+      },
+      "landscape4k": {
+        "label": "16:9",
+        "detail": "3840×2160 · 4K"
+      },
+      "portrait4k": {
+        "label": "9:16",
+        "detail": "2160×3840 · 4K"
+      },
+      "ultrawide21x9_4k": {
+        "label": "21:9",
+        "detail": "3808×1632 · 4K 超宽横图"
+      }
+    },
+    "characterWorkflow": {
+      "entry": "角色一致性工作流",
+      "entryShort": "角色一致性",
+      "entryDetail": "{{references}} 张参考图 · {{characters}} 个角色卡",
+      "entryHint": "上传参考图、保存角色卡、生成后检查一致性"
+    },
+    "quality": {
+      "label": "质量",
+      "auto": "自动",
+      "high": "质量高",
+      "medium": "质量中",
+      "low": "质量低",
+      "help": {
+        "auto": "模型自动平衡速度、细节和稳定性。",
+        "high": "强化细节、纹理和一致性，耗时更长，积分更高。",
+        "medium": "比自动更稳定，适合常规成片。",
+        "low": "优先速度和草稿预览，细节与一致性会降低。"
+      }
+    },
+    "outputFormat": {
+      "label": "格式",
+      "png": "PNG",
+      "jpeg": "JPEG",
+      "webp": "WebP"
+    },
+    "customPrompt": {
+      "label": "补充描述",
+      "placeholder": "例如：更像杂志封面，表情更冷静，保持浅色调"
+    },
+    "imageCount": {
+      "label": "张数",
+      "option": "生成 {{count}} 张",
+      "memberOnly": "会员",
+      "memberHint": "4 张及以上为会员批量生图。",
+      "memberUnlocked": "已解锁批量生图。"
+    },
+    "generate": "生成图片",
+    "generating": "正在生成",
+    "loginToGenerate": "登录后生成",
+    "billingNote": "生成会按所选模型与尺寸扣除积分，失败会自动退回。",
+    "estimatedCost": "约 {{credits}} 积分（实际以扣费为准）",
+    "estimatedCostShort": "{{credits}}积分",
+    "estimatedCostTooltip": "实际扣费以后端结算为准；生成失败会自动退回。",
+    "insufficientCredits": "余额不足，去充值 →",
+    "lowBalanceTopUp": "余额偏低，补充积分",
+    "savePreset": "保存预设",
+    "presetSaved": "已保存",
+    "reset": "重置",
+    "resetConfirm": "确定要重置当前配方和自定义 Prompt 吗？",
+    "presetTitle": "个人预设",
+    "presetEmpty": "保存常用配方后会显示在这里。",
+    "deletePreset": "删除预设",
+    "unnamedPreset": "未命名预设",
+    "costPanel": {
+      "title": "本次账单",
+      "detailsToggle": "查看账单说明",
+      "breakdown": "单张 {{unit}} × {{count}} 张 = {{total}} 积分",
+      "balance": "余额 {{credits}}",
+      "balanceLoading": "正在读取余额",
+      "loginHint": "登录后显示余额",
+      "refundRule": "系统失败自动退款，可重试",
+      "shortfall": "还差 {{credits}} 积分"
+    }
+  },
+  "canvas": {
+    "title": "当前配方",
+    "slotCount": "{{count}} 个素材已启用",
+    "applyToPrompt": "应用到当前提示词",
+    "applyToPromptHint": "把当前配方写入提示词；已有系统配方会整体更新，自由描述会保留并补充结构",
+    "applyToPromptDone": "已应用当前配方到提示词",
+    "applyToPromptEmpty": "当前配方没有可应用的新变化",
+    "openPicker": "大图选择",
+    "randomize": "随机配方",
+    "randomizeHint": "为每个有可用素材的分类随机选择一个素材",
+    "randomizeSlot": "随机选择{{slot}}素材",
+    "randomizeSlotHint": "随机替换当前{{slot}}素材",
+    "randomizeSlotUnavailable": "当前{{slot}}暂无可随机选择的素材",
+    "randomizeSlotNoAlternative": "当前{{slot}}暂无其他兼容素材",
+    "materialButton": "改变{{slot}}材质",
+    "materialButtonSelected": "{{slot}}当前材质：{{material}}",
+    "materialTitle": "选择{{slot}}材质",
+    "materialDescription": "只替换主面料，保留原有版型、颜色和服装结构。",
+    "materialOriginal": "保持原材质",
+    "materialOriginalDescription": "移除材质前缀，恢复素材原始描述",
+    "copyPrompt": "复制 Prompt",
+    "copied": "已复制",
+    "clearSlot": "清除{{slot}}",
+    "clearAll": "清空配方",
+    "clearAllHint": "一键清除当前配方中全部已选素材",
+    "optionalSlot": "可选",
+    "emptySlot": "点击选择{{slot}}",
+    "emptySlotHint": "从公开库或我的素材中选择",
+    "selectedSlot": "当前{{slot}}"
+  },
+  "upgrade": {
+    "title": "积分不足",
+    "description": "当前积分不足以发起这次图片生成，请升级套餐或补充积分后再试。",
+    "insufficientMessage": "本次预计需要 {{credits}} 积分，当前余额 {{balance}} 积分。",
+    "required": "本次需要 {{credits}} 积分",
+    "current": "当前余额 {{credits}} 积分",
+    "cta": "查看升级套餐",
+    "later": "稍后再说",
+    "close": "关闭升级提示"
+  },
+  "prompt": {
+    "title": "提示词编译器",
+    "mode": {
+      "composed": "自动",
+      "custom": "自定义"
+    },
+    "expand": "展开",
+    "collapse": "收起",
+    "minimize": "最小化",
+    "restore": "打开提示词编辑器",
+    "readonlyHint": "Prompt 由素材组合自动编译；切到「自定义」可手动编辑",
+    "inputTitle": "提示词",
+    "combinationSuggestion": {
+      "label": "当前配方提示词更新",
+      "title": "当前配方已更新",
+      "description": "是否用最新配方替换提示词？",
+      "apply": "应用配方提示词",
+      "dismiss": "暂不应用"
+    },
+    "customHint": "生成时使用上方文本。",
+    "customPlaceholder": "在这里直接写自己的 prompt，会替代自动编译的版本",
+    "referencePlaceholder": "直接描述你想要的画面。可输入 @ 引用当前参考素材，例如：让 @image1 的人物保持脸部一致，穿上 @image2 的红色外套，换到雨夜街角。也可以写镜头、光影、构图、质感、禁用元素等更深的控制条件。",
+    "references": {
+      "activeLabel": "已引用的参考素材"
+    },
+    "switchToComposedConfirm": "切回自动模式会丢弃你写的 Prompt，是否继续？",
+    "random": "随机灵感",
+    "negativeLabel": "负面提示词",
+    "negativePlaceholder": "低质量，模糊，畸形肢体，多余手指，水印",
+    "autoOptimize": {
+      "label": "自动优化",
+      "status": "正在优化提示词…",
+      "error": "自动优化失败，未开始生成"
+    },
+    "diagnostics": {
+      "title": "结构检测",
+      "score": "{{score}} 分",
+      "grade": {
+        "excellent": "优秀",
+        "good": "良好",
+        "needsWork": "待改进"
+      },
+      "aiTaste": {
+        "low": "AI 味风险低 · {{score}}",
+        "medium": "AI 味风险中 · {{score}}",
+        "high": "AI 味风险高 · {{score}}"
+      },
+      "aiOptimize": "AI 优化",
+      "optimizing": "优化中…",
+      "loginRequired": "登录后可使用 AI 优化",
+      "copyOptimized": "复制优化稿",
+      "copied": "已复制",
+      "applyOptimized": "覆盖当前提示词",
+      "discardOptimized": "关闭优化稿",
+      "resultTitle": "AI 优化稿",
+      "error": "提示词优化失败，请稍后重试"
+    },
+    "tasks": {
+      "label": "AI 任务",
+      "open": "查看 AI 任务进度",
+      "title": "AI 任务进度",
+      "summary": "{{count}} 个任务"
+    },
+    "suffix": {
+      "aspectRatio": "{{ratio}} 比例",
+      "qualityProfile": "{{quality}} 画质档位",
+      "qualityHigh": "高质量、肢体协调、构图整洁",
+      "modelOptimized": "针对 {{model}} 模型优化"
+    },
+    "warnings": {
+      "highEndFashionAnimeConflict": "写实时装摄影和二次元角色可能冲突，建议改成时装模特角色或换二次元风格。",
+      "watercolorRealismConflict": "水彩二次元风格会弱化写实主体，可换成二次元角色以提高一致性。"
+    }
+  },
+  "references": {
+    "title": "参考",
+    "optional": "可选",
+    "maxImages": "本次最多选择 {{count}} 张参考图",
+    "character": {
+      "entry": "角色",
+      "title": "选择角色",
+      "subtitle": "使用官方预设或你的角色卡保持角色一致性。",
+      "discover": "发现",
+      "mine": "我的角色",
+      "liked": "喜欢",
+      "search": "搜索角色…",
+      "loading": "加载角色卡…",
+      "empty": "还没有角色卡。可以先选择官方预设，或从参考图创建角色。",
+      "officialEmpty": "没有匹配的官方角色。",
+      "likedEmpty": "还没有喜欢的官方角色。先在角色页发现里点亮喜欢。",
+      "referenceCount": "{{count}} 张参考图",
+      "maxCharacters": "最多同时选择 {{count}} 个角色",
+      "officialImported": "已选择官方角色「{{name}}」",
+      "officialImportFailed": "官方角色导入失败"
+    },
+    "gallery": {
+      "entry": "图库"
+    },
+    "upload": {
+      "entry": "上传",
+      "label": "上传参考图",
+      "previewLabel": "已上传参考图",
+      "previewLimit": "最多 4 张",
+      "previewSummary": "已完成 {{uploaded}} · 上传中 {{uploading}} · 失败 {{failed}}",
+      "remove": "移除这张参考图",
+      "invalidType": "请选择图片文件",
+      "uploading": "正在上传参考图…",
+      "uploaded": "已上传 {{count}} 张参考图",
+      "failed": "参考图上传失败",
+      "failedWithCount": "{{count}} 张参考图上传失败",
+      "status": {
+        "uploading": "上传中",
+        "uploaded": "已上传",
+        "failed": "失败"
+      }
+    }
+  },
+  "promptLibrary": {
+    "title": "提示词库",
+    "entry": "提示词库",
+    "savePrompt": "保存提示词",
+    "empty": "还没有保存的提示词。切到自定义后点击「保存提示词」即可加入这里。",
+    "untitled": "未命名提示词",
+    "rename": "重命名标题",
+    "renameDialog": "输入新的提示词标题",
+    "copy": "复制提示词",
+    "delete": "删除提示词",
+    "applyConfirm": "这会覆盖当前自定义提示词输入框，是否继续？",
+    "savedToast": "提示词已保存到提示词库",
+    "appliedToast": "已填充到自定义提示词",
+    "renamedToast": "提示词标题已重命名",
+    "copiedToast": "提示词已复制",
+    "deletedToast": "提示词已删除"
+  },
+  "result": {
+    "title": "生成结果",
+    "empty": "生成后的图片会出现在这里",
+    "generating": "正在生成图片",
+    "generatingDetail": "模型正在处理当前配方",
+    "overlayHint": "新图片生成中，当前预览会保留到结果返回",
+    "waiting": "正在等待模型返回图片",
+    "altGenerated": "生成结果",
+    "close": "关闭生成结果"
+  },
+  "history": {
+    "title": "最近生成",
+    "viewMore": "查看更多",
+    "modalTitle": "历史生成记录",
+    "modalCount": "共 {{count}} 张图片",
+    "modalCountLoaded": "已加载 {{loaded}} / {{total}} 张图片",
+    "loading": "正在加载历史图片...",
+    "loadMore": "加载更多",
+    "loadingMore": "正在加载...",
+    "loadFailed": "历史图片加载失败，请稍后重试。",
+    "empty": "登录并生成后，历史图片会自动保存在这里。",
+    "assetsMissing": "{{count}} 个素材已失效，已留空对应槽位",
+    "loadedFromHistory": "已载入历史 · {{model}}",
+    "deleted": "已删除该生成图片"
+  },
+  "historyRail": {
+    "eyebrow": "AI TASKS",
+    "title": "生成记录",
+    "imageTask": "图像创作",
+    "preview": "预览",
+    "download": "下载",
+    "moreActions": "更多",
+    "previewImage": "查看生成图片",
+    "dismissStatus": "关闭状态提示",
+    "regenerateSame": "同款再生成",
+    "continueEdit": "继续编辑",
+    "saveToProject": "收藏",
+    "openCollection": "合集",
+    "regenerateSubmitted": "已按同款设置提交生成",
+    "tabs": {
+      "all": "全部",
+      "active": "进行中",
+      "images": "图片",
+      "videos": "视频"
+    },
+    "status": {
+      "processing": "生成中",
+      "running": "生成中",
+      "queued": "排队中",
+      "failed": "失败",
+      "succeeded": "完成",
+      "cancelled": "已中止",
+      "dismissed": "已收起"
+    }
+  },
+  "preview": {
+    "title": "生成详情",
+    "close": "关闭",
+    "copyPrompt": "复制 Prompt",
+    "copied": "已复制",
+    "reedit": "重新编辑",
+    "localEdit": "局部修改",
+    "localEditPrompt": "描述要局部修改的内容，例如：只把背景换成咖啡馆，人物和构图保持不变",
+    "addToProject": "添加到项目",
+    "addToProjectHint": "选择一个项目，把这张图片和对应 Prompt 保存为内容卡片。",
+    "addToProjectLoading": "正在加载项目...",
+    "addToProjectSaving": "保存中",
+    "addToProjectSaved": "已添加到「{{project}}」",
+    "addToProjectFailed": "添加到项目失败，请稍后重试。",
+    "addToProjectLoadFailed": "项目列表加载失败。",
+    "addToProjectNoProjects": "暂无可添加的项目。",
+    "addToProjectDefaultTitle": "AI 生成图片",
+    "addToProjectCardCount": "{{count}} 张卡片",
+    "untitledProject": "未命名项目",
+    "delete": "删除",
+    "deleting": "删除中",
+    "deleteConfirm": "确定要删除这张图片吗？删除后无法恢复。",
+    "deleteFailed": "图片删除失败，请稍后重试。",
+    "promptLabel": "提示词",
+    "negativeLabel": "负向 Prompt",
+    "openFullscreen": "全屏浏览图片",
+    "downloadOriginal": "下载原图",
+    "meta": {
+      "model": "模型",
+      "time": "时间",
+      "aspectRatio": "比例",
+      "imageSize": "尺寸",
+      "requestedImageSize": "请求 {{size}}",
+      "quality": "质量",
+      "outputFormat": "格式"
+    }
+  },
+  "library": {
+    "title": "提示词素材库",
+    "remote": "云端运营库",
+    "hybrid": "云端与内置补全库",
+    "local": "本地内置库",
+    "searchPlaceholder": "搜索{{slot}}素材",
+    "allTags": "全部",
+    "tabs": {
+      "public": "公开素材库",
+      "mine": "我的素材"
+    }
+  },
+  "promptCases": {
+    "latestTitle": "精选案例",
+    "librarySubtitle": "浏览可复用的视觉 Prompt 案例；普通案例登录可查看，会员专属案例需升级后解锁。",
+    "search": "搜索精选提示词",
+    "refresh": "刷新案例",
+    "manage": "管理",
+    "adminTitle": "案例管理",
+    "createModalTitle": "新建案例",
+    "editModalTitle": "编辑案例",
+    "localeZh": "中文案例",
+    "localeEn": "英文镜像",
+    "translationMirror": "英文镜像",
+    "translationMirrorNote": "这是中文源案例的英文镜像。编辑中文源案例时，系统会同步更新英文镜像内容。",
+    "adminFilterLabel": "案例筛选",
+    "adminAllCases": "全部案例",
+    "adminFeaturedOnly": "精选案例",
+    "missingEnglishMirrors": "还有 {{count}} 个中文案例缺少英文镜像。英文镜像只会在中文源案例具备图片和 Prompt 且翻译同步成功后生成。",
+    "modalBasicsHint": "先选模型大分类，其余信息可自动补齐",
+    "promptAutoHint": "公开预览和商业意图为空时会自动提取",
+    "promptPreviewAutoHint": "公开预览会自动截取 Prompt 内容",
+    "advancedFields": "高级字段（可选）",
+    "adminTabs": {
+      "cases": "正式案例",
+      "drafts": "草稿箱"
+    },
+    "newCase": "新增案例",
+    "imageUrl": "案例图片 URL",
+    "imageUrls": "案例图片 URL（每行一个）",
+    "draftImageUrls": "候选图 URL（每行一个）",
+    "upload": "上传案例图片",
+    "uploadedCount": "已上传 {{count}} 张案例图片",
+    "removeImage": "移除图片",
+    "title": "标题",
+    "slug": "Slug",
+    "category": "分类",
+    "tags": "标签（逗号分隔）",
+    "model": "模型",
+    "locale": "语言",
+    "authorUrl": "原作者地址（选填）",
+    "sourceUrl": "来源地址",
+    "packageSlug": "模板包",
+    "noPackage": "不绑定模板包",
+    "commercialIntent": "商业意图",
+    "promptPreview": "公开 Prompt 预览",
+    "negativePrompt": "Negative Prompt",
+    "draftImagePreview": "草稿候选图预览",
+    "previewDraftImage": "预览草稿候选图：{{title}}",
+    "imageSize": "图片尺寸",
+    "businessScene": "商业场景",
+    "targetAudience": "目标受众",
+    "deliverable": "可交付物",
+    "draftCount": "草稿数量",
+    "autoPreset": "自动选择",
+    "status": "状态",
+    "prompt": "Prompt",
+    "published": "前台发布",
+    "featured": "精选置顶",
+    "setFeatured": "设为精选",
+    "unsetFeatured": "取消精选",
+    "featuredEnabled": "已设为精选案例",
+    "featuredDisabled": "已取消精选",
+    "memberOnly": "仅付费会员可见",
+    "memberOnlyBadge": "会员专属",
+    "create": "创建案例",
+    "save": "保存案例",
+    "edit": "编辑",
+    "delete": "删除",
+    "unpublished": "未发布",
+    "empty": "暂无精选案例",
+    "previewTitle": "精选案例",
+    "previewModalTitle": "案例预览",
+    "sourceLabel": "来源",
+    "authorLink": "原作者",
+    "share": "分享案例",
+    "shareCopied": "分享链接已复制",
+    "shareFailed": "分享链接复制失败",
+    "shareUnavailable": "这个精选案例不存在或已下架。",
+    "loginToViewPrompt": "登录并解锁 Prompt",
+    "upgradeToUnlockPrompt": "升级解锁 Prompt",
+    "loginLockedTitle": "登录后查看完整 Prompt",
+    "loginLockedDesc": "这个案例未设置会员限制，登录后即可复制 Prompt，并一键带入创作台复现或改写。",
+    "promptLockedTitle": "会员解锁完整 Prompt",
+    "promptLockedDesc": "精选案例图片可公开浏览；完整 Prompt、复现入口和改写工作流仅对有效会员开放。",
+    "promptUnavailable": "完整 Prompt 需要会员解锁。",
+    "unlockBenefitPrompt": "查看精选案例完整 Prompt",
+    "unlockBenefitRecreate": "一键带入创作台复现或改写",
+    "unlockBenefitPrivate": "私密生成与历史记录",
+    "unlockBenefitCredits": "更多月度积分，失败自动退款",
+    "previousImage": "上一张图片",
+    "nextImage": "下一张图片",
+    "imageIndex": "第 {{current}} / {{total}} 张图片",
+    "openImageFullscreen": "全屏浏览图片",
+    "fullscreenPreview": "全屏图片预览",
+    "downloadImage": "下载图片",
+    "recreate": "Recreate",
+    "usePrompt": "用这个 Prompt 生成",
+    "detailLink": "查看详情页",
+    "viewPricing": "查看升级套餐",
+    "recreateApplied": "已填充精选案例 Prompt",
+    "required": "请提供案例图片和 Prompt",
+    "loadFailed": "精选案例加载失败",
+    "manageLoaded": "已加载 {{count}} 个案例",
+    "draftsLoaded": "已加载 {{count}} 条草稿",
+    "draftSaved": "草稿已保存",
+    "draftSaveFailed": "草稿保存失败",
+    "draftImagesGenerated": "已为 {{count}} 条草稿生成候选图",
+    "draftImageFailures": "{{count}} 条草稿候选图生成失败",
+    "draftImagesFailed": "候选图生成失败",
+    "draftImagesUploaded": "已上传 {{count}} 张候选图",
+    "draftPublished": "草稿已发布为正式案例，并已移出草稿箱",
+    "draftPublishFailed": "草稿发布失败",
+    "publishAllDrafts": "发布全部草稿",
+    "publishAllDraftsWithCount": "发布全部（{{count}}）",
+    "publishAllDraftsUnavailable": "没有可发布的完整草稿",
+    "publishAllDraftsConfirmTitle": "确认发布全部草稿",
+    "publishAllDraftsConfirmHeading": "即将发布 {{count}} 条案例",
+    "publishAllDraftsConfirmDesc": "每条草稿发布成功后都会进入正式案例库，并从草稿箱移除；失败或信息不完整的草稿会保留。",
+    "confirmPublishAllDraftsWithCount": "发布全部 {{count}} 条",
+    "publishAllDraftsProgress": "发布中 {{completed}}/{{total}}",
+    "publishableDrafts": "可发布",
+    "incompleteDrafts": "信息不完整",
+    "totalDrafts": "草稿总数",
+    "draftsPublishingAll": "正在发布 {{count}} 条草稿...",
+    "draftsPublishedAll": "已发布全部 {{count}} 条草稿。",
+    "draftsPublishAllPartial": "已发布 {{published}} 条，{{failed}} 条失败，{{incomplete}} 条信息不完整未发布。",
+    "draftsPublishAllFailureSummary": "{{count}} 条草稿发布失败并保留在草稿箱：{{summary}}",
+    "draftsPublishAllFailed": "批量发布草稿失败。",
+    "draftsEmpty": "暂无草稿",
+    "reviewFields": "审核字段",
+    "refreshDrafts": "刷新草稿",
+    "saveAndGenerateImages": "保存并生成候选图",
+    "uploadCandidateImages": "上传候选图",
+    "publishDraft": "发布",
+    "rejectDraft": "拒绝",
+    "rejectReason": "填写拒绝原因",
+    "deleteDraft": "删除",
+    "deleteDraftConfirm": "确认永久删除这条草稿？此操作无法撤销。",
+    "draftDeleted": "草稿已删除",
+    "draftDeleteFailed": "草稿删除失败",
+    "uploaded": "案例图片已上传",
+    "uploadFailed": "案例图片上传失败",
+    "saved": "案例已保存",
+    "saveFailed": "案例保存失败",
+    "deleteConfirm": "确认下架并删除这个精选案例？",
+    "deleted": "案例已删除",
+    "deleteFailed": "案例删除失败",
+    "formSections": {
+      "media": "媒体",
+      "basics": "基础信息",
+      "prompt": "Prompt 内容",
+      "settings": "发布设置"
+    },
+    "metrics": {
+      "title": "增长数据",
+      "views": "浏览",
+      "copies": "复制",
+      "generates": "生成",
+      "generateRate": "生成率"
+    },
+    "sort": {
+      "label": "案例排序",
+      "default": "默认排序",
+      "created-desc": "按添加时间最新",
+      "created-asc": "按添加时间最早",
+      "views": "按浏览排序",
+      "copies": "按复制排序",
+      "generates": "按生成排序",
+      "generate-rate": "按生成率排序"
+    },
+    "draftStatuses": {
+      "draft": "草稿",
+      "images_generated": "已出图",
+      "approved": "已通过",
+      "published": "已发布",
+      "rejected": "已拒绝"
+    },
+    "packages": {
+      "xiaohongshu-cover": "小红书封面视觉导演",
+      "ecommerce-product-photo": "电商主图视觉导演",
+      "wechat-cover-poster": "公众号封面视觉导演",
+      "portrait-character-consistency": "人像写真与角色一致性视觉导演",
+      "storefront-marketing-kit": "门店营销物料包视觉导演"
+    },
+    "categories": {
+      "all": "全部",
+      "featured": "精选",
+      "portrait": "人像",
+      "cover": "封面",
+      "ecommerce": "电商图",
+      "fashion": "穿搭",
+      "character": "角色",
+      "background": "背景",
+      "poster": "海报",
+      "xiaohongshu": "小红书",
+      "wechat-cover": "公众号封面",
+      "video": "视频"
+    }
+  },
+  "promptDetail": {
+    "loading": "正在加载 Prompt 案例…",
+    "fallbackTitle": "视觉 Prompt 案例",
+    "seoDescription": "WebToMind 精选可复用视觉 Prompt 案例，登录或升级后可查看完整提示词并进入图片创作台生成。",
+    "seoDescriptionWithTitle": "{{title}} · 升级 WebToMind 查看完整 Prompt，并进入图片创作台一键复用。",
+    "notFound": "这个 Prompt 案例不存在或暂未发布。",
+    "loadFailed": "Prompt 案例加载失败",
+    "emptyTitle": "未找到 Prompt",
+    "backToLibrary": "返回 Prompt 图库",
+    "usePrompt": "用这个 Prompt 生成",
+    "viewPricing": "查看升级套餐",
+    "loginToViewPrompt": "登录并解锁 Prompt",
+    "upgradeToUnlockPrompt": "升级解锁 Prompt",
+    "loginLockedTitle": "登录后查看完整 Prompt",
+    "loginLockedDesc": "这个案例未设置会员限制，登录后即可复制 Prompt，并一键带入创作台复现或改写。",
+    "promptLockedTitle": "会员解锁完整 Prompt",
+    "promptLockedDesc": "我们先公开展示案例图片和分类；完整 Prompt、复制和一键生成仅对有效会员开放。",
+    "promptUnavailable": "完整 Prompt 需要会员解锁。",
+    "unlockBenefitPrompt": "查看精选案例完整 Prompt",
+    "unlockBenefitRecreate": "一键带入创作台复现或改写",
+    "unlockBenefitPrivate": "私密生成与历史记录",
+    "unlockBenefitCredits": "更多月度积分，失败自动退款",
+    "baseCost": "基础图",
+    "large2kCost": "2K 大图",
+    "fourKCost": "4K 图",
+    "related": "相关 Prompt",
+    "freeFirstImageHint": "免费用户每天可免费生成 1 张，无需付费先体验"
+  },
+  "upload": {
+    "button": "照片复刻",
+    "processingShort": "正在复刻",
+    "promptImportButton": "粘贴提示词导入",
+    "processing": "上传并反推中…",
+    "promptImportAnalyzing": "分析提示词中…",
+    "promptImportTitle": "粘贴提示词导入素材",
+    "promptImportHint": "粘贴你收集的完整图片生成提示词，AI 会按素材分类拆解，进入下一步确认后再保存到个人库。",
+    "promptImportPlaceholder": "粘贴完整图片生成 prompt，可以包含中文、英文和负向提示词…",
+    "promptImportSubmit": "分析并拆成素材",
+    "promptImportRequired": "请先粘贴提示词",
+    "promptImportAnalyzeFailed": "提示词分析失败，请手动调整以下字段",
+    "sourcePromptTitle": "来源提示词",
+    "sourcePromptEmpty": "无来源提示词",
+    "invalidType": "请选择图片文件",
+    "failed": "上传失败",
+    "saveFailed": "保存失败",
+    "promptRequired": "提示词不能为空",
+    "untitled": "未命名素材",
+    "savedToast": "素材已加入个人库",
+    "confirmTitle": "确认素材信息",
+    "confirmSubtitle": "AI 已为你预填，可调整后保存到个人库",
+    "fieldSlot": "归类",
+    "fieldTitle": "标题",
+    "fieldSubtitle": "副标题",
+    "fieldPrompt": "Prompt",
+    "fieldPromptEn": "Prompt",
+    "fieldPromptZh": "Prompt",
+    "fieldNegative": "Negative Prompt",
+    "fieldNegativeEn": "Negative Prompt",
+    "fieldNegativeZh": "Negative Prompt",
+    "fieldTags": "标签（逗号分隔）",
+    "save": "保存到个人库",
+    "saveBatch": "保存勾选的 {{count}} 项",
+    "cancel": "取消导入",
+    "reverseFailed": "AI 自动反推失败，请手动填写以下字段",
+    "batchSubtitle": "AI 共识别 {{count}} 项素材，可单独勾选 / 编辑后批量保存",
+    "addRow": "新增一项",
+    "removeRow": "移除该项",
+    "noneSelected": "请至少勾选一项再保存",
+    "savedToastBatch": "已保存 {{count}} 项素材到个人库",
+    "saveThis": "保存此素材",
+    "skipThis": "不保存",
+    "saveAll": "全部保存",
+    "skipAll": "全部不保存"
+  },
+  "mine": {
+    "empty": "还没有个人素材，可上传图片反推，或粘贴提示词导入",
+    "loginRequired": "登录后即可上传你自己的素材",
+    "delete": "删除",
+    "deleteConfirm": "确认从个人库删除这张素材？",
+    "deleteFailed": "删除失败",
+    "regenerate": "AI 生成缩略图",
+    "regenerateConfirm": "调用生图工具按素材风格重生缩略图，会消耗一次生图积分，是否继续？",
+    "regenerating": "缩略图生成中…",
+    "regenerateDone": "缩略图已更新",
+    "regenerateFailed": "缩略图生成失败",
+    "batchPending": "{{count}} 张缩略图未 AI 生成",
+    "batchAllGenerated": "所有缩略图都已 AI 生成",
+    "batchRegenerate": "一键 AI 生成 ({{count}})",
+    "batchRegenerateConfirm": "将串行生成 {{count}} 张缩略图，每张约 30-60 秒，会按张消耗生图积分。是否开始？",
+    "batchProgress": "进度 {{current}}/{{total}} · 成功 {{done}} · 失败 {{failed}}",
+    "batchCancel": "停止队列",
+    "batchCancelled": "队列已停止",
+    "batchDone": "全部生成完成",
+    "batchDonePartial": "完成 {{done}} · 失败 {{failed}}，可点重试再跑一遍",
+    "batchRetryFailed": "重试失败 ({{count}})",
+    "queueStatusQueued": "排队中",
+    "queueStatusProcessing": "生成中",
+    "queueStatusDone": "已完成",
+    "queueStatusFailed": "失败",
+    "edit": "编辑素材",
+    "editTitle": "编辑素材信息",
+    "editSave": "保存修改",
+    "editSaved": "素材已更新",
+    "editTagsPlaceholder": "用逗号分隔的子分类标签，例如：包、饮品"
+  },
+  "picker": {
+    "title": "{{slot}}图片选择",
+    "subtitle": "选择后会立即写入当前配方，并同步更新 Prompt。",
+    "empty": "暂无匹配素材",
+    "selected": "已选择",
+    "expandSlots": "展开全部分类",
+    "collapseSlots": "收起分类",
+    "expandTags": "展开全部标签",
+    "collapseTags": "收起标签"
+  },
+  "onboarding": {
+    "close": "关闭新手引导",
+    "skip": "跳过引导",
+    "next": "下一步",
+    "start": "开始创作",
+    "progress": "新手引导进度",
+    "goToStep": "查看第 {{current}} / {{total}} 步",
+    "steps": {
+      "assets": {
+        "title": "先选素材，快速拼出画面方向。",
+        "body": "不用从空白 Prompt 开始。先从人设、姿态、服装、场景和画风里选素材，系统会把这些选择同步成可复现的生成指令。",
+        "bullets": {
+          "0": "16 个视觉槽位覆盖角色、构图、镜头和风格",
+          "1": "素材可来自官方案例，也可以上传图片反推成个人库",
+          "2": "每次选择都会即时更新当前配方"
+        }
+      },
+      "prompt": {
+        "title": "Prompt 编译器会帮你整理成完整指令。",
+        "body": "你可以使用自动编译的版本，也可以直接进入自定义模式写自己的 Prompt。负向约束直接写在主提示词底部即可。",
+        "bullets": {
+          "0": "复制、保存预设、导入 Prompt 都在同一个面板完成",
+          "1": "结构检测默认只显示分数，点开后再看详细建议",
+          "2": "尺寸、质量和格式会作为生成参数传给模型"
+        }
+      },
+      "reference": {
+        "title": "上传参考图，保持角色一致。",
+        "body": "当你需要同一个角色反复出图时，先上传参考图，再进入角色一致性工作流管理角色卡和 A/B 分组。",
+        "bullets": {
+          "0": "单角色建议 1-3 张参考图，双角色最多 4 张",
+          "1": "生成后可以检查身份、服装和分组是否漂移",
+          "2": "历史生成也能导入为新的参考图"
+        }
+      },
+      "tasks": {
+        "title": "生成、重试、沉淀，形成自己的素材流。",
+        "body": "生成任务会进入 AI 任务进度面板。成功结果会沉淀到历史；失败任务可编辑 Prompt 后重试，系统失败不会扣费。",
+        "bullets": {
+          "0": "生成前展示实际积分消耗，失败自动退款",
+          "1": "历史图片可复制 Prompt、重新编辑、下载或加入项目",
+          "2": "满意的组合可以保存成预设，后续一键复用"
+        }
+      }
+    }
+  },
+  "status": {
+    "preparing": "正在整理你的视觉选择...",
+    "queued": "已加入生成队列，将按提交顺序生成。",
+    "queueCancelled": "已取消未开始的生图任务。",
+    "taskCancelled": "已中止生图任务。",
+    "submitting": "正在排队并等待多模型图片生成返回，最长约 4 分钟...",
+    "doneWithFallback": "生成完成，已自动切换到 {{model}}{{credits}}",
+    "done": "生成完成 · {{model}}{{credits}}",
+    "creditsConsumed": " · 已扣 {{n}} 积分"
+  },
+  "errors": {
+    "generateFailed": "图片生成失败，请稍后重试。",
+    "emptyPrompt": "请先输入提示词再生成。",
+    "pipelineDeadline": "模型响应超时，本次任务已自动退款。你可以稍后重试，或精简 Prompt 后再生成。",
+    "providerPolicy": "图片生成被安全系统拦截。请点击编辑任务 Prompt，降低裸露、性暗示或擦边描述后重试。",
+    "providerUnavailable": "当前模型通道繁忙或响应较慢，本次任务已自动退款。请稍后重试。",
+    "retryNotAllowed": "图片任务暂不可重试，请稍后再试或编辑 Prompt 后重新生成。",
+    "creditFailed": "积分校验失败，请检查余额或稍后再试。",
+    "clipboardFailed": "Prompt 复制失败，请手动选中复制（浏览器在非 HTTPS 环境下不允许写入剪贴板）。"
+  },
+  "progress": {
+    "title": "AI 任务进度",
+    "expand": "展开",
+    "collapse": "收起",
+    "empty": "暂无进行中的 AI 任务",
+    "thinking": "Thinking...",
+    "taskMainGen": "正在生成图片",
+    "taskQueued": "等待生成图片",
+    "taskFailed": "生图任务失败",
+    "taskSucceeded": "图片已返回",
+    "taskPartialSucceeded": "部分图片已返回",
+    "taskCancelled": "任务已中止",
+    "queuePosition": "排队第 {{n}} 位",
+    "cancelQueued": "取消排队任务",
+    "cancelRunning": "中止正在进行的任务",
+    "editTask": "编辑任务 Prompt",
+    "viewTaskPrompt": "查看任务 Prompt",
+    "loadedForEdit": "已载入任务 Prompt，可修改后重新生成",
+    "retryFailed": "重试失败任务",
+    "retryMissing": "继续生成剩余图片",
+    "acknowledgeDone": "确认",
+    "deleteFailed": "删除失败任务",
+    "dismissTask": "关闭",
+    "detailSubmitted": "已提交任务，正在连接生成服务",
+    "detailWaitingModel": "已等待 {{seconds}} 秒，模型正在接收任务",
+    "detailGenerating": "已等待 {{seconds}} 秒，模型正在生成图片",
+    "detailFinalizing": "已等待 {{seconds}} 秒，正在等待图片返回",
+    "detailRetryWaived": "正在免扣费重试系统失败任务...",
+    "detailDone": "图片已返回，正在刷新历史",
+    "detailPartialSucceeded": "已返回 {{done}}/{{total}}，可继续生成剩余 {{missing}} 张",
+    "detailFallbackAfterFailure": "主通道响应超时，已切换备用通道继续生成",
+    "detailRescueSucceeded": "备用通道已返回图片，正在补齐剩余图片",
+    "imageTarget": "目标 {{total}} 张",
+    "imageProgress": "已返回 {{done}} / {{total}} 张",
+    "strictBatchPending": "多图任务将优先锁定同一通道，保持同批风格一致",
+    "strictBatchPartial": "为保持同批风格一致，未跨渠道补图",
+    "partialRefunded": "已完成 {{done}}/{{total}}，未返回部分已退回 {{credits}} 积分",
+    "partialRefundedNoAmount": "已完成 {{done}}/{{total}}，未返回部分已自动退回积分",
+    "partialRefundFailed": "已完成 {{done}}/{{total}}，差额退款失败，请联系客服核实余额",
+    "cancelledQueued": "排队任务已中止",
+    "cancelledRunning": "正在进行的任务已中止，已停止后续处理",
+    "cancelRefunded": "已退回 {{credits}} 积分",
+    "cancelRefundFailed": "退款失败，请联系客服核实余额",
+    "taskRegen": "重生缩略图中",
+    "taskBatch": "批量缩略图队列",
+    "batchProgress": "{{done}} / {{total}}",
+    "batchFailedTail": "{{n}} 张失败",
+    "allFailedHint": "{{n}} 张缩略图失败，可在素材库点重试",
+    "feedback": {
+      "title": "这次失败最影响你的是？",
+      "thanks": "已收到反馈，会用于优化生成流程",
+      "options": {
+        "resultMismatch": "结果不符",
+        "qualityLow": "质量不稳",
+        "waitTooLong": "等待太久",
+        "safetyFalsePositive": "安全误拦",
+        "billingUnclear": "扣费不清"
+      }
+    }
+  }
+}

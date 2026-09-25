@@ -1,0 +1,17 @@
+<svg width="120" height="32" viewBox="0 0 120 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Logo Icon -->
+  <rect x="2" y="4" width="24" height="24" rx="6" fill="url(#gradient1)"/>
+  <path d="M10 12L14 16L10 20M16 20H22" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Logo Text - Placeholder -->
+  <text x="34" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#3b82f6">AI Mind</text>
+  <text x="90" y="21" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="#8b5cf6">Mapper</text>
+
+  <!-- Gradient Definition -->
+  <defs>
+    <linearGradient id="gradient1" x1="2" y1="4" x2="26" y2="28" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+  </defs>
+</svg>

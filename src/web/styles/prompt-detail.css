@@ -1,0 +1,667 @@
+/* Prompt detail route styles extracted from image-create.css. */
+
+.prompt-detail-page {
+  box-sizing: border-box;
+}
+
+.image-create-page-with-side-nav.prompt-detail-route .create-workspace-page {
+  width: calc(100vw - var(--create-side-nav-offset));
+  max-width: none;
+  box-sizing: border-box;
+}
+
+.prompt-detail-shell {
+  width: min(1260px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 26px 0 72px;
+  container-name: prompt-detail;
+  container-type: inline-size;
+}
+
+.prompt-detail-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px;
+  color: var(--product-text-secondary, #5c5550);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.prompt-detail-breadcrumb a {
+  color: inherit;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.prompt-detail-breadcrumb a:hover,
+.prompt-detail-breadcrumb a:focus-visible {
+  color: var(--product-text-primary, #141414);
+}
+
+.prompt-detail-breadcrumb a:focus-visible {
+  border-radius: 4px;
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}
+
+.prompt-detail-breadcrumb span:last-child {
+  max-width: min(560px, 100%);
+  overflow: hidden;
+  color: var(--product-text-primary, #141414);
+  font-weight: 720;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prompt-detail-loading,
+.prompt-detail-empty {
+  min-height: 360px;
+  display: grid;
+  place-items: center;
+  color: var(--product-text-secondary, #555555);
+}
+
+.prompt-detail-empty {
+  align-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.prompt-detail-empty h1 {
+  margin: 0;
+  color: var(--product-text-primary, #141414);
+}
+
+.prompt-detail-empty p {
+  margin: 0;
+}
+
+.prompt-detail-empty a {
+  color: #943c27;
+  font-weight: 780;
+}
+
+.prompt-detail-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 780px) minmax(320px, 390px);
+  justify-content: center;
+  gap: 24px;
+  align-items: start;
+}
+
+.prompt-detail-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 12px;
+}
+
+.prompt-detail-gallery-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.prompt-detail-gallery figure {
+  display: grid;
+  min-height: 0;
+  place-items: center;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(20, 20, 20, 0.1);
+  border-radius: 14px;
+  background: var(--product-surface-subtle, #f3f3f3);
+}
+
+.prompt-detail-gallery img,
+.prompt-detail-gallery video {
+  display: block;
+  width: 100%;
+  max-height: min(72vh, 760px);
+  height: auto;
+  object-fit: contain;
+}
+
+.prompt-detail-panel,
+.prompt-detail-recipe,
+.prompt-detail-prompt,
+.prompt-detail-topic-links,
+.prompt-detail-related {
+  border: 1px solid rgba(20, 20, 20, 0.1);
+  border-radius: 16px;
+  background: var(--product-surface, #ffffff);
+}
+
+.prompt-detail-panel {
+  position: sticky;
+  top: 88px;
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+}
+
+.prompt-detail-kicker,
+.prompt-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.prompt-detail-kicker span,
+.prompt-detail-tags span {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  color: var(--product-text-secondary, #555555);
+  background: var(--product-surface-subtle, #f3f3f3);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.prompt-detail-panel h1 {
+  margin: 0;
+  color: var(--product-text-primary, #141414);
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.02;
+  letter-spacing: 0;
+}
+
+.prompt-detail-commercial-intent {
+  margin: 0;
+  color: var(--product-text-secondary, #555555);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.prompt-detail-cost {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+}
+
+.prompt-detail-cost div {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  background: #faf8f5;
+  border-radius: 10px;
+}
+
+.prompt-detail-cost dt {
+  color: #77716c;
+  font-size: 11px;
+  font-weight: 760;
+}
+
+.prompt-detail-cost dd {
+  margin: 0;
+  color: var(--product-text-primary, #141414);
+  font-size: 18px;
+  font-weight: 840;
+}
+
+.prompt-detail-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.prompt-detail-actions button,
+.prompt-detail-actions a,
+.prompt-detail-author {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 820;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.prompt-detail-actions button:first-child {
+  color: #fffaf4;
+  background: var(--product-action-bg, #141414);
+  border: 1px solid #141414;
+}
+
+.prompt-detail-actions button:last-child,
+.prompt-detail-actions a,
+.prompt-detail-author {
+  color: var(--product-text-primary, #141414);
+  background: var(--product-surface, #ffffff);
+  border: 1px solid rgba(20, 20, 20, 0.14);
+}
+
+.prompt-detail-actions .prompt-detail-favorite.active {
+  color: #7a4b00;
+  background: #fff3c4;
+  border-color: rgba(122, 75, 0, 0.24);
+}
+
+.prompt-detail-recipe {
+  display: grid;
+  gap: 16px;
+  margin-top: 22px;
+  padding: 18px;
+}
+
+.prompt-detail-recipe-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.prompt-detail-recipe-head > div {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.prompt-detail-recipe-head span {
+  color: #943c27;
+  font-size: 11px;
+  font-weight: 840;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.prompt-detail-recipe-head h2 {
+  margin: 0;
+  color: var(--product-text-primary, #141414);
+  font-size: 20px;
+  line-height: 1.18;
+}
+
+.prompt-detail-recipe-head p {
+  max-width: 680px;
+  margin: 0;
+  color: var(--product-text-secondary, #555555);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.prompt-detail-recipe-head button,
+.prompt-detail-recipe-card button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 38px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 820;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.prompt-detail-recipe-head button {
+  flex: 0 0 auto;
+  padding: 0 14px;
+  color: #fffaf4;
+  background: var(--product-action-bg, #141414);
+  border: 1px solid #141414;
+}
+
+.prompt-detail-recipe-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.prompt-detail-recipe-card {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+  padding: 9px;
+  border: 1px solid rgba(20, 20, 20, 0.1);
+  border-radius: 12px;
+  background: var(--product-surface-subtle, #f7f7f7);
+}
+
+.prompt-detail-recipe-card .creator-asset-thumb {
+  width: 72px;
+  height: 72px;
+  min-height: 72px;
+  border-radius: 10px;
+}
+
+.prompt-detail-recipe-card > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.prompt-detail-recipe-card small {
+  color: #68615d;
+  font-size: 10px;
+  font-weight: 820;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.prompt-detail-recipe-card strong {
+  overflow: hidden;
+  color: var(--product-text-primary, #141414);
+  font-size: 13px;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prompt-detail-recipe-card p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  color: var(--product-text-secondary, #555555);
+  font-size: 12px;
+  line-height: 1.35;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.prompt-detail-recipe-card button {
+  grid-column: 1 / -1;
+  width: 100%;
+  color: var(--product-text-primary, #141414);
+  background: var(--product-surface, #ffffff);
+  border: 1px solid rgba(20, 20, 20, 0.14);
+}
+
+.prompt-detail-prompt {
+  margin-top: 22px;
+  overflow: hidden;
+}
+
+.prompt-detail-prompt > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(20, 20, 20, 0.1);
+}
+
+.prompt-detail-prompt span {
+  color: var(--product-text-secondary, #555555);
+  font-size: 12px;
+  font-weight: 820;
+  text-transform: uppercase;
+}
+
+.prompt-detail-prompt button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: #943c27;
+  font-size: 12px;
+  font-weight: 820;
+  cursor: pointer;
+}
+
+.prompt-detail-prompt pre {
+  margin: 0;
+  max-height: 520px;
+  overflow: auto;
+  padding: 18px;
+  color: #221f1d;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+
+.prompt-detail-prompt > .prompt-detail-prompt-stack {
+  display: grid;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 14px;
+  padding: 16px;
+  border-bottom: 0;
+}
+
+.dark .prompt-detail-gallery figure,
+.dark .prompt-detail-panel,
+.dark .prompt-detail-recipe,
+.dark .prompt-detail-prompt,
+.dark .prompt-detail-topic-links,
+.dark .prompt-detail-related,
+.dark .prompt-detail-cost div,
+.dark .prompt-detail-recipe-card {
+  border-color: var(--product-border-soft);
+  background: var(--product-surface);
+  color: var(--product-text-primary);
+}
+
+.dark .prompt-detail-cost div,
+.dark .prompt-detail-recipe-card {
+  background: var(--product-surface-subtle);
+}
+
+.dark .prompt-detail-cost dt,
+.dark .prompt-detail-recipe-card small,
+.dark .prompt-detail-prompt-stack small,
+.dark .prompt-detail-commercial-intent,
+.dark .prompt-detail-recipe-head p {
+  color: var(--product-text-secondary);
+}
+
+.dark .prompt-detail-cost dd,
+.dark .prompt-detail-recipe-card strong,
+.dark .prompt-detail-prompt pre {
+  color: var(--product-text-primary);
+}
+
+.dark .prompt-detail-recipe-head span,
+.dark .prompt-detail-prompt button,
+.dark .prompt-detail-empty a {
+  color: #ff9a84;
+}
+
+.dark .prompt-detail-actions button:first-child,
+.dark .prompt-detail-recipe-head button {
+  border-color: var(--product-action-bg);
+  background: var(--product-action-bg);
+  color: var(--product-action-text);
+}
+
+.dark .prompt-detail-actions button:last-child,
+.dark .prompt-detail-actions a,
+.dark .prompt-detail-author,
+.dark .prompt-detail-recipe-card button {
+  border-color: var(--product-border-default);
+  background: var(--product-surface-subtle);
+  color: var(--product-text-primary);
+}
+
+.prompt-detail-prompt-locked {
+  padding: 0;
+}
+
+.prompt-detail-lock-card {
+  display: grid;
+  align-items: start !important;
+  justify-content: stretch !important;
+  gap: 10px;
+  padding: 22px;
+  border-bottom: 0 !important;
+}
+
+.prompt-detail-preview-teaser {
+  display: grid;
+  gap: 6px;
+  max-width: 640px;
+  padding: 12px;
+  border: 1px solid rgba(20, 20, 20, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.prompt-detail-preview-teaser small {
+  color: var(--product-text-secondary, #555555);
+  font-size: 11px;
+  font-weight: 780;
+}
+
+.prompt-detail-preview-teaser p {
+  margin: 0;
+  color: var(--product-text-primary, #141414);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.prompt-detail-topic-links {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+  padding: 18px;
+}
+
+.prompt-detail-topic-links h2 {
+  margin: 0;
+  color: var(--product-text-primary, #141414);
+  font-size: 18px;
+}
+
+.prompt-detail-topic-links > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.prompt-detail-topic-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid rgba(20, 20, 20, 0.12);
+  border-radius: 999px;
+  background: var(--product-surface-subtle, #f3f3f3);
+  color: var(--product-text-primary, #141414);
+  font-size: 12px;
+  font-weight: 780;
+  text-decoration: none;
+}
+
+.prompt-detail-related {
+  display: grid;
+  gap: 14px;
+  margin-top: 22px;
+  padding: 18px;
+}
+
+.prompt-detail-related h2 {
+  margin: 0;
+  color: var(--product-text-primary, #141414);
+  font-size: 18px;
+}
+
+.prompt-detail-related > div {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.prompt-detail-related a {
+  overflow: hidden;
+  color: var(--product-text-primary, #141414);
+  border: 1px solid rgba(20, 20, 20, 0.1);
+  border-radius: 12px;
+  background: var(--product-surface, #ffffff);
+  text-decoration: none;
+}
+
+.prompt-detail-related img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: contain;
+  background: var(--product-surface-subtle, #f3f3f3);
+}
+
+.prompt-detail-related span {
+  display: block;
+  overflow: hidden;
+  padding: 9px 10px;
+  font-size: 12px;
+  font-weight: 780;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 920px) {
+  .prompt-detail-hero {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 920px) {
+  .prompt-detail-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 920px) {
+  .prompt-detail-related > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container prompt-detail (max-width: 900px) {
+  .prompt-detail-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .prompt-detail-panel {
+    position: static;
+  }
+
+  .prompt-detail-related > div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .prompt-detail-shell {
+    width: min(100% - 24px, 1260px);
+  }
+}
+
+@media (max-width: 560px) {
+  .prompt-detail-gallery,
+  .prompt-detail-actions,
+  .prompt-detail-recipe-head,
+  .prompt-detail-related > div {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .prompt-detail-recipe-head {
+    display: grid;
+  }
+}
+
+@media (max-width: 560px) {
+  .prompt-detail-recipe-head button {
+    width: 100%;
+  }
+}
+
+
+.prompt-detail-free-hint {
+  margin: 10px 0 0;
+  color: var(--product-text-tertiary, #8a8078);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+}

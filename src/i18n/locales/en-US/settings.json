@@ -1,0 +1,87 @@
+{
+  "title": "Settings",
+  "sections": {
+    "general": "General",
+    "appearance": "Appearance",
+    "ai": "AI Settings",
+    "shortcuts": "Shortcuts",
+    "storage": "Storage",
+    "about": "About"
+  },
+  "general": {
+    "language": "Language",
+    "languageDescription": "Choose display language",
+    "autoSummarize": "Auto Summarize",
+    "autoSummarizeDescription": "Automatically start summarizing when opening a page",
+    "notifications": "Notifications",
+    "notificationsDescription": "Allow extension notifications"
+  },
+  "appearance": {
+    "theme": "Theme",
+    "themeDescription": "Choose interface theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "fontSize": "Font Size",
+    "fontSizeSmall": "Small",
+    "fontSizeMedium": "Medium",
+    "fontSizeLarge": "Large"
+  },
+  "ai": {
+    "model": "AI Model",
+    "modelDescription": "Choose AI model for summarization",
+    "summaryLength": "Summary Length",
+    "summaryLengthShort": "Short",
+    "summaryLengthMedium": "Medium",
+    "summaryLengthLong": "Detailed",
+    "summaryStyle": "Summary Style",
+    "summaryStyleBullet": "Bullet Points",
+    "summaryStyleParagraph": "Paragraph",
+    "summaryStyleMindmap": "Mind Map"
+  },
+  "shortcuts": {
+    "summarize": "Summarize Page",
+    "openPanel": "Open Side Panel",
+    "openWorkspace": "Open Workspace"
+  },
+  "storage": {
+    "cacheSize": "Cache Size",
+    "clearCache": "Clear Cache",
+    "clearCacheDescription": "Clear all local cached data",
+    "clearCacheConfirm": "Are you sure you want to clear all cache?",
+    "exportData": "Export Data",
+    "exportDataDescription": "Export all saved data",
+    "importData": "Import Data",
+    "importDataDescription": "Import data from file"
+  },
+  "about": {
+    "version": "Version",
+    "checkUpdate": "Check for Updates",
+    "changelog": "Changelog",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "feedback": "Feedback",
+    "rateUs": "Rate Us"
+  },
+  "imageSettings": {
+    "title": "Create Image",
+    "model": "Image Model:",
+    "aspectRatio": "Aspect Ratio:",
+    "quality": "Image Quality:",
+    "style": "Image Style:",
+    "auto": "Auto",
+    "styles": {
+      "ghibli": "Ghibli",
+      "pixar": "Pixar",
+      "cartoon": "Cartoon",
+      "pixel": "Pixel"
+    },
+    "styleLabels": {
+      "ghibli": "Ghibli style",
+      "pixar": "Pixar style",
+      "cartoon": "Cartoon style",
+      "pixel": "Pixel style"
+    },
+    "resolution": "resolution"
+  }
+}

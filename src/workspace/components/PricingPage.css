@@ -1,0 +1,335 @@
+.pricing-grid-wrap {
+  width: min(1180px, calc(100% - 48px));
+  margin-inline: auto;
+}
+
+/*
+ * Apple-inspired pricing system
+ *
+ * Pricing renders as both a standalone surface and inside the creator shell.
+ * All visual decisions stay scoped to this product surface so payment and
+ * subscription behavior remain independent from presentation.
+ */
+.pricing-product-os {
+  --pricing-canvas: #f5f5f7;
+  --pricing-surface: rgba(255, 255, 255, 0.82);
+  --pricing-surface-solid: #ffffff;
+  --pricing-surface-muted: rgba(118, 118, 128, 0.08);
+  --pricing-surface-selected: rgba(255, 255, 255, 0.98);
+  --pricing-ink: #1d1d1f;
+  --pricing-secondary: #6e6e73;
+  --pricing-tertiary: #86868b;
+  --pricing-line: rgba(0, 0, 0, 0.08);
+  --pricing-line-strong: rgba(0, 0, 0, 0.14);
+  --pricing-blue: #0071e3;
+  --pricing-blue-hover: #0077ed;
+  --pricing-blue-soft: rgba(0, 113, 227, 0.1);
+  --pricing-green: #188038;
+  --pricing-orange: #b54708;
+  --pricing-red: #c4322b;
+  --pricing-shadow-small:
+    0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 26px rgba(0, 0, 0, 0.05);
+  --pricing-shadow-card:
+    0 2px 8px rgba(0, 0, 0, 0.04), 0 24px 70px rgba(0, 0, 0, 0.08);
+  --pricing-spring: 420ms
+    linear(
+      0,
+      0.026,
+      0.093 3.3%,
+      0.263 7.4%,
+      0.516 12.2%,
+      0.709 16.3%,
+      0.838 20.1%,
+      0.922 24.2%,
+      0.972 28.8%,
+      0.998 34.3%,
+      1.008 41.5%,
+      1.007 53.5%,
+      1
+    );
+  container-name: pricing-page;
+  container-type: inline-size;
+  background:
+    radial-gradient(
+      circle at 12% -8%,
+      rgba(95, 157, 255, 0.16),
+      transparent 34rem
+    ),
+    radial-gradient(
+      circle at 92% 2%,
+      rgba(255, 176, 128, 0.13),
+      transparent 30rem
+    ),
+    var(--pricing-canvas) !important;
+  color: var(--pricing-ink) !important;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+    'Helvetica Neue', Arial, sans-serif;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.dark .pricing-product-os {
+  --pricing-canvas: #000000;
+  --pricing-surface: rgba(29, 29, 31, 0.82);
+  --pricing-surface-solid: #1d1d1f;
+  --pricing-surface-muted: rgba(255, 255, 255, 0.07);
+  --pricing-surface-selected: rgba(60, 60, 67, 0.88);
+  --pricing-ink: #f5f5f7;
+  --pricing-secondary: #a1a1a6;
+  --pricing-tertiary: #8e8e93;
+  --pricing-line: rgba(255, 255, 255, 0.11);
+  --pricing-line-strong: rgba(255, 255, 255, 0.18);
+  --pricing-blue: #2997ff;
+  --pricing-blue-hover: #40a9ff;
+  --pricing-blue-soft: rgba(41, 151, 255, 0.16);
+  --pricing-green: #66d987;
+  --pricing-orange: #ffb340;
+  --pricing-red: #ff6961;
+  --pricing-shadow-small: 0 12px 32px rgba(0, 0, 0, 0.2);
+  --pricing-shadow-card: 0 32px 90px rgba(0, 0, 0, 0.34);
+}
+
+.pricing-product-os [id] {
+  scroll-margin-top: 88px;
+}
+
+.pricing-product-os .pricing-navigation {
+  border: 0 !important;
+  border-bottom: 1px solid var(--pricing-line) !important;
+  background: rgba(250, 250, 252, 0.72) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset !important;
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+}
+
+.dark .pricing-product-os .pricing-navigation {
+  background: rgba(22, 22, 23, 0.72) !important;
+}
+
+.pricing-product-os .pricing-navigation-inner {
+  max-width: 1320px;
+}
+
+.pricing-product-os .pricing-brand {
+  min-height: 44px;
+  color: var(--pricing-ink) !important;
+  letter-spacing: -0.015em;
+  transition:
+    opacity 160ms ease,
+    transform 100ms ease-out;
+}
+
+.pricing-product-os .pricing-brand:active {
+  opacity: 0.62;
+  transform: scale(0.98);
+}
+
+.pricing-product-os .pricing-nav-button {
+  border: 1px solid var(--pricing-line) !important;
+  background: var(--pricing-surface-muted) !important;
+  color: var(--pricing-ink) !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.48) inset !important;
+  transition:
+    background-color 160ms ease,
+    transform 100ms ease-out;
+}
+
+.pricing-product-os .pricing-nav-button:active {
+  transform: scale(0.94);
+}
+
+.pricing-product-os .pricing-krea-main {
+  padding-top: clamp(48px, 7vw, 96px) !important;
+}
+
+.pricing-product-os .pricing-krea-hero {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.pricing-product-os .pricing-krea-hero-copy {
+  max-width: 900px;
+}
+
+.pricing-product-os .pricing-krea-kicker {
+  display: inline-flex;
+  min-height: 28px;
+  align-items: center;
+  margin-bottom: 18px;
+  border-radius: 999px;
+  background: var(--pricing-blue-soft);
+  padding: 5px 12px;
+  color: var(--pricing-blue) !important;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.pricing-product-os .pricing-krea-title {
+  max-width: 920px;
+  margin: 0;
+  color: var(--pricing-ink) !important;
+  font-size: clamp(3rem, 6.6vw, 5.75rem) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.055em !important;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.pricing-product-os .pricing-krea-subtitle {
+  max-width: 720px;
+  margin: 24px auto 0 !important;
+  color: var(--pricing-secondary) !important;
+  font-size: clamp(1rem, 1.8vw, 1.25rem) !important;
+  font-weight: 450;
+  letter-spacing: -0.012em;
+  line-height: 1.55 !important;
+  text-wrap: pretty;
+}
+
+.pricing-product-os .pricing-cycle-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 38px;
+  overflow: visible;
+}
+
+.pricing-product-os .pricing-billing-switch,
+.pricing-product-os .pricing-payment-method-switch {
+  position: relative;
+  display: inline-flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--pricing-line) !important;
+  border-radius: 999px;
+  background: rgba(232, 232, 237, 0.76) !important;
+  padding: 4px !important;
+  color: var(--pricing-secondary) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.72) inset,
+    var(--pricing-shadow-small) !important;
+  backdrop-filter: blur(18px) saturate(170%);
+  -webkit-backdrop-filter: blur(18px) saturate(170%);
+}
+
+.dark .pricing-product-os .pricing-billing-switch,
+.dark .pricing-product-os .pricing-payment-method-switch {
+  background: rgba(44, 44, 46, 0.72) !important;
+}
+
+.pricing-product-os .pricing-billing-choice,
+.pricing-product-os .pricing-payment-method-switch button {
+  display: inline-flex;
+  min-width: 78px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  background: transparent !important;
+  padding: 0 16px;
+  color: inherit !important;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  letter-spacing: -0.008em;
+  transition:
+    color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 100ms ease-out;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pricing-product-os .pricing-billing-choice.is-active,
+.pricing-product-os .pricing-payment-method-switch button.is-active {
+  background: var(--pricing-surface-selected) !important;
+  color: var(--pricing-ink) !important;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.07),
+    0 4px 12px rgba(0, 0, 0, 0.07) !important;
+}
+
+.pricing-product-os .pricing-billing-choice:active,
+.pricing-product-os .pricing-payment-method-switch button:active {
+  transform: scale(0.96);
+}
+
+.pricing-product-os .pricing-billing-choice-label {
+  color: inherit !important;
+}
+
+.pricing-product-os .pricing-billing-save {
+  position: absolute !important;
+  top: -25px !important;
+  right: 8px !important;
+  left: auto !important;
+  z-index: 2;
+  min-width: max-content !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: var(--pricing-green) !important;
+  padding: 5px 9px !important;
+  color: #ffffff !important;
+  font-size: 0.625rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  line-height: 1 !important;
+  transform: none !important;
+  box-shadow: 0 4px 12px rgba(24, 128, 56, 0.2) !important;
+}
+
+.dark .pricing-product-os .pricing-billing-save {
+  background: #15803d !important;
+  box-shadow: 0 4px 12px rgba(21, 128, 61, 0.28) !important;
+}
+
+.pricing-product-os .pricing-billing-save::before {
+  content: none !important;
+}
+
+.pricing-product-os .pricing-payment-method-label {
+  padding-inline: 11px 5px;
+  color: var(--pricing-tertiary) !important;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.pricing-product-os .pricing-alipay-mark {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 7px;
+  background: #1677ff !important;
+  color: #ffffff !important;
+  font-size: 0.75rem;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(22, 119, 255, 0.2);
+}
+
+.pricing-product-os .pricing-plan-grid,
+.pricing-product-os .pricing-usage-grid,
+.pricing-product-os .pricing-trust-grid {
+  display: grid;
+  gap: clamp(14px, 1.7vw, 22px);
+}
+
+.pricing-product-os .pricing-plan-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  margin-top: clamp(48px, 6vw, 72px) !important;
+}

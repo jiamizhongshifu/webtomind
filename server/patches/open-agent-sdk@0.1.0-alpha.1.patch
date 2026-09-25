@@ -1,0 +1,12 @@
+diff --git a/package.json b/package.json
+index b9f2536d6a6b1ce9b63f8dcb39284168a0d3a5fd..5c2a33ef0eacb5b9aeeaf344a30475ed322a2c57 100644
+--- a/package.json
++++ b/package.json
+@@ -2,6 +2,7 @@
+   "name": "open-agent-sdk",
+   "version": "0.1.0-alpha.1",
+   "description": "Open source agent SDK compatible with Claude Agent SDK",
++  "type": "module",
+   "main": "dist/index.js",
+   "types": "dist/index.d.ts",
+   "files": [

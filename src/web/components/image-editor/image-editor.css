@@ -1,0 +1,2583 @@
+.image-editor-page {
+  --tool-ink: #1d1d1f;
+  --tool-muted: #6e6e73;
+  --tool-line: rgba(29, 29, 31, 0.1);
+  --tool-line-strong: rgba(29, 29, 31, 0.2);
+  --tool-paper: #f5f5f7;
+  --tool-panel: rgba(255, 255, 255, 0.9);
+  --tool-accent: #b24a32;
+  --tool-accent-strong: #8f3825;
+  --tool-blue: #0071e3;
+  --tool-danger: #a4231a;
+  --tool-danger-soft: rgba(255, 45, 45, 0.08);
+  --editor-surface: rgba(255, 255, 255, 0.85);
+  --editor-surface-strong: #ffffff;
+  --editor-surface-subtle: #f5f5f7;
+  --editor-checker: #fafafa;
+  --editor-checker-line: rgba(29, 29, 31, 0.04);
+  --editor-ghost: rgba(255, 255, 255, 0.8);
+  --editor-hover: rgba(29, 29, 31, 0.04);
+  --editor-hover-strong: rgba(29, 29, 31, 0.08);
+  --tool-radius-large: 24px;
+  --tool-radius-control: 12px;
+  --tool-shadow-panel:
+    0 1px 0 rgba(255, 255, 255, 0.84) inset,
+    0 18px 48px rgba(0, 0, 0, 0.07);
+  color: var(--tool-ink);
+  background:
+    radial-gradient(
+      circle at 82% -6%,
+      rgba(120, 120, 128, 0.1),
+      transparent 36rem
+    ),
+    var(--tool-paper);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+    'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.dark .image-editor-page {
+  --tool-ink: #f5f5f7;
+  --tool-muted: #aeaeb2;
+  --tool-line: rgba(255, 255, 255, 0.12);
+  --tool-line-strong: rgba(255, 255, 255, 0.24);
+  --tool-paper: #000000;
+  --tool-panel: rgba(34, 34, 36, 0.88);
+  --tool-accent: #ff8a6b;
+  --tool-accent-strong: #ffb29d;
+  --tool-blue: #2997ff;
+  --tool-danger: #ff453a;
+  --tool-danger-soft: rgba(255, 69, 58, 0.16);
+  --editor-surface: rgba(44, 44, 46, 0.85);
+  --editor-surface-strong: #2c2c2e;
+  --editor-surface-subtle: #1c1c1e;
+  --editor-checker: #151516;
+  --editor-checker-line: rgba(255, 255, 255, 0.05);
+  --editor-ghost: rgba(60, 60, 62, 0.85);
+  --editor-hover: rgba(255, 255, 255, 0.06);
+  --editor-hover-strong: rgba(255, 255, 255, 0.1);
+  --tool-shadow-panel:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 24px 60px rgba(0, 0, 0, 0.34);
+  color: var(--tool-ink);
+  background:
+    radial-gradient(
+      circle at 82% -6%,
+      rgba(255, 255, 255, 0.05),
+      transparent 36rem
+    ),
+    #000000;
+}
+
+.image-editor-page .create-workspace-page {
+  width: calc(100vw - var(--create-side-nav-offset));
+  max-width: none;
+  min-height: 100dvh;
+  padding: 18px clamp(16px, 2vw, 28px) 24px;
+}
+
+.image-editor-main {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.image-editor-topline {
+  min-height: 44px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--tool-muted);
+  font-size: 13px;
+}
+
+.image-editor-topline button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--tool-accent);
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.image-editor-topline button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.image-editor-topline span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.image-editor-heading {
+  margin-bottom: 24px;
+}
+
+.image-editor-heading h1 {
+  margin: 0;
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+
+.image-editor-heading p {
+  max-width: 720px;
+  margin: 12px 0 0;
+  color: var(--tool-muted);
+  font-size: clamp(14px, 1.3vw, 17px);
+  line-height: 1.6;
+}
+
+/* 入口态 */
+.image-editor-landing {
+  min-height: calc(100dvh - 150px);
+  display: grid;
+  place-items: center;
+  padding: 24px 0 48px;
+}
+
+.image-editor-landing-card {
+  width: min(680px, 100%);
+  padding: clamp(28px, 4vw, 56px) clamp(24px, 4vw, 56px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1px solid var(--tool-line);
+  border-radius: var(--tool-radius-large);
+  background: var(--tool-panel);
+  box-shadow: var(--tool-shadow-panel);
+  backdrop-filter: blur(22px) saturate(1.18);
+  -webkit-backdrop-filter: blur(22px) saturate(1.18);
+}
+
+.image-editor-landing-icon {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 20px;
+  border-radius: 18px;
+  color: #fff;
+  background: linear-gradient(135deg, #7c5cff, #a64ee8);
+  box-shadow: 0 14px 34px rgba(124, 92, 255, 0.32);
+}
+
+.image-editor-landing-card h1 {
+  margin: 0;
+  font-size: clamp(30px, 3.6vw, 46px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.image-editor-landing-card p {
+  max-width: 520px;
+  margin: 16px auto 0;
+  color: var(--tool-muted);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.image-editor-landing-actions {
+  margin-top: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.image-editor-landing-actions button {
+  min-height: 46px;
+  padding: 0 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.image-editor-landing-actions button:hover {
+  transform: translateY(-1px);
+}
+
+.image-editor-landing-actions button:active {
+  transform: scale(0.97);
+  transition: transform 100ms ease-out;
+}
+
+.image-editor-landing-actions button:focus-visible,
+.image-editor-canvas-crop-confirm:focus-visible,
+.image-editor-panel-generate:focus-visible,
+.image-editor-tool-trigger:focus-visible,
+.image-editor-versions-strip button:focus-visible,
+.image-editor-canvas-toolbar button:focus-visible,
+.image-editor-asset-confirm:focus-visible,
+.image-editor-asset-dialog header button:focus-visible,
+.image-editor-panel-compose textarea:focus-visible,
+.image-editor-model-select select:focus-visible,
+.image-editor-panel-region input:focus-visible,
+.image-editor-panel-add-references button:focus-visible,
+.image-editor-extra-reference button:focus-visible,
+.image-editor-tool-options button:focus-visible {
+  outline: 2px solid var(--tool-blue);
+  outline-offset: 2px;
+}
+
+.image-editor-landing-primary {
+  border: 1px solid var(--tool-blue);
+  color: #fff;
+  background: var(--tool-blue);
+  box-shadow: 0 12px 28px rgba(0, 113, 227, 0.26);
+}
+
+.image-editor-landing-primary:hover {
+  background: var(--tool-blue);
+  filter: brightness(1.06);
+  box-shadow: 0 16px 34px rgba(0, 113, 227, 0.32);
+}
+
+.image-editor-landing-secondary {
+  border: 1px solid var(--tool-line-strong);
+  color: var(--tool-ink);
+  background: var(--editor-ghost);
+}
+
+.image-editor-landing-secondary:hover {
+  background: var(--editor-surface-strong);
+}
+
+.image-editor-landing-card small {
+  margin-top: 18px;
+  color: var(--tool-muted);
+  font-size: 12px;
+}
+
+.image-editor-landing-importing {
+  min-height: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--tool-muted);
+}
+
+.image-editor-landing-importing svg {
+  width: 30px;
+  height: 30px;
+  color: var(--tool-accent);
+}
+
+.image-editor-landing-importing strong {
+  color: var(--tool-ink);
+  font-size: 15px;
+}
+
+.image-editor-landing-error {
+  max-width: 520px;
+  margin: 18px 0 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  color: var(--tool-danger);
+  background: var(--tool-danger-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 编辑态 */
+.image-editor-workspace {
+  height: calc(100dvh - 58px);
+  min-height: 520px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
+  overflow: hidden;
+  border: 1px solid var(--tool-line);
+  border-radius: var(--tool-radius-large);
+  background: var(--tool-panel);
+  box-shadow: var(--tool-shadow-panel);
+  backdrop-filter: blur(22px) saturate(1.18);
+  -webkit-backdrop-filter: blur(22px) saturate(1.18);
+}
+
+.image-editor-canvas-column {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+}
+
+.image-editor-canvas-toolbar {
+  min-height: 40px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.image-editor-canvas-history {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.image-editor-canvas-history button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--tool-line);
+  border-radius: 11px;
+  color: var(--tool-ink);
+  background: var(--editor-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.image-editor-canvas-history button:hover:not(:disabled) {
+  color: var(--tool-accent-strong);
+  border-color: color-mix(in srgb, var(--tool-accent) 45%, transparent);
+  background: var(--editor-surface-strong);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+}
+
+.image-editor-canvas-history button:focus-visible {
+  outline: 2px solid var(--tool-blue);
+  outline-offset: 2px;
+}
+
+.image-editor-canvas-history button:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.image-editor-canvas-history svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+
+.image-editor-canvas-toolbar-right {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.image-editor-canvas-toolbar-right span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--tool-muted);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-editor-canvas-toolbar button {
+  min-height: 36px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 999px;
+  color: var(--tool-ink);
+  background: var(--editor-surface);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.image-editor-canvas-toolbar button:hover:not(:disabled) {
+  background: var(--editor-surface-strong);
+}
+
+.image-editor-canvas-toolbar button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 版本历史 */
+.image-editor-versions {
+  margin-bottom: 12px;
+}
+
+.image-editor-versions-label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--tool-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.image-editor-versions-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: thin;
+}
+
+.image-editor-versions-strip button {
+  min-width: 76px;
+  width: 76px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  align-items: center;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: var(--tool-muted);
+  background: var(--editor-surface);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease;
+}
+
+.image-editor-versions-strip button:hover:not(:disabled) {
+  border-color: var(--tool-line-strong);
+  transform: translateY(-1px);
+}
+
+.image-editor-versions-strip button.is-active {
+  border-color: var(--tool-accent);
+  color: var(--tool-ink);
+}
+
+.image-editor-versions-strip button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.image-editor-versions-strip img {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--tool-soft);
+}
+
+.image-editor-versions-strip span {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-editor-versions-strip span.is-broken {
+  color: var(--tool-danger);
+}
+
+.image-editor-versions-strip img.is-broken {
+  display: none;
+}
+
+.image-editor-canvas-expired {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  max-width: min(480px, calc(100% - 32px));
+  padding: 10px 16px;
+  border-radius: 12px;
+  color: var(--tool-danger);
+  background: var(--editor-surface-strong);
+  box-shadow: var(--tool-shadow-panel);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+  z-index: 3;
+}
+
+.image-editor-canvas {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.image-editor-canvas-stage {
+  position: relative;
+  min-height: 480px;
+  flex: 1;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+  border: 1px solid var(--tool-line);
+  border-radius: 18px;
+  background:
+    linear-gradient(45deg, var(--editor-checker-line) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--editor-checker-line) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--editor-checker-line) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--editor-checker-line) 75%),
+    var(--editor-checker);
+  background-position:
+    0 0,
+    0 12px,
+    12px -12px,
+    -12px 0;
+  background-size: 24px 24px;
+}
+
+.image-editor-canvas-image {
+  position: relative;
+  line-height: 0;
+}
+
+/* 浏览模式：图片可缩放/平移，平移被钳制在舞台内，不显示蒙版裁剪；
+   蒙版（裁剪框遮罩/扩展区）只在裁剪与扩图模式出现 */
+.image-editor-canvas-image.is-browsing {
+  cursor: grab;
+}
+
+.image-editor-canvas-image.is-browsing:active {
+  cursor: grabbing;
+}
+
+.image-editor-canvas-image.is-browsing img {
+  cursor: grab;
+}
+
+.image-editor-canvas-zoom {
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* 裁剪/扩展：图片四周可扩展的画布区域（点阵，等待 AI 填充） */
+.image-editor-crop-extend-bg {
+  position: absolute;
+  inset: calc(-1 * var(--crop-extend, 30%)) 0;
+  z-index: 0;
+  border-radius: 3px;
+  background-color: #1b1b22;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px);
+  background-size: 13px 13px;
+  pointer-events: none;
+}
+
+.image-editor-canvas-image img {
+  position: relative;
+  z-index: 1;
+}
+
+.image-editor-canvas-stage img {
+  max-width: 100%;
+  max-height: calc(100dvh - 320px);
+  min-height: 460px;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+  touch-action: none;
+}
+
+.image-editor-canvas-stage img.is-drawing {
+  cursor: crosshair;
+}
+
+/* Auto-Mask 蒙版覆盖层：点击主体后显示 AI 生成的蒙版 */
+.image-editor-auto-mask-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+  mix-blend-mode: normal;
+}
+
+/* 提示词 token 计数 */
+.image-editor-prompt-meta {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.image-editor-prompt-meta span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tool-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.image-editor-region {
+  position: absolute;
+  z-index: 2;
+  border: 2px solid color-mix(in srgb, var(--tool-accent) 92%, transparent);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--tool-accent) 16%, transparent);
+  pointer-events: none;
+}
+
+.image-editor-region.is-brush {
+  border-style: dashed;
+}
+
+.image-editor-region.is-draft {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--tool-blue) 95%, transparent);
+  background: color-mix(in srgb, var(--tool-blue) 14%, transparent);
+}
+
+.image-editor-region.is-active {
+  border-color: var(--tool-blue);
+  border-width: 2.5px;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tool-blue) 26%, transparent);
+  background: color-mix(in srgb, var(--tool-blue) 14%, transparent);
+}
+
+.image-editor-region-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: rgba(20, 20, 22, 0.82);
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.image-editor-region-remove svg {
+  width: 13px;
+  height: 13px;
+}
+
+.image-editor-region-tag {
+  position: absolute;
+  left: 4px;
+  top: 4px;
+  max-width: calc(100% - 8px);
+  padding: 2px 6px;
+  border-radius: 5px;
+  color: #fff;
+  background: color-mix(in srgb, var(--tool-accent) 88%, transparent);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-editor-crop-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.image-editor-crop-mask > div {
+  position: absolute;
+  background: rgba(10, 10, 12, 0.55);
+}
+
+.image-editor-crop-box {
+  position: absolute;
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.image-editor-crop-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      to bottom,
+      transparent 33.33%,
+      rgba(255, 255, 255, 0.45) 33.33%,
+      rgba(255, 255, 255, 0.45) 33.4%,
+      transparent 33.4%,
+      transparent 66.66%,
+      rgba(255, 255, 255, 0.45) 66.66%,
+      rgba(255, 255, 255, 0.45) 66.73%,
+      transparent 66.73%
+    ),
+    linear-gradient(
+      to right,
+      transparent 33.33%,
+      rgba(255, 255, 255, 0.45) 33.33%,
+      rgba(255, 255, 255, 0.45) 33.4%,
+      transparent 33.4%,
+      transparent 66.66%,
+      rgba(255, 255, 255, 0.45) 66.66%,
+      rgba(255, 255, 255, 0.45) 66.73%,
+      transparent 66.73%
+    );
+}
+
+.image-editor-crop-box i {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.image-editor-crop-box i.is-nw { left: -7px; top: -7px; cursor: nwse-resize; }
+.image-editor-crop-box i.is-ne { right: -7px; top: -7px; cursor: nesw-resize; }
+.image-editor-crop-box i.is-sw { left: -7px; bottom: -7px; cursor: nesw-resize; }
+.image-editor-crop-box i.is-se { right: -7px; bottom: -7px; cursor: nwse-resize; }
+.image-editor-crop-box i.is-n {
+  left: 50%;
+  top: -7px;
+  width: 22px;
+  margin-left: -11px;
+  cursor: ns-resize;
+}
+.image-editor-crop-box i.is-s {
+  left: 50%;
+  bottom: -7px;
+  width: 22px;
+  margin-left: -11px;
+  cursor: ns-resize;
+}
+.image-editor-crop-box i.is-w {
+  top: 50%;
+  left: -7px;
+  height: 22px;
+  margin-top: -11px;
+  cursor: ew-resize;
+}
+.image-editor-crop-box i.is-e {
+  top: 50%;
+  right: -7px;
+  height: 22px;
+  margin-top: -11px;
+  cursor: ew-resize;
+}
+
+.image-editor-brush-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  overflow: visible;
+}
+
+.image-editor-brush-layer polyline {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.45));
+}
+
+/* Draw Region（绘制区域）的画笔笔迹：粗圆头蓝色笔触，实时涂抹可见 */
+.image-editor-brush-layer polyline.is-region-brush {
+  stroke: var(--tool-blue);
+  stroke-width: 0.035;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.35));
+}
+
+.image-editor-canvas-busy {
+  position: absolute;
+  z-index: 5;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #fff;
+  background: rgba(10, 10, 12, 0.55);
+  backdrop-filter: blur(6px) saturate(1.1);
+  -webkit-backdrop-filter: blur(6px) saturate(1.1);
+  animation: image-editor-fade-in 180ms ease-out;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.image-editor-canvas-footer {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--tool-muted);
+  font-size: 13px;
+}
+
+.image-editor-canvas-footer > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.image-editor-canvas-footer svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+}
+
+.image-editor-canvas-crop-confirm {
+  min-height: 36px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--tool-blue);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.image-editor-canvas-crop-confirm:active {
+  transform: scale(0.97);
+}
+
+.image-editor-canvas-crop-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 右侧 AI 编辑面板 */
+.image-editor-panel {
+  min-width: 0;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+  border-left: 1px solid var(--tool-line);
+  background: var(--editor-surface-subtle);
+  max-height: none;
+}
+
+.image-editor-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.image-editor-panel-header strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+
+.image-editor-panel-header strong svg {
+  width: 17px;
+  height: 17px;
+  color: #7c5cff;
+}
+
+.image-editor-panel-download {
+  min-height: 34px;
+  padding: 0 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 999px;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.image-editor-panel-download svg {
+  width: 15px;
+  height: 15px;
+}
+
+.image-editor-panel-download:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.image-editor-panel-download:active {
+  transform: scale(0.97);
+}
+
+.image-editor-panel-reference {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid var(--tool-line);
+  border-radius: var(--tool-radius-control);
+  background: var(--editor-surface);
+}
+
+.image-editor-panel-reference img {
+  width: 52px;
+  height: 52px;
+  flex: none;
+  border-radius: 10px;
+  object-fit: cover;
+  background: var(--tool-soft);
+}
+
+.image-editor-panel-reference > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.image-editor-panel-reference strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.image-editor-panel-reference strong svg {
+  width: 14px;
+  height: 14px;
+  color: var(--tool-accent);
+}
+
+.image-editor-panel-reference small {
+  color: var(--tool-muted);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+/* 补充参考图 */
+.image-editor-panel-extra-references {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-editor-extra-reference {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--tool-line);
+  border-radius: var(--tool-radius-control);
+  background: var(--editor-surface);
+}
+
+.image-editor-extra-reference img {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 8px;
+  object-fit: cover;
+  background: var(--tool-soft);
+}
+
+.image-editor-extra-reference > span {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.image-editor-extra-reference strong {
+  overflow: hidden;
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-editor-extra-reference small {
+  color: var(--tool-muted);
+  font-size: 11px;
+}
+
+.image-editor-extra-reference button {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: var(--tool-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.image-editor-extra-reference button:hover {
+  color: var(--tool-accent-strong);
+  background: var(--editor-hover);
+}
+
+.image-editor-extra-reference button.image-editor-extra-remove:hover {
+  color: var(--tool-danger);
+  background: var(--tool-danger-soft);
+}
+
+.image-editor-extra-reference svg {
+  width: 14px;
+  height: 14px;
+}
+
+.image-editor-panel-add-references {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border: 1px dashed var(--tool-line-strong);
+  border-radius: var(--tool-radius-control);
+  background: color-mix(in srgb, var(--editor-surface) 55%, transparent);
+}
+
+.image-editor-panel-add-references > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.image-editor-panel-add-references strong {
+  font-size: 12.5px;
+}
+
+.image-editor-panel-add-references small {
+  color: var(--tool-muted);
+  font-size: 11px;
+}
+
+.image-editor-panel-add-references button {
+  min-height: 30px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 999px;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.image-editor-panel-add-references button:hover {
+  border-color: var(--tool-accent);
+  color: var(--tool-accent-strong);
+}
+
+.image-editor-panel-add-references button svg {
+  width: 13px;
+  height: 13px;
+}
+
+.image-editor-panel-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.image-editor-panel-compose textarea {
+  width: 100%;
+  min-height: 88px;
+  max-height: 180px;
+  padding: 12px 14px;
+  resize: vertical;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: var(--tool-radius-control);
+  outline: none;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.image-editor-panel-compose textarea:focus {
+  border-color: var(--tool-blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tool-blue) 16%, transparent);
+}
+
+.image-editor-panel-model-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--tool-muted);
+  font-size: 13px;
+}
+
+.image-editor-model-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.image-editor-model-select select {
+  min-height: 34px;
+  padding: 0 30px 0 12px;
+  appearance: none;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 10px;
+  outline: none;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.image-editor-model-select svg {
+  position: absolute;
+  right: 10px;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+}
+
+.image-editor-panel-generate {
+  min-height: 46px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(135deg, #7c5cff, #a64ee8);
+  box-shadow: 0 12px 28px rgba(124, 92, 255, 0.3);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.image-editor-panel-generate:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.image-editor-panel-generate:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.image-editor-panel-generate svg {
+  width: 16px;
+  height: 16px;
+}
+
+.image-editor-panel-generate em {
+  padding-left: 10px;
+  border-left: 1px solid rgba(255, 255, 255, 0.32);
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+.image-editor-panel-error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--tool-danger);
+  background: var(--tool-danger-soft);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* 更改区域：Select / Draw Region 模式切换 */
+.image-editor-region-modes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 6px 10px 2px;
+}
+
+.image-editor-region-modes button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 999px;
+  color: var(--tool-muted);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.image-editor-region-modes button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.image-editor-region-modes button:hover {
+  color: var(--tool-ink);
+  background: var(--editor-hover);
+}
+
+.image-editor-region-modes button.is-selected {
+  color: #fff;
+  border-color: transparent;
+  background: var(--tool-accent);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--tool-accent) 32%, transparent);
+}
+
+.image-editor-panel-regions,
+.image-editor-tools {
+  padding-top: 14px;
+  border-top: 1px solid var(--tool-line);
+}
+
+.image-editor-panel-regions h3,
+.image-editor-tools h3 {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--tool-muted);
+}
+
+.image-editor-panel-region {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.image-editor-panel-region.is-active {
+  padding: 6px 8px;
+  margin: -6px -8px 8px;
+  border-color: color-mix(in srgb, var(--tool-blue) 45%, transparent);
+  background: color-mix(in srgb, var(--tool-blue) 9%, transparent);
+}
+
+.image-editor-panel-region-index {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: #fff;
+  background: var(--tool-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.image-editor-panel-region textarea {
+  min-width: 0;
+  flex: 1;
+  min-height: 44px;
+  padding: 10px;
+  resize: vertical;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 9px;
+  outline: none;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 13px;
+}
+
+.image-editor-panel-region textarea:focus {
+  border-color: var(--tool-blue);
+}
+
+.image-editor-panel-region button {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: var(--tool-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.image-editor-panel-region button:hover {
+  color: var(--tool-danger);
+  background: var(--tool-danger-soft);
+}
+
+.image-editor-panel-region button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.image-editor-tools ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.image-editor-tools li {
+  margin-bottom: 6px;
+  border: 1px solid var(--tool-line);
+  border-radius: 12px;
+  background: var(--editor-surface);
+  transition: border-color 160ms ease;
+}
+
+.image-editor-tools li.is-expanded {
+  border-color: var(--tool-line-strong);
+}
+
+.image-editor-tool-trigger {
+  width: 100%;
+  min-height: 46px;
+  padding: 8px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+  border: 0;
+  border-radius: 12px;
+  color: var(--tool-ink);
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.image-editor-tool-trigger:hover {
+  background: var(--editor-hover);
+}
+
+.image-editor-tool-trigger > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.image-editor-tool-icon {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  color: var(--tool-muted);
+}
+
+.image-editor-tool-trigger > small {
+  grid-column: 1;
+  color: var(--tool-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.image-editor-tool-trigger > svg {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  width: 15px;
+  height: 15px;
+  color: var(--tool-muted);
+  transition: transform 160ms ease;
+}
+
+.image-editor-tools li.is-expanded > .image-editor-tool-trigger > svg {
+  transform: rotate(180deg);
+}
+
+.image-editor-tool-trigger > em {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--tool-blue);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.image-editor-tool-options {
+  padding: 4px 10px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.image-editor-tool-options button {
+  min-height: 32px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 999px;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.image-editor-tool-options button:hover {
+  border-color: var(--tool-accent);
+  color: var(--tool-accent-strong);
+}
+
+.image-editor-tool-options button.is-selected {
+  border-color: var(--tool-accent);
+  color: #fff;
+  background: var(--tool-accent);
+}
+
+.image-editor-tool-options button svg {
+  width: 13px;
+  height: 13px;
+}
+
+.image-editor-tool-tip {
+  margin: 0;
+  padding: 0 12px 12px;
+  color: var(--tool-muted);
+  font-size: 12.5px;
+  line-height: 1.55;
+}
+
+/* 裁剪比例预设 */
+.image-editor-crop-presets {
+  padding: 2px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-editor-crop-presets-label {
+  color: var(--tool-muted);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.image-editor-crop-presets-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.image-editor-crop-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 0 10px;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 999px;
+  color: var(--tool-muted);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.image-editor-crop-reset:hover {
+  color: var(--tool-accent-strong);
+  border-color: var(--tool-accent);
+}
+
+.image-editor-crop-reset svg {
+  width: 12px;
+  height: 12px;
+}
+
+.image-editor-crop-preset-row,
+.image-editor-crop-preset-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.image-editor-crop-preset-row button,
+.image-editor-crop-preset-actions button {
+  min-height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 999px;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.image-editor-crop-preset-row button.is-selected,
+.image-editor-crop-preset-actions button.is-selected {
+  border-color: var(--tool-accent);
+  color: #fff;
+  background: var(--tool-accent);
+}
+
+.image-editor-crop-preset-row button:hover:not(.is-selected),
+.image-editor-crop-preset-actions button:hover:not(.is-selected) {
+  border-color: var(--tool-accent);
+  color: var(--tool-accent-strong);
+}
+
+/* 裁剪扩展提示词 */
+.image-editor-crop-prompt {
+  width: 100%;
+  min-height: 64px;
+  padding: 8px 11px;
+  resize: vertical;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 10px;
+  outline: none;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.image-editor-crop-prompt::placeholder {
+  color: var(--tool-muted);
+}
+
+.image-editor-crop-prompt:focus {
+  border-color: var(--tool-blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tool-blue) 16%, transparent);
+}
+
+/* 图像调整滑块 */
+.image-editor-adjust-panel {
+  padding: 6px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.image-editor-adjust-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.image-editor-adjust-label {
+  grid-column: 1;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.image-editor-adjust-row input[type='range'] {
+  grid-column: 1;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--tool-accent);
+  cursor: pointer;
+}
+
+.image-editor-adjust-slider {
+  grid-column: 1;
+  align-self: end;
+}
+
+.image-editor-adjust-scale {
+  grid-column: 1;
+  display: flex;
+  justify-content: space-between;
+  color: var(--tool-muted);
+  font-size: 10.5px;
+}
+
+.image-editor-adjust-value {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 34px;
+  padding: 3px 6px;
+  border-radius: 7px;
+  color: var(--tool-ink);
+  background: color-mix(in srgb, var(--tool-blue) 14%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.image-editor-adjust-reset {
+  grid-column: 2;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: var(--tool-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.image-editor-adjust-reset:hover:not(:disabled) {
+  color: var(--tool-accent-strong);
+  background: var(--editor-hover);
+}
+
+.image-editor-adjust-reset:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.image-editor-adjust-reset svg {
+  width: 14px;
+  height: 14px;
+}
+
+.image-editor-adjust-done {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: var(--tool-accent);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.image-editor-adjust-done svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* 标注工具面板 */
+.image-editor-annotate-panel {
+  padding: 2px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 画笔工具 */
+.image-editor-draw-panel {
+  padding: 6px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.image-editor-draw-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.image-editor-draw-label {
+  grid-column: 1;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.image-editor-draw-row input[type='range'] {
+  grid-column: 1;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--tool-accent);
+  cursor: pointer;
+}
+
+.image-editor-draw-slider {
+  grid-column: 1;
+  align-self: end;
+}
+
+.image-editor-draw-value {
+  grid-column: 2;
+  min-width: 34px;
+  padding: 3px 6px;
+  border-radius: 7px;
+  color: var(--tool-ink);
+  background: color-mix(in srgb, var(--tool-blue) 14%, transparent);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.image-editor-draw-colors {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.image-editor-draw-palette {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.image-editor-draw-palette > button {
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--tool-line-strong);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.image-editor-draw-palette > button:hover {
+  transform: scale(1.08);
+}
+
+.image-editor-draw-palette > button.is-selected {
+  border-color: var(--editor-surface-strong);
+  box-shadow:
+    0 0 0 1px var(--tool-ink),
+    0 0 0 3px var(--editor-surface-strong),
+    0 0 0 4px var(--tool-ink);
+}
+
+.image-editor-draw-custom {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 26px;
+  border: 2px dashed var(--tool-line-strong);
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.image-editor-draw-custom input[type='color'] {
+  position: absolute;
+  inset: -6px;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.image-editor-draw-strokes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--tool-muted);
+  font-size: 12px;
+}
+
+.image-editor-draw-clear {
+  min-height: 30px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid color-mix(in srgb, var(--tool-danger) 32%, transparent);
+  border-radius: 9px;
+  color: var(--tool-danger);
+  background: var(--tool-danger-soft);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.image-editor-draw-clear:hover {
+  background: color-mix(in srgb, var(--tool-danger) 16%, transparent);
+}
+
+.image-editor-draw-clear svg {
+  width: 13px;
+  height: 13px;
+}
+
+.image-editor-draw-textarea {
+  width: 100%;
+  min-height: 88px;
+  padding: 9px 11px;
+  resize: vertical;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 10px;
+  outline: none;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.image-editor-draw-textarea::placeholder {
+  color: var(--tool-muted);
+}
+
+.image-editor-draw-textarea:focus {
+  border-color: var(--tool-blue);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tool-blue) 16%, transparent);
+}
+
+.image-editor-draw-generate,
+.image-editor-annotate-generate,
+.image-editor-crop-generate {
+  min-height: 42px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, #7c5cff, #a64ee8);
+  box-shadow: 0 10px 24px rgba(124, 92, 255, 0.26);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.image-editor-draw-generate:hover:not(:disabled),
+.image-editor-annotate-generate:hover:not(:disabled),
+.image-editor-crop-generate:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.image-editor-draw-generate:disabled,
+.image-editor-annotate-generate:disabled,
+.image-editor-crop-generate:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.image-editor-draw-generate svg,
+.image-editor-annotate-generate svg,
+.image-editor-crop-generate svg {
+  width: 15px;
+  height: 15px;
+}
+
+.image-editor-draw-generate em,
+.image-editor-annotate-generate em,
+.image-editor-crop-generate em {
+  padding-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.32);
+  font-size: 11.5px;
+  font-style: normal;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+/* 3D 相机角度工具：Three.js 视角球（开源移植，MIT：ComfyUI-qwenmultiangle） */
+.image-editor-camera-tool {
+  padding: 2px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.image-editor-camera-viewport {
+  position: relative;
+  width: 100%;
+  height: 232px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0a0a0f;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  touch-action: none;
+}
+
+.image-editor-camera-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 232px;
+  padding: 20px;
+  border-radius: 12px;
+  background: rgba(127, 127, 127, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.image-editor-camera-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.image-editor-camera-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.image-editor-camera-row > span {
+  grid-column: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 650;
+}
+
+.image-editor-camera-row i {
+  width: 9px;
+  height: 9px;
+  border-radius: 2.5px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15);
+}
+
+.image-editor-camera-row input[type='range'] {
+  grid-column: 1;
+  width: 100%;
+  height: 18px;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+}
+
+.image-editor-camera-slider {
+  grid-column: 1;
+  align-self: end;
+}
+
+.image-editor-camera-track {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.image-editor-camera-track > span {
+  background: var(--cam-slider-color);
+}
+
+.image-editor-camera-thumb {
+  border-color: var(--cam-slider-color) !important;
+}
+
+.image-editor-camera-row input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #1c1c20;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+}
+
+.image-editor-camera-row input[type='range']::-moz-range-thumb {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: #1c1c20;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
+  cursor: grab;
+}
+
+.image-editor-camera-row input[type='range']::-moz-range-track {
+  height: 5px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.image-editor-camera-row output {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  min-width: 46px;
+  text-align: right;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.image-editor-camera-actions {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+
+.image-editor-camera-actions button {
+  min-height: 38px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 1px solid var(--tool-line-strong);
+  border-radius: 10px;
+  color: var(--tool-ink);
+  background: var(--editor-surface-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.image-editor-camera-actions button.image-editor-camera-reset {
+  min-height: 42px;
+  color: var(--tool-muted);
+}
+
+.image-editor-camera-actions button.image-editor-camera-generate {
+  flex: 1;
+  min-height: 42px;
+  border: 0;
+  color: #fff;
+  background: linear-gradient(135deg, #7c5cff, #a64ee8);
+  box-shadow: 0 10px 24px rgba(124, 92, 255, 0.26);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.image-editor-camera-actions button.image-editor-camera-generate:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.image-editor-camera-actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.image-editor-camera-actions svg {
+  width: 15px;
+  height: 15px;
+}
+
+.spin {
+  animation: image-editor-spin 1s linear infinite;
+}
+
+@keyframes image-editor-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 资产选择弹窗 */
+.image-editor-asset-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(20, 18, 26, 0.55);
+  backdrop-filter: blur(8px) saturate(1.1);
+  -webkit-backdrop-filter: blur(8px) saturate(1.1);
+  animation: image-editor-fade-in 160ms ease-out;
+}
+
+.image-editor-asset-dialog {
+  width: min(880px, 100%);
+  max-height: min(720px, calc(100dvh - 60px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--tool-line);
+  border-radius: 22px;
+  background: var(--editor-surface-strong);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.28);
+  animation: image-editor-pop-in 200ms ease-out;
+}
+
+.image-editor-asset-dialog header {
+  min-height: 58px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--tool-line);
+}
+
+.image-editor-asset-dialog h2 {
+  margin: 0;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.image-editor-asset-dialog header button {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--tool-ink);
+  background: transparent;
+  cursor: pointer;
+}
+
+.image-editor-asset-dialog header button:hover {
+  background: var(--editor-hover);
+}
+
+.image-editor-asset-dialog header svg {
+  width: 18px;
+  height: 18px;
+}
+
+.image-editor-asset-grid {
+  min-height: 0;
+  padding: 18px;
+  display: grid;
+  grid-auto-rows: minmax(140px, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  align-items: stretch;
+  gap: 12px;
+  overflow-y: auto;
+}
+
+.image-editor-asset-grid button {
+  position: relative;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  background: var(--tool-soft);
+  cursor: pointer;
+}
+
+.image-editor-asset-grid button:active {
+  transform: scale(0.97);
+}
+
+.image-editor-asset-grid button:hover {
+  border-color: var(--tool-accent);
+}
+
+.image-editor-asset-grid button.is-picking {
+  border-color: var(--tool-blue);
+}
+
+.image-editor-asset-grid button.is-selected {
+  border-color: var(--tool-accent);
+}
+
+.image-editor-asset-grid img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-editor-asset-picking {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(10, 10, 12, 0.5);
+}
+
+.image-editor-asset-picking svg {
+  width: 22px;
+  height: 22px;
+}
+
+.image-editor-asset-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: var(--tool-accent);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.image-editor-asset-footer {
+  min-height: 60px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border-top: 1px solid var(--tool-line);
+  background: var(--editor-surface);
+}
+
+.image-editor-asset-footer span {
+  color: var(--tool-muted);
+  font-size: 13px;
+}
+
+.image-editor-asset-confirm {
+  min-height: 38px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: var(--tool-accent);
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.image-editor-asset-confirm:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.image-editor-asset-state {
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--tool-muted);
+  font-size: 14px;
+}
+
+.image-editor-asset-state svg {
+  width: 28px;
+  height: 28px;
+  opacity: 0.6;
+}
+
+.image-editor-asset-state.is-error {
+  color: var(--tool-danger);
+}
+
+@keyframes image-editor-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes image-editor-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* 移动端 */
+@media (max-width: 1023px) {
+  .image-editor-page {
+    --create-side-nav-width: 0px;
+    --create-side-nav-offset: 0px;
+    --create-content-margin: 16px;
+  }
+
+  .image-editor-page .create-workspace-page {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .image-editor-workspace {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 0;
+  }
+
+  .image-editor-canvas-column {
+    padding: 14px;
+  }
+
+  .image-editor-canvas-stage {
+    min-height: 360px;
+  }
+
+  .image-editor-canvas-stage img {
+    max-height: 60dvh;
+    min-height: 340px;
+  }
+
+  .image-editor-panel {
+    max-height: none;
+    border-left: 0;
+    border-top: 1px solid var(--tool-line);
+  }
+
+  .image-editor-canvas-toolbar button,
+  .image-editor-panel-download,
+  .image-editor-panel-add-references button,
+  .image-editor-tool-trigger > em,
+  .image-editor-canvas-crop-confirm {
+    min-height: 44px;
+  }
+
+  .image-editor-tool-trigger > em {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 14px;
+  }
+
+  .image-editor-landing {
+    min-height: 420px;
+  }
+}
+
+/* 中等宽度桌面（1024–1280）：压缩右栏并让画布保持可用高度 */
+@media (min-width: 1024px) and (max-width: 1240px) {
+  .image-editor-workspace {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 340px);
+  }
+
+  .image-editor-canvas-column {
+    padding: 14px;
+  }
+
+  .image-editor-canvas-stage {
+    min-height: 400px;
+  }
+
+  .image-editor-canvas-stage img {
+    max-height: calc(100dvh - 300px);
+    min-height: 380px;
+  }
+
+  .image-editor-panel {
+    padding: 16px;
+    max-height: none;
+  }
+}
+
+/* 窄屏补充参考图操作区：改为可换行，避免 360px 下挤压 */
+@media (max-width: 420px) {
+  .image-editor-panel-add-references {
+    grid-template-columns: 1fr;
+  }
+
+  .image-editor-panel-add-references button {
+    justify-content: center;
+  }
+
+  .image-editor-landing-card {
+    padding-inline: 20px;
+  }
+
+  .image-editor-panel-generate em {
+    display: none;
+  }
+}
+
+/* 进入编辑态的轻量入场：materialize 而非干巴巴的闪现 */
+.image-editor-workspace {
+  animation: image-editor-workspace-in 260ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+@keyframes image-editor-workspace-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 无障碍：降低动态 / 降低透明 / 增强对比 */
+@media (prefers-reduced-motion: reduce) {
+  .image-editor-page *,
+  .image-editor-page *::before,
+  .image-editor-page *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .image-editor-workspace,
+  .image-editor-asset-dialog,
+  .image-editor-asset-backdrop,
+  .image-editor-canvas-busy {
+    animation: none !important;
+  }
+
+  .image-editor-landing-actions button,
+  .image-editor-panel-download,
+  .image-editor-canvas-crop-confirm,
+  .image-editor-asset-grid button,
+  .image-editor-versions-strip button,
+  .image-editor-canvas-toolbar button {
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .image-editor-page {
+    --tool-panel: #ffffff;
+    --editor-surface: #ffffff;
+    --editor-surface-subtle: #f5f5f7;
+    --editor-ghost: #ffffff;
+  }
+
+  .dark .image-editor-page {
+    --tool-panel: #1c1c1e;
+    --editor-surface: #2c2c2e;
+    --editor-surface-subtle: #1c1c1e;
+    --editor-ghost: #2c2c2e;
+  }
+
+  .image-editor-workspace,
+  .image-editor-landing-card,
+  .image-editor-panel,
+  .image-editor-asset-backdrop,
+  .image-editor-asset-dialog {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .image-editor-page {
+    --tool-line: rgba(29, 29, 31, 0.4);
+    --tool-line-strong: rgba(29, 29, 31, 0.62);
+  }
+
+  .dark .image-editor-page {
+    --tool-line: rgba(255, 255, 255, 0.42);
+    --tool-line-strong: rgba(255, 255, 255, 0.68);
+  }
+}
+
+/* One canvas, one instruction composer; tools reveal only their own options. */
+.image-editor-panel { gap: 12px; padding: 16px; }
+.image-editor-panel-reference { padding: 0; background: transparent; border: 0; }
+.image-editor-panel-reference small { font-size: 12px; }
+.image-editor-tools { padding-top: 0; border-top: 0; }
+.image-editor-tools ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.image-editor-tools li { min-width: 0; margin: 0; }
+.image-editor-tools li.is-expanded { grid-column: 1 / -1; }
+.image-editor-tools li:not(.is-expanded) .image-editor-tool-trigger > small { display: none; }
+.image-editor-tool-trigger > span { font-size: 13px; }
+.image-editor-more-tools, .image-editor-enhance-actions button {
+  min-height: 44px; padding: 8px 12px; border: 1px solid var(--tool-line);
+  border-radius: 8px; background: var(--editor-surface); color: var(--tool-ink);
+  font: inherit; cursor: pointer;
+}
+.image-editor-more-tools { width: 100%; margin-top: 8px; }
+.image-editor-enhance-options { padding: 0 12px 12px; }
+.image-editor-enhance-options p { font-size: 12px; color: var(--tool-muted); line-height: 1.5; }
+.image-editor-enhance-actions { display: flex; gap: 8px; }
+.image-editor-enhance-actions button { flex: 1; }
+.image-editor-panel summary { min-height: 44px; padding: 10px 0; cursor: pointer; font-size: 13px; color: var(--tool-muted); }
+.image-editor-panel-compose { border-top: 1px solid var(--tool-line); padding-top: 12px; }
+.image-editor-panel-generate { background: var(--tool-accent); box-shadow: none; }
+.image-editor-panel-regions { border-top: 0; padding-top: 0; }
+.image-editor-panel button:focus-visible, .image-editor-panel summary:focus-visible {
+  outline: 2px solid var(--tool-accent); outline-offset: 2px;
+}
+@media (max-width: 767px) {
+  .image-editor-panel-reference { display: none; }
+  .image-editor-panel { padding: 12px; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 1023px) {
+  .image-create-page.image-editor-page {
+    --create-side-nav-offset: 0px;
+    --create-side-nav-width: 0px;
+  }
+  .image-create-page.image-editor-page .create-workspace-page {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 12px 10px calc(100px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Keep pointer coordinates aligned with actual image pixels, without letterboxing. */
+.image-editor-canvas-image { max-width: 100%; }
+.image-editor-canvas-image .image-editor-source-image {
+  display: block;
+  width: auto;
+  height: auto;
+  min-height: 0;
+}
+.image-editor-canvas-image .image-editor-auto-mask-overlay {
+  position: absolute;
+  min-height: 0;
+  max-height: none;
+  z-index: 2;
+}
+.image-editor-region-tag { max-width: calc(100% - 46px); }
+@media (max-width: 767px) {
+  .image-editor-region-remove { display: none; }
+}

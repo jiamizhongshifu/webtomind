@@ -1,0 +1,201 @@
+.creation-prompt-reference {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  flex: 0 0 68px;
+  overflow: hidden;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.creation-prompt-reference-upload {
+  position: relative;
+  display: grid;
+  width: 68px;
+  height: 68px;
+  flex: 0 0 68px;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 11px;
+  color: rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.075);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.creation-prompt-reference-upload::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.14) 45%,
+    transparent 70%
+  );
+  content: '';
+  transform: translateX(-115%);
+  animation: creation-reference-upload-shimmer 1.35s ease-in-out infinite;
+}
+
+.creation-prompt-reference-upload-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.creation-prompt-reference-upload-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+.creation-prompt-reference-upload-label {
+  position: absolute;
+  z-index: 1;
+  right: 4px;
+  bottom: 4px;
+  left: 4px;
+  padding: 2px 4px;
+  border-radius: 5px;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(12, 12, 12, 0.66);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+}
+
+@keyframes creation-reference-upload-shimmer {
+  to {
+    transform: translateX(115%);
+  }
+}
+
+.creation-prompt-reference > img,
+.creation-prompt-reference > video,
+.creation-prompt-reference-fallback {
+  width: 100%;
+  height: 100%;
+}
+
+.creation-prompt-reference > img {
+  display: block;
+  object-fit: cover;
+}
+
+.creation-prompt-reference > video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.creation-prompt-reference-fallback {
+  display: grid;
+  place-items: center;
+  color: rgba(255, 255, 255, 0.52);
+  background:
+    radial-gradient(
+      circle at 50% 34%,
+      rgba(255, 255, 255, 0.2) 0 17%,
+      transparent 18%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.03)
+    );
+}
+
+.creation-prompt-reference-fallback svg {
+  width: 22px;
+  height: 22px;
+}
+
+.creation-prompt-reference-label {
+  position: absolute;
+  right: 4px;
+  bottom: 4px;
+  left: 4px;
+  overflow: hidden;
+  padding: 2px 4px;
+  border-radius: 5px;
+  color: #fff;
+  background: rgba(12, 12, 12, 0.72);
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.creation-prompt-reference-actions {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 5px;
+  background: linear-gradient(180deg, rgba(10, 10, 10, 0.5), transparent 58%);
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+.creation-prompt-reference:is(:hover, :focus-within)
+  .creation-prompt-reference-actions {
+  opacity: 1;
+}
+
+.creation-prompt-reference-actions button {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(20, 20, 20, 0.78);
+}
+
+.creation-prompt-reference-actions button:first-child {
+  background: rgba(255, 255, 255, 0.9);
+  color: #262321;
+}
+
+.creation-prompt-reference-actions button:is(:hover, :focus-visible) {
+  transform: translateY(-1px);
+}
+
+.creation-prompt-reference-actions svg {
+  width: 14px;
+  height: 14px;
+}
+
+@media (max-width: 720px) {
+  .creation-prompt-reference,
+  .creation-prompt-reference-upload {
+    width: 104px;
+    height: 104px;
+    flex-basis: 104px;
+    border-radius: 12px;
+  }
+
+  .creation-prompt-reference-actions {
+    opacity: 1;
+  }
+
+  .creation-prompt-reference-actions button {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .creation-prompt-reference-upload::after {
+    animation: none;
+    transform: none;
+  }
+}

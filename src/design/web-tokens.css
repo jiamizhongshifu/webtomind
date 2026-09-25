@@ -1,0 +1,27 @@
+:root {
+  --web-bg-canvas: var(--product-canvas);
+  --web-bg-subtle: var(--product-surface-subtle);
+  --web-bg-card: var(--product-surface);
+
+  --web-text-primary: var(--product-text-primary);
+  --web-text-secondary: var(--product-text-secondary);
+  --web-text-muted: var(--product-text-muted);
+  --web-text-inverse: var(--product-text-inverse);
+
+  --web-border-soft: var(--product-border-soft);
+  --web-border-default: var(--product-border-default);
+  --web-border-strong: var(--product-border-strong);
+
+  --web-brand-primary: var(--brand-terracotta-500);
+  --web-brand-accent: var(--brand-coral-500);
+  --web-brand-support: var(--brand-indigo-500);
+
+  --web-action-primary-bg: var(--product-action-bg);
+  --web-action-primary-hover: var(--product-action-hover);
+  --web-action-primary-text: var(--product-action-text);
+
+  --web-action-secondary-bg: var(--product-surface);
+  --web-action-secondary-hover: var(--product-surface-subtle);
+  --web-action-secondary-text: var(--product-text-primary);
+  --web-action-secondary-border: var(--product-border-default);
+}

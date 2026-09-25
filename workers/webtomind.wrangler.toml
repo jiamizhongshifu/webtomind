@@ -1,0 +1,189 @@
+name = "webtomind-staging"
+main = "webtomind.ts"
+compatibility_date = "2026-06-14"
+compatibility_flags = ["nodejs_compat"]
+account_id = "<your-cloudflare-account-id>"
+workers_dev = true
+preview_urls = true
+
+# Production routes are managed out-of-band in Cloudflare.
+# Keep day-to-day deploys scoped to Worker/assets/triggers so the deploy token
+# does not need zone route write permissions. Use `pnpm cf:deploy:routes` with a
+# privileged token only when the route bindings must be created or changed.
+
+[triggers]
+crons = ["*/1 * * * *", "*/10 * * * *", "0 3 * * *", "15 1 * * *"]
+
+[[queues.producers]]
+binding = "IMAGE_JOBS"
+queue = "webtomind-image-jobs"
+
+[[queues.producers]]
+binding = "VIDEO_JOBS"
+queue = "webtomind-video-jobs"
+
+[[queues.producers]]
+binding = "EMAIL_CAMPAIGN_JOBS"
+queue = "webtomind-email-campaign-jobs"
+
+[[queues.producers]]
+binding = "IMAGE_JOBS_DLQ"
+queue = "webtomind-image-jobs-dlq"
+
+[[queues.producers]]
+binding = "VIDEO_JOBS_DLQ"
+queue = "webtomind-video-jobs-dlq"
+
+[[queues.producers]]
+binding = "EMAIL_CAMPAIGN_JOBS_DLQ"
+queue = "webtomind-email-campaign-jobs-dlq"
+
+[[queues.consumers]]
+queue = "webtomind-image-jobs"
+max_batch_size = 1
+max_batch_timeout = 20
+max_retries = 5
+dead_letter_queue = "webtomind-image-jobs-dlq"
+
+[[queues.consumers]]
+queue = "webtomind-video-jobs"
+max_batch_size = 1
+max_batch_timeout = 10
+max_retries = 5
+dead_letter_queue = "webtomind-video-jobs-dlq"
+
+[[queues.consumers]]
+queue = "webtomind-email-campaign-jobs"
+max_batch_size = 5
+max_batch_timeout = 30
+max_retries = 5
+dead_letter_queue = "webtomind-email-campaign-jobs-dlq"
+
+[[kv_namespaces]]
+binding = "WEBTOMIND_PUBLIC_CACHE"
+id = "<your-resource-id>"
+
+[[hyperdrive]]
+binding = "HYPERDRIVE"
+id = "<your-resource-id>"
+
+[[r2_buckets]]
+binding = "MEDIA_BUCKET"
+bucket_name = "webtomind-media-prod"
+
+[images]
+binding = "IMAGES"
+
+# Browser Run binding: powers the Kitesurf render smoke route (/__smoke/kitesurf)
+# and, later, any Worker-side rendered-page checks. quickAction() requires
+# compatibility_date >= 2026-03-24 (we are on 2026-06-14).
+[browser]
+binding = "BROWSER"
+
+# Built by `pnpm build:web`.
+[assets]
+directory = "../server/public"
+binding = "ASSETS"
+html_handling = "none"
+not_found_handling = "none"
+run_worker_first = true
+
+[vars]
+CANONICAL_HOST = "webtomind.com"
+ALLOWED_ORIGINS = "https://webtomind.com,https://www.webtomind.com,http://localhost:8787,http://localhost:3000,http://localhost:5173"
+APP_URL = "https://webtomind.com"
+# The public model gateway is relay-only in production. The actual relay URL
+# and credential are supplied through deployment-time configuration; leaving
+# either unset must fail closed.
+API_MARKETPLACE_RELAY_REQUIRED = "true"
+API_MARKETPLACE_RELAY_BASE_URL = "https://api.chaojitudou.com/_relay"
+# Read-only catalog metadata comes from the provider's isolated JSON feed. All
+# customer model traffic still goes through our /_relay gateway above.
+# The catalog must use the same protected relay boundary as model traffic.
+# Keep the provider URL out of the public Worker path.
+API_MARKETPLACE_TUZI_PRICING_URL = "https://api.chaojitudou.com/_relay/pricing"
+STRIPE_CHECKOUT_ENABLED = "true"
+STRIPE_MODE = "live"
+# ZPAY uses a merchant-selected fixed settlement rate so displayed CNY prices
+# exactly match the signed checkout amount.
+ZPAY_CHECKOUT_ENABLED = "true"
+ZPAY_USD_TO_CNY_RATE = "7.20"
+ZPAY_SUBMIT_URL = "https://zpayz.cn/submit.php"
+IMAGE_QUEUE_DRAIN_BATCH_SIZE = "5"
+IMAGE_TASK_MAX_ATTEMPTS = "24"
+VIDEO_QUEUE_DRAIN_BATCH_SIZE = "1"
+# Rollout switches:
+# - VIDEO_QUEUE_PROVIDER="legacy" keeps video provider execution on the request/poll path.
+# - VIDEO_QUEUE_PROVIDER="cloudflare" enqueues create/poll work through Cloudflare Queues.
+# - MEDIA_STORAGE_PROVIDER="supabase" is the storage rollback point.
+# - MEDIA_STORAGE_PROVIDER="dual" or "r2" prefers the Worker R2 binding and
+#   uses R2 S3 credentials only as a URL-signing/local fallback.
+VIDEO_QUEUE_PROVIDER = "cloudflare"
+ARK_VIDEO_API_BASE_URL = "https://ark.cn-beijing.volces.com/api/v3"
+ARK_VIDEO_GENERATION_ENABLED = "true"
+ARK_VIDEO_LAUNCH_ENABLED = "true"
+MEDIA_STORAGE_PROVIDER = "dual"
+HYPERDRIVE_PUBLIC_STATS_ENABLED = "true"
+IMAGE_VISUAL_QUALITY_AUTO_ENABLED = "false"
+IMAGE_VISUAL_QUALITY_MODEL = "gemini-3.5-flash"
+IMAGE_VISUAL_QUALITY_FALLBACK_MODELS = "gemini-2.5-flash"
+GEMINI_OFFICIAL_ENABLED = "false"
+ENABLE_LEGACY_GEMINI_PROXY = "false"
+IMAGE_VISUAL_QUALITY_SWEEP_LIMIT = "1"
+IMAGE_VISUAL_QUALITY_LOOKBACK_HOURS = "48"
+IMAGE_VISUAL_QUALITY_MAX_ATTEMPTS = "3"
+GPT_IMAGE_2_ENABLE_SLOW_FALLBACKS = "true"
+GPT_IMAGE_2_FORCE_TUZI_PRIMARY = "false"
+GPT_IMAGE_2_ALLOW_OPENAI_COMPAT_PRIMARY = "true"
+TUZI_ENABLE_OPENAI_COMPAT_FALLBACK = "true"
+TUZI_IMAGE_API_BASE_URL = "https://gateway.ai.cloudflare.com/v1/<your-cloudflare-account-id>/webtomind-images/custom-tuzi-image"
+TUZI_GPT_IMAGE_25_ENABLED = "true"
+TUZI_TEXT_BASE_URL = "https://gateway.ai.cloudflare.com/v1/<your-cloudflare-account-id>/webtomind-images/custom-tuzi-image"
+OPENAI_COMPAT_IMAGE_DISABLE_CODEX_FALLBACK = "true"
+OPENAI_COMPAT_IMAGE_TIMEOUT_MS = "300000"
+OPENAI_COMPAT_IMAGE_BATCH_SIZE = "1"
+CHAOJITUDOU_IMAGE_TASK_POLL_MS = "12000"
+CHAOJITUDOU_IMAGE_TASK_ACTIVE_POLL_BUDGET_MS = "105000"
+CHAOJITUDOU_IMAGE_TASK_DEFERRED_POLL_DELAY_MS = "12000"
+OPENAI_COMPAT_IMAGE_STREAMING_ENABLED = "true"
+OPENAI_COMPAT_IMAGE_STREAMING_ALLOW_CHAO = "true"
+OPENAI_COMPAT_IMAGE_PARTIAL_IMAGES = "2"
+OPENAI_COMPAT_IMAGE_RESCUE_TIMEOUT_MS = "180000"
+OPENAI_COMPAT_IMAGE_DISABLE_KRILL_FALLBACK = "false"
+KRILL_IMAGE_MODEL = "gpt-image-2"
+KRILL_IMAGE_MODEL_2K = "gpt-image-2-2k"
+KRILL_IMAGE_MODEL_4K = "gpt-image-2-4k"
+KRILL_IMAGE_API_BASE_URL = "https://api.cdn-krill-ai.com/v1"
+KRILL_IMAGE_1K_ENABLED = "true"
+# Krill's drawing tutorial excludes the generic api-slb entry route. The
+# drawing endpoint above is correct, but the production Krill key currently
+# returns "no route available" for both higher-resolution model ids. Keep
+# these disabled until a single-provider live smoke proves each route works.
+KRILL_IMAGE_2K_ENABLED = "false"
+KRILL_IMAGE_4K_ENABLED = "false"
+OPENAI_COMPAT_IMAGE_TUZI_FALLBACK_MODE = "all"
+# 同步出图超时强化（2026-08-19）：实测高峰单张 40-90s、完整链路 ~137s，
+# 放宽单模型 35s→70s、VIP 50s→90s、同步 pipeline 155s→200s，减少慢通道误超时。
+TUZI_VIP_TIMEOUT_MS = "90000"
+SYNC_TUZI_MODEL_TIMEOUT_MS = "70000"
+SYNC_PIPELINE_DEADLINE_MS = "200000"
+QUEUED_TUZI_FALLBACK_TIMEOUT_MS = "120000"
+QUEUED_PIPELINE_DEADLINE_MS = "240000"
+IMAGE_CLOUDFLARE_UPSCALE_ENABLED = "true"
+WEBTOMIND_ENABLE_LEGACY_IMAGE_EXECUTION = "false"
+TUZI_ENABLE_OFFICIAL_DISCOUNT_FALLBACK = "true"
+TUZI_IMAGE_CHANNEL_ORDER = "default,official,official_discount,openai_original"
+
+# ---- 超机土豆（chaojitudou）接入占位 ----
+# 当前生产仅 Tuzi 有可用 key；启用超机土豆作为 Tuzi 失败时的跨 provider 回退，
+# 需在 Cloudflare Secrets 配置以下三项（代码已支持，见 api/image/providers/openai-compatible-image.ts）：
+#   OPENAI_COMPAT_IMAGE_BASE_URL = "https://<chaojitudou-host>/v1"
+#   OPENAI_COMPAT_IMAGE_API_KEY  = "<key>"
+#   OPENAI_COMPAT_IMAGE_MODEL    = "gpt-image-2"（或超机土豆支持的模型名）
+# 填入后 Tuzi 失败会自动回退到超机土豆（TUZI_ENABLE_OPENAI_COMPAT_FALLBACK 已开）。
+# Krill 同理：KRILL_IMAGE_API_KEY 生效后 1k 分辨率已启用，2k/4k 需渠道开通。
+TUZI_X_DEEPSEARCH_ENABLED = "true"
+TUZI_X_DEEPSEARCH_MODEL = "grok-3-deepsearch"
+TUZI_X_DEEPSEARCH_TIMEOUT_MS = "20000"
+TUZI_X_DEEPSEARCH_ATTEMPTS = "3"
+TUZI_X_DEEPSEARCH_RETRY_DELAY_MS = "1200"

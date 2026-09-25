@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "contracts": [
+    {
+      "id": "create.image-credit-estimate",
+      "description": "Image composer exposes per-image credit cost before submit.",
+      "sourceChecks": [
+        {
+          "path": "src/web/components/image-create/ImageStudioComposer.tsx",
+          "includes": ["CreationCreditEstimate", "预计每张消耗"]
+        }
+      ],
+      "artifactChecks": [
+        {
+          "prefix": "ImageStudioComposer.",
+          "includes": ["预计每张消耗"]
+        }
+      ]
+    },
+    {
+      "id": "create.video-credit-estimate",
+      "description": "Video composer exposes per-second credit cost before submit.",
+      "sourceChecks": [
+        {
+          "path": "src/web/components/video-create/VideoStudioComposer.tsx",
+          "includes": ["CreationCreditEstimate", "约每秒"]
+        }
+      ],
+      "artifactChecks": [
+        {
+          "prefix": "video-studio.",
+          "includes": ["约每秒"]
+        }
+      ]
+    },
+    {
+      "id": "create.clipboard-reference-image",
+      "description": "Image and video composers accept pasted clipboard images as references without double-processing the browser items/files representations.",
+      "sourceChecks": [
+        {
+          "path": "src/web/components/create-workspace/clipboardImagePaste.ts",
+          "includes": ["if (fileImages.length > 0) return fileImages;"]
+        },
+        {
+          "path": "src/web/pages/ImageCreatePage.tsx",
+          "includes": ["clipboard-image-"]
+        },
+        {
+          "path": "src/web/pages/CreateVideoPage.tsx",
+          "includes": ["clipboard-image-"]
+        }
+      ],
+      "artifactChecks": [
+        {
+          "prefix": "ImageCreatePage.",
+          "includes": ["clipboard-image-"]
+        },
+        {
+          "prefix": "CreateVideoPage.",
+          "includes": ["clipboard-image-"]
+        }
+      ]
+    },
+    {
+      "id": "platform.stale-asset-recovery",
+      "description": "Long-lived browser tabs recover once from stale lazy-loaded assets after a deployment without exposing a raw page error or entering a reload loop.",
+      "sourceChecks": [
+        {
+          "path": "src/web/lib/stale-asset-recovery.ts",
+          "includes": [
+            "webtomind:stale-asset-reload-v2",
+            "vite:preloadError",
+            "unable to preload css"
+          ]
+        },
+        {
+          "path": "src/web/components/AppErrorBoundary.tsx",
+          "includes": [
+            "isStaleAssetRecoveryPending",
+            "StaleAssetRecoveryNotice",
+            "页面更新已暂停"
+          ]
+        }
+      ],
+      "artifactChecks": [
+        {
+          "entry": true,
+          "includes": [
+            "webtomind:stale-asset-reload-v2",
+            "vite:preloadError",
+            "正在更新 WebToMind"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "video.reference-media-validation",
+      "description": "Reference media errors report the actual duration, the selected model's duration limit, and file-size status.",
+      "sourceChecks": [
+        {
+          "path": "src/web/components/video-create/referenceMediaValidation.ts",
+          "includes": ["允许范围为 2–", "秒；文件大小", "符合上限"]
+        }
+      ],
+      "artifactChecks": [
+        {
+          "prefix": "CreateVideoPage.",
+          "includes": ["允许范围为 2–", "秒；文件大小", "符合上限"]
+        }
+      ]
+    },
+    {
+      "id": "pricing.free-daily-image-policy",
+      "description": "The daily free grant can fund at least one base image generation.",
+      "sourceChecks": [
+        {
+          "path": "src/shared/credit-policy.ts",
+          "includes": [
+            "FREE_DAILY_CREDITS = 100",
+            "FREE_DAILY_IMAGE_GENERATION_LIMIT = 1"
+          ]
+        },
+        {
+          "path": "src/shared/image-generation-pricing.ts",
+          "includes": ["IMAGE_GENERATION_BASE_CREDIT_COST = 60"]
+        }
+      ],
+      "artifactChecks": []
+    },
+    {
+      "id": "denoiser.verifiable-comparison",
+      "description": "Denoise results expose measurable pixel changes and a zoomable before/after comparison.",
+      "sourceChecks": [
+        {
+          "path": "src/web/pages/GptImage2DenoiserPage.tsx",
+          "includes": [
+            "已阻止下载无效结果",
+            "平均通道差",
+            "BeforeAfterComparison"
+          ]
+        },
+        {
+          "path": "src/web/components/image-tools/BeforeAfterComparison.tsx",
+          "includes": [
+            "预览缩放",
+            "addEventListener('wheel'",
+            "ReactCompareSlider"
+          ]
+        }
+      ],
+      "artifactChecks": [
+        {
+          "prefix": "GptImage2DenoiserPage.",
+          "includes": ["已阻止下载无效结果", "平均通道差"]
+        },
+        {
+          "prefix": "BeforeAfterComparison.",
+          "includes": ["预览缩放", "wheel", "image-tool-compare-slider"]
+        }
+      ]
+    }
+  ],
+  "retiredContracts": []
+}

@@ -1,0 +1,966 @@
+{
+  "nav": {
+    "creativeWorkspace": "Creative Studio",
+    "backToWorkspace": "Back to workspace",
+    "comfyChecker": "ComfyUI Check",
+    "login": "Sign in",
+    "credits": "Credits",
+    "creditsLoading": "Loading",
+    "languageToggle": "Switch to {{language}}",
+    "languageEnglish": "English",
+    "languageChinese": "Chinese",
+    "creditPromoBadge": "SALE",
+    "creditPromoLabel": "Limited offer. Click to view credit plans.",
+    "profileMenu": {
+      "settings": "Settings",
+      "logout": "Sign out"
+    }
+  },
+  "hero": {
+    "kicker": "Visual Prompt Studio",
+    "title": "Pick visuals, get a reproducible prompt",
+    "description": "Combine character, pose, wardrobe, background and style assets — WebToMind compiles them into a complete image-generation prompt."
+  },
+  "studioTabs": {
+    "visual": "Visual Picker",
+    "prompts": "Prompts"
+  },
+  "slots": {
+    "character": "Character",
+    "expression": "Expression",
+    "pose": "Pose",
+    "top": "Top",
+    "bottom": "Bottom",
+    "shoes": "Shoes",
+    "background": "Scene",
+    "productSubject": "Product subject",
+    "productSurface": "Surface",
+    "composition": "Composition",
+    "titleArea": "Title area",
+    "style": "Photo style",
+    "lighting": "Lighting",
+    "visualEffect": "Image effect",
+    "layoutDesign": "Layout design",
+    "accessory": "Accessory",
+    "prop": "Prop",
+    "lens": "Lens",
+    "shot": "Framing",
+    "viewpoint": "Viewpoint",
+    "makeup": "Makeup"
+  },
+  "controls": {
+    "title": "Settings",
+    "subtitle": "Model, aspect ratio, resolution and batch settings apply together at generation time.",
+    "model": "AI model",
+    "aspect": "Aspect",
+    "size": "Size",
+    "resolution": "Resolution",
+    "sizeOptions": {
+      "auto": {
+        "label": "Auto",
+        "detail": "Model decides size"
+      },
+      "square1k": {
+        "label": "1:1",
+        "detail": "1024×1024 · square"
+      },
+      "landscape1536": {
+        "label": "3:2",
+        "detail": "1536×1024 · landscape"
+      },
+      "portrait1536": {
+        "label": "2:3",
+        "detail": "1024×1536 · portrait"
+      },
+      "portrait3x4_1k": {
+        "label": "3:4",
+        "detail": "1152×1536 · portrait"
+      },
+      "landscape4x3_1k": {
+        "label": "4:3",
+        "detail": "1536×1152 · landscape"
+      },
+      "portrait4x5_1k": {
+        "label": "4:5",
+        "detail": "1024×1280 · portrait"
+      },
+      "landscape5x4_1k": {
+        "label": "5:4",
+        "detail": "1280×1024 · landscape"
+      },
+      "portrait9x16_1k": {
+        "label": "9:16",
+        "detail": "864×1536 · mobile portrait"
+      },
+      "landscape16x9_1k": {
+        "label": "16:9",
+        "detail": "1536×864 · landscape"
+      },
+      "ultrawide21x9_1k": {
+        "label": "21:9",
+        "detail": "1792×768 · ultrawide"
+      },
+      "square2k": {
+        "label": "1:1",
+        "detail": "2048×2048 · 2K"
+      },
+      "landscape3x2_2k": {
+        "label": "3:2",
+        "detail": "2016×1344 · 2K landscape"
+      },
+      "portrait2x3_2k": {
+        "label": "2:3",
+        "detail": "1344×2016 · 2K portrait"
+      },
+      "portrait3x4_2k": {
+        "label": "3:4",
+        "detail": "1536×2048 · 2K portrait"
+      },
+      "landscape4x3_2k": {
+        "label": "4:3",
+        "detail": "2048×1536 · 2K landscape"
+      },
+      "portrait4x5_2k": {
+        "label": "4:5",
+        "detail": "1600×2000 · 2K portrait"
+      },
+      "landscape5x4_2k": {
+        "label": "5:4",
+        "detail": "2000×1600 · 2K landscape"
+      },
+      "landscape2k": {
+        "label": "16:9",
+        "detail": "2048×1152 · 2K"
+      },
+      "portrait2k": {
+        "label": "9:16",
+        "detail": "1152×2048 · 2K mobile portrait"
+      },
+      "ultrawide21x9_2k": {
+        "label": "21:9",
+        "detail": "2688×1152 · 2K ultrawide"
+      },
+      "square4k": {
+        "label": "1:1",
+        "detail": "2880×2880 · 4K square"
+      },
+      "landscape3x2_4k": {
+        "label": "3:2",
+        "detail": "3456×2304 · 4K landscape"
+      },
+      "portrait2x3_4k": {
+        "label": "2:3",
+        "detail": "2304×3456 · 4K portrait"
+      },
+      "portrait3x4_4k": {
+        "label": "3:4",
+        "detail": "2304×3072 · 4K portrait"
+      },
+      "landscape4x3_4k": {
+        "label": "4:3",
+        "detail": "3072×2304 · 4K landscape"
+      },
+      "portrait4x5_4k": {
+        "label": "4:5",
+        "detail": "2560×3200 · 4K portrait"
+      },
+      "landscape5x4_4k": {
+        "label": "5:4",
+        "detail": "3200×2560 · 4K landscape"
+      },
+      "landscape4k": {
+        "label": "16:9",
+        "detail": "3840×2160 · 4K"
+      },
+      "portrait4k": {
+        "label": "9:16",
+        "detail": "2160×3840 · 4K"
+      },
+      "ultrawide21x9_4k": {
+        "label": "21:9",
+        "detail": "3808×1632 · 4K ultrawide"
+      }
+    },
+    "characterWorkflow": {
+      "entry": "Character consistency workflow",
+      "entryShort": "Character",
+      "entryDetail": "{{references}} references · {{characters}} character cards",
+      "entryHint": "Upload references, save character cards, then check consistency after generation"
+    },
+    "quality": {
+      "label": "Quality",
+      "auto": "Auto",
+      "high": "High quality",
+      "medium": "Medium quality",
+      "low": "Low quality",
+      "help": {
+        "auto": "The model balances speed, detail, and stability automatically.",
+        "high": "Boosts detail, texture, and consistency; slower and costs more credits.",
+        "medium": "More stable than auto for normal production images.",
+        "low": "Prioritizes speed and drafts; detail and consistency may drop."
+      }
+    },
+    "outputFormat": {
+      "label": "Format",
+      "png": "PNG",
+      "jpeg": "JPEG",
+      "webp": "WebP"
+    },
+    "customPrompt": {
+      "label": "Extra description",
+      "placeholder": "e.g. magazine cover energy, calmer expression, light palette"
+    },
+    "imageCount": {
+      "label": "Images",
+      "option_one": "{{count}} image",
+      "option_other": "{{count}} images",
+      "memberOnly": "Member",
+      "memberHint": "4+ images are available for members.",
+      "memberUnlocked": "Batch generation is unlocked."
+    },
+    "generate": "Generate image",
+    "generating": "Generating",
+    "loginToGenerate": "Sign in to generate",
+    "billingNote": "Credits are charged by model and size; failed generations refund automatically.",
+    "estimatedCost": "≈ {{credits}} credits (final charge may vary)",
+    "estimatedCostShort": "{{credits}} credits",
+    "estimatedCostTooltip": "Final charge is settled by the backend; failed generations refund automatically.",
+    "insufficientCredits": "Out of credits — top up →",
+    "lowBalanceTopUp": "Balance low — add credits",
+    "savePreset": "Save preset",
+    "presetSaved": "Saved",
+    "reset": "Reset",
+    "resetConfirm": "Reset the current recipe and custom prompt?",
+    "presetTitle": "Your presets",
+    "presetEmpty": "Save a favourite recipe to see it here.",
+    "deletePreset": "Delete preset",
+    "unnamedPreset": "Untitled preset",
+    "costPanel": {
+      "title": "Generation bill",
+      "detailsToggle": "View bill details",
+      "breakdown": "{{unit}} each × {{count}} images = {{total}} credits",
+      "balance": "Balance {{credits}}",
+      "balanceLoading": "Checking balance",
+      "loginHint": "Sign in to show balance",
+      "refundRule": "System failures refund automatically; retries are available",
+      "shortfall": "{{credits}} credits short"
+    }
+  },
+  "canvas": {
+    "title": "Current recipe",
+    "slotCount": "{{count}} assets active",
+    "applyToPrompt": "Apply to prompt",
+    "applyToPromptHint": "Write the current recipe into the prompt; a compiled recipe is replaced as a whole, while free-form text is preserved",
+    "applyToPromptDone": "Current recipe applied to prompt",
+    "applyToPromptEmpty": "No new recipe changes to apply",
+    "openPicker": "Browse large",
+    "randomize": "Random recipe",
+    "randomizeHint": "Randomly pick one asset for every available category",
+    "randomizeSlot": "Randomize {{slot}} asset",
+    "randomizeSlotHint": "Replace the current {{slot}} asset at random",
+    "randomizeSlotUnavailable": "No {{slot}} assets are available to randomize",
+    "randomizeSlotNoAlternative": "No other compatible {{slot}} asset is available",
+    "materialButton": "Change {{slot}} material",
+    "materialButtonSelected": "{{slot}} material: {{material}}",
+    "materialTitle": "Choose {{slot}} material",
+    "materialDescription": "Replace only the primary fabric while preserving silhouette, color, and garment structure.",
+    "materialOriginal": "Keep original material",
+    "materialOriginalDescription": "Remove the material prefix and restore the asset description",
+    "copyPrompt": "Copy prompt",
+    "copied": "Copied",
+    "clearSlot": "Clear {{slot}}",
+    "clearAll": "Clear recipe",
+    "clearAllHint": "Clear every selected asset in the current recipe",
+    "optionalSlot": "Optional",
+    "emptySlot": "Pick {{slot}}",
+    "emptySlotHint": "Choose from public or personal assets",
+    "selectedSlot": "Current {{slot}}"
+  },
+  "upgrade": {
+    "title": "Not enough credits",
+    "description": "You do not have enough credits to start this image generation. Upgrade or top up to continue.",
+    "insufficientMessage": "This generation needs about {{credits}} credits. Current balance: {{balance}}.",
+    "required": "Required: {{credits}} credits",
+    "current": "Current balance: {{credits}} credits",
+    "cta": "View pricing",
+    "later": "Maybe later",
+    "close": "Close upgrade prompt"
+  },
+  "prompt": {
+    "title": "Prompt Compiler",
+    "mode": {
+      "composed": "Auto",
+      "custom": "Custom"
+    },
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "minimize": "Minimize",
+    "restore": "Open prompt editor",
+    "readonlyHint": "Prompt is compiled from your visual recipe; switch to Custom to edit manually",
+    "inputTitle": "Prompt",
+    "combinationSuggestion": {
+      "label": "Updated recipe prompt",
+      "title": "Your recipe changed",
+      "description": "Replace the prompt with the latest recipe?",
+      "apply": "Apply recipe prompt",
+      "dismiss": "Not now"
+    },
+    "customHint": "Generation uses the text above.",
+    "customPlaceholder": "Write your own prompt here to override the auto-compiled version.",
+    "referencePlaceholder": "Describe the image you want. Type @ to reference active materials, e.g. keep the face from @image1, use the red jacket from @image2, and move the scene to a rainy street corner. You can also specify camera, lighting, composition, texture and exclusions.",
+    "references": {
+      "activeLabel": "Referenced materials"
+    },
+    "switchToComposedConfirm": "Switching back to Auto will discard your custom prompt. Continue?",
+    "random": "Random idea",
+    "negativeLabel": "Negative prompt",
+    "negativePlaceholder": "low quality, blurry, deformed anatomy, extra fingers, watermark",
+    "autoOptimize": {
+      "label": "Auto optimize",
+      "status": "Optimizing prompt…",
+      "error": "Auto optimization failed. Generation was not started."
+    },
+    "diagnostics": {
+      "title": "Structure check",
+      "score": "{{score}} pts",
+      "grade": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "needsWork": "Needs work"
+      },
+      "aiTaste": {
+        "low": "Low AI-taste risk · {{score}}",
+        "medium": "Medium AI-taste risk · {{score}}",
+        "high": "High AI-taste risk · {{score}}"
+      },
+      "aiOptimize": "AI optimize",
+      "optimizing": "Optimizing…",
+      "loginRequired": "Sign in to use AI optimization",
+      "copyOptimized": "Copy draft",
+      "copied": "Copied",
+      "applyOptimized": "Overwrite prompt",
+      "discardOptimized": "Close draft",
+      "resultTitle": "AI optimized draft",
+      "error": "Prompt optimization failed. Please try again later."
+    },
+    "tasks": {
+      "label": "AI tasks",
+      "open": "View AI task progress",
+      "title": "AI task progress",
+      "summary": "{{count}} tasks"
+    },
+    "suffix": {
+      "aspectRatio": "{{ratio}} aspect ratio",
+      "qualityProfile": "{{quality}} quality profile",
+      "qualityHigh": "high quality, coherent anatomy, clean composition",
+      "modelOptimized": "optimized for model {{model}}"
+    },
+    "warnings": {
+      "highEndFashionAnimeConflict": "High-end fashion photography may clash with anime characters — consider a fashion-model character or switch to an anime style.",
+      "watercolorRealismConflict": "Watercolor anime style softens realistic subjects — pair it with an anime character for consistency."
+    }
+  },
+  "references": {
+    "title": "References",
+    "optional": "Optional",
+    "maxImages": "Select up to {{count}} reference images for this task.",
+    "character": {
+      "entry": "Character",
+      "title": "Choose character",
+      "subtitle": "Use official presets or your own character cards for consistency.",
+      "discover": "Discover",
+      "mine": "My characters",
+      "liked": "Liked",
+      "search": "Search characters…",
+      "loading": "Loading character cards…",
+      "empty": "No character cards yet. Start with an official preset or create one from references.",
+      "officialEmpty": "No matching official characters.",
+      "likedEmpty": "No liked official characters yet. Like presets from Discover on the character page.",
+      "referenceCount": "{{count}} reference images",
+      "maxCharacters": "Select up to {{count}} characters",
+      "officialImported": "Selected official character \"{{name}}\"",
+      "officialImportFailed": "Failed to import official character"
+    },
+    "gallery": {
+      "entry": "Gallery"
+    },
+    "upload": {
+      "entry": "Upload",
+      "label": "Upload references",
+      "previewLabel": "Uploaded references",
+      "previewLimit": "Up to 4 images",
+      "previewSummary": "Ready {{uploaded}} · Uploading {{uploading}} · Failed {{failed}}",
+      "remove": "Remove this reference image",
+      "invalidType": "Choose image files only.",
+      "uploading": "Uploading references…",
+      "uploaded": "Uploaded {{count}} reference images",
+      "failed": "Reference upload failed",
+      "failedWithCount": "{{count}} reference uploads failed",
+      "status": {
+        "uploading": "Uploading",
+        "uploaded": "Ready",
+        "failed": "Failed"
+      }
+    }
+  },
+  "promptLibrary": {
+    "title": "Prompt library",
+    "entry": "Prompt library",
+    "savePrompt": "Save prompt",
+    "empty": "No saved prompts yet. Switch to Custom and click Save prompt to add one.",
+    "untitled": "Untitled prompt",
+    "rename": "Rename title",
+    "renameDialog": "Enter a new prompt title",
+    "copy": "Copy prompt",
+    "delete": "Delete prompt",
+    "applyConfirm": "This will overwrite the current custom prompt editor. Continue?",
+    "savedToast": "Prompt saved to library",
+    "appliedToast": "Filled into the custom prompt editor",
+    "renamedToast": "Prompt title renamed",
+    "copiedToast": "Prompt copied",
+    "deletedToast": "Prompt deleted"
+  },
+  "result": {
+    "title": "Result",
+    "empty": "Generated images will appear here.",
+    "generating": "Generating image",
+    "generatingDetail": "The model is processing your combo",
+    "overlayHint": "A new image is being generated; the current preview stays until it returns",
+    "waiting": "Waiting for the model to return an image",
+    "altGenerated": "Generated result",
+    "close": "Close result"
+  },
+  "history": {
+    "title": "Recent",
+    "viewMore": "View more",
+    "modalTitle": "Generation history",
+    "modalCount": "{{count}} images",
+    "modalCountLoaded": "{{loaded}} / {{total}} images loaded",
+    "loading": "Loading image history...",
+    "loadMore": "Load more",
+    "loadingMore": "Loading...",
+    "loadFailed": "Failed to load image history. Please try again later.",
+    "empty": "Sign in and generate to start saving history here.",
+    "assetsMissing": "{{count}} assets no longer exist — those slots were left empty",
+    "loadedFromHistory": "Loaded from history · {{model}}",
+    "deleted": "Generated image deleted"
+  },
+  "historyRail": {
+    "eyebrow": "AI TASKS",
+    "title": "Generation records",
+    "imageTask": "Image generation",
+    "preview": "Preview",
+    "download": "Download",
+    "moreActions": "More",
+    "previewImage": "View generated image",
+    "dismissStatus": "Dismiss status",
+    "regenerateSame": "Same again",
+    "continueEdit": "Continue edit",
+    "saveToProject": "Save",
+    "openCollection": "Collection",
+    "regenerateSubmitted": "Same setup submitted for generation",
+    "tabs": {
+      "all": "All",
+      "active": "Running",
+      "images": "Images",
+      "videos": "Videos"
+    },
+    "status": {
+      "processing": "Generating",
+      "running": "Generating",
+      "queued": "Queued",
+      "failed": "Failed",
+      "succeeded": "Done",
+      "cancelled": "Stopped",
+      "dismissed": "Dismissed"
+    }
+  },
+  "preview": {
+    "title": "Generation detail",
+    "close": "Close",
+    "copyPrompt": "Copy prompt",
+    "copied": "Copied",
+    "reedit": "Re-edit",
+    "localEdit": "Local edit",
+    "localEditPrompt": "Describe the local change, e.g. only change the background to a cafe and keep the subject/composition unchanged",
+    "addToProject": "Add to project",
+    "addToProjectHint": "Choose a project to save this image and its prompt as a content card.",
+    "addToProjectLoading": "Loading projects...",
+    "addToProjectSaving": "Saving",
+    "addToProjectSaved": "Added to \"{{project}}\"",
+    "addToProjectFailed": "Failed to add to project. Please try again.",
+    "addToProjectLoadFailed": "Failed to load projects.",
+    "addToProjectNoProjects": "No available projects.",
+    "addToProjectDefaultTitle": "AI generated image",
+    "addToProjectCardCount": "{{count}} cards",
+    "untitledProject": "Untitled project",
+    "delete": "Delete",
+    "deleting": "Deleting",
+    "deleteConfirm": "Delete this image? This cannot be undone.",
+    "deleteFailed": "Failed to delete image. Please try again.",
+    "promptLabel": "Prompt",
+    "negativeLabel": "Negative prompt",
+    "openFullscreen": "Open image fullscreen",
+    "downloadOriginal": "Download original",
+    "meta": {
+      "model": "Model",
+      "time": "Created",
+      "aspectRatio": "Aspect",
+      "imageSize": "Size",
+      "requestedImageSize": "Requested {{size}}",
+      "quality": "Quality",
+      "outputFormat": "Format"
+    }
+  },
+  "library": {
+    "title": "Prompt library",
+    "remote": "Curated library",
+    "hybrid": "Cloud + built-in library",
+    "local": "Local library",
+    "searchPlaceholder": "Search {{slot}} assets",
+    "allTags": "All",
+    "tabs": {
+      "public": "Public library",
+      "mine": "My assets"
+    }
+  },
+  "promptCases": {
+    "latestTitle": "Featured Cases",
+    "librarySubtitle": "Browse reusable visual prompt cases. Normal cases unlock after sign-in; member-only cases require an active plan.",
+    "search": "Search curated prompts",
+    "refresh": "Refresh cases",
+    "manage": "Manage",
+    "adminTitle": "Case admin",
+    "createModalTitle": "Create case",
+    "editModalTitle": "Edit case",
+    "localeZh": "Chinese cases",
+    "localeEn": "English mirrors",
+    "translationMirror": "English mirror",
+    "translationMirrorNote": "This is the English mirror of a Chinese source case. Editing the Chinese source case will sync the mirror content.",
+    "adminFilterLabel": "Case filters",
+    "adminAllCases": "All cases",
+    "adminFeaturedOnly": "Featured cases",
+    "missingEnglishMirrors": "{{count}} Chinese cases still do not have English mirrors. Mirrors are created only after the Chinese source has an image, a prompt, and a successful translation sync.",
+    "modalBasicsHint": "Pick the model category first; other fields can be automated",
+    "promptAutoHint": "Public preview and intent are extracted automatically when left empty",
+    "promptPreviewAutoHint": "Public preview is auto-trimmed from the prompt",
+    "advancedFields": "Advanced fields (optional)",
+    "adminTabs": {
+      "cases": "Cases",
+      "drafts": "Drafts"
+    },
+    "newCase": "New case",
+    "imageUrl": "Case image URL",
+    "imageUrls": "Case image URLs (one per line)",
+    "draftImageUrls": "Candidate image URLs (one per line)",
+    "upload": "Upload case images",
+    "uploadedCount": "{{count}} case images uploaded",
+    "removeImage": "Remove image",
+    "title": "Title",
+    "slug": "Slug",
+    "category": "Category",
+    "tags": "Tags (comma separated)",
+    "model": "Model",
+    "locale": "Locale",
+    "authorUrl": "Original author URL (optional)",
+    "sourceUrl": "Source URL",
+    "packageSlug": "Package",
+    "noPackage": "No package",
+    "commercialIntent": "Commercial intent",
+    "promptPreview": "Public prompt preview",
+    "negativePrompt": "Negative prompt",
+    "draftImagePreview": "Draft candidate image preview",
+    "previewDraftImage": "Preview draft candidate image: {{title}}",
+    "imageSize": "Image size",
+    "businessScene": "Business scene",
+    "targetAudience": "Target audience",
+    "deliverable": "Deliverable",
+    "draftCount": "Draft count",
+    "autoPreset": "Auto",
+    "status": "Status",
+    "prompt": "Prompt",
+    "published": "Published",
+    "featured": "Featured",
+    "setFeatured": "Set as featured",
+    "unsetFeatured": "Unset featured",
+    "featuredEnabled": "Marked as featured",
+    "featuredDisabled": "Featured removed",
+    "memberOnly": "Members only",
+    "memberOnlyBadge": "Members only",
+    "create": "Create case",
+    "save": "Save case",
+    "edit": "Edit",
+    "delete": "Delete",
+    "unpublished": "Unpublished",
+    "empty": "No curated cases yet",
+    "previewTitle": "Curated case",
+    "previewModalTitle": "Case preview",
+    "sourceLabel": "Source",
+    "authorLink": "Original author",
+    "share": "Share case",
+    "shareCopied": "Share URL copied",
+    "shareFailed": "Failed to copy share URL",
+    "shareUnavailable": "This curated case does not exist or is no longer published.",
+    "loginToViewPrompt": "Sign in and unlock prompt",
+    "upgradeToUnlockPrompt": "Upgrade to unlock prompt",
+    "loginLockedTitle": "Sign in to view the full prompt",
+    "loginLockedDesc": "This case is not member-only. Sign in to copy the prompt and recreate or rewrite it in the image studio.",
+    "promptLockedTitle": "Members unlock the full prompt",
+    "promptLockedDesc": "The case image is public. The full prompt, recreate flow, and edits are available to active members.",
+    "promptUnavailable": "The full prompt requires a member unlock.",
+    "unlockBenefitPrompt": "View the complete curated prompt",
+    "unlockBenefitRecreate": "Recreate or rewrite in the image studio",
+    "unlockBenefitPrivate": "Private generations and history",
+    "unlockBenefitCredits": "More monthly credits and failed-result refunds",
+    "previousImage": "Previous image",
+    "nextImage": "Next image",
+    "imageIndex": "Image {{current}} of {{total}}",
+    "openImageFullscreen": "Open image fullscreen",
+    "fullscreenPreview": "Fullscreen image preview",
+    "downloadImage": "Download image",
+    "recreate": "Recreate",
+    "usePrompt": "Use this prompt",
+    "detailLink": "View detail page",
+    "viewPricing": "View pricing",
+    "recreateApplied": "Curated case prompt filled into Custom mode",
+    "required": "Provide a case image and prompt",
+    "loadFailed": "Failed to load curated cases",
+    "manageLoaded": "Loaded {{count}} cases",
+    "draftsLoaded": "Loaded {{count}} drafts",
+    "draftSaved": "Draft saved",
+    "draftSaveFailed": "Failed to save draft",
+    "draftImagesGenerated": "Generated candidate images for {{count}} drafts",
+    "draftImageFailures": "{{count}} draft image generations failed",
+    "draftImagesFailed": "Failed to generate candidate images",
+    "draftImagesUploaded": "{{count}} candidate images uploaded",
+    "draftPublished": "Draft published as a prompt case and removed from drafts",
+    "draftPublishFailed": "Failed to publish draft",
+    "publishAllDrafts": "Publish all drafts",
+    "publishAllDraftsWithCount": "Publish all ({{count}})",
+    "publishAllDraftsUnavailable": "No complete drafts are ready to publish",
+    "publishAllDraftsConfirmTitle": "Publish all drafts?",
+    "publishAllDraftsConfirmHeading": "{{count}} cases are ready to publish",
+    "publishAllDraftsConfirmDesc": "Each successful draft will enter the case library and leave the draft box. Failed or incomplete drafts will remain.",
+    "confirmPublishAllDraftsWithCount": "Publish all {{count}}",
+    "publishAllDraftsProgress": "Publishing {{completed}}/{{total}}",
+    "publishableDrafts": "Ready",
+    "incompleteDrafts": "Incomplete",
+    "totalDrafts": "Total drafts",
+    "draftsPublishingAll": "Publishing {{count}} drafts...",
+    "draftsPublishedAll": "Published all {{count}} drafts.",
+    "draftsPublishAllPartial": "Published {{published}}, {{failed}} failed, and {{incomplete}} incomplete drafts were kept.",
+    "draftsPublishAllFailureSummary": "{{count}} drafts failed and remain in the draft box: {{summary}}",
+    "draftsPublishAllFailed": "Failed to publish drafts in bulk.",
+    "draftsEmpty": "No drafts yet",
+    "reviewFields": "Review fields",
+    "refreshDrafts": "Refresh drafts",
+    "saveAndGenerateImages": "Save and generate candidates",
+    "uploadCandidateImages": "Upload candidates",
+    "publishDraft": "Publish",
+    "rejectDraft": "Reject",
+    "rejectReason": "Enter rejection reason",
+    "deleteDraft": "Delete",
+    "deleteDraftConfirm": "Permanently delete this draft? This cannot be undone.",
+    "draftDeleted": "Draft deleted",
+    "draftDeleteFailed": "Failed to delete draft",
+    "uploaded": "Case image uploaded",
+    "uploadFailed": "Case image upload failed",
+    "saved": "Case saved",
+    "saveFailed": "Failed to save case",
+    "deleteConfirm": "Unpublish and delete this curated case?",
+    "deleted": "Case deleted",
+    "deleteFailed": "Failed to delete case",
+    "formSections": {
+      "media": "Media",
+      "basics": "Basics",
+      "prompt": "Prompt content",
+      "settings": "Publishing"
+    },
+    "metrics": {
+      "title": "Growth metrics",
+      "views": "Views",
+      "copies": "Copies",
+      "generates": "Generates",
+      "generateRate": "Generate rate"
+    },
+    "sort": {
+      "label": "Case sorting",
+      "default": "Default order",
+      "created-desc": "Newest added",
+      "created-asc": "Oldest added",
+      "views": "Sort by views",
+      "copies": "Sort by copies",
+      "generates": "Sort by generates",
+      "generate-rate": "Sort by generate rate"
+    },
+    "draftStatuses": {
+      "draft": "Draft",
+      "images_generated": "Images generated",
+      "approved": "Approved",
+      "published": "Published",
+      "rejected": "Rejected"
+    },
+    "packages": {
+      "xiaohongshu-cover": "Xiaohongshu cover director",
+      "ecommerce-product-photo": "Ecommerce product photo director",
+      "wechat-cover-poster": "WeChat cover poster director",
+      "portrait-character-consistency": "Portrait and character consistency director",
+      "storefront-marketing-kit": "Storefront marketing kit director"
+    },
+    "categories": {
+      "all": "All",
+      "featured": "Featured",
+      "portrait": "Portrait",
+      "cover": "Cover",
+      "ecommerce": "Ecommerce",
+      "fashion": "Fashion",
+      "character": "Character",
+      "background": "Background",
+      "poster": "Poster",
+      "xiaohongshu": "Xiaohongshu",
+      "wechat-cover": "WeChat cover",
+      "video": "Video"
+    }
+  },
+  "promptDetail": {
+    "loading": "Loading prompt case…",
+    "fallbackTitle": "Visual prompt case",
+    "seoDescription": "A reusable WebToMind visual prompt case. Sign in or upgrade to view the full prompt and generate from it in the image studio.",
+    "seoDescriptionWithTitle": "{{title}} · Upgrade WebToMind to view the full prompt and reuse it in the image studio.",
+    "notFound": "This prompt case does not exist or is not published.",
+    "loadFailed": "Failed to load prompt case",
+    "emptyTitle": "Prompt not found",
+    "backToLibrary": "Back to prompt library",
+    "usePrompt": "Use this prompt",
+    "viewPricing": "View pricing",
+    "loginToViewPrompt": "Sign in and unlock prompt",
+    "upgradeToUnlockPrompt": "Upgrade to unlock prompt",
+    "loginLockedTitle": "Sign in to view the full prompt",
+    "loginLockedDesc": "This case is not member-only. Sign in to copy the prompt and recreate or rewrite it in the image studio.",
+    "promptLockedTitle": "Members unlock the full prompt",
+    "promptLockedDesc": "The case image and metadata are public. The full prompt, copy action, and one-click generation are available to active members.",
+    "promptUnavailable": "The full prompt requires a member unlock.",
+    "unlockBenefitPrompt": "View the complete curated prompt",
+    "unlockBenefitRecreate": "Recreate or rewrite in the image studio",
+    "unlockBenefitPrivate": "Private generations and history",
+    "unlockBenefitCredits": "More monthly credits and failed-result refunds",
+    "baseCost": "Base image",
+    "large2kCost": "2K large",
+    "fourKCost": "4K image",
+    "related": "Related prompts",
+    "freeFirstImageHint": "Free users get 1 free image per day — try it before paying"
+  },
+  "upload": {
+    "button": "Photo Clone",
+    "processingShort": "Cloning",
+    "promptImportButton": "Paste prompt import",
+    "processing": "Uploading & reversing…",
+    "promptImportAnalyzing": "Analyzing prompt…",
+    "promptImportTitle": "Import assets from prompt",
+    "promptImportHint": "Paste a complete image generation prompt. AI will split it into slot-based assets, then you can review before saving.",
+    "promptImportPlaceholder": "Paste a full image generation prompt. Chinese, English, and negative prompts are supported…",
+    "promptImportSubmit": "Analyze into assets",
+    "promptImportRequired": "Paste a prompt first",
+    "promptImportAnalyzeFailed": "Prompt analysis failed. Please adjust the fields manually.",
+    "sourcePromptTitle": "Source prompt",
+    "sourcePromptEmpty": "No source prompt",
+    "invalidType": "Please select an image file",
+    "failed": "Upload failed",
+    "saveFailed": "Save failed",
+    "promptRequired": "Prompt cannot be empty",
+    "untitled": "Untitled asset",
+    "savedToast": "Added to your private library",
+    "confirmTitle": "Confirm asset",
+    "confirmSubtitle": "AI prefilled these fields — tweak them before saving",
+    "fieldSlot": "Slot",
+    "fieldTitle": "Title",
+    "fieldSubtitle": "Subtitle",
+    "fieldPrompt": "Prompt",
+    "fieldPromptEn": "Prompt",
+    "fieldPromptZh": "Prompt",
+    "fieldNegative": "Negative prompt",
+    "fieldNegativeEn": "Negative prompt",
+    "fieldNegativeZh": "Negative prompt",
+    "fieldTags": "Tags (comma separated)",
+    "save": "Save to my library",
+    "saveBatch": "Save {{count}} selected",
+    "cancel": "Cancel import",
+    "reverseFailed": "Auto-reverse failed. Please fill in the fields manually.",
+    "batchSubtitle": "AI extracted {{count}} assets — tick / edit any before batch save",
+    "addRow": "Add another",
+    "removeRow": "Remove this row",
+    "noneSelected": "Tick at least one row before saving",
+    "savedToastBatch": "Saved {{count}} assets to your library",
+    "saveThis": "Save this",
+    "skipThis": "Skip",
+    "saveAll": "Save all",
+    "skipAll": "Skip all"
+  },
+  "mine": {
+    "empty": "Upload an image or paste a prompt to seed your private library.",
+    "loginRequired": "Sign in to upload your own prompt assets.",
+    "delete": "Delete",
+    "deleteConfirm": "Remove this asset from your private library?",
+    "deleteFailed": "Delete failed",
+    "regenerate": "Regenerate thumbnail",
+    "regenerateConfirm": "This will use the image generator to render a new thumbnail in the catalog style and charge one generation worth of credits. Continue?",
+    "regenerating": "Generating thumbnail…",
+    "regenerateDone": "Thumbnail updated",
+    "regenerateFailed": "Thumbnail generation failed",
+    "batchPending": "{{count}} thumbnails not AI-generated yet",
+    "batchAllGenerated": "All thumbnails are AI-generated",
+    "batchRegenerate": "Regenerate all ({{count}})",
+    "batchRegenerateConfirm": "Will generate {{count}} thumbnails serially, ~30-60s each, billed per generation. Start?",
+    "batchProgress": "Progress {{current}}/{{total}} · ok {{done}} · failed {{failed}}",
+    "batchCancel": "Stop queue",
+    "batchCancelled": "Queue stopped",
+    "batchDone": "All thumbnails generated",
+    "batchDonePartial": "{{done}} done · {{failed}} failed — click retry to rerun",
+    "batchRetryFailed": "Retry failed ({{count}})",
+    "queueStatusQueued": "Queued",
+    "queueStatusProcessing": "Generating",
+    "queueStatusDone": "Done",
+    "queueStatusFailed": "Failed",
+    "edit": "Edit asset",
+    "editTitle": "Edit asset details",
+    "editSave": "Save changes",
+    "editSaved": "Asset updated",
+    "editTagsPlaceholder": "Comma-separated subcategory tags, e.g. bag, drink"
+  },
+  "picker": {
+    "title": "Pick a {{slot}} visual",
+    "subtitle": "Selecting an asset updates your combo and the prompt immediately.",
+    "empty": "No matching assets",
+    "selected": "Selected",
+    "expandSlots": "Expand all categories",
+    "collapseSlots": "Collapse categories",
+    "expandTags": "Expand all tags",
+    "collapseTags": "Collapse tags"
+  },
+  "onboarding": {
+    "close": "Close onboarding",
+    "skip": "Skip onboarding",
+    "next": "Next",
+    "start": "Start creating",
+    "progress": "Onboarding progress",
+    "goToStep": "View step {{current}} of {{total}}",
+    "steps": {
+      "assets": {
+        "title": "Pick visuals first, then shape the image.",
+        "body": "You do not have to start from a blank prompt. Choose character, pose, outfit, scene and style assets first — WebToMind turns the selection into a reproducible image prompt.",
+        "bullets": {
+          "0": "16 visual slots cover identity, composition, lens and style",
+          "1": "Use official assets, or upload images to reverse into your library",
+          "2": "Every pick updates the current combo instantly"
+        }
+      },
+      "prompt": {
+        "title": "The prompt compiler turns choices into a full brief.",
+        "body": "Use the compiled version, or switch to custom mode and write directly. Negative constraints can live at the bottom of the main prompt.",
+        "bullets": {
+          "0": "Copy, save presets and import prompts from the same panel",
+          "1": "Structure check starts as a score, with details on demand",
+          "2": "Size, quality and format are sent as generation parameters"
+        }
+      },
+      "reference": {
+        "title": "Upload references to keep characters consistent.",
+        "body": "When you need the same character across many images, upload references first, then open the character workflow to manage cards and A/B grouping.",
+        "bullets": {
+          "0": "Use 1-3 refs for one character, up to 4 for two characters",
+          "1": "Check identity, outfit and grouping drift after generation",
+          "2": "Import previous generations as new references"
+        }
+      },
+      "tasks": {
+        "title": "Generate, retry and build your reusable library.",
+        "body": "Image jobs appear in the AI task panel. Successful results land in history; failed jobs can be edited and retried, and system failures are refunded.",
+        "bullets": {
+          "0": "Actual credit cost is shown before generation; failures refund",
+          "1": "History images can be copied, edited, downloaded or added to projects",
+          "2": "Save good combinations as presets for one-click reuse"
+        }
+      }
+    }
+  },
+  "status": {
+    "preparing": "Preparing your visual selection…",
+    "queued": "Added to the generation queue. Tasks will run in submission order.",
+    "queueCancelled": "Canceled the queued image task.",
+    "taskCancelled": "Stopped the image task.",
+    "submitting": "Queueing and waiting for multi-model image generation, up to about 4 minutes…",
+    "doneWithFallback": "Done — switched to {{model}}{{credits}}",
+    "done": "Done · {{model}}{{credits}}",
+    "creditsConsumed": " · {{n}} credits charged"
+  },
+  "errors": {
+    "generateFailed": "Image generation failed, please retry.",
+    "emptyPrompt": "Enter a prompt before generating.",
+    "pipelineDeadline": "The model response timed out and the credits were refunded. Retry later, or shorten the prompt before generating again.",
+    "providerPolicy": "The prompt was blocked by the image safety system. Edit the task prompt and reduce nudity, sexual, or borderline descriptions before retrying.",
+    "providerUnavailable": "The image model channel is busy or responding slowly. Credits were refunded. Please retry later.",
+    "retryNotAllowed": "This image task cannot be retried right now. Try again later or edit the prompt and generate again.",
+    "creditFailed": "Credit check failed. Check your balance or try again later.",
+    "clipboardFailed": "Couldn't copy the prompt automatically. Please select and copy manually (browsers block clipboard writes on non-HTTPS contexts)."
+  },
+  "progress": {
+    "title": "AI tasks",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "empty": "No AI tasks running",
+    "thinking": "Thinking...",
+    "taskMainGen": "Generating image",
+    "taskQueued": "Waiting to generate image",
+    "taskFailed": "Image task failed",
+    "taskSucceeded": "Image returned",
+    "taskPartialSucceeded": "Some images returned",
+    "taskCancelled": "Task stopped",
+    "queuePosition": "Queue position {{n}}",
+    "cancelQueued": "Cancel queued task",
+    "cancelRunning": "Stop running task",
+    "editTask": "Edit task prompt",
+    "viewTaskPrompt": "View task prompt",
+    "loadedForEdit": "Task prompt loaded. Edit it, then generate again.",
+    "retryFailed": "Retry failed task",
+    "retryMissing": "Generate remaining images",
+    "acknowledgeDone": "Confirm",
+    "deleteFailed": "Delete failed task",
+    "dismissTask": "Dismiss",
+    "detailSubmitted": "Task submitted. Connecting to the generation service",
+    "detailWaitingModel": "Waited {{seconds}}s. The model is receiving the task",
+    "detailGenerating": "Waited {{seconds}}s. The model is generating the image",
+    "detailFinalizing": "Waited {{seconds}}s. Waiting for the image to return",
+    "detailRetryWaived": "Retrying the system-failed task without another credit charge...",
+    "detailDone": "Image returned. Refreshing history",
+    "detailPartialSucceeded": "{{done}}/{{total}} returned. You can generate the remaining {{missing}}",
+    "detailFallbackAfterFailure": "The primary channel timed out. Continuing on a backup channel",
+    "detailRescueSucceeded": "The backup channel returned an image. Filling in the remaining images",
+    "imageTarget": "Target {{total}} images",
+    "imageProgress": "{{done}} / {{total}} images returned",
+    "strictBatchPending": "Multi-image tasks lock one channel first to keep the batch style consistent",
+    "strictBatchPartial": "To keep this batch consistent, no cross-channel refill was used",
+    "partialRefunded": "{{done}}/{{total}} completed. Missing images refunded {{credits}} credits",
+    "partialRefundedNoAmount": "{{done}}/{{total}} completed. Missing images were refunded automatically",
+    "partialRefundFailed": "{{done}}/{{total}} completed. The partial refund failed; contact support to verify your balance",
+    "cancelledQueued": "Queued task stopped",
+    "cancelledRunning": "Running task stopped. Further processing has been interrupted",
+    "cancelRefunded": "{{credits}} credits refunded",
+    "cancelRefundFailed": "Refund failed. Contact support to verify your balance",
+    "taskRegen": "Regenerating thumbnail",
+    "taskBatch": "Batch thumbnail queue",
+    "batchProgress": "{{done}} / {{total}}",
+    "batchFailedTail": "{{n}} failed",
+    "allFailedHint": "{{n}} thumbnails failed — click retry in library",
+    "feedback": {
+      "title": "What hurt this failed run most?",
+      "thanks": "Feedback received. It will improve the generation flow.",
+      "options": {
+        "resultMismatch": "Wrong result",
+        "qualityLow": "Unstable quality",
+        "waitTooLong": "Too slow",
+        "safetyFalsePositive": "Safety false block",
+        "billingUnclear": "Billing unclear"
+      }
+    }
+  }
+}

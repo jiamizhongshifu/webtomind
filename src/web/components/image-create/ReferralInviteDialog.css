@@ -1,0 +1,251 @@
+.referral-invite-dialog.ui-dialog {
+  --referral-invite-surface: var(--surface-glass-bg-strong, #fffefb);
+  --referral-invite-border: var(
+    --surface-glass-border,
+    rgba(45, 32, 24, 0.12)
+  );
+  --referral-invite-line: var(
+    --surface-glass-line,
+    rgba(45, 32, 24, 0.12)
+  );
+  --referral-invite-text: var(--product-text-primary, #241916);
+  --referral-invite-text-secondary: var(
+    --product-text-secondary,
+    rgba(45, 35, 30, 0.74)
+  );
+  --referral-invite-text-muted: var(
+    --product-text-muted,
+    rgba(45, 35, 30, 0.56)
+  );
+  --referral-invite-control: color-mix(
+    in srgb,
+    var(--product-surface, #fffefb) 82%,
+    var(--referral-invite-text) 18%
+  );
+  --referral-invite-accent: var(--brand-coral-500, #c9472f);
+  --referral-invite-error: var(--product-danger, #b42318);
+  width: min(1040px, calc(100vw - 32px));
+  max-width: none;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--referral-invite-border);
+  border-radius: 28px;
+  background: var(--referral-invite-surface);
+  color: var(--referral-invite-text);
+  box-shadow: var(
+    --surface-glass-shadow,
+    0 30px 80px rgba(35, 24, 16, 0.2)
+  );
+}
+
+.referral-invite-dialog .ui-dialog__header {
+  position: absolute;
+  z-index: 2;
+  top: 34px;
+  right: 38px;
+  left: calc(38% + 48px);
+  align-items: flex-start;
+  border: 0;
+  background: transparent;
+}
+
+.referral-invite-dialog .ui-dialog__title {
+  color: var(--referral-invite-text);
+  font-size: clamp(28px, 3vw, 46px);
+  font-variation-settings: 'opsz' 32;
+  letter-spacing: -0.035em;
+  line-height: 1.04;
+}
+.referral-invite-dialog .ui-dialog__description {
+  max-width: 650px;
+  color: var(--referral-invite-text-muted);
+  line-height: 1.55;
+}
+.referral-invite-dialog .ui-dialog__body {
+  padding: 0;
+}
+
+.referral-invite-layout {
+  display: grid;
+  min-height: 620px;
+  grid-template-columns: 38% 62%;
+}
+.referral-invite-art {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background: #39758f;
+}
+.referral-invite-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.88) contrast(0.94);
+}
+.referral-invite-art::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 40%, rgba(17, 17, 15, 0.5));
+  content: '';
+}
+.referral-invite-art > span {
+  position: absolute;
+  z-index: 1;
+  right: 26px;
+  bottom: 26px;
+  display: grid;
+  width: 58px;
+  height: 58px;
+  place-items: center;
+  border-radius: 18px;
+  background: var(--brand-coral-400, #ff7a57);
+  box-shadow:
+    0 12px 26px rgba(80, 31, 18, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  color: #25110c;
+}
+.referral-invite-content {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 42px;
+  padding: 190px 48px 48px;
+}
+.referral-invite-content ul {
+  display: grid;
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.referral-invite-content li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  gap: 16px;
+  color: var(--referral-invite-text-secondary);
+  font-size: 1.0625rem;
+  line-height: 1.5;
+}
+.referral-invite-content li svg {
+  margin-top: 2px;
+  color: var(--referral-invite-accent);
+}
+.referral-invite-link-block {
+  display: grid;
+  gap: 10px;
+}
+.referral-invite-link-block label {
+  color: var(--referral-invite-text-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+.referral-invite-link-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+.referral-invite-link-row output {
+  display: flex;
+  min-height: 52px;
+  min-width: 0;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 18px;
+  border: 1px solid var(--referral-invite-line);
+  border-radius: 14px;
+  background: var(--referral-invite-control);
+  color: var(--referral-invite-text-secondary);
+  font-family: var(
+    --font-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace
+  );
+  font-size: 0.875rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.referral-invite-link-row .ui-button {
+  min-height: 52px;
+  border-radius: 14px;
+  box-shadow:
+    0 1px 2px rgba(80, 31, 18, 0.18),
+    0 8px 18px -10px rgba(80, 31, 18, 0.52);
+}
+.referral-invite-link-block p {
+  margin: 0;
+  color: var(--referral-invite-error);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.dark .referral-invite-dialog.ui-dialog {
+  --referral-invite-control: rgba(255, 247, 235, 0.075);
+  --referral-invite-error: #ffab96;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .referral-invite-dialog.ui-dialog {
+    --referral-invite-surface: var(--product-panel-solid, #fffefb);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .referral-invite-dialog.ui-dialog {
+    width: min(100vw - 20px, 520px);
+    max-height: calc(100dvh - 20px);
+    border-radius: 22px;
+  }
+  .referral-invite-dialog .ui-dialog__header {
+    position: relative;
+    inset: auto;
+    padding: 24px 24px 0;
+  }
+  .referral-invite-layout {
+    min-height: 0;
+    grid-template-columns: 1fr;
+  }
+  .referral-invite-art {
+    height: 180px;
+    grid-row: 1;
+  }
+  .referral-invite-content {
+    gap: 24px;
+    padding: 24px;
+  }
+  .referral-invite-content li {
+    font-size: 16px;
+  }
+  .referral-invite-link-row {
+    grid-template-columns: 1fr;
+  }
+  .referral-invite-link-row .ui-button {
+    width: 100%;
+    min-height: 48px;
+  }
+}
+
+@media (max-width: 420px) {
+  .referral-invite-dialog .ui-dialog__header {
+    padding: 20px 20px 0;
+  }
+
+  .referral-invite-dialog .ui-dialog__title {
+    font-size: 1.75rem;
+  }
+
+  .referral-invite-art {
+    height: 156px;
+  }
+
+  .referral-invite-content {
+    padding: 20px;
+  }
+}
