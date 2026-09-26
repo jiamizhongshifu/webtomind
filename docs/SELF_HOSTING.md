@@ -35,6 +35,8 @@ cp server/.env.example server/.env
 | `SUPABASE_URL`、`SUPABASE_SERVICE_ROLE_KEY` | 服务端写入积分、任务、订单（只能放在服务端，不能暴露给前端） |
 | 图像模型服务的 Key 与 Base URL | 见 `.env.example` 中 `TUZI_*`、`OPENAI_IMAGE_*` 等 |
 
+管理后台没有内置管理员：用 `PROMPT_CASE_ADMIN_EMAILS`（逗号分隔）指定管理员邮箱；API 市场管理员是 `src/shared/api-marketplace.ts` 中的 `API_MARKETPLACE_ADMIN_EMAIL`。两者都按邮箱授权，请在 Supabase Auth 中保持“邮箱确认”开启，否则任何人都能用管理员邮箱注册。
+
 支付（`STRIPE_*`、`ZPAY_*`）、邮件（`RESEND_API_KEY`）、定时任务鉴权（`CRON_SECRET`）、API 市场中继（`API_MARKETPLACE_*`）按需配置。服务端变量的完整列表可以在 `workers/webtomind.wrangler.toml` 的 `[vars]` 和各处 `process.env.*` 引用中找到。
 
 ## 4. 本地运行
@@ -64,7 +66,7 @@ pnpm dev          # 本地 Cloudflare Worker（默认端口 4173），接入真�
 - API 钱包过期预留回收与结算重试、生成退款失败告警、结账召回与营销邮件（每 10 分钟）；
 - 每日与每月的积分和营销任务。
 
-告警邮件发往 `src/shared/api-marketplace.ts` 中的 `API_MARKETPLACE_ADMIN_EMAIL`，开源版默认是 `admin@example.com`，请改成你自己的地址。
+告警邮件发往 `src/shared/api-marketplace.ts` 中的 `API_MARKETPLACE_ADMIN_EMAIL`。开源版在生产构建中默认为空（示例地址只在测试中使用），请改成你自己的地址。
 
 ## 7. 验证
 

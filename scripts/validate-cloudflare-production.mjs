@@ -781,6 +781,17 @@ for (const path of ['/zh-CN/prompts', '/create']) {
   );
 }
 
+addCheck('/zh-CN/recharge CSP allows the validated ZPay checkout form', async () => {
+  const response = await curlResponse(`${baseUrl}/zh-CN/recharge`, { method: 'HEAD' });
+  assert(response.status === 200, `/zh-CN/recharge returned ${response.status}`);
+  const formAction = (header(response, 'content-security-policy') || '')
+    .split(';').map((directive) => directive.trim())
+    .find((directive) => directive.startsWith('form-action '));
+  assert(formAction === "form-action 'self' https://zpayz.cn https://api.z-pay.cn",
+    'Checkout form policy must allow only self and the ZPay submission/cashier origins', { formAction });
+  return formAction;
+});
+
 addCheck('/zh-CN/prompts CSP allows Google Identity styles', async () => {
   const response = await curlResponse(`${baseUrl}/zh-CN/prompts`, {
     method: 'HEAD'

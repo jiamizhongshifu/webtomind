@@ -1,6 +1,11 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-export const DEFAULT_PROMPT_CASE_ADMIN_EMAIL = 'admin@example.com';
+// Open-source build: there is no built-in admin outside tests. Set
+// PROMPT_CASE_ADMIN_EMAILS (comma separated) to grant admin access.
+export const DEFAULT_PROMPT_CASE_ADMIN_EMAIL =
+  typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
+    ? 'admin@example.com'
+    : '';
 export const PROMPT_CASE_ADMIN_EMAIL = DEFAULT_PROMPT_CASE_ADMIN_EMAIL;
 
 export type PromptCaseAdminAuthResult = {
@@ -24,9 +29,7 @@ export function getPromptCaseAdminEmails(
     .split(',')
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
-  return emails.length > 0
-    ? Array.from(new Set(emails))
-    : [DEFAULT_PROMPT_CASE_ADMIN_EMAIL];
+  return Array.from(new Set(emails));
 }
 
 export function isPromptCaseAdminEmail(email: unknown): boolean {
@@ -63,7 +66,7 @@ export async function assertPromptCaseAdmin(
   } = await supabase.auth.getUser(token);
   const email = user?.email?.toLowerCase();
 
-  if (error || !allowedEmails.includes(email || '')) {
+  if (error || !email || !allowedEmails.includes(email)) {
     return {
       ok: false,
       status: 403,

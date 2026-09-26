@@ -80,6 +80,29 @@ import { createAppContentItems } from '../shared/create-apps';
 import worker from '../../workers/webtomind';
 
 describe('Cloudflare Worker SEO route matching', () => {
+  it('allows the validated ZPay checkout form destination in the recharge HTML policy', async () => {
+    const response = await worker.fetch(
+      new Request('https://webtomind.com/zh-CN/recharge'),
+      {
+        CANONICAL_HOST: 'webtomind.com',
+        ASSETS: {
+          fetch: vi.fn(async () => new Response(
+            '<!doctype html><html><head></head><body><div id="root"></div></body></html>',
+            { headers: { 'Content-Type': 'text/html' } }
+          ))
+        }
+      } as never,
+      { waitUntil: () => undefined } as never
+    );
+    expect(response.status).toBe(200);
+    const formAction = response.headers.get('Content-Security-Policy')
+      ?.split(';').map((directive) => directive.trim())
+      .find((directive) => directive.startsWith('form-action '));
+    expect(formAction?.split(/\s+/).slice(1)).toEqual([
+      "'self'", 'https://zpayz.cn', 'https://api.z-pay.cn'
+    ]);
+  });
+
   it('consolidates the unlocalized ComfyUI tool into its declared canonical URL', async () => {
     const response = await worker.fetch(
       new Request(

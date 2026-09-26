@@ -21,7 +21,12 @@ export const API_KEY_PREFIX = 'sk-wtm';
  * marketplace can open to a seed cohort without a code deploy. The gateway and
  * all management endpoints accept any email that passes this check.
  */
-export const API_MARKETPLACE_ADMIN_EMAIL = 'admin@example.com';
+// Open-source build: set your own administrator address here. The example
+// address is only used by the test suite; production builds default to none.
+export const API_MARKETPLACE_ADMIN_EMAIL: string =
+  typeof process !== 'undefined' && process.env.NODE_ENV === 'test'
+    ? 'admin@example.com'
+    : '';
 
 export function getApiMarketplaceAccessEmails(): string[] {
   const extra = String(
@@ -29,7 +34,9 @@ export function getApiMarketplaceAccessEmails(): string[] {
       ? (import.meta as { env?: Record<string, string | undefined> }).env?.VITE_API_MARKETPLACE_ACCESS_EMAILS
       : undefined
   ).trim();
-  const configured = new Set<string>([API_MARKETPLACE_ADMIN_EMAIL]);
+  const configured = new Set<string>(
+    API_MARKETPLACE_ADMIN_EMAIL ? [API_MARKETPLACE_ADMIN_EMAIL] : []
+  );
   if (extra) {
     for (const entry of extra.split(',')) {
       const normalized = entry.trim().toLowerCase();
@@ -40,7 +47,7 @@ export function getApiMarketplaceAccessEmails(): string[] {
 }
 
 export function isApiMarketplaceAdminEmail(email: unknown): boolean {
-  if (typeof email !== 'string') return false;
+  if (typeof email !== 'string' || !email.trim()) return false;
   return getApiMarketplaceAccessEmails().includes(email.trim().toLowerCase());
 }
 

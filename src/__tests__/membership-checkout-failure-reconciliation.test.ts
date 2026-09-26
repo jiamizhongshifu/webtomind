@@ -307,6 +307,52 @@ describe('membership checkout failure reconciliation', () => {
     );
   });
 
+  it('writes payment orders only through the service-role client', async () => {
+    const { from, paymentOrdersQuery } = setupSupabase();
+    const serviceClient = createClientMock();
+    const userOrderWrites = vi.fn();
+    createClientMock.mockImplementation((_url: string, key: string) => {
+      if (key !== 'anon-key') return serviceClient;
+      return {
+        ...serviceClient,
+        from: (table: string) => {
+          if (table !== 'payment_orders') return from(table);
+          const guard = buildQuery();
+          guard.insert.mockImplementation(() => {
+            userOrderWrites('insert');
+            return guard;
+          });
+          guard.update.mockImplementation(() => {
+            userOrderWrites('update');
+            return guard;
+          });
+          return guard;
+        }
+      };
+    });
+
+    const response = await handler(
+      authorizedRequest({
+        type: 'subscription',
+        id: 'pro',
+        billingCycle: 'yearly',
+        ctaSource: 'pricing_cta_click'
+      })
+    );
+
+    expect(response.status).toBe(502);
+    expect(userOrderWrites).not.toHaveBeenCalled();
+    expect(paymentOrdersQuery.insert).toHaveBeenCalledTimes(1);
+    expect(paymentOrdersQuery.update).toHaveBeenCalledWith(
+      expect.objectContaining({ status: 'failed' })
+    );
+    expect(createClientMock).toHaveBeenCalledWith(
+      'https://example.supabase.co',
+      'service-role-key',
+      expect.anything()
+    );
+  });
+
   it('does not mask the original response when reconciliation itself fails', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
     setupSupabase({

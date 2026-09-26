@@ -512,7 +512,11 @@ export default async function handler(request: Request) {
     return jsonResponse({ error: 'Invalid JSON body' }, 400);
   }
 
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+  if (
+    !process.env.SUPABASE_URL ||
+    !process.env.SUPABASE_ANON_KEY ||
+    !process.env.SUPABASE_SERVICE_ROLE_KEY
+  ) {
     console.error('[Checkout] Supabase environment variables not configured');
     return jsonResponse({ error: 'Database not configured' }, 500);
   }
@@ -616,6 +620,14 @@ export default async function handler(request: Request) {
     {
       global: { headers: { Authorization: `Bearer ${token}` } }
     }
+  );
+  // Payment orders are written only with the service role: product, amount and
+  // metadata drive fulfillment, so users must never be able to insert or edit
+  // their own order rows through the Data API.
+  const orderDb = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY,
+    { auth: { persistSession: false } }
   );
 
   let createdOrder: CheckoutOrderSnapshot | null = null;
@@ -942,7 +954,7 @@ export default async function handler(request: Request) {
     const orderProvider = paymentProvider === 'alipay' ? 'zpay' : 'stripe';
 
     // 创建内部待处理订单（用于追踪）
-    const { data: order, error: orderError } = await supabase
+    const { data: order, error: orderError } = await orderDb
       .from('payment_orders')
       .insert({
         user_id: userId,
@@ -1068,7 +1080,7 @@ export default async function handler(request: Request) {
         notifyUrl: new URL('/api/membership/zpay-notify', appUrl).toString(),
         returnUrl: zpayReturnUrl.toString()
       });
-      const { error: providerOrderError } = await supabase
+      const { error: providerOrderError } = await orderDb
         .from('payment_orders')
         .update({ provider_order_id: fields.out_trade_no })
         .eq('id', order.id)
@@ -1212,7 +1224,7 @@ export default async function handler(request: Request) {
       });
 
       // 更新订单，关联 Stripe Session ID
-      await supabase
+      await orderDb
         .from('payment_orders')
         .update({ provider_order_id: session.id })
         .eq('id', order.id);
@@ -1228,7 +1240,7 @@ export default async function handler(request: Request) {
       const errorSummary =
         stripeError instanceof Error ? stripeError.message : 'Unknown error';
       await reconcileFailedCheckoutOrder({
-        supabase,
+        supabase: orderDb,
         order: createdOrder,
         errorCode: 'CHECKOUT_PROVIDER_ERROR',
         errorSummary
@@ -1246,7 +1258,7 @@ export default async function handler(request: Request) {
     console.error('[Checkout] General Error:', error);
     if (createdOrder) {
       await reconcileFailedCheckoutOrder({
-        supabase,
+        supabase: orderDb,
         order: createdOrder,
         errorCode: 'CHECKOUT_ERROR',
         errorSummary: error instanceof Error ? error.message : 'Unknown error'

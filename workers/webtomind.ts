@@ -833,7 +833,7 @@ const HTML_CONTENT_SECURITY_POLICY = [
   "base-uri 'self'",
   "object-src 'none'",
   "frame-ancestors 'none'",
-  "form-action 'self'",
+  "form-action 'self' https://zpayz.cn https://api.z-pay.cn",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.clarity.ms https://scripts.clarity.ms https://ep2.adtrafficquality.google https://static.cloudflareinsights.com https://vibeloft.ai https://analytics.ahrefs.com",
   "style-src 'self' 'unsafe-inline' https://accounts.google.com",
   "img-src 'self' data: blob: https:",
