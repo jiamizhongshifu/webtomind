@@ -66,6 +66,10 @@ API 钱包账本（`src/__tests__/api-marketplace-ledger-sql.test.ts`）会在�
 - 不包含托管站点的 SEO/增长运营脚本、第三方内容导入脚本，以及已下线的 NotebookLM 自动化；
 - 联系方式、统计 ID、Cloudflare 账号与资源 ID 已替换为占位符，部署前需要改成你自己的值。
 
+## 开发与发布仓库
+
+本仓库是主开发仓库，后续代码与 PR 在此维护。托管站点从本仓库的 `main` 经 CI 发布；密钥及未随开源版分发的生产内容独立管理。详见 [生产发布说明](docs/PRODUCTION_RELEASE.md)。
+
 ## 参与贡献
 
 欢迎提交 Issue 和 Pull Request，请先阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。安全问题请按 [SECURITY.md](./SECURITY.md) 私下报告，不要公开提交 Issue。

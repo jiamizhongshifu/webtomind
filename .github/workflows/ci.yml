@@ -83,3 +83,72 @@ jobs:
       - run: pnpm build:web:prod-parity
       - run: pnpm exec vitest run --maxWorkers=2 --reporter=dot
 
+  release:
+    needs: [check]
+    if: >
+      github.repository == 'jiamizhongshifu/webtomind' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event_name == 'push' && vars.WEBTOMIND_AUTO_DEPLOY == 'true'))
+    environment: production
+    runs-on: ubuntu-latest
+    # Release completes in ~3 min; 15 min bounds worst-case validate/smoke tails.
+    timeout-minutes: 15
+    env:
+      VITE_CREATE_WORKSPACE_FLAGS: create_shell_v2,image_studio_v2,moodboards_v1,pricing_workspace_v2,visual_search_v1,activation_journey_v1
+      CF_DEPLOY_CI_CHECK_SKIP: 1
+      WEBTOMIND_HOSTED_OVERLAY_CONFIG: ${{ secrets.WEBTOMIND_HOSTED_OVERLAY_CONFIG }}
+      CF_VALIDATE_MAX_ATTEMPTS: 4
+      CF_VALIDATE_RETRY_DELAY_MS: 20000
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      WEBTOMIND_RUNTIME_ENV_B64: ${{ secrets.WEBTOMIND_RUNTIME_ENV_B64 }}
+      WEBTOMIND_CLOUDFLARE_ACCOUNT_ID: ${{ secrets.WEBTOMIND_CLOUDFLARE_ACCOUNT_ID }}
+      WEBTOMIND_CLOUDFLARE_WORKERS_API_TOKEN: ${{ secrets.WEBTOMIND_CLOUDFLARE_WORKERS_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Verify the checked commit is still production main
+        run: |
+          git fetch --quiet origin main
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/check-cloudflare-deploy-source.mjs
+        env:
+          WEBTOMIND_HOSTED_OVERLAY_CONFIG: ''
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 8.15.0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/check-release-secrets.mjs
+
+      - name: Materialize production runtime environment
+        run: |
+          node --input-type=module <<'JS'
+          import { mkdirSync, writeFileSync } from 'node:fs';
+          import { homedir } from 'node:os';
+          import { parse } from 'dotenv';
+          const text = Buffer.from(process.env.WEBTOMIND_RUNTIME_ENV_B64, 'base64').toString('utf8');
+          for (const value of Object.values(parse(text))) {
+            if (value.length >= 8) console.log('::add-mask::' + value.replaceAll('%', '%25').replaceAll('\r', '%0D').replaceAll('\n', '%0A'));
+          }
+          mkdirSync(homedir() + '/.config/webtomind', { recursive: true });
+          writeFileSync(homedir() + '/.config/webtomind/runtime-production.env', text, { mode: 0o600 });
+          JS
+
+      - name: Prepare authenticated hosted assets and configuration
+        run: node scripts/prepare-hosted-overlay.mjs
+
+      - run: pnpm type-check:all
+      - run: pnpm check:api-marketplace-migrations
+      - run: pnpm cf:deploy:routes:raw
+      - run: pnpm cf:validate:prod:retry
+      - run: pnpm cf:smoke:release-integrity

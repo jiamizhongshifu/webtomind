@@ -54,6 +54,9 @@ const manifest = {
   entryAsset,
   contractAssets: artifactResult.contractAssets,
   assetSha256: {},
+  ...(process.env.WEBTOMIND_HOSTED_OVERLAY_CONFIG
+    ? { hostedOverlaySha256: JSON.parse(process.env.WEBTOMIND_HOSTED_OVERLAY_CONFIG).sha256 }
+    : {}),
   builtAt: new Date().toISOString()
 };
 
