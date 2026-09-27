@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -53,4 +53,14 @@ test('receipt cannot be reused for another overlay digest or commit', () => {
   assert.throws(() => verifyHostedOverlay(root, 'cd'.repeat(32)), /does not match/);
   execFileSync('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '--allow-empty', '-qm', 'next'], { cwd: root });
   assert.throws(() => verifyHostedOverlay(root, 'ab'.repeat(32)), /does not match/);
+});
+
+
+test('dangling symlinks are rejected before overlay writes', () => {
+  const root = repo();
+  symlinkSync(path.join(root, 'absent.txt'), path.join(root, 'public/link.txt'));
+  execFileSync('git', ['add', '.'], { cwd: root });
+  execFileSync('git', ['-c', 'user.name=Test', '-c', 'user.email=test@example.com', 'commit', '-qm', 'link'], { cwd: root });
+  const files = [{ ...fixture.files[0], path: 'public/link.txt', baseSha256: null }];
+  assert.throws(() => applyHostedOverlay(root, { files }, 'ab'.repeat(32)), /symlink/);
 });

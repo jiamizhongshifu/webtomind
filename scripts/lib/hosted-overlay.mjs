@@ -50,7 +50,11 @@ function targetPath(root, file) {
   const parts = file.split('/');
   for (let i = 1; i <= parts.length; i++) {
     const candidate = path.join(root, ...parts.slice(0, i));
-    if (existsSync(candidate) && lstatSync(candidate).isSymbolicLink()) throw new Error('Overlay path contains a symlink');
+    let stat;
+    try { stat = lstatSync(candidate); } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+    }
+    if (stat?.isSymbolicLink()) throw new Error('Overlay path contains a symlink');
   }
   return path.join(root, file);
 }
