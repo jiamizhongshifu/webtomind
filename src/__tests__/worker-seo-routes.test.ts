@@ -1836,3 +1836,19 @@ describe('Cloudflare Worker SEO route matching', () => {
     }
   });
 });
+
+describe('Cloudflare subscription cancellation routing', () => {
+  it.each(['GET', 'POST'])(
+    'routes %s cancellation requests to the authenticated billing handler',
+    async (method) => {
+      const response = await worker.fetch(
+        new Request('https://webtomind.com/api/membership/cancellation', { method }),
+        { CANONICAL_HOST: 'webtomind.com' } as never,
+        { waitUntil: () => undefined } as never
+      );
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'AUTH_REQUIRED' });
+      expect(response.headers.get('Cache-Control')).toBe('no-store');
+    }
+  );
+});

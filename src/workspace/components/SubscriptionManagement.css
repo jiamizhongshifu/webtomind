@@ -1,0 +1,63 @@
+.subscription-management {
+  margin: 1.5rem auto;
+  padding: 1.25rem;
+  width: 100%;
+  max-width: 64rem;
+  border: 1px solid var(--border-color, #64748b66);
+  border-radius: 1rem;
+  color: inherit;
+  text-align: left;
+}
+.subscription-management h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+.subscription-management h3 {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+}
+.subscription-management p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.subscription-management__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.subscription-management__row + .subscription-management__row {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #64748b44;
+}
+.subscription-management__row > div {
+  min-width: 0;
+}
+.subscription-management__row > button {
+  flex-shrink: 0;
+}
+@media (max-width: 640px) {
+  .subscription-management__row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+.subscription-cancellation-dialog {
+  grid-template-columns: minmax(0, 1fr);
+}
+.subscription-cancellation-dialog .ui-dialog__header > div {
+  min-width: 0;
+}
+.subscription-cancellation-dialog .ui-dialog__body {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 640px) {
+  .subscription-cancellation-dialog .ui-dialog__footer {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}

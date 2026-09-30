@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { SubscriptionManagement } from './SubscriptionManagement';
 import { useTranslation } from 'react-i18next';
 import { createLogger } from '@/utils/logger';
 import { ChevronLeft } from 'lucide-react';
@@ -69,6 +70,7 @@ type SettingsTranslate = (
 ) => string;
 
 interface SettingsUser {
+  id?: string;
   email?: string;
   user_metadata?: {
     full_name?: string;
@@ -434,6 +436,8 @@ const OverviewTab: React.FC<{
           {t('settings.overview.upgrade')}
         </Button>
       </div>
+
+      <SubscriptionManagement key={user?.id} />
 
       {/* Plans */}
       <section className="mt-8">

@@ -326,3 +326,48 @@ export async function createBillingPortalSession(
 
   return response.json();
 }
+
+export class SubscriptionCancellationError extends Error {
+  constructor(readonly code: string) {
+    super(code);
+  }
+}
+
+async function cancellationRequest<T>(body?: {
+  subscriptionId: string;
+  currentPeriodEnd: string;
+}): Promise<T> {
+  const token = await getAccessToken();
+  if (!token) throw new SubscriptionCancellationError('AUTH_REQUIRED');
+  const response = await fetch(`${API_BASE}/api/membership/cancellation`, {
+    method: body ? 'POST' : 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(body ? { 'Content-Type': 'application/json' } : {})
+    },
+    cache: 'no-store',
+    ...(body ? { body: JSON.stringify(body) } : {})
+  });
+  const result = await response.json();
+  if (!response.ok)
+    throw new SubscriptionCancellationError(
+      result.error || 'BILLING_UNAVAILABLE'
+    );
+  return result;
+}
+
+export function getCancellationSubscriptions() {
+  return cancellationRequest<{
+    subscriptions: import('../shared/subscription-cancellation').CancellationSubscription[];
+  }>();
+}
+
+export function cancelSubscriptionAtPeriodEnd(
+  subscriptionId: string,
+  currentPeriodEnd: string
+) {
+  return cancellationRequest<{
+    subscription: import('../shared/subscription-cancellation').CancellationSubscription;
+    syncPending: boolean;
+  }>({ subscriptionId, currentPeriodEnd });
+}

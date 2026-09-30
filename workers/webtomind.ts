@@ -88,6 +88,7 @@ import membershipGrantMonthlyHandler from '../api/membership/grant-monthly';
 import membershipOrderStatusHandler from '../api/membership/order-status';
 import membershipPlansHandler from '../api/membership/plans';
 import membershipPortalHandler from '../api/membership/portal';
+import membershipCancellationHandler from '../api/membership/cancellation';
 import membershipReferralHandler from '../api/membership/referral';
 import membershipSubscriptionHandler from '../api/membership/subscription';
 import membershipTasksHandler from '../api/membership/tasks';
@@ -1215,6 +1216,7 @@ const WORKER_API_ROUTES = new Map<
   ['/api/membership/order-status', membershipOrderStatusHandler],
   ['/api/membership/plans', membershipPlansHandler],
   ['/api/membership/portal', membershipPortalHandler],
+  ['/api/membership/cancellation', membershipCancellationHandler],
   ['/api/membership/referral', membershipReferralHandler],
   ['/api/membership/subscription', membershipSubscriptionHandler],
   ['/api/membership/tasks', membershipTasksHandler],

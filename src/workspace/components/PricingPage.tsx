@@ -23,6 +23,7 @@ import {
   Flame
 } from 'lucide-react';
 import { Logo } from './Logo';
+import { SubscriptionManagement } from './SubscriptionManagement';
 
 const log = createLogger('PricingPage');
 import { useAuth } from '@/web/contexts/AuthContext';
@@ -743,7 +744,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({
 }) => {
   const { t } = useTranslation('workspace');
   const { language, changeLanguage } = useLanguage();
-  const { getAccessToken, isAuthenticated } = useAuth();
+  const { getAccessToken, isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [pricingMode, setPricingMode] = useState<'payg' | 'monthly' | 'yearly'>(
@@ -1972,6 +1973,8 @@ export const PricingPage: React.FC<PricingPageProps> = ({
             </p>
           </div>
         </section>
+
+        {isAuthenticated && <SubscriptionManagement key={user?.id} />}
 
         <div className="pricing-cycle-toolbar">
           <PricingBillingSwitch
