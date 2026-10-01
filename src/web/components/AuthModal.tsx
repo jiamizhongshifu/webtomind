@@ -37,6 +37,7 @@ import {
   isLocalizedLoginRoute
 } from '@/shared/seo-route-paths';
 import '../styles/auth-modal.css';
+import { dismissGoogleLoginPromptForSession } from '../lib/google-login-prompt-session';
 
 type AuthMode = 'login' | 'register';
 
@@ -48,6 +49,8 @@ type AuthModalOptions = {
 };
 
 type AuthModalContextValue = {
+  isAuthModalOpen: boolean;
+  hasOpenedAuthModal: boolean;
   openAuthModal: (options?: AuthModalOptions) => void;
   closeAuthModal: () => void;
 };
@@ -165,6 +168,7 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [hasOpenedAuthModal, setHasOpenedAuthModal] = useState(false);
   const [modalKey, setModalKey] = useState(0);
   const [options, setOptions] = useState<AuthModalOptions>({
     source: 'login_modal'
@@ -175,6 +179,9 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const openAuthModal = useCallback((nextOptions: AuthModalOptions = {}) => {
+    // Explicit login takes priority for the rest of this tab's session.
+    dismissGoogleLoginPromptForSession();
+    setHasOpenedAuthModal(true);
     setOptions({
       redirectTo: nextOptions.redirectTo || null,
       source: nextOptions.source || 'login_modal',
@@ -190,8 +197,13 @@ export function AuthModalProvider({ children }: { children: React.ReactNode }) {
   }, [isAuthenticated, openAuthModal]);
 
   const value = useMemo(
-    () => ({ openAuthModal, closeAuthModal }),
-    [closeAuthModal, openAuthModal]
+    () => ({
+      openAuthModal,
+      closeAuthModal,
+      isAuthModalOpen: isOpen && !isAuthenticated,
+      hasOpenedAuthModal
+    }),
+    [closeAuthModal, openAuthModal, isOpen, isAuthenticated, hasOpenedAuthModal]
   );
 
   return (

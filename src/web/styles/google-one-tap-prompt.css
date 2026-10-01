@@ -2,9 +2,9 @@
  * Google quick-login card — bottom-left floating prompt.
  *
  * Skips the native Google One Tap (whose position Google controls) and shows
- * our own non-blocking card near the sidebar user/account area. It shares the
- * --z-product-auth layer with the AuthModal so both can appear at once; it
- * never covers the page with a scrim and is dismissible.
+ * our own non-blocking card near the sidebar user/account area. Explicit login
+ * suppresses this suggestion for the tab session. It never covers the page
+ * with a scrim and is dismissible.
  */
 
 .global-google-login-fallback {
@@ -12,8 +12,7 @@
   right: auto;
   bottom: 78px;
   left: 18px;
-  /* 与登录弹窗同一层级（--z-product-auth: 1300），但比弹窗蒙版高 1 层，
-     确保两者同时出现时卡片不被 scrim 盖住、仍然清晰可见。 */
+  /* 主登录弹窗打开时，快捷提示由共享登录状态关闭。 */
   z-index: calc(var(--z-product-auth, 1300) + 1);
   box-sizing: border-box;
   width: min(340px, calc(100vw - 36px));

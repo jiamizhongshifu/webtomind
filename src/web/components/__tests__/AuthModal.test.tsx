@@ -1,7 +1,13 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AuthModalProvider, AuthRouteModalLauncher } from '../AuthModal';
+import {
+  AuthModalProvider,
+  AuthRouteModalLauncher,
+  useAuthModal
+} from '../AuthModal';
+
+import { GoogleOneTapLoginPrompt } from '../GoogleOneTapLoginPrompt';
 
 const authState = vi.hoisted(() => ({
   isAuthenticated: false,
@@ -88,10 +94,29 @@ function PromptLibraryStub() {
   );
 }
 
-function renderAuthModalRoute(initialPath: string) {
+function LoginSuggestion() {
+  const { isAuthModalOpen, hasOpenedAuthModal } = useAuthModal();
+  const location = useLocation();
+  return (
+    <GoogleOneTapLoginPrompt
+      enabled={
+        !isAuthModalOpen &&
+        !hasOpenedAuthModal &&
+        !location.pathname.endsWith('/login')
+      }
+      redirectPath={location.pathname}
+      preferInlineCard
+      onFallbackLogin={authState.signInWithGoogle}
+      onCredentialLogin={authState.signInWithGoogle}
+    />
+  );
+}
+
+function renderAuthModalRoute(initialPath: string, withSuggestion = false) {
   return render(
     <MemoryRouter initialEntries={[initialPath]}>
       <AuthModalProvider>
+        {withSuggestion && <LoginSuggestion />}
         <Routes>
           <Route path="/login" element={<AuthRouteModalLauncher />} />
           <Route path="/zh-CN/login" element={<AuthRouteModalLauncher />} />
@@ -114,6 +139,40 @@ describe('AuthModal login routing', () => {
     authState.signInWithGoogle.mockResolvedValue({ error: null });
     authState.signInWithMicrosoft.mockResolvedValue({ error: null });
     sessionStorage.clear();
+  });
+
+  it('replaces the suggestion with exactly one modal and does not re-prompt on close or remount', async () => {
+    const view = renderAuthModalRoute('/zh-CN/prompts', true);
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.getByText('使用 Google 账号登录 WebToMind')).toBeVisible();
+    for (let i = 0; i < 3; i++) {
+      fireEvent.click(screen.getByRole('link', { name: '登录' }));
+      expect(screen.getAllByRole('dialog')).toHaveLength(1);
+      expect(
+        screen.queryByText('使用 Google 账号登录 WebToMind')
+      ).not.toBeInTheDocument();
+      expect(document.body.style.overflow).toBe('hidden');
+      fireEvent.click(screen.getByRole('button', { name: '关闭登录弹窗' }));
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+      expect(document.body.style.overflow).not.toBe('hidden');
+    }
+    view.unmount();
+    renderAuthModalRoute('/zh-CN/prompts', true);
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('link', { name: '登录' }));
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+  });
+
+  it('keeps direct login routes exclusive through their backdrop redirect', async () => {
+    renderAuthModalRoute('/login?redirect=/account', true);
+    expect(await screen.findByRole('dialog')).toBeInTheDocument();
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(
+      screen.queryByText('使用 Google 账号登录 WebToMind')
+    ).not.toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(document.body.style.overflow).not.toBe('hidden');
   });
 
   it('turns the login route into a modal over the public prompt library', async () => {
@@ -217,7 +276,9 @@ describe('AuthModal login routing', () => {
     authState.isAuthenticated = true;
     renderAuthModalRoute('/login');
 
-    expect(await screen.findByText('create discovery page')).toBeInTheDocument();
+    expect(
+      await screen.findByText('create discovery page')
+    ).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 });

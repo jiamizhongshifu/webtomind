@@ -44,7 +44,8 @@ import {
 } from './lib/seo-conversion-attribution';
 import {
   AuthModalProvider,
-  AuthRouteModalLauncher
+  AuthRouteModalLauncher,
+  useAuthModal
 } from './components/AuthModal';
 import { PROMPT_STYLE_GRID_ALL_PATHS } from '@/shared/prompt-style-grid-seo';
 import {
@@ -670,6 +671,7 @@ function useHasGlobalOneTapBlocker() {
 
 function GlobalGoogleOneTapGate() {
   const location = useLocation();
+  const { isAuthModalOpen, hasOpenedAuthModal } = useAuthModal();
   const {
     isAuthenticated,
     isLoading,
@@ -691,6 +693,8 @@ function GlobalGoogleOneTapGate() {
     !isLoginPage &&
     !isRechargePage &&
     !isDevHarnessPage &&
+    !isAuthModalOpen &&
+    !hasOpenedAuthModal &&
     !/\/tools\/(image-upscaler|image-editor)(?:\/|$)/.test(location.pathname) &&
     !hasBlockingOverlay &&
     !bypassAuthForE2E;

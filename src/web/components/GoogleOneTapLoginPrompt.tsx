@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { createLogger } from '@/utils/logger';
-import { useOverlayBehavior } from '../../shared/ui';
+import {
+  dismissGoogleLoginPromptForSession,
+  isGoogleLoginPromptDismissed
+} from '../lib/google-login-prompt-session';
 import { GoogleIcon } from './GoogleIcon';
 import '../styles/google-one-tap-prompt.css';
 
 const log = createLogger('GoogleOneTapLoginPrompt');
 
 const GOOGLE_IDENTITY_SCRIPT_SRC = 'https://accounts.google.com/gsi/client';
-const FALLBACK_DISMISSED_KEY = 'webtomind:google-login-fallback-dismissed';
 
 type CredentialResponse = {
   credential?: string;
@@ -133,49 +135,19 @@ export function GoogleOneTapLoginPrompt({
   const [fallbackSubmitting, setFallbackSubmitting] = useState(false);
   const [errorText, setErrorText] = useState('');
   const [isClosing, setIsClosing] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const dismissedRef = useRef(isGoogleLoginPromptDismissed());
   const closeTimerRef = useRef<number | null>(null);
   const titleId = useId();
   const subtitleId = useId();
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mql = window.matchMedia('(max-width: 640px)');
-    const syncMobile = () => setIsMobile(mql.matches);
-    syncMobile();
-    mql.addEventListener('change', syncMobile);
-    return () => mql.removeEventListener('change', syncMobile);
-  }, []);
-
-  // 响应式跟踪登录弹窗是否打开：关闭弹窗时 backdrop 从 DOM 移除会触发
-  // 重新渲染，确保移动端抑制逻辑不会停留在旧的快照上。
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const syncAuthModalOpen = () =>
-      setAuthModalOpen(
-        Boolean(document.querySelector('.auth-modal-backdrop'))
-      );
-    syncAuthModalOpen();
-    const observer = new MutationObserver(syncAuthModalOpen);
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    return () => observer.disconnect();
-  }, []);
-
   const showFallback = useCallback(() => {
-    if (sessionStorage.getItem(FALLBACK_DISMISSED_KEY) === '1') {
-      return;
-    }
+    if (dismissedRef.current || isGoogleLoginPromptDismissed()) return;
     setFallbackVisible(true);
   }, []);
 
   const dismissFallback = useCallback(() => {
-    sessionStorage.setItem(FALLBACK_DISMISSED_KEY, '1');
+    dismissedRef.current = true;
+    dismissGoogleLoginPromptForSession();
     setFallbackVisible(false);
     setErrorText('');
     window.google?.accounts?.id.cancel();
@@ -183,6 +155,8 @@ export function GoogleOneTapLoginPrompt({
 
   const requestClose = useCallback(() => {
     if (closeTimerRef.current !== null) return;
+    dismissedRef.current = true;
+    dismissGoogleLoginPromptForSession();
     setIsClosing(true);
     closeTimerRef.current = window.setTimeout(() => {
       closeTimerRef.current = null;
@@ -214,7 +188,7 @@ export function GoogleOneTapLoginPrompt({
   }, [onFallbackLogin, redirectPath]);
 
   useEffect(() => {
-    if (!enabled) {
+    if (!enabled || dismissedRef.current || isGoogleLoginPromptDismissed()) {
       setFallbackVisible(false);
       setErrorText('');
       window.google?.accounts?.id.cancel();
@@ -247,7 +221,12 @@ export function GoogleOneTapLoginPrompt({
       try {
         const [nonce, hashedNonce] = await generateNonce();
         await loadGoogleIdentityScript();
-        if (cancelled || !window.google?.accounts?.id) return;
+        if (
+          cancelled ||
+          isGoogleLoginPromptDismissed() ||
+          !window.google?.accounts?.id
+        )
+          return;
 
         window.google.accounts.id.initialize({
           client_id: clientId,
@@ -257,6 +236,12 @@ export function GoogleOneTapLoginPrompt({
           itp_support: true,
           use_fedcm_for_prompt: true,
           callback: (response) => {
+            if (
+              cancelled ||
+              dismissedRef.current ||
+              isGoogleLoginPromptDismissed()
+            )
+              return;
             if (!response.credential) {
               showFallback();
               return;
@@ -269,6 +254,12 @@ export function GoogleOneTapLoginPrompt({
             );
             void onCredentialLogin(response.credential, nonce).then(
               ({ error }) => {
+                if (
+                  cancelled ||
+                  dismissedRef.current ||
+                  isGoogleLoginPromptDismissed()
+                )
+                  return;
                 if (error) {
                   log.error('[GoogleOneTap] Credential login failed:', error);
                   setErrorText(error.message);
@@ -282,6 +273,12 @@ export function GoogleOneTapLoginPrompt({
         });
 
         window.google.accounts.id.prompt((notification) => {
+          if (
+            cancelled ||
+            dismissedRef.current ||
+            isGoogleLoginPromptDismissed()
+          )
+            return;
           if (
             notification.isNotDisplayed() ||
             notification.isSkippedMoment() ||
@@ -316,17 +313,17 @@ export function GoogleOneTapLoginPrompt({
     showFallback
   ]);
 
-  // 移动端登录弹窗是底部面板，若同时展示左下角卡片会互相遮挡；
-  // 桌面端两者层级相同，允许同时出现。
-  const promptVisible =
-    enabled &&
-    fallbackVisible &&
-    !(isMobile && authModalOpen);
+  const promptVisible = enabled && fallbackVisible;
 
-  const modalRef = useOverlayBehavior<HTMLDivElement>({
-    open: promptVisible,
-    onClose: requestClose
-  });
+  // This is a non-modal suggestion: do not trap focus or lock page scrolling.
+  useEffect(() => {
+    if (!promptVisible) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') requestClose();
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [promptVisible, requestClose]);
 
   if (!promptVisible) {
     return null;
@@ -357,7 +354,6 @@ export function GoogleOneTapLoginPrompt({
 
   return (
     <div
-      ref={modalRef}
       className={fallbackClassName}
       role="dialog"
       aria-labelledby={titleId}
