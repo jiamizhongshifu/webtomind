@@ -4,6 +4,7 @@ import type { ImageCreatorModelOption } from '@/web/data/image-creator-options';
 import { act, cleanup, fireEvent, render, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { useImageEditor } from '../useImageEditor';
+import { sanitizeImageGenerateInput } from '../../../../../api/image/generate/request';
 import { ImageEditorPanel } from '../ImageEditorPanel';
 
 const api = vi.hoisted(() => ({ enqueueVisualImageTask: vi.fn(), getVisualImageTaskStatus: vi.fn(), importGenerationAsReference: vi.fn(), loadVisualImageHistoryBlobUrl: vi.fn(), uploadImageReference: vi.fn() }));
@@ -65,4 +66,52 @@ it('counts guides for non-native selections and sketches, but not native GPT mas
   expect(result.current.generationReferenceImageCount).toBe(1);
   act(() => result.current.addStroke({ id:'stroke',color:'#00f',size:8,points:[{x:0.1,y:0.1},{x:0.2,y:0.2}] }));
   expect(result.current.generationReferenceImageCount).toBe(2);
+});
+
+it('sends expansion intent and the chosen ratio even with an empty optional description', async () => {
+  api.enqueueVisualImageTask.mockResolvedValue({ taskId: 'expand-audit' });
+  const { result } = renderHook(() => useImageEditor(models as ImageCreatorModelOption[], false));
+  await act(async () => { await result.current.importGenerationSource('source-generation', 'https://example.test/source.png'); });
+  act(() => { result.current.setActiveTool('crop'); result.current.setCropMode('expand'); result.current.setCropExpand({aspect:'2.35:1',prompt:''}); });
+  await act(async () => { await result.current.generate(); });
+  expect(api.enqueueVisualImageTask).toHaveBeenCalledWith(expect.objectContaining({
+    aspectRatio:'47:20', appOperation:'ai_edit', referenceImageIds:['ref-source'],
+    prompt:expect.stringContaining('保留原图主体')
+  }));
+  expect(api.enqueueVisualImageTask.mock.calls[0][0].prompt).toContain('不裁掉原图内容');
+  const sanitized = sanitizeImageGenerateInput(api.enqueueVisualImageTask.mock.calls[0][0]);
+  expect(sanitized.ok).toBe(true);
+  if (sanitized.ok) expect(sanitized.value.aspectRatio).toBe('47:20');
+});
+
+it('does not carry expansion intent into local crop or a different editing tool', async () => {
+  api.enqueueVisualImageTask.mockResolvedValue({ taskId: 'edit-audit' });
+  const { result } = renderHook(() => useImageEditor(models as ImageCreatorModelOption[], false));
+  await act(async () => { await result.current.importGenerationSource('source-generation', 'https://example.test/source.png'); });
+  act(() => { result.current.setActiveTool('crop'); result.current.setPrompt('修改颜色'); result.current.setCropExpand({aspect:'16:9',prompt:'增加树林'}); });
+  await act(async () => { await result.current.generate(); });
+  expect(api.enqueueVisualImageTask).not.toHaveBeenCalled();
+  act(() => { result.current.setCropMode('expand'); result.current.setActiveTool('region'); result.current.setPrompt('修改颜色'); });
+  await act(async () => { await result.current.generate(); });
+  expect(api.enqueueVisualImageTask).toHaveBeenCalledWith(expect.objectContaining({aspectRatio:'auto'}));
+  expect(api.enqueueVisualImageTask.mock.calls[0][0].prompt).not.toContain('增加树林');
+});
+
+it('does not reuse pending region masks or sketches when expanding', async () => {
+  api.enqueueVisualImageTask.mockResolvedValue({ taskId: 'expand-clean' });
+  const { result } = renderHook(() => useImageEditor(models as ImageCreatorModelOption[], false));
+  await act(async () => { await result.current.importGenerationSource('source-generation', 'https://example.test/source.png'); });
+  act(() => {
+    result.current.addRegion({ x:0.1,y:0.1,width:0.2,height:0.2,prompt:'remove the subject' });
+    result.current.addStroke({ id:'stroke',color:'#00f',size:8,points:[{x:0.1,y:0.1},{x:0.2,y:0.2}] });
+    result.current.setActiveTool('crop'); result.current.setCropMode('expand');
+    result.current.setCropExpand({aspect:'16:9',prompt:''});
+  });
+  await act(async () => { await result.current.generate(); });
+  const request = api.enqueueVisualImageTask.mock.calls[0][0];
+  expect(request.maskImageId).toBeUndefined();
+  expect(request.referenceImageIds).toEqual(['ref-source']);
+  expect(result.current.generationReferenceImageCount).toBe(1);
+  expect(imageInput.renderEditorImageInputs).not.toHaveBeenCalled();
+  expect(request.prompt).not.toContain('remove the subject');
 });

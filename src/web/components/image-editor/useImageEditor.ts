@@ -21,6 +21,7 @@ import {
   buildDrawInstructions,
   buildRegionInstructions,
   composeEditorInstruction,
+  getEditorExpansionAspect,
   DEFAULT_CAMERA_ANGLE,
   type CameraAngleState,
   type BrushStroke,
@@ -163,6 +164,7 @@ export function useImageEditor(
   const [brushSize, setBrushSize] = useState(8);
   const [brushColor, setBrushColor] = useState('#FF6B6B');
   const [drawPrompt, setDrawPrompt] = useState('');
+  const [cropMode, setCropMode] = useState<'crop' | 'expand'>('crop');
   const [cropExpand, setCropExpand] = useState<{
     aspect: string | null;
     prompt: string;
@@ -173,7 +175,9 @@ export function useImageEditor(
     progress: 0,
     label: ''
   });
-  const needsVisualGuide = Boolean(strokes.length || ((regions.length || autoMask.maskUrl) && !model.startsWith('gpt-image')));
+  const expanding = activeTool === 'crop' && cropMode === 'expand';
+  const localCrop = activeTool === 'crop' && cropMode === 'crop';
+  const needsVisualGuide = !expanding && Boolean(strokes.length || ((regions.length || autoMask.maskUrl) && !model.startsWith('gpt-image')));
   const [error, setError] = useState('');
   const [resultCount, setResultCount] = useState(0);
   const [history, setHistory] = useState<EditorSnapshot[]>([]);
@@ -182,7 +186,7 @@ export function useImageEditor(
   const historyIndexRef = useRef(-1);
   const pollTimerRef = useRef<number | null>(null);
   const generationRef = useRef<{ taskId: string } | null>(null);
-  // 画布扩展框的实际宽高比（画布组件写入，生成时读取，不触发渲染）
+  // Current source aspect ratio, written by the canvas after image load.
   const cropExtentRef = useRef<number | null>(null);
   const versionSwitchInFlightRef = useRef(false);
   const submissionRef = useRef(false);
@@ -328,6 +332,9 @@ export function useImageEditor(
   const setSourceAndPreview = useCallback(
     (next: EditorSource, keepReferences = false) => {
       setSource(next);
+      setActiveTool(null);
+      setCropMode('crop');
+      setCropExpand({ aspect: null, prompt: '' });
       const sourceVersion: EditorVersion = {
         id: 'source',
         label: next.label,
@@ -931,17 +938,18 @@ export function useImageEditor(
   };
 
   const generate = useCallback(async () => {
-    if (submissionRef.current || generationRef.current || isEditorBusy(generation.status)) return;
+    if (localCrop || submissionRef.current || generationRef.current || isEditorBusy(generation.status)) return;
     if (!source) { setError(copy.needSource); return; }
+    const expansionAspect = getEditorExpansionAspect(cropExpand.aspect, cropExtentRef.current);
     const instruction = composeEditorInstruction(
-      [prompt.trim(), buildAdjustmentInstruction(adjustments, isEnglish), buildCameraInstruction(camera, isEnglish),
-        strokes.length ? buildDrawInstructions(strokes, drawPrompt, isEnglish) : '',
-        cropExpand.prompt.trim() ? `${isEnglish ? 'Expand the canvas, preserve the source. Aspect ratio' : '扩展画布并保留原图，目标比例'}: ${cropExpand.aspect || cropExtentRef.current || 'auto'}. ${cropExpand.prompt.trim()}` : ''
+      [prompt.trim(), expanding ? '' : buildAdjustmentInstruction(adjustments, isEnglish), expanding ? '' : buildCameraInstruction(camera, isEnglish),
+        !expanding && strokes.length ? buildDrawInstructions(strokes, drawPrompt, isEnglish) : '',
+        expanding ? `${isEnglish ? 'Expand the canvas outward. Preserve the original subject and composition, and naturally extend the surrounding scene without cropping the source. Target aspect ratio' : '向外扩展画布，保留原图主体和构图，自然延展周围场景，不裁掉原图内容。目标比例'}: ${expansionAspect}. ${cropExpand.prompt.trim()}` : ''
       ].filter(Boolean).join('\n'),
-      buildRegionInstructions(regions, isEnglish), buildAnnotateInstructions(regions, isEnglish), 1 + extraReferences.length, isEnglish
+      expanding ? '' : buildRegionInstructions(regions, isEnglish), expanding ? '' : buildAnnotateInstructions(regions, isEnglish), 1 + extraReferences.length, isEnglish
     );
     if (!instruction) { setError(copy.needPrompt); return; }
-    if (autoMask.pending || autoMask.error) {
+    if (!expanding && (autoMask.pending || autoMask.error)) {
       setError(autoMask.pending ? (isEnglish ? 'Preparing selection…' : '选区仍在准备中，请稍候。') : autoMask.error || '');
       return;
     }
@@ -959,9 +967,9 @@ export function useImageEditor(
         setVersions((current) => current.map((item) => item.id === activeVersion?.id ? { ...item, referenceId: imported.id } : item));
       }
       const referenceIds = Array.from(new Set([primaryReferenceId, ...extraReferences.map((item) => item.referenceId)]));
-      let maskImageId = autoMask.maskImageId;
+      let maskImageId = expanding ? undefined : autoMask.maskImageId;
       let visualInstruction = '';
-      if (regions.length || strokes.length || autoMask.maskUrl) {
+      if (!expanding && (regions.length || strokes.length || autoMask.maskUrl)) {
         const needsGuide = needsVisualGuide;
         const maxReferences = availableModels.find((item) => item.value === model)?.maxReferenceImages;
         if (needsGuide && typeof maxReferences === 'number' && referenceIds.length >= maxReferences) {
@@ -979,7 +987,7 @@ export function useImageEditor(
       }
       const finalPrompt = [instruction, visualInstruction].filter(Boolean).join('\n');
       const queued = await enqueueVisualImageTask({
-        prompt: finalPrompt, model, aspectRatio: 'auto', imageSize: 'auto', quality: 'auto', outputFormat: 'png',
+        prompt: finalPrompt, model, aspectRatio: expanding ? expansionAspect : 'auto', imageSize: 'auto', quality: 'auto', outputFormat: 'png',
         assetIds: [], imageCount: 1, referenceImageIds: referenceIds, maskImageId,
         referenceMode: 'image_reference', editInstruction: finalPrompt, editMode: 'context_locked',
         appSlug: EDITOR_APP_SLUG, appOperation: 'ai_edit', sourceApp: EDITOR_APP_SLUG
@@ -993,7 +1001,7 @@ export function useImageEditor(
     } finally {
       submissionRef.current = false;
     }
-  }, [activeVersionId, adjustments, autoMask, availableModels, camera, copy.needPrompt, copy.needSource, copy.queued, copy.submitFailed, copy.submitting, cropExpand, currentOriginalBlob, drawPrompt, extraReferences, generation.status, isEnglish, model, needsVisualGuide, pollTask, prompt, regions, source, strokes, versions]);
+  }, [expanding, localCrop, activeVersionId, adjustments, autoMask, availableModels, camera, copy.needPrompt, copy.needSource, copy.queued, copy.submitFailed, copy.submitting, cropExpand, currentOriginalBlob, drawPrompt, extraReferences, generation.status, isEnglish, model, needsVisualGuide, pollTask, prompt, regions, source, strokes, versions]);
 
   const enhance = useCallback(async (target: ImageUpscaleTarget, useAi = true) => {
     if (submissionRef.current || generationRef.current || isEditorBusy(generation.status) || !source) return;
@@ -1266,6 +1274,8 @@ export function useImageEditor(
     setBrushColor,
     drawPrompt,
     setDrawPrompt,
+    cropMode,
+    setCropMode,
     cropExpand,
     setCropExpand,
     cropExtentRef,

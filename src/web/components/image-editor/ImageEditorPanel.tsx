@@ -128,6 +128,8 @@ interface ImageEditorPanelProps {
   activeTool: EditorToolId | null;
   onSelectTool: (toolId: EditorToolId | null) => void;
   onApplyOption: (toolId: EditorToolId, optionId: string) => void;
+  cropMode?: 'crop' | 'expand';
+  onCropModeChange?: (mode: 'crop' | 'expand') => void;
   cropAspect?: string | null;
   onCropAspectChange?: (aspect: string | null) => void;
   onCropReset?: () => void;
@@ -251,6 +253,8 @@ export function ImageEditorPanel({
   activeTool,
   onSelectTool,
   onApplyOption,
+  cropMode = 'crop',
+  onCropModeChange,
   cropAspect = null,
   onCropAspectChange,
   onCropReset,
@@ -321,7 +325,7 @@ export function ImageEditorPanel({
   };
 
   const handleGenerate = () => {
-    if (busy || modelsUnavailable || insufficientCredits) return;
+    if (busy || (activeTool === 'crop' && cropMode === 'crop') || modelsUnavailable || insufficientCredits) return;
     if (requiresLogin) {
       onRequireLogin();
       return;
@@ -496,7 +500,9 @@ export function ImageEditorPanel({
           </span>
         </div>
         </details>
-        <button
+        {activeTool === 'crop' && cropMode === 'crop' ? (
+          <p className="image-editor-tool-note">{isEnglish ? 'Adjust the frame, then Apply crop below the canvas. No credits required.' : '调整选框后，在画布下方点击「应用裁剪」，不消耗积分。'}</p>
+        ) : <button
           type="button"
           className="image-editor-panel-generate"
           onClick={handleGenerate}
@@ -516,13 +522,13 @@ export function ImageEditorPanel({
           ) : (
             <>
               <Sparkles aria-hidden="true" />
-              {copy.generate}
+              {activeTool === 'crop' && cropMode === 'expand' ? (isEnglish ? 'Generate expansion' : '生成扩图') : copy.generate}
               <em>
                 {copy.cost} {estimatedCost} {copy.credits}
               </em>
             </>
           )}
-        </button>
+        </button>}
         {error ? (
           <p className="image-editor-panel-error" role="alert">
             {error}
@@ -809,9 +815,18 @@ export function ImageEditorPanel({
                 ) : null}
                 {expanded && tool.id === 'crop' ? (
                   <div className="image-editor-crop-presets">
+                    <div className="image-editor-crop-preset-actions" role="group" aria-label={isEnglish ? 'Crop or expand' : '裁剪或扩图'}>
+                      {(['crop', 'expand'] as const).map((mode) => (
+                        <button type="button" key={mode} disabled={busy} aria-pressed={cropMode === mode}
+                          className={cropMode === mode ? 'is-selected' : undefined}
+                          onClick={() => onCropModeChange?.(mode)}>
+                          {mode === 'crop' ? (isEnglish ? 'Local crop · free' : '本地裁剪 · 免费') : (isEnglish ? 'AI Expand' : 'AI 扩图')}
+                        </button>
+                      ))}
+                    </div>
                     <div className="image-editor-crop-presets-head">
                       <span className="image-editor-crop-presets-label">
-                        {isEnglish ? 'Aspect ratio' : '裁剪比例'}
+                        {isEnglish ? 'Aspect ratio' : cropMode === 'expand' ? '扩图比例' : '裁剪比例'}
                       </span>
                       <button
                         type="button"
@@ -858,10 +873,10 @@ export function ImageEditorPanel({
                         }
                         onClick={() => onCropAspectChange?.(null)}
                       >
-                        {isEnglish ? 'Free' : '自由比例'}
+                        {cropMode === 'expand' ? (isEnglish ? 'Source ratio' : '原图比例') : (isEnglish ? 'Free' : '自由比例')}
                       </button>
                     </div>
-                    <textarea
+                    {cropMode === 'expand' ? <textarea
                       className="image-editor-crop-prompt"
                       value={cropPrompt}
                       placeholder={
@@ -877,7 +892,7 @@ export function ImageEditorPanel({
                       onChange={(event) =>
                         onCropPromptChange?.(event.target.value)
                       }
-                    />
+                    /> : null}
                   </div>
                 ) : null}
                 {expanded && tool.id === 'adjust' ? (
@@ -969,9 +984,9 @@ export function ImageEditorPanel({
                   tool.id === 'crop' &&
                   annotatedRegions.length === 0 ? (
                   <p className="image-editor-tool-tip">
-                    {isEnglish
-                      ? 'Pick a ratio (or Box & crop) and the canvas shows a crop frame — drag the handles to fine-tune, then Apply crop.'
-                      : '选择比例（或「框选裁剪」）后画布会自动展示裁剪框，拖动手柄微调后点击「应用裁剪」。'}
+                    {cropMode === 'expand'
+                      ? (isEnglish ? 'Choose a ratio, then Generate expansion above. AI extends the scene around the original subject; credits apply.' : '选择比例后，点击上方「生成扩图」。AI 将保留原图主体并延展周围场景，按提示消耗积分。')
+                      : (isEnglish ? 'Drag the frame or handles, then Apply crop. Local cropping is free.' : '拖动选框或手柄，点击「应用裁剪」。本地裁剪不消耗积分。')}
                   </p>
                 ) : null}
               </li>

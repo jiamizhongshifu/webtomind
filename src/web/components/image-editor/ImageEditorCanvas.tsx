@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { LoaderCircle, MousePointer2, Scan, Trash2, Wand2 } from 'lucide-react';
+import { Hand, LoaderCircle, Minus, MousePointer2, Plus, Scan, Trash2, Wand2 } from 'lucide-react';
 import type {
   BrushPoint,
   BrushStroke,
@@ -25,6 +25,7 @@ interface ImageEditorCanvasProps {
   brushSize: number;
   brushColor: string;
   activeTool: EditorToolId | null;
+  cropMode?: 'crop' | 'expand';
   cropAspect?: string | null;
   cropResetSignal?: number;
   adjustmentFilter?: string;
@@ -64,9 +65,15 @@ function parseAspect(aspect: string | null): number | null {
   return height > 0 ? width / height : null;
 }
 
-// 裁剪/扩展框允许超出图片边界（上限 45%），实际边界按画布可用空间动态计算
-const CROP_EXTEND_DEFAULT = 0.3;
-const CROP_EXTEND_MAX = 0.45;
+// Cropping is local and must stay within the source pixels.
+const cropExtend = 0;
+
+export function expansionFrame(aspect: string | null, imageAspect: number): DraftRect {
+  const target = (parseAspect(aspect) || imageAspect) / imageAspect;
+  const width = Math.max(1, target) * 1.2;
+  const height = Math.max(1, 1 / target) * 1.2;
+  return { x: (1 - width) / 2, y: (1 - height) / 2, width, height };
+}
 
 function clampCropRect(
   rect: DraftRect,
@@ -84,7 +91,7 @@ function clampCropRect(
   };
 }
 
-function fitCropToAspect(
+export function fitCropToAspect(
   rect: DraftRect,
   aspect: string | null,
   imageAspect: number,
@@ -92,96 +99,58 @@ function fitCropToAspect(
 ): DraftRect {
   const ratio = parseAspect(aspect);
   if (!ratio || !imageAspect || imageAspect <= 0) return rect;
-  // 目标画幅以原图为中心：保持原图完整，按比例向更宽/更高方向扩展
   const target = ratio / imageAspect;
-  let width = Math.max(1, target);
-  let height = Math.max(1, 1 / target);
-  const maxSpan = 1 + 2 * extend;
-  if (width > maxSpan || height > maxSpan) {
-    const scale = maxSpan / Math.max(width, height);
-    width *= scale;
-    height *= scale;
-  }
-  return clampCropRect(
-    {
-      x: 0.5 - width / 2,
-      y: 0.5 - height / 2,
-      width,
-      height
-    },
-    extend
-  );
+  let width = rect.width;
+  let height = rect.height;
+  if (width / height > target) width = height * target;
+  else height = width / target;
+  return clampCropRect({
+    x: rect.x + (rect.width - width) / 2,
+    y: rect.y + (rect.height - height) / 2,
+    width, height
+  }, extend);
 }
 
-function resizeCropRect(
+export function resizeCropRect(
   rect: DraftRect,
   handle: string,
   point: { x: number; y: number },
   aspect: string | null,
-  imageAspect: number,
-  extend: number
+  imageAspect: number
 ): DraftRect {
   const ratio = parseAspect(aspect);
   const target = ratio && imageAspect > 0 ? ratio / imageAspect : null;
-  const cornerHandles: Record<string, { fx: number; fy: number }> = {
-    nw: { fx: rect.x + rect.width, fy: rect.y + rect.height },
-    ne: { fx: rect.x, fy: rect.y + rect.height },
-    sw: { fx: rect.x + rect.width, fy: rect.y },
-    se: { fx: rect.x, fy: rect.y }
-  };
-  if (cornerHandles[handle]) {
-    const fixed = cornerHandles[handle];
-    let width = Math.abs(point.x - fixed.fx);
-    let height = Math.abs(point.y - fixed.fy);
+  const west = handle.includes('w');
+  const north = handle.includes('n');
+  const anchorX = west ? rect.x + rect.width : rect.x;
+  const anchorY = north ? rect.y + rect.height : rect.y;
+  const maxWidth = west ? anchorX : 1 - anchorX;
+  const maxHeight = north ? anchorY : 1 - anchorY;
+  let width = Math.min(maxWidth, Math.max(0.01, west ? anchorX - point.x : point.x - anchorX));
+  let height = Math.min(maxHeight, Math.max(0.01, north ? anchorY - point.y : point.y - anchorY));
+  if (handle.length === 2) {
     if (target) {
-      if (width / height > target) width = height * target;
-      else height = width / target;
+      width = Math.min(width, height * target);
+      height = width / target;
     }
-    const x = handle.includes('w') ? fixed.fx - width : fixed.fx;
-    const y = handle.includes('n') ? fixed.fy - height : fixed.fy;
-    return clampCropRect({ x, y, width, height }, extend);
+    return { x: west ? anchorX - width : anchorX, y: north ? anchorY - height : anchorY, width, height };
   }
   if (handle === 'w' || handle === 'e') {
-    const next = { ...rect };
-    if (handle === 'w') {
-      const right = rect.x + rect.width;
-      next.x = Math.min(point.x, right);
-      next.width = Math.abs(point.x - right);
-    } else {
-      next.width = Math.max(0.01, point.x - rect.x);
-    }
+    const centerY = rect.y + rect.height / 2;
+    height = rect.height;
     if (target) {
-      const height = next.width / target;
-      if (next.y + height <= 1) {
-        next.height = height;
-      } else {
-        next.height = 1 - next.y;
-        next.width = next.height * target;
-      }
+      width = Math.min(width, 2 * Math.min(centerY, 1 - centerY) * target);
+      height = width / target;
     }
-    return clampCropRect(next, extend);
+    return { x: west ? anchorX - width : anchorX, y: centerY - height / 2, width, height };
   }
-  if (handle === 'n' || handle === 's') {
-    const next = { ...rect };
-    if (handle === 'n') {
-      const bottom = rect.y + rect.height;
-      next.y = Math.min(point.y, bottom);
-      next.height = Math.abs(point.y - bottom);
-    } else {
-      next.height = Math.max(0.01, point.y - rect.y);
-    }
-    if (target) {
-      const width = next.height * target;
-      if (next.x + width <= 1) {
-        next.width = width;
-      } else {
-        next.width = 1 - next.x;
-        next.height = next.width / target;
-      }
-    }
-    return clampCropRect(next, extend);
+  const centerX = rect.x + rect.width / 2;
+  width = rect.width;
+  if (target) {
+    height = Math.min(height, 2 * Math.min(centerX, 1 - centerX) / target);
+    width = height * target;
   }
-  return rect;
+  return { x: centerX - width / 2, y: north ? anchorY - height : anchorY, width, height };
 }
 
 function hitCropHandle(
@@ -207,7 +176,7 @@ function hitCropHandle(
   const hit = handles.find(
     ([, hx, hy]) =>
       Math.hypot(clientX - hx, clientY - hy) <=
-      Math.max(14, Math.min(w, h) * 0.16)
+      14
   );
   return hit ? hit[0] : null;
 }
@@ -229,6 +198,7 @@ export function ImageEditorCanvas({
   brushSize,
   brushColor,
   activeTool,
+  cropMode = 'crop',
   cropAspect = null,
   cropResetSignal = 0,
   adjustmentFilter = '',
@@ -241,11 +211,21 @@ export function ImageEditorCanvas({
   onApplyCrop
 }: ImageEditorCanvasProps) {
   const imageRef = useRef<HTMLImageElement | null>(null);
-  const canvasRef = useRef<HTMLDivElement | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const pointerOriginRef = useRef<{ x: number; y: number } | null>(null);
-  // 裁剪/扩展可用边界：按画布四周实际空间动态计算，保证扩展区可交互
-  const [cropExtend, setCropExtend] = useState(CROP_EXTEND_DEFAULT);
+  const [panMode, setPanMode] = useState(false);
+  const [spaceHeld, setSpaceHeld] = useState(false);
+  const [naturalSize, setNaturalSize] = useState({ width: 1, height: 1 });
+  const [stageSize, setStageSize] = useState({ width: 1, height: 1 });
+  const expanding = activeTool === 'crop' && cropMode === 'expand';
+  const frame = expanding ? expansionFrame(cropAspect, naturalSize.width / naturalSize.height) : null;
+  const fit = Math.min(
+    Math.max(1, stageSize.width - 40) / (naturalSize.width * (frame?.width || 1)),
+    Math.max(1, stageSize.height - 40) / (naturalSize.height * (frame?.height || 1))
+  );
+  const imageWidth = naturalSize.width * fit;
+  const imageHeight = naturalSize.height * fit;
+  const canPan = panMode || spaceHeld || activeTool === null || expanding;
   // 浏览模式下的图片缩放/平移（无编辑工具激活时）
   const [view, setView] = useState({ scale: 1, x: 0, y: 0 });
   const panRef = useRef<{
@@ -272,39 +252,35 @@ export function ImageEditorCanvas({
     return bounds && bounds.height > 0 ? bounds.width / bounds.height : 1;
   }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- 动态边界只在画布尺寸变化时重算
   useEffect(() => {
-    const update = () => {
-      const canvas = canvasRef.current;
-      const image = imageRef.current;
-      if (!canvas || !image) return;
-      const canvasBox = canvas.getBoundingClientRect();
-      const imageBox = image.getBoundingClientRect();
-      if (imageBox.height <= 0) return;
-      // 扩展边界按上下可用空间计算（图片通常占满宽度，左右扩展依靠生成指令）
-      const topSpace = (imageBox.top - canvasBox.top) / imageBox.height;
-      const bottomSpace = (canvasBox.bottom - imageBox.bottom) / imageBox.height;
-      const next = Math.max(
-        0.1,
-        Math.min(CROP_EXTEND_MAX, topSpace, bottomSpace)
-      );
-      setCropExtend((current) =>
-        Math.abs(current - next) > 0.004 ? next : current
-      );
-    };
+    const stage = stageRef.current;
+    if (!stage) return;
+    const update = () => setStageSize({ width: stage.clientWidth, height: stage.clientHeight });
     update();
     const observer = new ResizeObserver(update);
-    if (canvasRef.current) observer.observe(canvasRef.current);
-    if (imageRef.current) observer.observe(imageRef.current);
-    window.addEventListener('resize', update);
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      if (event.code !== 'Space' || (event.target as HTMLElement).closest('input, textarea, button, select, [contenteditable="true"]')) return;
+      event.preventDefault();
+      setSpaceHeld(true);
+    };
+    const up = () => setSpaceHeld(false);
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    window.addEventListener('blur', up);
     return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', update);
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', up);
     };
   }, []);
 
   const drawingEnabled =
-    activeTool === 'region' || activeTool === 'annotate' || activeTool === 'crop' || activeTool === 'draw';
+    activeTool === 'region' || activeTool === 'annotate' || (activeTool === 'crop' && !expanding) || activeTool === 'draw';
 
   useEffect(() => {
     if (!drawingEnabled) {
@@ -318,61 +294,34 @@ export function ImageEditorCanvas({
     setImageFailed(false);
     setCropRect(null);
     setCropDrag(null);
+    setView({ scale: 1, x: 0, y: 0 });
+    panRef.current = null;
   }, [imageUrl]);
 
-  // 进入任意编辑工具时复位图片缩放/平移，保证工具坐标一致
+  // A tool/mode change ends the previous gesture before accepting another.
   useEffect(() => {
-    if (activeTool !== null) {
-      setView({ scale: 1, x: 0, y: 0 });
-      panRef.current = null;
-    }
-  }, [activeTool]);
-
-  useEffect(() => {
-    setCropRect((current) =>
-      current
-        ? fitCropToAspect(current, cropAspect, getImageAspect(), cropExtend)
-        : current
-    );
-  }, [cropAspect, cropExtend, getImageAspect]);
-
-  // 激活裁剪工具或选择比例后，自动在画布上展示默认裁剪框，
-  // 用户无需再手动划出选框，可直接拖拽手柄微调。
-  useEffect(() => {
-    if (
-      activeTool === 'crop' &&
-      !cropRect &&
-      !draft &&
-      !cropDrag &&
-      !busy
-    ) {
-      setCropRect(
-        fitCropToAspect(
-          { x: 0.1, y: 0.1, width: 0.8, height: 0.8 },
-          cropAspect,
-          getImageAspect(),
-          cropExtend
-        )
-      );
-    }
-  }, [activeTool, busy, cropAspect, cropDrag, cropRect, cropExtend, draft, getImageAspect]);
-
-  useEffect(() => {
-    setCropRect(null);
+    setPanMode(false);
+    setView({ scale: 1, x: 0, y: 0 });
+    panRef.current = null;
+    pointerOriginRef.current = null;
+    brushPathRef.current = [];
+    setPreviewStroke(null);
+    setDraft(null);
     setCropDrag(null);
-  }, [cropResetSignal]);
+  }, [activeTool, cropMode]);
 
-  // 同步实际扩展框宽高比给生成指令（ref，不触发渲染）
   useEffect(() => {
-    if (cropRect) {
-      const imageAspect = getImageAspect();
-      const actual =
-        imageAspect > 0 ? (cropRect.width / cropRect.height) * imageAspect : null;
-      if (cropExtentRef) cropExtentRef.current = actual;
-    }
-  }, [cropRect, cropExtentRef, getImageAspect]);
+    setCropDrag(null);
+    setCropRect(activeTool === 'crop' && !expanding
+      ? fitCropToAspect({ x: 0.05, y: 0.05, width: 0.9, height: 0.9 }, cropAspect, naturalSize.width / naturalSize.height, 0)
+      : null);
+  }, [activeTool, expanding, cropAspect, cropResetSignal, naturalSize]);
 
-  // 裁剪/扩展拖拽需要允许指针坐标超出图片边界（负值/大于 1）
+  useEffect(() => {
+    if (cropExtentRef) cropExtentRef.current = naturalSize.width / naturalSize.height;
+  }, [naturalSize, cropExtentRef]);
+
+  // Read raw coordinates; crop geometry constrains them to the image bounds.
   const toNormalizedRaw = useCallback(
     (event: PointerEvent | React.PointerEvent) => {
       const image = imageRef.current;
@@ -428,9 +377,9 @@ export function ImageEditorCanvas({
   );
 
   const handlePointerDown = useCallback(
-    (event: React.PointerEvent<HTMLImageElement>) => {
-      if (busy) return;
-      if (!drawingEnabled) {
+    (event: React.PointerEvent<HTMLDivElement>) => {
+      if (busy || (event.target as HTMLElement).closest('button')) return;
+      if (canPan || event.button === 1) {
         // 浏览模式：拖拽平移图片（蒙版区域内自由移动）
         event.preventDefault();
         (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
@@ -442,8 +391,10 @@ export function ImageEditorCanvas({
         };
         return;
       }
+      if (activeTool === 'crop' || !drawingEnabled) return;
+      if (!(event.target as HTMLElement).closest('.image-editor-source-image')) return;
       event.preventDefault();
-      (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+      event.currentTarget.setPointerCapture(event.pointerId);
       const point = toNormalized(event);
       pointerOriginRef.current = point;
       if (activeTool === 'region' && regionMode === 'select') {
@@ -463,10 +414,6 @@ export function ImageEditorCanvas({
       }
       if (activeTool === 'region' && regionMode === 'auto') {
         onAutoMaskPoint?.(point);
-        return;
-      }
-      if (activeTool === 'crop') {
-        // 裁剪/扩展拖拽由容器级 handleCropPointerDown 统一处理（含扩展区）
         return;
       }
       if (activeTool === 'draw' || (activeTool === 'region' && regionMode === 'draw')) {
@@ -490,6 +437,7 @@ export function ImageEditorCanvas({
       brushSize,
       busy,
       drawingEnabled,
+      canPan,
       onAutoMaskPoint,
       onSelectRegion,
       regionMode,
@@ -499,35 +447,36 @@ export function ImageEditorCanvas({
     ]
   );
 
-  // 浏览模式：滚轮以鼠标为中心缩放图片
-  const handleWheel = useCallback(
-    (event: React.WheelEvent<HTMLDivElement>) => {
-      if (activeTool !== null || busy) return;
-      event.preventDefault();
-      const rect = event.currentTarget.getBoundingClientRect();
-      const mx = event.clientX - rect.left;
-      const my = event.clientY - rect.top;
-      setView((current) => {
-        const nextScale = Math.min(
-          3,
-          Math.max(0.5, current.scale * (event.deltaY < 0 ? 1.12 : 0.89))
-        );
-        const ratio = nextScale / current.scale;
-        return clampViewToStage(current, {
-          scale: nextScale,
-          x: mx - (mx - current.x) * ratio,
-          y: my - (my - current.y) * ratio
-        });
+  const zoom = useCallback((factor: number) => {
+    setView((current) => {
+      const nextScale = Math.max(0.5, Math.min(4, current.scale * factor));
+      const ratio = nextScale / current.scale;
+      return clampViewToStage(current, {
+        scale: nextScale,
+        x: imageWidth / 2 - (imageWidth / 2 - current.x) * ratio,
+        y: imageHeight / 2 - (imageHeight / 2 - current.y) * ratio
       });
-    },
-    [activeTool, busy, clampViewToStage]
-  );
+    });
+  }, [clampViewToStage, imageWidth, imageHeight]);
 
-  // 容器级裁剪/扩展事件：允许点击超出图片的扩展区域拖动手柄/移动框
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const wheel = (event: WheelEvent) => {
+      if (busy || (!canPan && !event.ctrlKey && !event.metaKey)) return;
+      event.preventDefault();
+      if (event.ctrlKey || event.metaKey || event.deltaX === 0) zoom(event.deltaY < 0 ? 1.12 : 1 / 1.12);
+      else setView((current) => clampViewToStage(current, { ...current, x: current.x - event.deltaX, y: current.y - event.deltaY }));
+    };
+    stage.addEventListener('wheel', wheel, { passive: false });
+    return () => stage.removeEventListener('wheel', wheel);
+  }, [busy, canPan, clampViewToStage, zoom]);
+
+  // Capture crop gestures on the stage, including handles just outside the image.
   const handleCropPointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      if (activeTool !== 'crop' || !cropRect || busy) return;
-      // 只在图片及四周扩展画布区域内响应，避免拦截版本条/面板等
+      if (activeTool !== 'crop' || expanding || canPan || event.button === 1 || !cropRect || busy) return;
+      // Ignore controls; crop gestures never escape the stage.
       const target = event.target as HTMLElement;
       if (
         target.closest(
@@ -557,7 +506,7 @@ export function ImageEditorCanvas({
       );
       if (handle) {
         event.preventDefault();
-        image.setPointerCapture(event.pointerId);
+        event.currentTarget.setPointerCapture(event.pointerId);
         const handlePoint = toNormalizedRaw(event);
         pointerOriginRef.current = handlePoint;
         setCropDrag({ handle });
@@ -565,7 +514,7 @@ export function ImageEditorCanvas({
       }
       if (!inExtendCanvas) return;
       event.preventDefault();
-      image.setPointerCapture(event.pointerId);
+      event.currentTarget.setPointerCapture(event.pointerId);
       const point = toNormalizedRaw(event);
       pointerOriginRef.current = point;
       const inside =
@@ -585,11 +534,11 @@ export function ImageEditorCanvas({
       }
       setDraft({ x: point.x, y: point.y, width: 0, height: 0 });
     },
-    [activeTool, busy, cropExtend, cropRect, toNormalizedRaw]
+    [activeTool, busy, expanding, canPan, cropRect, toNormalizedRaw]
   );
 
   const handlePointerMove = useCallback(
-    (event: React.PointerEvent<HTMLImageElement>) => {
+    (event: React.PointerEvent<HTMLDivElement>) => {
       if (panRef.current) {
         const pan = panRef.current;
         setView((current) =>
@@ -630,8 +579,8 @@ export function ImageEditorCanvas({
       }
       if (activeTool === 'crop' && cropRect && cropDrag) {
         if (cropDrag.handle === 'move' && cropDrag.origin) {
-          const nextX = clamp01(point.x - cropDrag.origin.x);
-          const nextY = clamp01(point.y - cropDrag.origin.y);
+          const nextX = Math.max(0, Math.min(1 - cropRect.width, point.x - cropDrag.origin.x));
+          const nextY = Math.max(0, Math.min(1 - cropRect.height, point.y - cropDrag.origin.y));
           setCropRect(
             clampCropRect(
               {
@@ -651,8 +600,7 @@ export function ImageEditorCanvas({
                   cropDrag.handle,
                   point,
                   cropAspect,
-                  getImageAspect(),
-                  cropExtend
+                  getImageAspect()
                 )
               : current
           );
@@ -680,7 +628,6 @@ export function ImageEditorCanvas({
       clampViewToStage,
       cropAspect,
       cropDrag,
-      cropExtend,
       cropRect,
       getImageAspect,
       regionMode,
@@ -744,7 +691,6 @@ export function ImageEditorCanvas({
     brushColor,
     brushSize,
     cropAspect,
-    cropExtend,
     draft,
     getImageAspect,
     onAddRegion,
@@ -764,8 +710,10 @@ export function ImageEditorCanvas({
   }, [cropDrag]);
 
   const toolCaption = (() => {
-    if (!activeTool || !drawingEnabled) return null;
+    if (!activeTool || (!drawingEnabled && !expanding)) return null;
+    if (panMode || spaceHeld) return isEnglish ? 'Drag to pan; turn off Pan to continue editing' : '拖动平移画布；关闭「平移」后继续编辑';
     if (activeTool === 'crop') {
+      if (expanding) return isEnglish ? 'Choose a ratio, then Generate expansion in the tools panel' : '选择比例后，在工具面板点击「生成扩图」';
       return cropRect
         ? isEnglish
           ? 'Drag the border or handles to adjust, then Apply crop'
@@ -814,10 +762,8 @@ export function ImageEditorCanvas({
 
   return (
     <div
-      ref={canvasRef}
       className="image-editor-canvas"
       aria-label="图片编辑画布"
-      onPointerDown={handleCropPointerDown}
     >
       {versions.length > 1 ? (
         <div className="image-editor-versions" aria-label={isEnglish ? 'Edit versions' : '编辑版本'}>
@@ -869,28 +815,31 @@ export function ImageEditorCanvas({
           </div>
         </div>
       ) : null}
-      <div ref={stageRef} className="image-editor-canvas-stage">
+      <div className="image-editor-view-controls" role="group" aria-label={isEnglish ? 'Canvas navigation' : '画布导航'}>
+        <button type="button" aria-pressed={canPan} disabled={busy} onClick={() => setPanMode((value) => !value)}><Hand aria-hidden="true" />{isEnglish ? 'Pan' : '平移'}</button>
+        <button type="button" disabled={busy} aria-label={isEnglish ? 'Zoom out' : '缩小画布'} onClick={() => zoom(1 / 1.2)}><Minus /></button>
+        <span>{Math.round(view.scale * 100)}%</span>
+        <button type="button" disabled={busy} aria-label={isEnglish ? 'Zoom in' : '放大画布'} onClick={() => zoom(1.2)}><Plus /></button>
+        <button type="button" disabled={busy} onClick={() => setView({ scale: 1, x: 0, y: 0 })}>{isEnglish ? 'Fit' : '适应画布'}</button>
+      </div>
+      <div ref={stageRef} className={`image-editor-canvas-stage${canPan ? ' is-panning' : ''}`}
+        onPointerDown={(event) => { handlePointerDown(event); handleCropPointerDown(event); }}
+        onPointerMove={handlePointerMove} onPointerUp={commitPointer}
+        onPointerCancel={() => { pointerOriginRef.current = null; panRef.current = null; brushPathRef.current = []; setPreviewStroke(null); setCropDrag(null); setDraft(null); }}
+      >
         <div
           className={`image-editor-canvas-image${
-            activeTool === null ? ' is-browsing' : ''
+            canPan ? ' is-browsing' : ''
           }`}
-          onWheel={handleWheel}
+          style={{ width: imageWidth, height: imageHeight }}
         >
-          {activeTool === 'crop' ? (
-            <div
-              className="image-editor-crop-extend-bg"
-              aria-hidden="true"
-              style={
-                { '--crop-extend': `${cropExtend * 100}%` } as React.CSSProperties
-              }
-            />
-          ) : null}
           <div
             className="image-editor-canvas-zoom"
             style={{
               transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`
             }}
           >
+          {frame ? <div className="image-editor-crop-extend-bg" style={{ left: `${frame.x * 100}%`, top: `${frame.y * 100}%`, width: `${frame.width * 100}%`, height: `${frame.height * 100}%` }} /> : null}
           <img
             ref={imageRef}
             src={imageUrl}
@@ -900,15 +849,8 @@ export function ImageEditorCanvas({
             style={adjustmentFilter ? { filter: adjustmentFilter } : undefined}
             className={`image-editor-source-image${drawingEnabled && !busy ? ' is-drawing' : ''}`}
             onError={() => setImageFailed(true)}
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={commitPointer}
-            onPointerCancel={() => {
-              pointerOriginRef.current = null;
-              panRef.current = null;
-              brushPathRef.current = [];
-              setDraft(null);
-            }}
+            onLoad={(event) => setNaturalSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
+
           />
           {autoMaskUrl ? (
             <img
@@ -919,7 +861,7 @@ export function ImageEditorCanvas({
               decoding="async"
             />
           ) : null}
-          {regions.map((region, index) => (
+          {(activeTool === 'crop' ? [] : regions).map((region, index) => (
             <div
               key={region.id}
               className={`image-editor-region is-${region.kind}${
@@ -993,16 +935,17 @@ export function ImageEditorCanvas({
               />
             </div>
           ) : null}
-          {activeTool === 'crop' && cropRect ? (
+          {activeTool === 'crop' && (frame || cropRect) ? (
             <div
               className="image-editor-crop-box"
               style={{
-                left: `${cropRect.x * 100}%`,
-                top: `${cropRect.y * 100}%`,
-                width: `${cropRect.width * 100}%`,
-                height: `${cropRect.height * 100}%`
+                left: `${(frame || cropRect)!.x * 100}%`,
+                top: `${(frame || cropRect)!.y * 100}%`,
+                width: `${(frame || cropRect)!.width * 100}%`,
+                height: `${(frame || cropRect)!.height * 100}%`
               }}
             >
+              {!expanding ? <>
               <i className="is-nw" />
               <i className="is-n" />
               <i className="is-ne" />
@@ -1011,9 +954,10 @@ export function ImageEditorCanvas({
               <i className="is-s" />
               <i className="is-sw" />
               <i className="is-w" />
+              </> : null}
             </div>
           ) : null}
-          {(activeTool === 'draw' ||
+          {activeTool !== 'crop' && (activeTool === 'draw' ||
             activeTool === 'region' ||
             regions.some((region) => region.kind === 'brush')) &&
           (strokes.length > 0 ||
@@ -1083,7 +1027,7 @@ export function ImageEditorCanvas({
       </div>
       <div className="image-editor-canvas-footer">
         <span>
-          {drawingEnabled ? (
+          {drawingEnabled || expanding ? (
             <>
               {activeTool === 'draw' ? <Wand2 aria-hidden="true" /> : activeTool === 'crop' ? <Scan aria-hidden="true" /> : <MousePointer2 aria-hidden="true" />}
               {toolCaption}

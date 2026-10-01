@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Redo2, Undo2, Upload } from 'lucide-react';
+import { Download, Redo2, Undo2, Upload } from 'lucide-react';
 import { CreateWorkspaceFrame } from '@/web/components/image-create/CreateWorkspaceFrame';
 import { ImageEditorAssetPicker } from '@/web/components/image-editor/ImageEditorAssetPicker';
 import { ImageEditorCanvas } from '@/web/components/image-editor/ImageEditorCanvas';
@@ -62,7 +62,7 @@ export function ImageEditorPage() {
   const [assetPickerMode, setAssetPickerMode] = useState<
     'single' | 'multi'
   >('single');
-  const [cropAspect, setCropAspect] = useState<string | null>(null);
+  const cropAspect = editor.cropExpand.aspect;
   const [cropResetSignal, setCropResetSignal] = useState(0);
   const localePrefix = locale === 'en-US' ? '/en-US' : '/zh-CN';
   const [creditsBalance, setCreditsBalance] = useState<number | null>(null);
@@ -323,6 +323,7 @@ export function ImageEditorPage() {
                 autoMaskUrl={editor.autoMask.maskUrl}
                 onAutoMaskPoint={handleAutoMaskPoint}
                 cropExtentRef={editor.cropExtentRef}
+                cropMode={editor.cropMode}
                 strokes={editor.strokes}
                 brushSize={editor.brushSize}
                 brushColor={editor.brushColor}
@@ -378,11 +379,12 @@ export function ImageEditorPage() {
               activeTool={editor.activeTool}
               onSelectTool={handleSelectTool}
               onApplyOption={handleApplyOption}
+              cropMode={editor.cropMode}
+              onCropModeChange={(mode) => { editor.setCropMode(mode); setCropResetSignal((value) => value + 1); }}
               cropAspect={cropAspect}
               onCropAspectChange={(aspect) => {
-                setCropAspect(aspect);
                 editor.setCropExpand((current) => ({ ...current, aspect }));
-                // 选择比例即进入裁剪模式，画布会自动展示默认裁剪框
+                // Show the selected crop/expansion ratio on the canvas.
                 editor.setActiveTool('crop');
               }}
               onCropReset={() => setCropResetSignal((value) => value + 1)}
@@ -423,6 +425,12 @@ export function ImageEditorPage() {
             />
           </div>
         )}
+        {editor.source ? <div className="image-editor-download-dock">
+          <span>{editor.versions.find((version) => version.id === editor.activeVersionId)?.label || copy.sourceLabel}</span>
+          <button type="button" className="image-editor-panel-download" onClick={() => void handleDownload()} disabled={busy}>
+            <Download aria-hidden="true" />{isEnglish ? 'Download current version' : '下载当前版本'}
+          </button>
+        </div> : null}
       </div>
 
       <input

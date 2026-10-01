@@ -1,3 +1,4 @@
+import { normalizeImageGenerationAspectRatio } from '@/shared/image-generation-output-params';
 export type EditorToolId =
   | 'region'
   | 'annotate'
@@ -321,17 +322,9 @@ export const EDITOR_TOOLS: EditorToolDefinition[] = [
     id: 'crop',
     label: '裁剪与扩展',
     labelEn: 'Crop & Expand',
-    hint: '在画布上框选保留范围进行裁剪，可拖拽手柄微调。',
-    hintEn: 'Box the area to keep on the canvas, then fine-tune with the handles.',
-    options: [
-      {
-        id: 'crop-local',
-        label: '框选裁剪',
-        labelEn: 'Box & crop',
-        instruction: '',
-        instructionEn: ''
-      }
-    ]
+    hint: '本地裁剪保留范围，或选择 AI 扩图延展画面。',
+    hintEn: 'Crop locally, or use AI Expand to extend the scene.',
+    options: []
   },
   {
     id: 'adjust',
@@ -589,4 +582,20 @@ export function composeEditorInstruction(
   );
   const mapping = buildReferenceMapping(labels, isEnglish);
   return [translatedJoined, mapping].filter(Boolean).join('\n');
+}
+
+/** The API accepts integer ratios; 2.35:1 is exactly 47:20. */
+export function getEditorExpansionAspect(aspect: string | null, sourceAspect: number | null): string {
+  if (aspect) return normalizeImageGenerationAspectRatio(aspect === '2.35:1' ? '47:20' : aspect) || 'auto';
+  if (!sourceAspect || sourceAspect < 1 / 3 || sourceAspect > 3) return 'auto';
+  let closest = '1:1';
+  let error = Infinity;
+  for (let height = 1; height <= 99; height++) {
+    const width = Math.round(sourceAspect * height);
+    if (width < 1 || width > 99) continue;
+    const difference = Math.abs(width / height - sourceAspect);
+    if (difference < error) { closest = `${width}:${height}`; error = difference; }
+    if (error < 0.000001) break;
+  }
+  return normalizeImageGenerationAspectRatio(closest) || 'auto';
 }

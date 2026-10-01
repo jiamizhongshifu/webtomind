@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  getEditorExpansionAspect,
   buildAdjustmentFilter,
   buildAdjustmentInstruction,
   buildCameraInstruction,
@@ -231,5 +232,15 @@ describe('editor-tools reference mentions', () => {
     expect(buildDrawInstructions([], '  仅文字描述  ', false)).toBe(
       '仅文字描述'
     );
+  });
+});
+
+describe('expansion aspect API contract', () => {
+  it('converts decimal labels and source ratios into accepted integer ratios', () => {
+    expect(getEditorExpansionAspect('2.35:1', 1)).toBe('47:20');
+    expect(getEditorExpansionAspect(null, 1.5)).toBe('3:2');
+    expect(getEditorExpansionAspect(null, 2/3)).toBe('2:3');
+    expect(getEditorExpansionAspect('16:9', 1)).toBe('16:9');
+    expect(getEditorExpansionAspect(null, 5)).toBe('auto');
   });
 });
