@@ -157,3 +157,55 @@ it.each(['gpt-image-2', 'gpt-image-2.5'])(
     expect(result.current.generationReferenceImageCount).toBe(1);
   }
 );
+
+it.each(['gpt-image-2.5', 'nano-banana-2'])(
+  'blocks unsupported %s selection edits before rendering, uploading or enqueueing', async (model) => {
+    const unavailableModels = [{ value: model, label: model, supportsReferenceImage: true, supportsMaskEditing: false }] as ImageCreatorModelOption[];
+    const { result } = renderHook(() => useImageEditor(unavailableModels, false));
+    await act(async () => { await result.current.importGenerationSource('fictional-source', 'https://example.test/source.png'); });
+    act(() => {
+      result.current.setModel(model);
+      result.current.setPrompt('Make the fictional door blue');
+      result.current.addRegion({ x: 0.1, y: 0.1, width: 0.3, height: 0.3, prompt: 'blue' });
+    });
+    expect(result.current.maskEditingUnavailable).toBe(true);
+    await act(async () => { await result.current.generate(); });
+    expect(result.current.error).toContain('请清除选区');
+    expect(api.enqueueVisualImageTask).not.toHaveBeenCalled();
+    expect(api.uploadImageReference).not.toHaveBeenCalled();
+    expect(imageInput.renderEditorImageInputs).not.toHaveBeenCalled();
+    act(() => result.current.removeRegion(result.current.regions[0].id));
+    expect(result.current.maskEditingUnavailable).toBe(false);
+    imageInput.renderEditorImageInputs.mockResolvedValue({});
+    api.enqueueVisualImageTask.mockRejectedValue(new Error('Mock whole-image submission'));
+    await act(async () => { await result.current.generate(); });
+    expect(api.enqueueVisualImageTask).toHaveBeenCalledWith(expect.objectContaining({ model, maskImageId: undefined }));
+  }
+);
+
+it('keeps expansion available when an unsupported pending selection exists', async () => {
+  const { result } = renderHook(() => useImageEditor([{ ...models[0], supportsMaskEditing: false }] as ImageCreatorModelOption[], false));
+  await act(async () => { await result.current.importGenerationSource('fictional-source', 'https://example.test/source.png'); });
+  act(() => {
+    result.current.addRegion({ x: 0.1, y: 0.1, width: 0.3, height: 0.3, prompt: 'blue' });
+    result.current.setActiveTool('crop'); result.current.setCropMode('expand'); result.current.setCropExpand({ aspect: '16:9', prompt: '' });
+  });
+  expect(result.current.maskEditingUnavailable).toBe(false);
+  api.enqueueVisualImageTask.mockResolvedValue({ taskId: 'fictional-expand' });
+  await act(async () => { await result.current.generate(); });
+  expect(api.enqueueVisualImageTask).toHaveBeenCalledWith(expect.objectContaining({ aspectRatio: '16:9', maskImageId: undefined }));
+  expect(api.uploadImageReference).not.toHaveBeenCalled();
+});
+
+it.each([false, true])('explains unavailable selection editing and blocks both click and Enter (English=%s)', (isEnglish) => {
+  const generate = vi.fn();
+  const props = { sourceLabel: 'fictional source', sourceThumbnailUrl: '', extraReferences: [], maxExtraReferences: 3, isEnglish, prompt: '', model: 'nano-banana-2', models, busy: false, maskEditingUnavailable: true, generationLabel: '', error: '', regions: [{ id: 'fictional-region', x: 0.1, y: 0.1, width: 0.2, height: 0.2, kind: 'rect', prompt: 'blue' }], activeTool: null, cropAspect: null, adjustments: { brightness: 50, contrast: 50, saturation: 50, colorTemp: 50 }, camera: {}, brushSize: 8, brushColor: '#000000', drawPrompt: '', strokeCount: 0, estimatedCost: 80, onGenerate: generate };
+  const { container, getByRole } = render(<ImageEditorPanel {...props as unknown as ComponentProps<typeof ImageEditorPanel>} />);
+  const button = container.querySelector<HTMLButtonElement>('.image-editor-panel-generate')!;
+  expect(button.disabled).toBe(true);
+  expect(button.textContent).toContain(isEnglish ? 'Selection editing unavailable' : '选区编辑暂不可用');
+  expect(getByRole('alert').textContent).toContain(isEnglish ? 'Clear the selection' : '请清除选区');
+  fireEvent.click(button);
+  fireEvent.keyDown(container.querySelector('.image-editor-panel-region textarea')!, { key: 'Enter', code: 'Enter' });
+  expect(generate).not.toHaveBeenCalled();
+});

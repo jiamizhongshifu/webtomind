@@ -420,6 +420,7 @@ export function ImageEditorPage() {
               estimatedCost={estimatedCost}
               insufficientCredits={insufficientCredits}
               modelsUnavailable={modelsUnavailable}
+              maskEditingUnavailable={editor.maskEditingUnavailable}
               requiresLogin={!isAuthenticated}
               onRequireLogin={requireLogin}
             />

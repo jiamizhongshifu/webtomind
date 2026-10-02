@@ -1,3 +1,4 @@
+import { ImageMaskEditUnsupportedError } from '../../../src/shared/image-mask-edit.js';
 import { IMAGE_DOWNLOAD_TIMEOUT_MS } from '../generate/constants.js';
 
 export type OpenAICompatibleImageOutputFormat = 'png' | 'jpeg' | 'webp';
@@ -320,6 +321,7 @@ export async function editOpenAICompatibleImage(
     ? normalizeImageCount(request.imageCount)
     : 1;
   if (isChaojitudouOpenAICompatibleHost(apiBaseUrl)) {
+    if (request.mask) throw new ImageMaskEditUnsupportedError();
     const response = await callChaojitudouImageTasks({
       apiBaseUrl,
       apiKey: config.apiKey,

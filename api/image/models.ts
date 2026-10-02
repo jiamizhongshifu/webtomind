@@ -1,3 +1,5 @@
+import { supportsImageMaskEditing } from './generate.js';
+import { sanitizeImageGenerateInput } from './generate/request.js';
 import { getCorsHeadersForRequest, getSupabaseAdmin } from '../utils/auth.js';
 import {
   TUZI_IMAGE_MODELS,
@@ -113,6 +115,13 @@ export default async function handler(request: Request) {
     provider: model.provider,
     supportsTextToImage: model.supportsTextToImage,
     supportsReferenceImage: model.supportsReferenceImage,
+    supportsMaskEditing: (() => {
+      const input = sanitizeImageGenerateInput({
+        model: model.id,
+        prompt: 'Check selection editing support'
+      });
+      return input.ok && supportsImageMaskEditing(input.value);
+    })(),
     supportsMultipleImages: model.supportsMultipleImages,
     maxImageCount: model.maxImageCount,
     maxReferenceImages: model.maxReferenceImages,

@@ -1,3 +1,4 @@
+import { getMaskEditUnavailableMessage } from '@/shared/image-mask-edit';
 import { useEffect, useRef, useState } from 'react';
 import {
   Brush,
@@ -160,6 +161,7 @@ interface ImageEditorPanelProps {
   estimatedCost: number;
   insufficientCredits?: boolean;
   modelsUnavailable?: boolean;
+  maskEditingUnavailable?: boolean;
   requiresLogin: boolean;
   onRequireLogin: () => void;
 }
@@ -290,6 +292,7 @@ export function ImageEditorPanel({
   estimatedCost,
   insufficientCredits = false,
   modelsUnavailable = false,
+  maskEditingUnavailable = false,
   requiresLogin,
   onRequireLogin
 }: ImageEditorPanelProps) {
@@ -325,7 +328,7 @@ export function ImageEditorPanel({
   };
 
   const handleGenerate = () => {
-    if (busy || (activeTool === 'crop' && cropMode === 'crop') || modelsUnavailable || insufficientCredits) return;
+    if (maskEditingUnavailable || busy || (activeTool === 'crop' && cropMode === 'crop') || modelsUnavailable || insufficientCredits) return;
     if (requiresLogin) {
       onRequireLogin();
       return;
@@ -506,13 +509,15 @@ export function ImageEditorPanel({
           type="button"
           className="image-editor-panel-generate"
           onClick={handleGenerate}
-          disabled={busy || modelsUnavailable || insufficientCredits}
+          disabled={busy || modelsUnavailable || insufficientCredits || maskEditingUnavailable}
         >
           {busy ? (
             <>
               <LoaderCircle className="spin" aria-hidden="true" />
               {generationLabel || (copy.queued)}
             </>
+          ) : maskEditingUnavailable ? (
+            <>{isEnglish ? 'Selection editing unavailable' : '选区编辑暂不可用'}</>
           ) : requiresLogin ? (
             <>{copy.login}</>
           ) : modelsUnavailable ? (
@@ -529,7 +534,12 @@ export function ImageEditorPanel({
             </>
           )}
         </button>}
-        {error ? (
+        {maskEditingUnavailable ? (
+          <p className="image-editor-panel-error" role="alert">
+            {getMaskEditUnavailableMessage(isEnglish)}
+          </p>
+        ) : null}
+        {error && !maskEditingUnavailable ? (
           <p className="image-editor-panel-error" role="alert">
             {error}
           </p>

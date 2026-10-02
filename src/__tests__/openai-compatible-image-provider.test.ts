@@ -917,3 +917,11 @@ describe('openai-compatible image provider', () => {
     });
   });
 });
+
+it('rejects a masked Chao edit before issuing an upstream task', async () => {
+  const fetchMock = vi.fn();
+  vi.stubGlobal('fetch', fetchMock);
+  const reference = { data: new Uint8Array([1, 2, 3]), mimeType: 'image/png' };
+  await expect(editOpenAICompatibleImage({ prompt: 'Fictional local edit', imageCount: 1, outputFormat: 'png', references: [reference], mask: reference }, { enabled: true, apiBaseUrl: 'https://api.chaojitudou.com/v1', apiKey: 'fictional-key', model: 'gpt-image-2.5', timeoutMs: 30000, supportsEdits: true, supportsMulti: true })).rejects.toThrow('不支持选区编辑');
+  expect(fetchMock).not.toHaveBeenCalled();
+});

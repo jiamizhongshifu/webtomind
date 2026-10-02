@@ -779,6 +779,7 @@ export interface VisualImageModelOption {
   badges?: string[];
   supportsTextToImage: boolean;
   supportsReferenceImage: boolean;
+  supportsMaskEditing?: boolean;
   supportsMultipleImages?: boolean;
   maxImageCount?: number;
   maxReferenceImages: number;

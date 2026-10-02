@@ -7,6 +7,7 @@ import {
 import {
   createImageGenerationTask,
   getImageTaskBillingIdempotencyKey,
+  getImageMaskEditFailure,
   getSupabaseAdmin,
   jsonResponse,
   parseQueuedImageGenerationCreditWaiver,
@@ -931,6 +932,9 @@ export async function handleRetryImageTaskRequest({
       400
     );
   }
+
+  const maskFailure = getImageMaskEditFailure(sanitizedInput);
+  if (maskFailure) return jsonResponse(maskFailure, corsHeaders, 400);
 
   if (task.status === 'succeeded') {
     const missingImageCount = getTaskMissingImageCount(task, sanitizedInput);

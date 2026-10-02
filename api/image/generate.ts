@@ -1,3 +1,7 @@
+import {
+  IMAGE_MASK_EDIT_UNSUPPORTED,
+  ImageMaskEditUnsupportedError
+} from '../../src/shared/image-mask-edit.js';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import type { VercelRequest, VercelResponse } from '../utils/vercel-types';
 import {
@@ -1777,6 +1781,57 @@ function getImageProviderExecutionChain(
   return Array.from(new Set(chain));
 }
 
+/**
+ * Every existing retry/fallback must preserve the mask. Keep model selection
+ * and pricing unchanged; reject reference-only routes instead of rerouting.
+ */
+export function supportsImageMaskEditing(
+  input: Pick<
+    SanitizedImageGenerateRequest,
+    'provider' | 'model' | 'imageCount' | 'imageSize'
+  >,
+  disableProviderFallback = false
+): boolean {
+  return getImageProviderExecutionChain(
+    input.provider,
+    disableProviderFallback,
+    input
+  ).every((provider) => {
+    if (provider === 'openai') {
+      const config = resolveOpenAICompatibleImageConfig();
+      return Boolean(
+        config.enabled && config.apiKey && config.apiBaseUrl && config.model &&
+        config.supportsEdits &&
+        !isChaojitudouOpenAICompatibleHost(config.apiBaseUrl)
+      );
+    }
+    if (provider === 'tuzi') {
+      const attempts = buildTuziImageAttemptPlan(input.model, input);
+      return attempts.length > 0 && attempts.every((attempt) =>
+        attempt.channel !== 'default' && !isTuziMidjourneyModelId(attempt.modelId)
+      );
+    }
+    return false;
+  });
+}
+
+export function getImageMaskEditFailure(
+  input: SanitizedImageGenerateRequest,
+  disableProviderFallback = false
+): Record<string, unknown> | null {
+  if (!input.maskImageId) return null;
+  if (
+    (input.sourceGenerationId || input.referenceImageIds.length > 0) &&
+    supportsImageMaskEditing(input, disableProviderFallback)
+  ) return null;
+  return {
+    error: new ImageMaskEditUnsupportedError().message,
+    errorCode: IMAGE_MASK_EDIT_UNSUPPORTED,
+    errorCategory: 'invalid_request',
+    retryable: false
+  };
+}
+
 function getProviderHealthRecord(
   options: ImageGenerationRunOptions,
   route: { provider: string; model: string; channel?: string | null }
@@ -1919,6 +1974,14 @@ function getOpenAICompatibleFailureDetails(
 
 function getFailureDetails(error: unknown): ImageGenerationFailureDetails {
   const message = getErrorMessage(error);
+  if (error instanceof ImageMaskEditUnsupportedError) {
+    return {
+      code: IMAGE_MASK_EDIT_UNSUPPORTED,
+      category: 'invalid_request',
+      retryable: false,
+      httpStatus: 400
+    };
+  }
   if (error instanceof PipelineDeadlineError) {
     return {
       code: 'IMAGE_PIPELINE_DEADLINE',
@@ -3465,6 +3528,12 @@ async function callTuziOnce(
   references: ResolvedImageReference[] = [],
   mask?: ResolvedImageReference
 ): Promise<GeneratedImage[]> {
+  if (mask && (
+    channel === 'default' || references.length === 0 ||
+    isTuziMidjourneyModelId(modelId)
+  )) {
+    throw new ImageMaskEditUnsupportedError();
+  }
   if (isTuziMidjourneyModelId(modelId)) {
     try {
       const task = await submitAndPollTuziMidjourneyTask({
@@ -4004,6 +4073,12 @@ async function generateWithProvider(
   references: ResolvedImageReference[] = [],
   mask?: ResolvedImageReference
 ): Promise<GeneratedImage[]> {
+  if (mask && (
+    references.length === 0 ||
+    !supportsImageMaskEditing({ ...input, provider }, true)
+  )) {
+    throw new ImageMaskEditUnsupportedError();
+  }
   if (provider === 'krill') {
     return generateWithKrill(prompt, input, options, references, mask);
   }
@@ -5298,6 +5373,9 @@ export async function executeImageGenerationJob({
   let usedSingleImageRescue = false;
 
   try {
+    if (getImageMaskEditFailure(sanitizedInput, options.disableProviderFallback)) {
+      throw new ImageMaskEditUnsupportedError();
+    }
     const [explicitReferences, sourceReference] = await Promise.all([
       resolveImageReferences(
         sb,
@@ -5980,7 +6058,7 @@ export async function executeImageGenerationJob({
 
     return {
       ok: false,
-      status: 500,
+      status: error instanceof ImageMaskEditUnsupportedError ? 400 : 500,
       failureReason,
       failureDetails,
       refundFailed: chargedCredit ? !refunded : false,
@@ -6026,6 +6104,8 @@ export async function handleImageGenerateRequest(
   }
 
   const sanitizedInput = sanitized.value;
+  const maskFailure = getImageMaskEditFailure(sanitizedInput);
+  if (maskFailure) return jsonResponse(maskFailure, corsHeaders, 400);
   const policy = evaluateImageGenerationPolicy(sanitizedInput);
   if (!policy.ok) {
     return jsonResponse(

@@ -20,6 +20,7 @@ export interface ImageCreatorModelOption {
   description: string;
   badges: string[];
   supportsReferenceImage: boolean;
+  supportsMaskEditing?: boolean;
   supportsMultipleImages: boolean;
   maxImageCount: number;
   maxReferenceImages: number;
@@ -32,6 +33,7 @@ export interface ImageCreatorModelOption {
 }
 
 export interface RuntimeImageModelDirectoryEntry {
+  supportsMaskEditing?: boolean;
   id: string;
   status?: RuntimeImageModelStatus;
   availabilityReason?: string;
@@ -376,7 +378,8 @@ export function mergeRuntimeImageModelOptions(
       ? {
           ...model,
           status: runtime.status || 'available',
-          availabilityReason: runtime.availabilityReason
+          availabilityReason: runtime.availabilityReason,
+          supportsMaskEditing: runtime.supportsMaskEditing
         }
       : model;
   });

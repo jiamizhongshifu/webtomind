@@ -1,3 +1,4 @@
+import { getMaskEditUnavailableMessage } from '@/shared/image-mask-edit';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   enqueueVisualImageTask,
@@ -177,6 +178,9 @@ export function useImageEditor(
   });
   const expanding = activeTool === 'crop' && cropMode === 'expand';
   const localCrop = activeTool === 'crop' && cropMode === 'crop';
+  const maskEditingUnavailable = !expanding && !localCrop &&
+    Boolean(regions.length || autoMask.maskUrl || autoMask.maskImageId) &&
+    models.find((item) => item.value === model)?.supportsMaskEditing === false;
   const needsVisualGuide = !expanding && Boolean(strokes.length || ((regions.length || autoMask.maskUrl) && !model.startsWith('gpt-image')));
   const [error, setError] = useState('');
   const [resultCount, setResultCount] = useState(0);
@@ -938,6 +942,10 @@ export function useImageEditor(
   };
 
   const generate = useCallback(async () => {
+    if (maskEditingUnavailable) {
+      setError(getMaskEditUnavailableMessage(isEnglish));
+      return;
+    }
     if (localCrop || submissionRef.current || generationRef.current || isEditorBusy(generation.status)) return;
     if (!source) { setError(copy.needSource); return; }
     const expansionAspect = getEditorExpansionAspect(cropExpand.aspect, cropExtentRef.current);
@@ -1001,7 +1009,7 @@ export function useImageEditor(
     } finally {
       submissionRef.current = false;
     }
-  }, [expanding, localCrop, activeVersionId, adjustments, autoMask, availableModels, camera, copy.needPrompt, copy.needSource, copy.queued, copy.submitFailed, copy.submitting, cropExpand, currentOriginalBlob, drawPrompt, extraReferences, generation.status, isEnglish, model, needsVisualGuide, pollTask, prompt, regions, source, strokes, versions]);
+  }, [maskEditingUnavailable, expanding, localCrop, activeVersionId, adjustments, autoMask, availableModels, camera, copy.needPrompt, copy.needSource, copy.queued, copy.submitFailed, copy.submitting, cropExpand, currentOriginalBlob, drawPrompt, extraReferences, generation.status, isEnglish, model, needsVisualGuide, pollTask, prompt, regions, source, strokes, versions]);
 
   const enhance = useCallback(async (target: ImageUpscaleTarget, useAi = true) => {
     if (submissionRef.current || generationRef.current || isEditorBusy(generation.status) || !source) return;
@@ -1242,6 +1250,7 @@ export function useImageEditor(
     removeExtraReference,
     mentionReference,
     maxExtraReferences,
+    maskEditingUnavailable,
     generationReferenceImageCount: 1 + extraReferences.length + (needsVisualGuide ? 1 : 0),
     currentImageUrl,
     prompt,

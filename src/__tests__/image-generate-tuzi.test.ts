@@ -4598,7 +4598,13 @@ describe('queued image edit mask round trip', () => {
     }
   );
 
-  it('delivers the restored mask bytes to the native GPT edit adapter', async () => {
+  it.each([
+    { provider: 'openai' as const, model: 'gpt-image-2.5' },
+    { provider: 'tuzi' as const, model: 'gpt-image-2' }
+  ])('delivers restored $model mask bytes to the $provider multipart edit adapter', async ({ provider, model }) => {
+    process.env.TUZI_OFFICIAL_API_KEY = 'fictional-key';
+    process.env.TUZI_OFFICIAL_API_BASE_URL = 'https://proxy.test';
+    process.env.TUZI_IMAGE_CHANNEL_ORDER = 'official';
     process.env.OPENAI_COMPAT_IMAGE_ENABLED = 'true';
     process.env.OPENAI_COMPAT_IMAGE_MODEL = 'gpt-image-2.5';
     process.env.OPENAI_COMPAT_IMAGE_BASE_URL = 'https://proxy.test/v1';
@@ -4623,7 +4629,7 @@ describe('queued image edit mask round trip', () => {
     vi.stubGlobal('fetch', fetchMock);
     const sanitized = sanitizeImageGenerateInput({
       prompt: 'Make the fictional door blue',
-      model: 'gpt-image-2.5',
+      model,
       referenceImageIds: ['mock-source'],
       maskImageId: 'mock-mask',
       appSlug: 'image-editor',
@@ -4652,7 +4658,7 @@ describe('queued image edit mask round trip', () => {
       userId: 'fictional-user-a',
       sb: sb as never,
       // Select the native edit adapter explicitly; channel routing is covered separately.
-      sanitizedInput: { ...restored, provider: 'openai' },
+      sanitizedInput: { ...restored, provider, model: sanitized.value.model },
       options: {
         mode: 'queued',
         skipCreditCharge: true,
@@ -4665,10 +4671,29 @@ describe('queued image edit mask round trip', () => {
     ).find(([url]) => url.endsWith('/images/edits'));
     expect(call).toBeDefined();
     const form = call?.[1].body as FormData;
-    expect(form.get('model')).toBe('gpt-image-2.5');
+    expect(form.get('model')).toBe(model);
     const mask = form.get('mask') as File;
     expect(mask.name).toBe('mask.png');
     expect(mask.type).toBe('image/png');
     expect(new Uint8Array(await mask.arrayBuffer())).toEqual(maskBytes);
   });
+});
+
+it('refunds an already queued masked edit when the configured channel cannot preserve it', async () => {
+  process.env.TUZI_API_KEY = 'fictional-key';
+  process.env.TUZI_GPT_IMAGE_25_ENABLED = 'true';
+  const fetchMock = vi.fn(() => { throw new Error('No provider call is allowed'); });
+  vi.stubGlobal('fetch', fetchMock);
+  const restored = parseQueuedImageGenerationRequest({ prompt: 'Fictional masked edit', model: 'gpt-image-2.5', referenceImageIds: ['mock-source'], maskImageId: 'mock-mask' });
+  expect(restored?.maskImageId).toBe('mock-mask');
+  if (!restored) return;
+  const { sb, rpcCalls, insertedGenerations } = createImageGenerateSupabaseMock({});
+  const result = await executeImageGenerationJob({ request: new Request('https://app.test/api/image/task'), userId: 'fictional-user', sanitizedInput: restored, sb: sb as never, options: { mode: 'queued', taskId: 'fictional-task', prepaidCredit: { consumed: 80, creditType: 'bonus' } } });
+  expect(result.ok).toBe(false);
+  expect(result.status).toBe(400);
+  expect(result.body).toMatchObject({ errorCode: 'IMAGE_MASK_EDIT_UNSUPPORTED', retryable: false, refundFailed: false });
+  expect(rpcCalls).toHaveLength(1);
+  expect(rpcCalls[0]).toEqual(['refund_generation_credit', expect.objectContaining({ p_user_id: 'fictional-user', p_amount: 80, p_source: 'image_task:fictional-task:refund' })]);
+  expect(fetchMock).not.toHaveBeenCalled();
+  expect(insertedGenerations).toHaveLength(0);
 });
