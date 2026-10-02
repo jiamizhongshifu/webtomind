@@ -27,9 +27,10 @@ const fakeSupabase = {
       },
       error: null
     }),
-  rpc: async (name: string): Promise<{ data: unknown; error: null }> => {
+  rpc: (name: string) => {
     rpcCalls.push(name);
-    return { data: rpcResults.get(name) ?? null, error: null };
+    const result = Promise.resolve({ data: rpcResults.get(name) ?? null, error: null });
+    return Object.assign(result, { abortSignal: () => result });
   }
 };
 

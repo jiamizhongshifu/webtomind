@@ -130,6 +130,10 @@ const MAX_ESTIMATED_INPUT_TOKENS = 1_000_000;
 const DEFAULT_OUTPUT_RESERVATION_TOKENS = 1024;
 const UPSTREAM_HEADERS_TIMEOUT_MS = 30_000;
 const SETTLEMENT_ATTEMPTS = 3;
+const SETTLEMENT_RPC_TIMEOUT_MS = 2_000;
+// Workers waitUntil has only 30s after a disconnect. Leave time for all six
+// bounded settlement/queue attempts after draining the remaining stream.
+const DISCONNECTED_STREAM_DRAIN_MS = 15_000;
 const MAX_JSON_BODY_BYTES = 2 * 1024 * 1024;
 const MAX_MULTIPART_BODY_BYTES = 25 * 1024 * 1024;
 
@@ -486,6 +490,28 @@ function mergeStreamUsage(
   return current;
 }
 
+async function settlementRpc(
+  supabase: SupabaseClient,
+  name: string,
+  args: Record<string, unknown>
+) {
+  const abort = new AbortController();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      supabase.rpc(name, args).abortSignal(abort.signal),
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(() => {
+          abort.abort();
+          reject(new Error('Settlement RPC acknowledgement timed out'));
+        }, SETTLEMENT_RPC_TIMEOUT_MS);
+      })
+    ]);
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function settleUsage(params: {
   upstreamGroup?: string;
   supabase: SupabaseClient;
@@ -495,8 +521,9 @@ async function settleUsage(params: {
   customerCostCents: number;
   usage: { inputTokens: number; outputTokens: number };
   status: number;
-}): Promise<{ ok: boolean; balanceCents?: number }> {
-  const { data, error } = await params.supabase.rpc('settle_api_usage', {
+  streamOutcome?: 'complete' | 'disconnected' | 'interrupted';
+}): Promise<{ ok: boolean; customerCostCents?: number }> {
+  const { data, error } = await settlementRpc(params.supabase, 'settle_api_usage', {
     p_request_id: params.requestId,
     p_actual_customer_cents: params.customerCostCents,
     p_upstream_cost_cents: params.upstreamCostCents,
@@ -506,7 +533,9 @@ async function settleUsage(params: {
       upstream_group: params.upstreamGroup || API_MARKETPLACE_DEFAULT_GROUP,
       status_code: params.status,
       input_tokens: params.usage.inputTokens,
-      output_tokens: params.usage.outputTokens
+      output_tokens: params.usage.outputTokens,
+      usage_source: params.usage.inputTokens || params.usage.outputTokens ? 'provider' : 'missing',
+      ...(params.streamOutcome ? { stream_outcome: params.streamOutcome } : {})
     }
   });
   if (error) {
@@ -523,27 +552,32 @@ async function settleUsage(params: {
   }
   const result = data as {
     ok?: unknown;
-    balance_cents?: unknown;
-    balanceCents?: unknown;
-    wallet_balance_cents?: unknown;
-    walletBalanceCents?: unknown;
+    actual_customer_cents?: unknown;
   };
+  const actualCost = Number(result.actual_customer_cents);
   return {
-    ok: result.ok !== false,
-    balanceCents:
-      Number(
-        result.wallet_balance_cents ??
-          result.walletBalanceCents ??
-          result.balance_cents ??
-          result.balanceCents
-      ) || undefined
+    ok: result.ok === true,
+    // The ledger can cap the charge to the reservation. Never label our
+    // requested amount as the final charge when it was adjusted or omitted.
+    customerCostCents:
+      result.actual_customer_cents != null && Number.isSafeInteger(actualCost) && actualCost >= 0
+        ? actualCost
+        : undefined
   };
 }
 
 async function settleUsageWithRetry(params: Parameters<typeof settleUsage>[0]) {
   let lastResult: Awaited<ReturnType<typeof settleUsage>> = { ok: false };
   for (let attempt = 1; attempt <= SETTLEMENT_ATTEMPTS; attempt += 1) {
-    lastResult = await settleUsage(params);
+    try {
+      lastResult = await settleUsage(params);
+    } catch {
+      // Transport failures can throw instead of returning a PostgREST error.
+      // The RPC may already have committed; retry the same request id only.
+      console.error('[ApiMarketplace] Usage settlement acknowledgement failed:', {
+        requestId: params.requestId, attempt
+      });
+    }
     if (lastResult.ok) return lastResult;
     if (attempt < SETTLEMENT_ATTEMPTS) {
       await new Promise<void>((resolve) => setTimeout(resolve, 25 * attempt));
@@ -552,37 +586,70 @@ async function settleUsageWithRetry(params: Parameters<typeof settleUsage>[0]) {
   return lastResult;
 }
 
+type SettlementOutcome = {
+  billingStatus: 'settled' | 'pending' | 'unconfirmed';
+  customerCostCents?: number;
+};
+
 async function settleUsageAndQueue(
   params: Parameters<typeof settleUsage>[0]
-): Promise<Awaited<ReturnType<typeof settleUsage>>> {
+): Promise<SettlementOutcome> {
   const result = await settleUsageWithRetry(params);
-  if (result.ok) return result;
+  if (result.ok) return { billingStatus: 'settled', customerCostCents: result.customerCostCents };
 
   // A completed upstream request must not depend on the edge invocation
   // surviving until the ledger is healthy again. Persist the exact observed
   // usage so the service-role cron can retry the idempotent settlement later.
-  const { data, error } = await params.supabase.rpc(
-    'queue_api_usage_settlement',
-    {
-      p_request_id: params.requestId,
-      p_actual_customer_cents: params.customerCostCents,
-      p_upstream_cost_cents: params.upstreamCostCents,
-      p_metadata: {
-        source: 'api_gateway_settlement_retry',
-        model: params.model,
-        status_code: params.status,
-        input_tokens: params.usage.inputTokens,
-        output_tokens: params.usage.outputTokens
+  for (let attempt = 1; attempt <= SETTLEMENT_ATTEMPTS; attempt += 1) {
+    try {
+      const { data, error } = await settlementRpc(params.supabase, 'queue_api_usage_settlement', {
+        p_request_id: params.requestId,
+        p_actual_customer_cents: params.customerCostCents,
+        p_upstream_cost_cents: params.upstreamCostCents,
+        p_metadata: {
+          source: 'api_gateway_settlement_retry',
+          model: params.model,
+          upstream_group: params.upstreamGroup || API_MARKETPLACE_DEFAULT_GROUP,
+          status_code: params.status,
+          input_tokens: params.usage.inputTokens,
+          output_tokens: params.usage.outputTokens,
+          usage_source: params.usage.inputTokens || params.usage.outputTokens ? 'provider' : 'missing',
+          ...(params.streamOutcome ? { stream_outcome: params.streamOutcome } : {})
+        }
+      });
+      if (!error && data && typeof data === 'object' && (data as { ok?: unknown }).ok === true) {
+        return { billingStatus: 'pending' };
       }
+    } catch {
+      // Queue insertion is also idempotent when its acknowledgement is lost.
     }
-  );
-  if (error || (data && typeof data === 'object' && (data as { ok?: unknown }).ok === false)) {
-    console.error('[ApiMarketplace] Failed to queue usage settlement:', {
-      requestId: params.requestId,
-      error: error?.message || data
-    });
+    if (attempt < SETTLEMENT_ATTEMPTS) {
+      await new Promise<void>((resolve) => setTimeout(resolve, 25 * attempt));
+    }
   }
-  return result;
+  // Do not promise durable recovery without an acknowledgement. Keep the
+  // result deliverable and surface the unresolved accounting incident. This
+  // log contains usage only, never customer request or response content.
+  console.error('[ApiMarketplace] Usage settlement durability unconfirmed:', {
+    requestId: params.requestId,
+    model: params.model,
+    customerCostCents: params.customerCostCents,
+    upstreamCostCents: params.upstreamCostCents,
+    usage: params.usage,
+    status: params.status
+  });
+  return { billingStatus: 'unconfirmed' };
+}
+
+function settlementHeaders(requestId: string, outcome: SettlementOutcome): Record<string, string> {
+  return {
+    'X-WebToMind-Request-Id': requestId,
+    'X-WebToMind-Billing-Status': outcome.billingStatus,
+    'Access-Control-Expose-Headers': 'X-WebToMind-Request-Id, X-WebToMind-Billing-Status, X-WebToMind-Cost-Cents',
+    ...(outcome.billingStatus === 'settled' && outcome.customerCostCents !== undefined
+      ? { 'X-WebToMind-Cost-Cents': String(outcome.customerCostCents) }
+      : {})
+  };
 }
 
 export function buildUpstreamHeaders(
@@ -837,7 +904,7 @@ export default async function handler(
     });
   } catch (error) {
     clearTimeout(upstreamTimeout);
-    await settleUsageAndQueue({
+    const settled = await settleUsageAndQueue({
       supabase,
       requestId,
       model: modelName,
@@ -847,7 +914,7 @@ export default async function handler(
       status: 502
     });
     console.error('[ApiMarketplace] Upstream request failed:', error);
-    return jsonResponse(request, { error: { message: 'Upstream API request failed', type: 'upstream_error' } }, 502);
+    return jsonResponse(request, { error: { message: 'Upstream API request failed', type: 'upstream_error' } }, 502, settlementHeaders(requestId, settled));
   }
   clearTimeout(upstreamTimeout);
 
@@ -879,30 +946,14 @@ export default async function handler(
       usage,
       status: upstreamResponse.status
     });
-    if (!settled.ok) {
-      return jsonResponse(
-        request,
-        { error: { message: '本次请求已完成，账单正在核对，请稍后查询使用记录', type: 'billing_pending' } },
-        503,
-        {
-          'X-WebToMind-Request-Id': requestId,
-          'X-WebToMind-Billing-Status': 'pending'
-        }
-      );
-    }
-    await supabase
-      .from('api_keys')
-      .update({ last_used_at: new Date().toISOString() })
-      .eq('id', apiKey.id)
-      .eq('user_id', apiKey.user_id);
+    // Billing is a separate outcome. Never replace successful model output
+    // with a retryable error after the paid upstream operation has completed.
+    // settle_api_usage already updates last_used_at atomically with the bill.
     return jsonResponse(
       request,
       buildNonStreamingChatCompletion(aggregate, requestId, modelName),
       200,
-      {
-        'X-WebToMind-Request-Id': requestId,
-        'X-WebToMind-Cost-Cents': String(customerCostCents)
-      }
+      settlementHeaders(requestId, settled)
     );
   }
 
@@ -914,97 +965,86 @@ export default async function handler(
       const decoder = new TextDecoder();
       let pending = '';
       let usage = { inputTokens: 0, outputTokens: 0 };
+      let disconnected = false;
+      let finishedReading = false;
+      let streamOutcome: 'complete' | 'disconnected' | 'interrupted' = 'complete';
+      let drainTimeout: ReturnType<typeof setTimeout> | undefined;
+      let rejectDrain: (error: Error) => void = () => {};
+      const drainExpired = new Promise<never>((_, reject) => { rejectDrain = reject; });
+      const markDisconnected = (): void => {
+        if (disconnected || finishedReading) return;
+        disconnected = true;
+        drainTimeout = setTimeout(() => {
+          rejectDrain(new Error('Disconnected upstream drain timed out'));
+          upstreamAbort.abort();
+        }, DISCONNECTED_STREAM_DRAIN_MS);
+      };
+      // Cancellation is independent of upstream fetch: don't discard final
+      // provider usage just because the downstream socket has gone away.
+      request.signal.addEventListener('abort', markDisconnected, { once: true });
+      if (request.signal.aborted) markDisconnected();
+      void writer.closed.catch(markDisconnected);
       try {
         let reading = true;
         while (reading) {
-          const next = await reader.read();
+          const next = await Promise.race([reader.read(), drainExpired]);
           if (next.done) {
             reading = false;
             continue;
           }
-          await writer.write(next.value);
+          // Account for a chunk before a failed downstream write can lose it.
           pending += decoder.decode(next.value, { stream: true });
           const lines = pending.split(/\r?\n/);
           pending = lines.pop() || '';
           for (const line of lines) usage = mergeStreamUsage(line, usage);
+          if (!disconnected) {
+            try {
+              await Promise.race([writer.write(next.value), drainExpired]);
+            } catch {
+              markDisconnected();
+            }
+          }
         }
         pending += decoder.decode();
         if (pending.trim()) usage = mergeStreamUsage(pending, usage);
-        const customerCostCents = getCustomerChargeCents(
-          model,
-          usage,
-          reserveCents,
-          upstreamResponse.ok
-        );
-        const upstreamCostCents = Math.max(0, Math.ceil(customerCostCents / API_MARKETPLACE_MARKUP));
-        const settled = await settleUsageAndQueue({
-          supabase,
-          requestId,
-          model: modelName,
-          upstreamCostCents,
-          customerCostCents,
-          usage,
-          status: upstreamResponse.status
-        });
-        if (!settled.ok) {
-          console.error('[ApiMarketplace] Streaming usage settlement was not acknowledged:', {
-            requestId,
-            model: modelName,
-            status: upstreamResponse.status
-          });
-        } else {
-          await supabase
-            .from('api_keys')
-            .update({ last_used_at: new Date().toISOString() })
-            .eq('id', apiKey.id)
-            .eq('user_id', apiKey.user_id);
-        }
-      } catch (error) {
-        console.error('[ApiMarketplace] Streaming proxy failed:', error);
-        // A client disconnect or a broken downstream writer does not prove
-        // that the upstream request failed. If the upstream already returned
-        // a successful response, close the ledger using the best usage seen so
-        // far (or the reservation as a conservative fallback). Only refund
-        // when the upstream response itself was unsuccessful.
-        const customerCostCents = getCustomerChargeCents(
-          model,
-          usage,
-          reserveCents,
-          upstreamResponse.ok
-        );
-        const settled = await settleUsageAndQueue({
-          supabase,
-          requestId,
-          model: modelName,
-          upstreamCostCents: Math.max(0, Math.ceil(customerCostCents / API_MARKETPLACE_MARKUP)),
-          customerCostCents,
-          usage,
-          status: upstreamResponse.status
-        });
-        if (!settled.ok) {
-          console.error('[ApiMarketplace] Streaming fallback settlement was not acknowledged:', {
-            requestId,
-            model: modelName,
-            status: upstreamResponse.status
-          });
-        }
+        streamOutcome = disconnected ? 'disconnected' : 'complete';
+      } catch {
+        streamOutcome = 'interrupted';
+        console.error('[ApiMarketplace] Upstream stream interrupted:', { requestId });
+        // An incomplete upstream stream must not look like a clean EOF. Its
+        // billing fallback remains the existing best-usage/reservation rule.
+        void reader.cancel().catch(() => {});
+        if (!disconnected) await writer.abort(new Error('Upstream stream interrupted')).catch(() => {});
       } finally {
-        try {
-          await writer.close();
-        } catch {
-          writer.releaseLock();
-        }
+        finishedReading = true;
+        clearTimeout(drainTimeout);
+        request.signal.removeEventListener('abort', markDisconnected);
+        reader.releaseLock();
+        // Finish delivery independently of billing; no custom SSE events are
+        // inserted into the provider protocol. Settlement continues in waitUntil.
+        if (!disconnected) await writer.close().catch(() => {});
+        writer.releaseLock();
       }
+      const customerCostCents = getCustomerChargeCents(model, usage, reserveCents, upstreamResponse.ok);
+      await settleUsageAndQueue({
+        supabase,
+        requestId,
+        model: modelName,
+        upstreamCostCents: Math.max(0, Math.ceil(customerCostCents / API_MARKETPLACE_MARKUP)),
+        customerCostCents,
+        usage,
+        status: upstreamResponse.status,
+        streamOutcome
+      });
     })();
-    // Settlement runs after the last upstream byte. Keep the invocation alive
-    // for it even if the client disconnects mid-stream, otherwise the
-    // reservation is left for stale recovery to refund in full.
+    // Production /v1 routing passes the Worker execution context. This is
+    // bounded post-disconnect work, not durable execution across process exit.
     context?.waitUntil(streamSettlement);
 
-    const responseHeaders = new Headers();
+    // Headers are a snapshot when streaming starts, before final usage exists.
+    const responseHeaders = new Headers(settlementHeaders(requestId, { billingStatus: 'pending' }));
     responseHeaders.set('Content-Type', upstreamContentType);
     responseHeaders.set('Cache-Control', 'no-cache, no-transform');
-    responseHeaders.set('X-WebToMind-Request-Id', requestId);
     responseHeaders.set('Access-Control-Allow-Origin', '*');
     return new Response(readable, { status: upstreamResponse.status, headers: responseHeaders });
   }
@@ -1035,28 +1075,7 @@ export default async function handler(
     usage,
     status: upstreamResponse.status
   });
-  if (!settled.ok) {
-    // The upstream request has already completed. Returning an insufficient
-    // balance error would invite clients to retry and could duplicate a paid
-    // operation. Keep the reservation visible to the recovery job instead.
-    return jsonResponse(
-      request,
-      { error: { message: '本次请求已完成，账单正在核对，请稍后查询使用记录', type: 'billing_pending' } },
-      503,
-      {
-        'X-WebToMind-Request-Id': requestId,
-        'X-WebToMind-Billing-Status': 'pending'
-      }
-    );
-  }
-
-  await supabase
-    .from('api_keys')
-    .update({ last_used_at: new Date().toISOString() })
-    .eq('id', apiKey.id)
-    .eq('user_id', apiKey.user_id);
-
-  const responseHeaders = new Headers();
+  const responseHeaders = new Headers(settlementHeaders(requestId, settled));
   if (!upstreamResponse.ok) {
     return jsonResponse(
       request,
@@ -1067,13 +1086,11 @@ export default async function handler(
         }
       },
       upstreamResponse.status,
-      { 'X-WebToMind-Request-Id': requestId }
+      settlementHeaders(requestId, settled)
     );
   }
   responseHeaders.set('Content-Type', upstreamContentType || 'application/json');
   responseHeaders.set('Cache-Control', 'no-store');
-  responseHeaders.set('X-WebToMind-Request-Id', requestId);
-  responseHeaders.set('X-WebToMind-Cost-Cents', String(customerCostCents));
   responseHeaders.set('Access-Control-Allow-Origin', '*');
   return new Response(responseText, {
     status: upstreamResponse.status,

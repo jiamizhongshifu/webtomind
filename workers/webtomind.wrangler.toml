@@ -1,7 +1,9 @@
 name = "webtomind-staging"
 main = "webtomind.ts"
 compatibility_date = "2026-06-14"
-compatibility_flags = ["nodejs_compat"]
+# Request.signal must report real disconnects so gateway draining leaves time
+# for settlement inside the bounded waitUntil lifetime.
+compatibility_flags = ["nodejs_compat", "enable_request_signal"]
 account_id = "<your-cloudflare-account-id>"
 workers_dev = true
 preview_urls = true
