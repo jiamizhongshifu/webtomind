@@ -4948,6 +4948,7 @@ export async function createImageGenerationTask(
       assetIds: input.assetIds,
       recipeAudit: input.recipeAudit,
       referenceImageIds: input.referenceImageIds,
+      maskImageId: input.maskImageId,
       referenceMode: input.referenceMode,
       characterCardIds: input.characterCardIds,
       characterReferenceGroups: input.characterReferenceGroups,
@@ -5032,6 +5033,8 @@ export function parseQueuedImageGenerationRequest(
       ? record.assetIds.filter((id): id is string => typeof id === 'string')
       : [],
     recipeAudit: record.recipeAudit,
+    maskImageId:
+      typeof record.maskImageId === 'string' ? record.maskImageId : undefined,
     referenceImageIds: Array.isArray(record.referenceImageIds)
       ? record.referenceImageIds.filter(
           (id): id is string => typeof id === 'string'

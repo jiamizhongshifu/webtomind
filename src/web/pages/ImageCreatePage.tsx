@@ -1,4 +1,9 @@
 import {
+  readOwnedCreatorCache,
+  writeOwnedCreatorCache,
+  useImageCreatorUserLibrary
+} from '../components/image-create/useImageCreatorUserLibrary';
+import {
   lazy,
   Suspense,
   useCallback,
@@ -68,13 +73,11 @@ import { sanitizeLegacyAutoNegativePrompt } from '@/shared/image-negative-prompt
 import {
   checkImageConsistency,
   optimizeImagePrompt,
-  getImageCreatorUserLibrary,
   getVisualImageHistoryResult,
   getVisualVideoHistoryResult,
   getPublicPromptCase,
   importGenerationAsReference,
   listImageReferences,
-  saveImageCreatorUserLibrary,
   saveUserPromptAsset,
   setVisualImageFavorite,
   uploadImageReference,
@@ -653,27 +656,14 @@ function normalizeCreatorPresetList(value: unknown): CreatorPreset[] {
     .slice(0, 8);
 }
 
-function loadPresets(): CreatorPreset[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(PRESETS_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return normalizeCreatorPresetList(parsed);
-  } catch {
-    return [];
-  }
+function loadPresets(ownerId: string): CreatorPreset[] {
+  return normalizeCreatorPresetList(
+    readOwnedCreatorCache(PRESETS_STORAGE_KEY, ownerId)
+  );
 }
 
-function savePresets(presets: CreatorPreset[]) {
-  try {
-    localStorage.setItem(
-      PRESETS_STORAGE_KEY,
-      JSON.stringify(presets.slice(0, 8))
-    );
-  } catch {
-    // Ignore unavailable storage; remote sync still remains the source of truth.
-  }
+function savePresets(ownerId: string, presets: CreatorPreset[]) {
+  writeOwnedCreatorCache(PRESETS_STORAGE_KEY, ownerId, presets.slice(0, 8));
 }
 
 function normalizePromptLibraryItem(
@@ -699,16 +689,10 @@ function normalizePromptLibraryItem(
   };
 }
 
-function loadPromptLibrary(): CustomPromptLibraryItem[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = localStorage.getItem(PROMPT_LIBRARY_STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return normalizePromptLibraryList(parsed);
-  } catch {
-    return [];
-  }
+function loadPromptLibrary(ownerId: string): CustomPromptLibraryItem[] {
+  return normalizePromptLibraryList(
+    readOwnedCreatorCache(PROMPT_LIBRARY_STORAGE_KEY, ownerId)
+  );
 }
 
 function normalizePromptLibraryList(value: unknown): CustomPromptLibraryItem[] {
@@ -719,15 +703,12 @@ function normalizePromptLibraryList(value: unknown): CustomPromptLibraryItem[] {
     .slice(0, 50);
 }
 
-function savePromptLibrary(items: CustomPromptLibraryItem[]) {
-  try {
-    localStorage.setItem(
-      PROMPT_LIBRARY_STORAGE_KEY,
-      JSON.stringify(items.slice(0, 50))
-    );
-  } catch {
-    // Ignore unavailable storage; remote sync still remains the source of truth.
-  }
+function savePromptLibrary(ownerId: string, items: CustomPromptLibraryItem[]) {
+  writeOwnedCreatorCache(
+    PROMPT_LIBRARY_STORAGE_KEY,
+    ownerId,
+    items.slice(0, 50)
+  );
 }
 
 function mergeCreatorPresets(
@@ -791,6 +772,44 @@ function toUserLibraryPayload(
 }
 
 type HistoryGalleryMode = 'preview' | 'reference-picker';
+
+const userLibraryAdapter = {
+  empty: {
+    presets: [] as CreatorPreset[],
+    promptLibrary: [] as CustomPromptLibraryItem[]
+  },
+  read: (ownerId: string) => ({
+    presets: loadPresets(ownerId),
+    promptLibrary: loadPromptLibrary(ownerId)
+  }),
+  write: (
+    ownerId: string,
+    library: {
+      presets: CreatorPreset[];
+      promptLibrary: CustomPromptLibraryItem[];
+    }
+  ) => {
+    savePresets(ownerId, library.presets);
+    savePromptLibrary(ownerId, library.promptLibrary);
+  },
+  merge: (
+    local: {
+      presets: CreatorPreset[];
+      promptLibrary: CustomPromptLibraryItem[];
+    },
+    remote: ImageCreatorUserLibraryPayload
+  ) => ({
+    presets: mergeCreatorPresets(local.presets, remote.presets),
+    promptLibrary: mergePromptLibraryItems(
+      local.promptLibrary,
+      remote.promptLibrary
+    )
+  }),
+  toPayload: (library: {
+    presets: CreatorPreset[];
+    promptLibrary: CustomPromptLibraryItem[];
+  }) => toUserLibraryPayload(library.presets, library.promptLibrary)
+};
 
 interface HistoryGalleryCache {
   items: VisualImageHistoryItem[];
@@ -972,10 +991,12 @@ export function ImageCreatePage() {
     []
   );
   const [isPromptExpanded, setIsPromptExpanded] = useState(false);
-  const [presets, setPresets] = useState<CreatorPreset[]>(() => loadPresets());
-  const [promptLibrary, setPromptLibrary] = useState<CustomPromptLibraryItem[]>(
-    () => loadPromptLibrary()
-  );
+  const { library: userLibrary, saveLibrary: saveUserLibrary } =
+    useImageCreatorUserLibrary(
+      authLoading ? null : user?.id || 'anonymous',
+      userLibraryAdapter
+    );
+  const { presets, promptLibrary } = userLibrary;
   const [presetSaved, setPresetSaved] = useState(false);
   const [, setPromptMode] = useState<'composed' | 'custom'>(
     () => initialPromptEditorDraft?.promptMode || 'custom'
@@ -1246,7 +1267,6 @@ export function ImageCreatePage() {
     prompt: string;
   } | null>(null);
   const favoriteCountRef = useRef(0);
-  const userLibrarySyncOwnerRef = useRef<string | null>(null);
   const promptEditorDraftLoadedRef = useRef(true);
   const createEntryViewKeyRef = useRef('');
   const creatorCenterColumnRef = useRef<HTMLElement>(null);
@@ -2023,82 +2043,25 @@ export function ImageCreatePage() {
     });
   }, [location.pathname, t, language]);
 
-  const persistUserLibraryRemote = useCallback(
-    (
-      nextPresets: CreatorPreset[],
-      nextPromptLibrary: CustomPromptLibraryItem[]
-    ) => {
-      if (!hasApiAuth) return;
-      void saveImageCreatorUserLibrary(
-        toUserLibraryPayload(nextPresets, nextPromptLibrary)
-      ).catch((caught) => {
-        console.warn('[ImageCreate] user library sync failed:', caught);
+  const persistPresets = useCallback(
+    (nextPresets: CreatorPreset[], nextPromptLibrary = promptLibrary) => {
+      saveUserLibrary({
+        presets: nextPresets,
+        promptLibrary: nextPromptLibrary
       });
     },
-    [hasApiAuth]
-  );
-
-  const persistPresets = useCallback(
-    (
-      nextPresets: CreatorPreset[],
-      nextPromptLibrary: CustomPromptLibraryItem[] = promptLibrary
-    ) => {
-      savePresets(nextPresets);
-      persistUserLibraryRemote(nextPresets, nextPromptLibrary);
-    },
-    [persistUserLibraryRemote, promptLibrary]
+    [saveUserLibrary, promptLibrary]
   );
 
   const persistPromptLibrary = useCallback(
-    (
-      nextPromptLibrary: CustomPromptLibraryItem[],
-      nextPresets: CreatorPreset[] = presets
-    ) => {
-      savePromptLibrary(nextPromptLibrary);
-      persistUserLibraryRemote(nextPresets, nextPromptLibrary);
+    (nextPromptLibrary: CustomPromptLibraryItem[], nextPresets = presets) => {
+      saveUserLibrary({
+        presets: nextPresets,
+        promptLibrary: nextPromptLibrary
+      });
     },
-    [persistUserLibraryRemote, presets]
+    [saveUserLibrary, presets]
   );
-
-  useEffect(() => {
-    if (!hasApiAuth) {
-      userLibrarySyncOwnerRef.current = null;
-      return;
-    }
-
-    const ownerKey = user?.id || user?.email || 'authenticated';
-    if (userLibrarySyncOwnerRef.current === ownerKey) return;
-    userLibrarySyncOwnerRef.current = ownerKey;
-
-    let cancelled = false;
-    void (async () => {
-      try {
-        const remote = await getImageCreatorUserLibrary();
-        if (cancelled) return;
-        const mergedPresets = mergeCreatorPresets(
-          loadPresets(),
-          remote.presets
-        );
-        const mergedPromptLibrary = mergePromptLibraryItems(
-          loadPromptLibrary(),
-          remote.promptLibrary
-        );
-        setPresets(mergedPresets);
-        setPromptLibrary(mergedPromptLibrary);
-        savePresets(mergedPresets);
-        savePromptLibrary(mergedPromptLibrary);
-        await saveImageCreatorUserLibrary(
-          toUserLibraryPayload(mergedPresets, mergedPromptLibrary)
-        );
-      } catch (caught) {
-        console.warn('[ImageCreate] user library initial sync failed:', caught);
-      }
-    })();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [hasApiAuth, user?.email, user?.id]);
 
   useEffect(() => {
     return () => {
@@ -4051,7 +4014,6 @@ export function ImageCreatePage() {
           saved.prompt !== prompt || saved.negativePrompt !== negativePrompt
       )
     ].slice(0, 50);
-    setPromptLibrary(nextLibrary);
     persistPromptLibrary(nextLibrary);
     setPresetSaved(true);
     setStatusText(t('promptLibrary.savedToast') as string);
@@ -4217,7 +4179,6 @@ export function ImageCreatePage() {
 
   const handleDeletePreset = (presetId: string) => {
     const nextPresets = presets.filter((preset) => preset.id !== presetId);
-    setPresets(nextPresets);
     persistPresets(nextPresets);
   };
 
@@ -4484,7 +4445,6 @@ export function ImageCreatePage() {
 
   const handleDeletePromptLibraryItem = (itemId: string) => {
     const nextLibrary = promptLibrary.filter((item) => item.id !== itemId);
-    setPromptLibrary(nextLibrary);
     persistPromptLibrary(nextLibrary);
     setStatusText(t('promptLibrary.deletedToast') as string);
   };
@@ -4500,7 +4460,6 @@ export function ImageCreatePage() {
     const nextLibrary = promptLibrary.map((saved) =>
       saved.id === itemId ? { ...saved, title: nextTitle } : saved
     );
-    setPromptLibrary(nextLibrary);
     persistPromptLibrary(nextLibrary);
     setStatusText(t('promptLibrary.renamedToast') as string);
   };

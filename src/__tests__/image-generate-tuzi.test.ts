@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import dotenv from 'dotenv';
 import {
+  createImageGenerationTask,
   buildTuziImageGenerationRequestBody,
   buildGenerationPrompt,
   executeImageGenerationJob,
@@ -271,6 +272,7 @@ function createImageGenerateSupabaseMock(options: {
   providerHealthRows?: Array<Record<string, unknown>>;
   referenceSignedUrlError?: string;
 }) {
+  const queuedTasks: Array<Record<string, unknown>> = [];
   const insertedAttempts: Array<Record<string, unknown>> = [];
   const insertedGenerations: Array<Record<string, unknown>> = [];
   const uploadedStoragePaths: string[] = [];
@@ -278,6 +280,24 @@ function createImageGenerateSupabaseMock(options: {
   const rpcCalls: Array<[string, Record<string, unknown> | undefined]> = [];
   const references = options.references || [];
   const fromMock = vi.fn((table: string) => {
+    if (table === 'image_generation_tasks') {
+      return {
+        select: () => ({
+          eq: () => ({ single: async () => ({ data: null, error: null }) })
+        }),
+        insert: (payload: Record<string, unknown>) => {
+          queuedTasks.push(JSON.parse(JSON.stringify(payload)));
+          return {
+            select: () => ({
+              single: async () => ({
+                data: { id: 'mock-edit-task' },
+                error: null
+              })
+            })
+          };
+        }
+      };
+    }
     if (table === 'image_generation_attempts') {
       return {
         insert: vi.fn(async (payload: Record<string, unknown>) => {
@@ -406,6 +426,7 @@ function createImageGenerateSupabaseMock(options: {
         };
       })
     },
+    queuedTasks,
     insertedAttempts,
     insertedGenerations,
     uploadedStoragePaths,
@@ -4526,5 +4547,128 @@ describe('Tuzi image model fallback', () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.body.error).toContain('max 5000');
+  });
+});
+
+
+describe('queued image edit mask round trip', () => {
+  it.each(['gpt-image-2', 'gpt-image-2.5', 'nano-banana-2'])(
+    'preserves mask and reference fields for %s through stored JSON',
+    async (model) => {
+      const sanitized = sanitizeImageGenerateInput({
+        prompt: 'Make the fictional door blue',
+        model,
+        referenceImageIds: ['mock-source'],
+        maskImageId: '  mock-mask  ',
+        appSlug: 'image-editor',
+        appOperation: 'ai_edit',
+        sourceApp: 'image-editor'
+      });
+      expect(sanitized.ok).toBe(true);
+      if (!sanitized.ok) return;
+      const { sb, queuedTasks } = createImageGenerateSupabaseMock({});
+      await createImageGenerationTask(
+        sb as never,
+        'fictional-user-a',
+        sanitized.value
+      );
+      expect(queuedTasks[0].request_payload).toMatchObject({
+        maskImageId: 'mock-mask'
+      });
+      const restored = parseQueuedImageGenerationRequest(
+        queuedTasks[0].request_payload
+      );
+      expect(restored).toMatchObject({
+        maskImageId: 'mock-mask',
+        referenceImageIds: ['mock-source']
+      });
+    }
+  );
+
+  it.each([undefined, null, '', 42, { invalid: true }])(
+    'accepts legacy or maskless payloads: %j',
+    (maskImageId) => {
+      const restored = parseQueuedImageGenerationRequest({
+        prompt: 'Expand the fictional scene',
+        model: 'gpt-image-2.5',
+        maskImageId
+      });
+      expect(restored).not.toBeNull();
+      expect(restored?.maskImageId).toBeUndefined();
+    }
+  );
+
+  it('delivers the restored mask bytes to the native GPT edit adapter', async () => {
+    process.env.OPENAI_COMPAT_IMAGE_ENABLED = 'true';
+    process.env.OPENAI_COMPAT_IMAGE_MODEL = 'gpt-image-2.5';
+    process.env.OPENAI_COMPAT_IMAGE_BASE_URL = 'https://proxy.test/v1';
+    process.env.OPENAI_COMPAT_IMAGE_API_KEY = 'mock-key';
+    process.env.OPENAI_COMPAT_IMAGE_SUPPORTS_EDITS = 'true';
+    const maskBytes = makePngBytes(1024, 1024);
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith('https://refs.test/'))
+        return new Response(new Uint8Array(maskBytes), {
+          headers: { 'content-type': 'image/png' }
+        });
+      if (url === 'https://proxy.test/v1/images/edits')
+        return new Response(
+          JSON.stringify({
+            data: [{ b64_json: Buffer.from(maskBytes).toString('base64') }]
+          }),
+          { headers: { 'content-type': 'application/json' } }
+        );
+      throw new Error(`Unexpected mocked fetch: ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const sanitized = sanitizeImageGenerateInput({
+      prompt: 'Make the fictional door blue',
+      model: 'gpt-image-2.5',
+      referenceImageIds: ['mock-source'],
+      maskImageId: 'mock-mask',
+      appSlug: 'image-editor',
+      appOperation: 'ai_edit',
+      sourceApp: 'image-editor'
+    });
+    expect(sanitized.ok).toBe(true);
+    if (!sanitized.ok) return;
+    const { sb, queuedTasks } = createImageGenerateSupabaseMock({
+      references: [{ id: 'mock-source' }, { id: 'mock-mask' }]
+    });
+    await createImageGenerationTask(
+      sb as never,
+      'fictional-user-a',
+      sanitized.value
+    );
+    const restored = parseQueuedImageGenerationRequest(
+      queuedTasks[0].request_payload
+    );
+    expect(restored?.maskImageId).toBe('mock-mask');
+    if (!restored) return;
+    const result = await executeImageGenerationJob({
+      request: new Request('https://webtomind.test/api/image/generate', {
+        method: 'POST'
+      }),
+      userId: 'fictional-user-a',
+      sb: sb as never,
+      // Select the native edit adapter explicitly; channel routing is covered separately.
+      sanitizedInput: { ...restored, provider: 'openai' },
+      options: {
+        mode: 'queued',
+        skipCreditCharge: true,
+        disableProviderFallback: true
+      }
+    });
+    expect(result.ok).toBe(true);
+    const call = (
+      fetchMock.mock.calls as unknown as [string, RequestInit][]
+    ).find(([url]) => url.endsWith('/images/edits'));
+    expect(call).toBeDefined();
+    const form = call?.[1].body as FormData;
+    expect(form.get('model')).toBe('gpt-image-2.5');
+    const mask = form.get('mask') as File;
+    expect(mask.name).toBe('mask.png');
+    expect(mask.type).toBe('image/png');
+    expect(new Uint8Array(await mask.arrayBuffer())).toEqual(maskBytes);
   });
 });

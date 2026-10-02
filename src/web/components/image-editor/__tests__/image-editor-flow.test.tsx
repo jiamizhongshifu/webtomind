@@ -115,3 +115,45 @@ it('does not reuse pending region masks or sketches when expanding', async () =>
   expect(imageInput.renderEditorImageInputs).not.toHaveBeenCalled();
   expect(request.prompt).not.toContain('remove the subject');
 });
+
+it.each(['gpt-image-2', 'gpt-image-2.5'])(
+  'keeps native %s masks separate from billable guide references',
+  async (model) => {
+    api.enqueueVisualImageTask.mockResolvedValue({
+      taskId: 'native-mask-task'
+    });
+    const supportedModels = [
+      ...models,
+      { value: model, label: model, supportsReferenceImage: true }
+    ] as ImageCreatorModelOption[];
+    const { result } = renderHook(() => useImageEditor(supportedModels, false));
+    await act(async () => {
+      await result.current.importGenerationSource(
+        'fictional-source',
+        'https://example.test/source.png'
+      );
+    });
+    act(() => {
+      result.current.setModel(model);
+      result.current.addRegion({
+        x: 0.1,
+        y: 0.2,
+        width: 0.3,
+        height: 0.4,
+        prompt: 'Make the fictional door blue'
+      });
+    });
+    await act(async () => {
+      await result.current.generate();
+    });
+    expect(api.enqueueVisualImageTask).toHaveBeenCalledWith(
+      expect.objectContaining({
+        model,
+        maskImageId: 'mask-or-guide',
+        referenceImageIds: ['ref-source'],
+        appOperation: 'ai_edit'
+      })
+    );
+    expect(result.current.generationReferenceImageCount).toBe(1);
+  }
+);
