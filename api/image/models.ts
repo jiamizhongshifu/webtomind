@@ -106,7 +106,7 @@ export default async function handler(request: Request) {
 
   const supabase = getSupabaseAdmin();
   const healthRecords = supabase
-    ? await safeFetchImageProviderHealth(supabase)
+    ? await safeFetchImageProviderHealth(supabase, { minAttempts: 1 })
     : [];
   const healthLookup = buildImageProviderHealthLookup(healthRecords);
   const models = TUZI_IMAGE_MODELS.map((model) => ({

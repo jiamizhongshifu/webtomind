@@ -30,6 +30,7 @@ interface ImageSessionConversationProps {
   onReedit?: (item: CreationSessionHistoryItem) => void;
   onEditInEditor?: (item: CreationSessionHistoryItem) => void;
   onRetryTurn?: (turn: ImageCreationTurn) => void;
+  getRetryTurnLabel?: (turn: ImageCreationTurn) => string;
   onFavorite?: (item: CreationSessionHistoryItem) => void;
   onDelete?: (item: CreationSessionHistoryItem) => Promise<void> | void;
   onCopyPrompt: (prompt: string) => Promise<boolean> | boolean | void;
@@ -196,6 +197,7 @@ export function ImageSessionConversation({
   onReedit,
   onEditInEditor,
   onRetryTurn,
+  getRetryTurnLabel,
   onFavorite,
   onDelete,
   onCopyPrompt,
@@ -402,7 +404,7 @@ export function ImageSessionConversation({
                   className="is-primary"
                   onClick={() => onRetryTurn(turn)}
                 >
-                  <RefreshCw /> 重试生成
+                  <RefreshCw /> {getRetryTurnLabel?.(turn) || '重试生成'}
                 </button>
               </div>
             ) : null}

@@ -72,6 +72,26 @@ describe('runtime image model availability', () => {
     });
   });
 
+  it('matches execution routing when sparse failures open a model-wide circuit', () => {
+    const channels = ['default', 'official', 'official_discount'] as const;
+    const records = channels.map((channel) => health({
+      channel,
+      totalAttempts: 1,
+      failedAttempts: 1,
+      unavailableCount: 1,
+      healthState: 'insufficient_data'
+    }));
+    const lookup = new Map(records.map((record) => [getImageProviderHealthKey(record), record]));
+    expect(resolveRuntimeImageModelAvailability(
+      model,
+      channels.map((channel) => ({ ...attempt, channel })),
+      lookup
+    )).toMatchObject({ status: 'unavailable', healthyRouteCount: 0 });
+    expect(resolveRuntimeImageModelAvailability(model, [attempt], lookup, [
+      { provider: 'openai', model: 'gpt-image-2', channel: 'openai-compatible' }
+    ])).toMatchObject({ status: 'degraded', healthyRouteCount: 1 });
+  });
+
   it('keeps the model degraded when an alternate provider remains viable', () => {
     const record = health();
     const lookup = new Map([[getImageProviderHealthKey(record), record]]);

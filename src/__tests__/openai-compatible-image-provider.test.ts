@@ -856,6 +856,23 @@ describe('openai-compatible image provider', () => {
     expect((init.body as FormData).get('response_format')).toBe('b64_json');
   });
 
+  it.each([
+    '非常抱歉，该提示可能违反了我们的内容政策。请重试或修改提示语。',
+    '非常抱歉，生成的图片可能违反了我们的内容政策。',
+    '生成的图片可能违反了关于潜在欺诈或诈骗活动的防护限制。'
+  ])('keeps localized policy rejection terminal even behind a 500: %s', async (message) => {
+    const fetchMock = vi.fn(async () => new Response(
+      JSON.stringify({ error: { message } }),
+      { status: 500, headers: { 'content-type': 'application/json' } }
+    ));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(generateOpenAICompatibleImage(
+      { prompt: 'A simple red cube', imageCount: 1, outputFormat: 'png' },
+      { enabled: true, apiBaseUrl: 'https://proxy.test/v1', apiKey: 'test-key', model: 'gpt-image-2', timeoutMs: 30000, supportsEdits: false, supportsMulti: true }
+    )).rejects.toMatchObject({ category: 'policy', retryable: false, httpStatus: 500 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it('classifies provider errors for routing and health scoring', () => {
     expect(classifyOpenAICompatibleImageHttpError(401)).toBe('auth');
     expect(classifyOpenAICompatibleImageHttpError(429)).toBe('rate_limit');

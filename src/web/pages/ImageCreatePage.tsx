@@ -4732,7 +4732,7 @@ export function ImageCreatePage() {
   );
 
   const retryFailedTurn = useCallback(
-    async (turn: ImageCreationTurn) => {
+    (turn: ImageCreationTurn) => {
       if (!hasApiAuth) {
         requestLogin('session_turn_retry_gate');
         return;
@@ -4769,6 +4769,22 @@ export function ImageCreatePage() {
         setGenerationError('该失败任务没有可重试的提示词。');
         return;
       }
+      // A non-retryable or no-longer-listed task must not bypass the retry API
+      // by creating a fresh, charged task with the same rejected input.
+      if (
+        !storedRequest ||
+        !serverTask ||
+        !canRetryImageGenerationFailure(serverTask)
+      ) {
+        handleEditGenerationTask({
+          id: taskId,
+          serverTaskId: taskId,
+          status: 'failed',
+          request,
+          createdAt: new Date(turn.createdAt).getTime()
+        });
+        return;
+      }
       setPreviewItem(null);
       setError('');
       trackImageGenerationEvent('retry_click', {
@@ -4777,32 +4793,19 @@ export function ImageCreatePage() {
         model: request.model,
         image_size: request.imageSize,
         quality: request.quality,
-        source: storedRequest
-          ? 'session_turn_server_task'
-          : 'session_turn_fallback'
+        source: 'session_turn_server_task'
       });
-      if (
-        storedRequest &&
-        serverTask &&
-        canRetryImageGenerationFailure(serverTask)
-      ) {
-        retryServerGenerationTask(serverTask.taskId, storedRequest);
-        return;
-      }
-      await enqueueGenerationRequests([request], {
-        statusText: t('historyRail.regenerateSubmitted') as string
-      });
+      retryServerGenerationTask(serverTask.taskId, storedRequest);
     },
     [
-      enqueueGenerationRequests,
+      handleEditGenerationTask,
       hasApiAuth,
       imageTaskCenterTasks,
       requestLogin,
       retryServerGenerationTask,
       setError,
       setGenerationError,
-      settings,
-      t
+      settings
     ]
   );
 
@@ -6006,6 +6009,15 @@ export function ImageCreatePage() {
                   if (!('videoUrl' in item)) reeditFromHistory(item);
                 }}
                 onRetryTurn={(turn) => void retryFailedTurn(turn)}
+                getRetryTurnLabel={(turn) => {
+                  const task = imageTaskCenterTasks.find(
+                    (item) => item.taskId === (turn.context?.taskId || turn.id)
+                  );
+                  if (task?.status === 'failed' && canRetryImageGenerationFailure(task)) {
+                    return language === 'en-US' ? 'Retry generation' : '重试生成';
+                  }
+                  return language === 'en-US' ? 'Edit before retrying' : '编辑后重试';
+                }}
                 onFavorite={(item) => {
                   if (!('videoUrl' in item)) void toggleHistoryFavorite(item);
                 }}

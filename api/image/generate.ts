@@ -39,6 +39,10 @@ import {
 } from './provider-health.js';
 import { isOfficialGeminiEnabled } from '../utils/model-provider-routing.js';
 import {
+  describeImagePolicyFailure,
+  isLikelyImagePolicyError
+} from './providers/policy-error.js';
+import {
   OpenAICompatibleImageProviderError,
   editOpenAICompatibleImage,
   generateOpenAICompatibleImage,
@@ -1921,18 +1925,12 @@ function isProviderChannelBusyMessage(message: string): boolean {
   );
 }
 
-function isLikelyPolicyError(message: string): boolean {
-  return /policy|safety|moderation|blocked|unsafe|sexual|nudity|erotic|adult|违规|安全|审核|拒绝|色情|情色|成人|裸露|擦边/i.test(
-    message
-  );
-}
-
 function getImageGenerationFailureMessage(
   error: unknown,
   input?: SanitizedImageGenerateRequest
 ): string {
   const message = getErrorMessage(error);
-  if (!isLikelyPolicyError(message)) {
+  if (!isLikelyImagePolicyError(message)) {
     return message;
   }
   const providerRequestId = extractProviderRequestId(message);
@@ -1940,7 +1938,7 @@ function getImageGenerationFailureMessage(
   if (input && isCloudDenoiseInput(input)) {
     return `上游模型拒绝处理这张参考图，通常是图片内容触发了安全策略。本次积分会自动退回；请更换符合要求的图片，或使用本地保真清理。${suffix}`;
   }
-  return `图片生成被安全系统拦截：提示词可能包含性、裸露或擦边内容。请点击编辑调整提示词后重试。${suffix}`;
+  return `${describeImagePolicyFailure(message)}${suffix}`;
 }
 
 function mapOpenAICompatibleFailureCategory(
@@ -2009,10 +2007,10 @@ function getFailureDetails(error: unknown): ImageGenerationFailureDetails {
           ? 'provider_unavailable'
           : isProviderResourceExhaustedMessage(error.message)
             ? 'provider_rate_limit'
-            : isProviderUnavailableHttpStatus(error.httpStatus)
-              ? 'provider_unavailable'
-              : isLikelyPolicyError(error.message)
-                ? 'provider_policy'
+            : isLikelyImagePolicyError(error.message)
+              ? 'provider_policy'
+              : isProviderUnavailableHttpStatus(error.httpStatus)
+                ? 'provider_unavailable'
                 : 'provider_http';
     return {
       code: category.toUpperCase(),
@@ -2035,7 +2033,7 @@ function getFailureDetails(error: unknown): ImageGenerationFailureDetails {
       retryable: false
     };
   }
-  if (isLikelyPolicyError(message)) {
+  if (isLikelyImagePolicyError(message)) {
     return {
       code: 'PROVIDER_POLICY',
       category: 'provider_policy',

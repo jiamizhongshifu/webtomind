@@ -31,6 +31,24 @@ this release.
 
 ## Ordered production steps, after authorization
 
+The follow-up also recognizes localized content-policy refusals even when the
+provider returns HTTP 500, preserves the stated policy category in user-facing
+errors, and aligns the model catalog with execution's cross-channel circuit.
+Failed session turns only retry through the task API when the current task is
+known to be retryable; otherwise the action restores the prompt for editing
+without submitting a new charged request. Historical error rows and quality
+denominators are not rewritten.
+
+The hosted overlay has conflicting source hashes for `ImageCreatePage.tsx` and
+`webtomind.wrangler.toml`. Its reviewed replacement must preserve account-scoped
+queues, the failed-turn edit action, hosted account configuration and the
+`enable_request_signal` compatibility flag. A locally prepared encrypted bundle
+does not update R2 or the production environment secret.
+
+Recent upstream model-pricing configuration errors require operator/provider
+resolution. Catalog inclusion alone does not certify that a provider model is
+priced and usable. Do not treat sparse or missing health data as paid acceptance.
+
 1. Review public changes and the hosted overlay against this exact revision.
    Refresh any conflicting overlay through the documented authenticated workflow;
    never override source hashes. Push the approved branch and obtain current CI.

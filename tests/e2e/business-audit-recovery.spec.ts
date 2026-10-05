@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { installUiAuditMockRoutes } from '../../scripts/lib/ui-audit-fixtures.mjs';
+import { describeImagePolicyFailure } from '../../api/image/providers/policy-error';
 
 const baseUrl = process.env.AUDIT_FIXES_BASE_URL || 'http://127.0.0.1:4187';
 test.use({ channel: 'chrome' });
@@ -60,7 +61,29 @@ for (const viewport of [
         status: 400
       });
     });
-    await page.goto(`${baseUrl}/zh-CN/image`, {
+    const policyMessage = describeImagePolicyFailure('该提示可能违反了我们的内容政策');
+    await context.route('**/api/image-sessions/image-session/turns', (route) => route.fulfill({
+      json: { turns: [{
+        id: 'fictional-policy-task', sessionId: 'image-session',
+        prompt: 'A red cube on a table', status: 'failed',
+        context: { sessionId: 'image-session', taskId: 'fictional-policy-task', referenceAssetIds: [] },
+        generationIds: [], errorMessage: policyMessage,
+        createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()
+      }] }
+    }));
+    await context.route('**/api/image/task?mode=active*', (route) => route.fulfill({
+      json: {
+        tasks: [{
+          taskId: 'fictional-policy-task', status: 'failed',
+          createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+          request: { prompt: 'A red cube on a table', model: 'gpt-image-2.5', imageSize: '1024x1024', imageCount: 1, promptMode: 'custom' },
+          error: policyMessage, errorCategory: 'provider_policy',
+          errorCode: 'OPENAI_COMPAT_POLICY', retryable: false, refunded: 80, refundFailed: false
+        }],
+        activeCount: 0, failedCount: 1, runningCount: 0, queuedCount: 0
+      }
+    }));
+    await page.goto(`${baseUrl}/zh-CN/image?sessionId=image-session`, {
       waitUntil: 'domcontentloaded'
     });
     await expect(page.locator('textarea:visible').first()).toBeVisible({
@@ -77,7 +100,14 @@ for (const viewport of [
       page.getByText('PRIVATE_OTHER_ACCOUNT', { exact: false })
     ).toHaveCount(0);
     expect(generationRequests).toBe(0);
+    await expect(page.getByText(policyMessage, { exact: false }).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: '重试失败任务', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '重试生成', exact: true })).toHaveCount(0);
     await page.screenshot({ path: testInfo.outputPath('image-isolation.png') });
+    await page.getByRole('button', { name: '编辑后重试', exact: true }).click();
+    await expect(page.locator('textarea:visible').first()).toHaveValue('A red cube on a table');
+    await page.locator('textarea:visible').first().fill('A blue cube on a table');
+    expect(generationRequests).toBe(0);
 
     let completed = false;
     const timestamp = new Date().toISOString();

@@ -1,5 +1,6 @@
 import { ImageMaskEditUnsupportedError } from '../../../src/shared/image-mask-edit.js';
 import { IMAGE_DOWNLOAD_TIMEOUT_MS } from '../generate/constants.js';
+import { isLikelyImagePolicyError } from './policy-error.js';
 
 export type OpenAICompatibleImageOutputFormat = 'png' | 'jpeg' | 'webp';
 export type OpenAICompatibleImageQuality =
@@ -399,7 +400,7 @@ export function classifyOpenAICompatibleImageHttpError(
 ): OpenAICompatibleImageErrorCategory {
   if ([401, 403].includes(httpStatus)) return 'auth';
   if (httpStatus === 429) return 'rate_limit';
-  if (isLikelyPolicyError(message)) return 'policy';
+  if (isLikelyImagePolicyError(message)) return 'policy';
   if (
     [500, 502, 503, 504, 520, 521, 522, 523, 524, 525, 526, 527].includes(
       httpStatus
@@ -1418,11 +1419,5 @@ function isAbortError(error: unknown): boolean {
     candidate.name === 'AbortError' ||
     (typeof candidate.message === 'string' &&
       candidate.message.toLowerCase().includes('aborted'))
-  );
-}
-
-function isLikelyPolicyError(message: string): boolean {
-  return /policy|safety|moderation|blocked|unsafe|sexual|nudity|erotic|adult|违规|安全|审核|拒绝|色情|情色|成人|裸露|擦边/i.test(
-    message
   );
 }

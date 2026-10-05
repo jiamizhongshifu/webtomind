@@ -1,6 +1,7 @@
 import type { TuziImageModelConfig } from '../../src/shared/tuzi-image-models.js';
 import {
   getImageProviderHealthKey,
+  isModelUnavailableBlocked,
   shouldSkipImageProviderFallbackRoute,
   type ImageProviderHealthRecord
 } from './provider-health.js';
@@ -54,7 +55,10 @@ export function resolveRuntimeImageModelAvailability(
     .filter((record): record is ImageProviderHealthRecord => Boolean(record));
   const viableRoutes = routes.filter((route) => {
     const record = healthLookup.get(getImageProviderHealthKey(route));
-    return !shouldSkipImageProviderFallbackRoute(record);
+    return (
+      !isModelUnavailableBlocked(route, healthLookup) &&
+      !shouldSkipImageProviderFallbackRoute(record)
+    );
   });
 
   if (viableRoutes.length === 0) {
@@ -75,10 +79,12 @@ export function resolveRuntimeImageModelAvailability(
     };
   }
 
-  const degraded = records.some(
-    (record) =>
-      record.healthState === 'degraded' || record.healthState === 'circuit_open'
-  );
+  const degraded =
+    viableRoutes.length < routes.length ||
+    records.some(
+      (record) =>
+        record.healthState === 'degraded' || record.healthState === 'circuit_open'
+    );
   return {
     status: degraded ? 'degraded' : 'available',
     availabilityReason: degraded ? 'provider_degraded' : 'configured',

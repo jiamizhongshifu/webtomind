@@ -1517,7 +1517,7 @@ describe('Tuzi image model fallback', () => {
     });
   });
 
-  it('does not fallback from OpenAI-compatible generations on policy failures', async () => {
+  it.each(['safety blocked', '该提示可能违反了我们的内容政策', '生成的图片可能违反了关于潜在欺诈或诈骗活动的防护限制'])('does not fallback from OpenAI-compatible generations on policy failure: %s', async (message) => {
     process.env.GPT_IMAGE_2_ALLOW_OPENAI_COMPAT_PRIMARY = 'true';
     process.env.OPENAI_COMPAT_IMAGE_ENABLED = 'true';
     process.env.OPENAI_COMPAT_IMAGE_BASE_URL = 'https://proxy.test/v1';
@@ -1527,7 +1527,7 @@ describe('Tuzi image model fallback', () => {
 
     const fetchMock = vi.fn(
       async () =>
-        new Response(JSON.stringify({ error: { message: 'safety blocked' } }), {
+        new Response(JSON.stringify({ error: { message } }), {
           status: 400,
           headers: { 'content-type': 'application/json' }
         })
