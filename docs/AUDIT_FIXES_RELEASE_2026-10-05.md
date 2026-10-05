@@ -39,11 +39,13 @@ known to be retryable; otherwise the action restores the prompt for editing
 without submitting a new charged request. Historical error rows and quality
 denominators are not rewritten.
 
-The hosted overlay has conflicting source hashes for `ImageCreatePage.tsx` and
-`webtomind.wrangler.toml`. Its reviewed replacement must preserve account-scoped
-queues, the failed-turn edit action, hosted account configuration and the
-`enable_request_signal` compatibility flag. A locally prepared encrypted bundle
-does not update R2 or the production environment secret.
+Read the overlay digest from the cache-busted live release manifest before
+preparing a replacement; the locally saved overlay configuration was stale.
+The live-pinned overlay conflicts with `ImageCreatePage.tsx`. Its reviewed
+replacement must preserve account-scoped queues and the failed-turn edit action,
+and retain all other current hosted files, including account configuration and
+`enable_request_signal`. A locally prepared encrypted bundle does not update R2
+or the production environment secret.
 
 Recent upstream model-pricing configuration errors require operator/provider
 resolution. Catalog inclusion alone does not certify that a provider model is
