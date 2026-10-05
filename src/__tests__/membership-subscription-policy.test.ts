@@ -15,7 +15,12 @@ describe('membership subscription policy', () => {
   it.each(['active', 'trialing', 'past_due'])(
     'blocks a second checkout for %s subscriptions',
     (status) => {
-      expect(blocksNewSubscriptionCheckout({ status }, NOW)).toBe(true);
+      expect(
+        blocksNewSubscriptionCheckout(
+          { status, stripe_subscription_id: 'sub_1' },
+          NOW
+        )
+      ).toBe(true);
     }
   );
 
@@ -82,7 +87,7 @@ describe('membership subscription policy', () => {
     ).toBe('stripe-subscription');
   });
 
-  it('still blocks active legacy rows until they are explicitly migrated', () => {
+  it('does not block renewal of a legacy row with no valid period', () => {
     expect(
       blocksNewPaidSubscriptionCheckout(
         {
@@ -92,13 +97,23 @@ describe('membership subscription policy', () => {
         },
         NOW
       )
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it('fails paid access closed while payment is past due', () => {
     expect(hasPaidSubscriptionAccess({ status: 'past_due' }, NOW)).toBe(false);
-    expect(hasPaidSubscriptionAccess({ status: 'active' }, NOW)).toBe(true);
-    expect(hasPaidSubscriptionAccess({ status: 'trialing' }, NOW)).toBe(true);
+    expect(
+      hasPaidSubscriptionAccess(
+        { status: 'active', current_period_end: '2099-01-01' },
+        NOW
+      )
+    ).toBe(true);
+    expect(
+      hasPaidSubscriptionAccess(
+        { status: 'trialing', current_period_end: '2099-01-01' },
+        NOW
+      )
+    ).toBe(true);
   });
 
   it('keeps canceled access only for an unexpired paid period', () => {
@@ -132,12 +147,18 @@ describe('membership subscription policy', () => {
   });
 
   it('grants recurring credits only to paid or trialing subscriptions', () => {
-    expect(isEligibleForSubscriptionCreditGrant({ status: 'active' })).toBe(
-      true
-    );
-    expect(isEligibleForSubscriptionCreditGrant({ status: 'trialing' })).toBe(
-      true
-    );
+    expect(
+      isEligibleForSubscriptionCreditGrant({
+        status: 'active',
+        current_period_end: '2099-01-01'
+      })
+    ).toBe(true);
+    expect(
+      isEligibleForSubscriptionCreditGrant({
+        status: 'trialing',
+        current_period_end: '2099-01-01'
+      })
+    ).toBe(true);
     expect(isEligibleForSubscriptionCreditGrant({ status: 'past_due' })).toBe(
       false
     );
@@ -167,4 +188,36 @@ describe('membership subscription policy', () => {
       'older-active'
     );
   });
+});
+
+describe('subscription expiry boundary', () => {
+  it.each(['active', 'trialing', 'canceled', 'cancelled'])(
+    'expires %s at the exact period end',
+    (status) => {
+      const expired = { status, current_period_end: NOW.toISOString() };
+      expect(hasPaidSubscriptionAccess(expired, NOW)).toBe(false);
+      expect(isEligibleForSubscriptionCreditGrant(expired, NOW)).toBe(false);
+      expect(blocksNewPaidSubscriptionCheckout(expired, NOW)).toBe(false);
+    }
+  );
+  it('denies access but prevents a second recurring bill for a stale Stripe period', () => {
+    const expired = {
+      status: 'active',
+      current_period_end: NOW.toISOString(),
+      stripe_subscription_id: 'sub_live'
+    };
+    expect(hasPaidSubscriptionAccess(expired, NOW)).toBe(false);
+    expect(blocksNewPaidSubscriptionCheckout(expired, NOW)).toBe(true);
+  });
+  it.each([null, 'invalid'])(
+    'fails closed for a missing or invalid period %s',
+    (end) => {
+      expect(
+        hasPaidSubscriptionAccess(
+          { status: 'active', current_period_end: end },
+          NOW
+        )
+      ).toBe(false);
+    }
+  );
 });

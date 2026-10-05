@@ -21,9 +21,7 @@ import {
   useImageSessionConversation,
   type CreationSessionHistoryItem
 } from '../components/image-create/useImageSessionConversation';
-import {
-  createImageEditorEntryState,
-} from '../components/image-editor/editor-entry';
+import { createImageEditorEntryState } from '../components/image-editor/editor-entry';
 import { localizeCreateHref } from '../data/create-workspace';
 import type { GenerationRecordTask } from '../components/image-create/GenerationRecordsRail';
 import { fileToDataUrl } from '../components/image-create/referenceFileUtils';
@@ -55,7 +53,6 @@ import {
 import { toUserFacingError } from '@/shared/errors/user-facing-error';
 import {
   createImageSession,
-  createImageSessionTurn,
   listImageSessionTurns
 } from '@/services/create-workspace-v2-api';
 import type { ImageCreationTurn } from '@/shared/create-workspace-v2';
@@ -325,9 +322,21 @@ function readMediaMetadata(
 }
 
 export function CreateVideoPage() {
+  const { user } = useAuth();
+  return <AccountVideoPage key={user?.id || 'anonymous'} />;
+}
+
+function AccountVideoPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
   const localePrefix = getLocalePrefix(location.pathname);
   const isEnglish = localePrefix === '/en-US';
   const copy = isEnglish ? COPY.en : COPY.zh;
@@ -751,28 +760,56 @@ export function CreateVideoPage() {
     };
   }, [isEnglish, location.pathname, location.search, location.state, navigate]);
 
+  const hasPendingSessionTurns = sessionTurns.some(
+    (turn) => turn.status === 'pending' || turn.status === 'running'
+  );
   useEffect(() => {
     if (!activeSessionId || !isAuthenticated) {
       setSessionTurns([]);
       return;
     }
     let cancelled = false;
-    listImageSessionTurns(activeSessionId)
-      .then((turns) => {
-        if (!cancelled) setSessionTurns(turns);
-      })
-      .catch((sessionError) => {
-        if (!cancelled) {
-          setSessionTurns([]);
-          setError(
-            sessionError instanceof Error ? sessionError.message : copy.failed
-          );
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const refresh = async () => {
+      try {
+        const turns = await listImageSessionTurns(activeSessionId);
+        if (cancelled) return;
+        setSessionTurns(turns);
+        // Reconciliation reads the owned server tasks; refresh survives tab
+        // closure and cannot turn a client polling timeout into a failed task.
+        if (
+          turns.some(
+            (turn) => turn.status === 'pending' || turn.status === 'running'
+          )
+        ) {
+          timer = setTimeout(() => void refresh(), 10000);
         }
-      });
+      } catch (sessionError) {
+        if (cancelled) return;
+        setError(
+          sessionError instanceof Error ? sessionError.message : copy.failed
+        );
+        timer = setTimeout(() => void refresh(), 15000);
+      }
+    };
+    void refresh();
+    const onFocus = () => {
+      if (timer) clearTimeout(timer);
+      void refresh();
+    };
+    window.addEventListener('focus', onFocus);
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
+      window.removeEventListener('focus', onFocus);
     };
-  }, [activeSessionId, copy.failed, isAuthenticated]);
+  }, [
+    activeSessionId,
+    copy.failed,
+    isAuthenticated,
+    user?.id,
+    hasPendingSessionTurns
+  ]);
 
   const selectModel = useCallback(
     (nextModelId: SeedanceVideoModelId) => {
@@ -1498,6 +1535,7 @@ export function CreateVideoPage() {
       );
       void waitForVisualVideoTask(input.taskId, input.pollAfterMs)
         .then(async (result) => {
+          if (!mountedRef.current) return;
           const generation = result.generation;
           if (!generation?.generationId) {
             throw new Error(copy.failed);
@@ -1526,17 +1564,8 @@ export function CreateVideoPage() {
             )
           );
           try {
-            const turn = await createImageSessionTurn(input.sessionId, {
-              prompt: input.prompt,
-              status: 'succeeded',
-              context: { sessionId: input.sessionId, referenceAssetIds: [] },
-              generationIds: [generation.generationId]
-            });
-            setSessionTurns((current) =>
-              current.map((item) =>
-                item.id === optimisticTurn.id ? turn : item
-              )
-            );
+            const turns = await listImageSessionTurns(input.sessionId);
+            if (mountedRef.current) setSessionTurns(turns);
           } catch (turnError) {
             console.warn(
               '[CreateVideo] persist session turn failed',
@@ -1564,17 +1593,13 @@ export function CreateVideoPage() {
           );
         })
         .catch(async (taskError) => {
+          if (!mountedRef.current) return;
           const message =
             taskError instanceof Error ? taskError.message : copy.failed;
           setError(message);
           try {
-            const turn = await createImageSessionTurn(input.sessionId, {
-              prompt: input.prompt,
-              status: 'failed',
-              context: { sessionId: input.sessionId, referenceAssetIds: [] },
-              errorMessage: message
-            });
-            setSessionTurns((current) => [...current, turn]);
+            const turns = await listImageSessionTurns(input.sessionId);
+            if (mountedRef.current) setSessionTurns(turns);
           } catch {
             // The task error remains visible even if session persistence fails.
           }
@@ -1711,10 +1736,13 @@ export function CreateVideoPage() {
         isEnglish
       });
       const sessionId = await ensureCreationSession(trimmedPrompt);
+      if (!mountedRef.current) return;
       submissionScrollRef.current = true;
       for (let index = 0; index < quantity; index += 1) {
+        if (!mountedRef.current) return;
         try {
           const task = await enqueueVisualVideoTask({
+            sessionId,
             prompt: submissionPrompt,
             model: model.id,
             aspectRatio,
@@ -1732,6 +1760,7 @@ export function CreateVideoPage() {
             watermark,
             webSearch
           });
+          if (!mountedRef.current) return;
           queued += 1;
           setProgressTasks((current) => [
             ...current,

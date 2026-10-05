@@ -14,6 +14,7 @@ function healthyReport(overrides = {}) {
     refundedChargedFailures: 3,
     failureRefundCompliance: 1,
     attempts: { byRoute: [] },
+    enqueueEntitlements: { paidFailureRate: 0 },
     ...overrides
   };
 }
@@ -31,7 +32,8 @@ test('blocks catastrophic failure rates', () => {
 
 test('warns between the reliability target and transitional ceiling', () => {
   const result = evaluateImageGenerationHealth(
-    healthyReport({ failureRate: 0.4 })
+    healthyReport({ failureRate: 0.4 }),
+    { maxFailureRate: 0.6 }
   );
   assert.equal(result.ok, true);
   assert.equal(result.warnings[0].class, 'image_failure_rate_above_target');
@@ -101,4 +103,34 @@ test('normalizes configurable health policy bounds', () => {
       routeWarningMinSuccessRate: 0.6
     }
   );
+});
+
+test('blocks the observed 32.9 percent failures against the 90 percent success target', () => {
+  assert.equal(
+    evaluateImageGenerationHealth(healthyReport({ failureRate: 27 / 82 })).ok,
+    false
+  );
+});
+test('does not certify unavailable observations', () => {
+  assert.equal(
+    evaluateImageGenerationHealth(healthyReport({ failureRate: null })).ok,
+    false
+  );
+});
+
+test('uses task-time paid cohort to enforce the 95 percent paid success target', () => {
+  const result = evaluateImageGenerationHealth(
+    healthyReport({ enqueueEntitlements: { paidFailureRate: 0.1 } })
+  );
+  assert.equal(result.ok, false);
+  assert.equal(
+    result.blockers[0].class,
+    'paid_image_failure_rate_above_target'
+  );
+});
+test('labels missing paid snapshots as unverified instead of inventing success', () => {
+  const result = evaluateImageGenerationHealth(
+    healthyReport({ enqueueEntitlements: { paidFailureRate: null } })
+  );
+  assert.equal(result.warnings[0].class, 'paid_image_reliability_unverified');
 });

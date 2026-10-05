@@ -216,14 +216,20 @@ export function resolveImageTaskTurnRows(
 export async function reconcileImageSessionTaskTurns({
   database,
   userId,
-  sessionId
+  sessionId,
+  mediaType = 'image'
 }: {
   database: SupabaseClient;
   userId: string;
   sessionId: string;
+  mediaType?: 'image' | 'video';
 }): Promise<void> {
   const { data: tasks, error: taskError } = await database
-    .from('image_generation_tasks')
+    .from(
+      mediaType === 'video'
+        ? 'video_generation_tasks'
+        : 'image_generation_tasks'
+    )
     .select(
       'id,user_id,status,request_payload,result_payload,generation_id,error_message,created_at,updated_at'
     )

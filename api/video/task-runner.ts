@@ -82,6 +82,15 @@ export interface VideoTaskRunnerResult {
 
 const VIDEO_SIGNED_URL_EXPIRES_IN = 60 * 60 * 24;
 const VIDEO_TASK_LEASE_SECONDS = 120;
+const VIDEO_TASK_DEADLINE_MS = 45 * 60 * 1000;
+class VideoProviderHttpError extends Error {
+  constructor(
+    message: string,
+    readonly status: number
+  ) {
+    super(message);
+  }
+}
 const VIDEO_TASK_CLAIM_RETRY_DELAY_SECONDS = 5;
 const MAX_PROVIDER_VIDEO_BYTES = 256 * 1024 * 1024;
 
@@ -204,8 +213,9 @@ async function callArkVideoStatus(providerTaskId: string) {
   );
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(
-      `Official video status failed with status ${response.status}`
+    throw new VideoProviderHttpError(
+      `Official video status failed with status ${response.status}`,
+      response.status
     );
   }
   return normalizeArkVideoStatusResponse(data);
@@ -471,66 +481,78 @@ async function finalizeCompletedTask(
   }
 
   const request = getRecord(task.request_payload);
-  const stored = await storeProviderVideo(sb, task, providerStatus.videoUrl);
-  const mediaMetadata = buildMediaMetadata({
-    existing: {
-      source: 'video_create_page',
-      requestedModel: request.model,
-      requestedApiModel: request.apiModel,
-      referenceImageIds: request.referenceImageIds,
-      referenceImageUrls: request.referenceImageUrls,
-      referenceVideoUrls: request.referenceVideoUrls,
-      referenceAudioUrls: request.referenceAudioUrls,
-      firstFrameUrl: request.firstFrameUrl,
-      lastFrameUrl: request.lastFrameUrl,
-      watermark: request.watermark,
-      webSearch: request.webSearch,
-      outputFormat: request.outputFormat,
-      providerStatus: providerStatus.raw,
-      ...(providerStatus.completionTokens !== undefined
-        ? { completionTokens: providerStatus.completionTokens }
-        : {}),
-      byteSize: stored.byteSize
-    },
-    storageProvider: stored.record.provider,
-    original: {
-      ...stored.record,
-      byteSize: stored.byteSize
-    }
-  });
-
-  const { data, error } = await sb
+  const { data: existingGeneration, error: existingError } = await sb
     .from('video_generations')
-    .insert({
-      user_id: task.user_id,
-      task_id: task.id,
-      video_url: stored.signedUrl,
-      poster_url: providerStatus.previewImageUrl || null,
-      prompt: String(request.prompt || ''),
-      model_label:
-        getRecord(request.costEstimate).modelLabel ||
-        String(request.model || request.apiModel || ''),
-      provider: 'volcengine_ark',
-      provider_model: String(request.apiModel || request.model || ''),
-      provider_task_id: task.provider_task_id,
-      aspect_ratio:
-        typeof request.aspectRatio === 'string' ? request.aspectRatio : null,
-      duration: typeof request.duration === 'number' ? request.duration : null,
-      storage_bucket: stored.record.bucket,
-      storage_path: stored.record.key,
-      byte_size: stored.byteSize,
-      metadata: mediaMetadata
-    })
     .select('*')
-    .single();
+    .eq('task_id', task.id)
+    .maybeSingle();
+  if (existingError) throw existingError;
+  let generation: VideoGenerationRecord;
+  if (existingGeneration) {
+    generation = existingGeneration as VideoGenerationRecord;
+  } else {
+    const stored = await storeProviderVideo(sb, task, providerStatus.videoUrl);
+    const mediaMetadata = buildMediaMetadata({
+      existing: {
+        source: 'video_create_page',
+        requestedModel: request.model,
+        requestedApiModel: request.apiModel,
+        referenceImageIds: request.referenceImageIds,
+        referenceImageUrls: request.referenceImageUrls,
+        referenceVideoUrls: request.referenceVideoUrls,
+        referenceAudioUrls: request.referenceAudioUrls,
+        firstFrameUrl: request.firstFrameUrl,
+        lastFrameUrl: request.lastFrameUrl,
+        watermark: request.watermark,
+        webSearch: request.webSearch,
+        outputFormat: request.outputFormat,
+        providerStatus: providerStatus.raw,
+        ...(providerStatus.completionTokens !== undefined
+          ? { completionTokens: providerStatus.completionTokens }
+          : {}),
+        byteSize: stored.byteSize
+      },
+      storageProvider: stored.record.provider,
+      original: {
+        ...stored.record,
+        byteSize: stored.byteSize
+      }
+    });
 
-  if (error || !data) {
-    throw new Error(
-      `Video generation record create failed: ${error?.message || 'empty row'}`
-    );
+    const { data, error } = await sb
+      .from('video_generations')
+      .insert({
+        user_id: task.user_id,
+        task_id: task.id,
+        video_url: stored.signedUrl,
+        poster_url: providerStatus.previewImageUrl || null,
+        prompt: String(request.prompt || ''),
+        model_label:
+          getRecord(request.costEstimate).modelLabel ||
+          String(request.model || request.apiModel || ''),
+        provider: 'volcengine_ark',
+        provider_model: String(request.apiModel || request.model || ''),
+        provider_task_id: task.provider_task_id,
+        aspect_ratio:
+          typeof request.aspectRatio === 'string' ? request.aspectRatio : null,
+        duration:
+          typeof request.duration === 'number' ? request.duration : null,
+        storage_bucket: stored.record.bucket,
+        storage_path: stored.record.key,
+        byte_size: stored.byteSize,
+        metadata: mediaMetadata
+      })
+      .select('*')
+      .single();
+
+    if (error || !data) {
+      throw new Error(
+        `Video generation record create failed: ${error?.message || 'empty row'}`
+      );
+    }
+
+    generation = data as VideoGenerationRecord;
   }
-
-  const generation = data as VideoGenerationRecord;
   const signedGeneration = await signVideoGeneration(sb, generation);
   const prepaid = getPrepaidCredit(task);
   const payload = {
@@ -554,7 +576,7 @@ async function finalizeCompletedTask(
     }
   };
 
-  await sb
+  const { error: completionError } = await sb
     .from('video_generation_tasks')
     .update({
       status: 'succeeded',
@@ -565,6 +587,7 @@ async function finalizeCompletedTask(
       updated_at: new Date().toISOString()
     })
     .eq('id', task.id);
+  if (completionError) throw completionError;
 
   return {
     taskId: task.id,
@@ -584,7 +607,17 @@ async function markTaskFailed(
     ...metadata,
     errorMessage: message
   });
-  await sb
+  if (
+    metadata.code === 'VIDEO_TASK_DEADLINE' ||
+    metadata.code === 'VIDEO_CREATE_OUTCOME_UNKNOWN'
+  ) {
+    message += getPrepaidCredit(task).consumed
+      ? refundSucceeded
+        ? '，积分已退还。'
+        : '，积分退款未完成，请联系客服。'
+      : '，本次未扣积分。';
+  }
+  const { error: failureError } = await sb
     .from('video_generation_tasks')
     .update({
       status: 'failed',
@@ -592,6 +625,7 @@ async function markTaskFailed(
       refund_failed: !refundSucceeded,
       locked_until: null,
       result_payload: {
+        ...(task.result_payload || {}),
         error: 'VIDEO_PROVIDER_FAILED',
         message,
         ...metadata
@@ -600,6 +634,7 @@ async function markTaskFailed(
       updated_at: new Date().toISOString()
     })
     .eq('id', task.id);
+  if (failureError) throw failureError;
 
   return {
     taskId: task.id,
@@ -617,13 +652,14 @@ async function deferPollAfterTransientError(
   phase: VideoTaskPhase
 ): Promise<VideoTaskRunnerResult> {
   const delaySeconds = 8;
-  await sb
+  const { error: deferError } = await sb
     .from('video_generation_tasks')
     .update({
       status: 'running',
       locked_until: null,
       last_attempt_at: new Date().toISOString(),
       next_poll_after: new Date(Date.now() + delaySeconds * 1000).toISOString(),
+      provider_task_id: task.provider_task_id,
       result_payload: {
         ...(task.result_payload || {}),
         transientError: {
@@ -635,6 +671,7 @@ async function deferPollAfterTransientError(
       updated_at: new Date().toISOString()
     })
     .eq('id', task.id);
+  if (deferError) throw deferError;
 
   return {
     taskId: task.id,
@@ -694,7 +731,47 @@ export async function runVideoGenerationTaskStep(input: {
   }
 
   try {
+    if (Date.now() - Date.parse(task.created_at) >= VIDEO_TASK_DEADLINE_MS) {
+      return markTaskFailed(sb, task, '视频任务超过处理时限，已停止等待', {
+        phase,
+        code: 'VIDEO_TASK_DEADLINE'
+      });
+    }
     if (!task.provider_task_id) {
+      if (task.result_payload?.providerCreateStartedAt) {
+        return markTaskFailed(
+          sb,
+          task,
+          '视频提交结果尚无法确认，系统不会重复提交此任务',
+          {
+            phase: 'create',
+            code: 'VIDEO_CREATE_OUTCOME_UNKNOWN',
+            reconciliationRequired: true
+          }
+        );
+      }
+      const createState = {
+        ...(task.result_payload || {}),
+        providerCreateStartedAt: new Date().toISOString()
+      };
+      // Persist a one-way submission marker BEFORE the billable external call.
+      // Even a process crash or failed ID write cannot cause a second create.
+      const { data: submission, error: submissionError } = await sb
+        .from('video_generation_tasks')
+        .update({ result_payload: createState })
+        .eq('id', task.id)
+        .is('provider_task_id', null)
+        .is('result_payload->>providerCreateStartedAt', null)
+        .select('id')
+        .maybeSingle();
+      if (submissionError) throw submissionError;
+      if (!submission)
+        return deferAfterClaimMiss(
+          task,
+          'create',
+          'Submission already started'
+        );
+      task.result_payload = createState;
       const providerTask = await callArkVideoCreate(
         getRecord(task.request_payload)
       );
@@ -726,7 +803,9 @@ export async function runVideoGenerationTaskStep(input: {
       const providerCompleted =
         isCompletedStatus(providerTask.status) &&
         Boolean(providerTask.videoUrl);
-      await sb
+      task.provider_task_id = providerTask.id || null;
+      task.result_payload = { ...(task.result_payload || {}), providerTask };
+      const { error: providerSaveError } = await sb
         .from('video_generation_tasks')
         .update({
           status: 'running',
@@ -741,6 +820,7 @@ export async function runVideoGenerationTaskStep(input: {
           updated_at: new Date().toISOString()
         })
         .eq('id', task.id);
+      if (providerSaveError) throw providerSaveError;
 
       const nextTask = {
         ...task,
@@ -753,7 +833,7 @@ export async function runVideoGenerationTaskStep(input: {
         }
       };
       if (providerCompleted) {
-        return finalizeCompletedTask(sb, nextTask, {
+        return await finalizeCompletedTask(sb, nextTask, {
           ...providerTask
         });
       }
@@ -772,7 +852,7 @@ export async function runVideoGenerationTaskStep(input: {
 
     const providerStatus = await callArkVideoStatus(task.provider_task_id);
     if (isCompletedStatus(providerStatus.status)) {
-      return finalizeCompletedTask(sb, task, providerStatus);
+      return await finalizeCompletedTask(sb, task, providerStatus);
     }
     if (isFailedStatus(providerStatus.status)) {
       return markTaskFailed(
@@ -783,7 +863,7 @@ export async function runVideoGenerationTaskStep(input: {
       );
     }
 
-    await sb
+    const { error: pollSaveError } = await sb
       .from('video_generation_tasks')
       .update({
         status: 'running',
@@ -797,6 +877,7 @@ export async function runVideoGenerationTaskStep(input: {
         updated_at: new Date().toISOString()
       })
       .eq('id', task.id);
+    if (pollSaveError) throw pollSaveError;
 
     return {
       taskId: task.id,
@@ -813,8 +894,20 @@ export async function runVideoGenerationTaskStep(input: {
     const message = error instanceof Error ? error.message : '视频任务执行失败';
     const failurePhase: VideoTaskPhase =
       input.phase || (!task.provider_task_id ? 'create' : 'poll');
-    if (task.provider_task_id && failurePhase === 'poll') {
-      return deferPollAfterTransientError(sb, task, message, failurePhase);
+    if (task.provider_task_id) {
+      if (
+        error instanceof VideoProviderHttpError &&
+        error.status >= 400 &&
+        error.status < 500 &&
+        ![408, 429].includes(error.status)
+      ) {
+        return markTaskFailed(sb, task, message, {
+          phase: 'poll',
+          httpStatus: error.status,
+          code: 'VIDEO_PROVIDER_PERMANENT_ERROR'
+        });
+      }
+      return deferPollAfterTransientError(sb, task, message, 'poll');
     }
     return markTaskFailed(sb, task, message, {
       phase: failurePhase

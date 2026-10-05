@@ -89,7 +89,7 @@ export default async function handler(request: Request): Promise<Response> {
   if (database instanceof Response) return database;
   const { data: session } = await database
     .from('image_creation_sessions')
-    .select('id')
+    .select('id,metadata')
     .eq('id', sessionId)
     .eq('user_id', userId)
     .maybeSingle();
@@ -119,7 +119,11 @@ export default async function handler(request: Request): Promise<Response> {
     const taskId = sanitizeText(body.taskId, 80);
     if (taskId) {
       const { data: task, error: taskError } = await database
-        .from('image_generation_tasks')
+        .from(
+          session.metadata?.mediaType === 'video'
+            ? 'video_generation_tasks'
+            : 'image_generation_tasks'
+        )
         .select('id')
         .eq('id', taskId)
         .eq('user_id', userId)
@@ -187,7 +191,8 @@ export default async function handler(request: Request): Promise<Response> {
     await reconcileImageSessionTaskTurns({
       database,
       userId,
-      sessionId
+      sessionId,
+      mediaType: session.metadata?.mediaType === 'video' ? 'video' : 'image'
     });
   } catch (error) {
     console.warn('[ImageSessionTurns] task reconciliation failed', {

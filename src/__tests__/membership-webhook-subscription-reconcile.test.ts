@@ -62,6 +62,30 @@ describe('paid subscription reconciliation', () => {
     expect(mock.insert).not.toHaveBeenCalled();
   });
 
+  it('never overwrites a different external recurring subscription', async () => {
+    const mock = createSubscriptionMock({
+      id: 'old',
+      status: 'active',
+      current_period_end: '2099-01-01',
+      stripe_subscription_id: 'sub_old'
+    });
+    await expect(
+      reconcilePaidSubscription(mock.supabase as never, values)
+    ).rejects.toThrow('reconciliation required');
+    expect(mock.update).not.toHaveBeenCalled();
+    expect(mock.insert).not.toHaveBeenCalled();
+  });
+  it('replays fulfillment against the same provider identity even after expiry', async () => {
+    const mock = createSubscriptionMock({
+      id: 'old',
+      status: 'canceled',
+      current_period_end: '2020-01-01',
+      stripe_subscription_id: 'sub_new'
+    });
+    await reconcilePaidSubscription(mock.supabase as never, values);
+    expect(mock.update).toHaveBeenCalledWith(values);
+    expect(mock.insert).not.toHaveBeenCalled();
+  });
   it('inserts when no active or paid-period row exists', async () => {
     const mock = createSubscriptionMock(null);
 
@@ -139,8 +163,8 @@ function stripeSubscription(status: 'active' | 'past_due') {
     status,
     customer: 'cus_1',
     cancel_at_period_end: false,
-    current_period_start: 1_753_056_000,
-    current_period_end: 1_755_734_400
+    current_period_start: 4_068_000_000,
+    current_period_end: 4_070_678_400
   };
 }
 

@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   buildImageTaskTurnRow,
-  resolveImageTaskTurnRows
+  resolveImageTaskTurnRows,
+  reconcileImageSessionTaskTurns
 } from '../../api/image-sessions/task-turns';
 
 const baseTask = {
@@ -158,5 +159,89 @@ describe('image task to session turn recovery', () => {
       'legacy-only-once',
       'task-2'
     ]);
+  });
+});
+
+describe('video session task recovery', () => {
+  it('recovers owned server tasks as stable turns and updates their terminal status', async () => {
+    let task = {
+      ...baseTask,
+      status: 'running' as 'running' | 'succeeded',
+      generation_id: null as string | null,
+      request_payload: {
+        prompt: 'video prompt',
+        creationContext: { sessionId: 'session-1' }
+      },
+      result_payload: {}
+    };
+    const taskQuery = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      contains: vi.fn(),
+      order: vi.fn(),
+      limit: vi.fn(async () => ({ data: [task], error: null }))
+    };
+    taskQuery.select.mockReturnValue(taskQuery);
+    taskQuery.eq.mockReturnValue(taskQuery);
+    taskQuery.contains.mockReturnValue(taskQuery);
+    taskQuery.order.mockReturnValue(taskQuery);
+    const upsert = vi.fn().mockResolvedValue({ error: null });
+    const turnQuery = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      order: vi.fn(async () => ({ data: [], error: null })),
+      upsert
+    };
+    turnQuery.select.mockReturnValue(turnQuery);
+    turnQuery.eq.mockReturnValue(turnQuery);
+    const sessionQuery = {
+      update: vi.fn(),
+      eq: vi.fn(),
+      then: (resolve: (value: unknown) => unknown) =>
+        Promise.resolve({ error: null }).then(resolve)
+    };
+    sessionQuery.update.mockReturnValue(sessionQuery);
+    sessionQuery.eq.mockReturnValue(sessionQuery);
+    const database = {
+      from: vi.fn((table: string) =>
+        table === 'video_generation_tasks'
+          ? taskQuery
+          : table === 'image_creation_turns'
+            ? turnQuery
+            : sessionQuery
+      )
+    };
+    await reconcileImageSessionTaskTurns({
+      database: database as never,
+      userId: 'user-1',
+      sessionId: 'session-1',
+      mediaType: 'video'
+    });
+    expect(database.from).toHaveBeenCalledWith('video_generation_tasks');
+    expect(taskQuery.eq).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(taskQuery.contains).toHaveBeenCalledWith('request_payload', {
+      creationContext: { sessionId: 'session-1' }
+    });
+    expect(upsert.mock.calls[0][0][0]).toMatchObject({
+      id: task.id,
+      status: 'running',
+      generation_ids: []
+    });
+    task = {
+      ...task,
+      status: 'succeeded',
+      generation_id: 'video-generation-1'
+    };
+    await reconcileImageSessionTaskTurns({
+      database: database as never,
+      userId: 'user-1',
+      sessionId: 'session-1',
+      mediaType: 'video'
+    });
+    expect(upsert.mock.calls[1][0][0]).toMatchObject({
+      id: task.id,
+      status: 'succeeded',
+      generation_ids: ['video-generation-1']
+    });
   });
 });

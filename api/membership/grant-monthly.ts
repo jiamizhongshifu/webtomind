@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { isEligibleForSubscriptionCreditGrant } from './subscription-policy';
 import { getCorsHeadersForRequest } from '../utils/auth';
 
 export const config = {
@@ -77,7 +78,10 @@ export default async function handler(request: Request) {
     }
 
     for (const sub of subs) {
-      if (seenUserIds.has(sub.user_id)) {
+      if (
+        !isEligibleForSubscriptionCreditGrant(sub) ||
+        seenUserIds.has(sub.user_id)
+      ) {
         continue;
       }
       seenUserIds.add(sub.user_id);

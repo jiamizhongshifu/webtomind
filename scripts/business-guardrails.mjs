@@ -10,9 +10,12 @@ import {
 } from './lib/image-generation-health-policy.mjs';
 
 const root = process.cwd();
-const observedGeneration = await loadObservedImageGenerationMetrics({
-  days: 30
-});
+// Unit economics retain the 30-day sample; the release health decision uses
+// the same 7-day window as release:image-health-gate.
+const [observedGeneration, observedReleaseHealth] = await Promise.all([
+  loadObservedImageGenerationMetrics({ days: 30 }),
+  loadObservedImageGenerationMetrics({ days: 7 })
+]);
 const minGrossMargin = readNumberEnv('BUSINESS_MIN_GROSS_MARGIN', 0.4);
 const marginWarningBuffer = readNumberEnv(
   'BUSINESS_MARGIN_WARNING_BUFFER',
@@ -217,7 +220,7 @@ const blockers = [];
 const warnings = [];
 const evaluatedMargins = [];
 const imageHealthEvaluation = evaluateImageGenerationHealth(
-  observedGeneration,
+  observedReleaseHealth,
   getImageGenerationHealthPolicy()
 );
 
@@ -445,6 +448,7 @@ const report = {
   generatedAt: new Date().toISOString(),
   assumptions,
   observedGeneration,
+  observedReleaseHealth,
   minGrossMargin,
   marginWarningBuffer,
   imageMarginMethod: {

@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { createClientMock, recordConversionEventMock, StripeMock } =
-  vi.hoisted(() => ({
+const { createClientMock, recordConversionEventMock, StripeMock } = vi.hoisted(
+  () => ({
     createClientMock: vi.fn(),
     recordConversionEventMock: vi.fn(),
     StripeMock: vi.fn()
-  }));
+  })
+);
 
 vi.mock('@supabase/supabase-js', () => ({
   createClient: createClientMock
@@ -80,9 +81,7 @@ interface QueryOverrides {
   single?: () => Promise<QueryResult>;
   maybeSingle?: () => Promise<QueryResult>;
   order?: () => Promise<QueryResult>;
-  then?: (
-    resolve: (value: QueryResult) => void
-  ) => void;
+  then?: (resolve: (value: QueryResult) => void) => void;
 }
 
 function buildQuery(overrides: QueryOverrides = {}) {
@@ -131,10 +130,12 @@ function authorizedRequest(body: Record<string, unknown>): Request {
   });
 }
 
-function setupSupabase(options: {
-  paymentOrdersUpdateResult?: QueryResult;
-  reconcileResult?: QueryResult;
-} = {}) {
+function setupSupabase(
+  options: {
+    paymentOrdersUpdateResult?: QueryResult;
+    reconcileResult?: QueryResult;
+  } = {}
+) {
   const {
     paymentOrdersUpdateResult = { data: null, error: null },
     reconcileResult = { data: [{ id: ORDER_ID }], error: null }
@@ -145,9 +146,7 @@ function setupSupabase(options: {
   });
   const paymentOrdersQuery = buildQuery({
     select: (columns?: string) =>
-      columns === 'id'
-        ? Promise.resolve(reconcileResult)
-        : insertQuery,
+      columns === 'id' ? Promise.resolve(reconcileResult) : insertQuery,
     then: (resolve) => resolve(paymentOrdersUpdateResult)
   });
 
@@ -199,7 +198,11 @@ describe('membership checkout failure reconciliation', () => {
       return {
         checkout: {
           sessions: {
-            create: vi.fn().mockRejectedValue(new Error('card declined'))
+            create: vi.fn().mockRejectedValue(
+              Object.assign(new Error('card declined'), {
+                type: 'StripeCardError'
+              })
+            )
           }
         }
       };
@@ -218,6 +221,31 @@ describe('membership checkout failure reconciliation', () => {
     vi.clearAllMocks();
   });
 
+  it('keeps an ambiguous provider creation reserved instead of allowing another bill', async () => {
+    StripeMock.mockImplementation(function () {
+      return {
+        checkout: {
+          sessions: {
+            create: vi.fn().mockRejectedValue(new Error('connection reset'))
+          }
+        }
+      };
+    });
+    const { paymentOrdersQuery } = setupSupabase();
+    const response = await handler(
+      authorizedRequest({
+        type: 'subscription',
+        id: 'pro',
+        billingCycle: 'yearly'
+      })
+    );
+    expect(response.status).toBe(502);
+    expect(await response.json()).toMatchObject({
+      errorCode: 'CHECKOUT_OUTCOME_UNKNOWN',
+      orderId: ORDER_ID
+    });
+    expect(paymentOrdersQuery.update).not.toHaveBeenCalled();
+  });
   it('marks a pending order failed and records checkout_session_create_failed when Stripe session creation fails', async () => {
     const { paymentOrdersQuery } = setupSupabase();
 

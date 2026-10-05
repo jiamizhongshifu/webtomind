@@ -27,6 +27,7 @@ import {
 export const config = { runtime: 'edge' };
 
 export interface VideoGenerateRequest {
+  sessionId?: string;
   prompt?: string;
   model?: string;
   aspectRatio?: string;
@@ -48,6 +49,7 @@ export interface VideoGenerateRequest {
 }
 
 export interface VideoGenerateContract {
+  sessionId?: string;
   prompt: string;
   model: string;
   apiModel: string;
@@ -425,6 +427,9 @@ export function buildVideoGenerateContract(
       watermark: body.watermark === true,
       webSearch,
       outputFormat,
+      ...(typeof body.sessionId === 'string' && body.sessionId.trim()
+        ? { sessionId: body.sessionId.trim() }
+        : {}),
       async: body.async !== false,
       costEstimate: estimateVideoGenerationCreditCost({
         model: model.id,
@@ -709,6 +714,14 @@ async function createVideoTask(
       provider: 'volcengine_ark',
       started_at: status === 'running' ? new Date().toISOString() : null,
       request_payload: {
+        ...(contract.sessionId
+          ? {
+              creationContext: {
+                sessionId: contract.sessionId,
+                referenceAssetIds: []
+              }
+            }
+          : {}),
         prompt: contract.prompt,
         model: contract.model,
         apiModel: contract.apiModel,
@@ -829,6 +842,34 @@ export default async function handler(request: Request) {
   let taskId: string | null = null;
 
   try {
+    if (contract.value.sessionId) {
+      const admin = getSupabaseAdmin();
+      if (!admin)
+        return jsonResponse(
+          { error: 'Database service unavailable' },
+          corsHeaders,
+          503
+        );
+      const { data: session, error: sessionError } = await admin
+        .from('image_creation_sessions')
+        .select('id')
+        .eq('id', contract.value.sessionId)
+        .eq('user_id', userId)
+        .contains('metadata', { mediaType: 'video' })
+        .maybeSingle();
+      if (sessionError)
+        return jsonResponse(
+          { error: 'Unable to verify video session' },
+          corsHeaders,
+          503
+        );
+      if (!session)
+        return jsonResponse(
+          { error: 'Video session not found' },
+          corsHeaders,
+          404
+        );
+    }
     const credit = await consumeVideoCredit(userId, contract.value);
     if (!credit.ok) {
       return jsonResponse(credit.body, corsHeaders, credit.status);

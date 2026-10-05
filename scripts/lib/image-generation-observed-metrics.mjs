@@ -67,6 +67,30 @@ export function summarizeImageRefundLedger(tasks, refundTransactions) {
   };
 }
 
+export function summarizeEnqueueEntitlements(tasks, minimumSample = 10) {
+  const paid = tasks.filter(
+    (task) =>
+      asRecord(asRecord(task.request_payload).entitlementAtEnqueue)
+        .paidAccess === true
+  );
+  const known = tasks.filter(
+    (task) =>
+      typeof asRecord(asRecord(task.request_payload).entitlementAtEnqueue)
+        .paidAccess === 'boolean'
+  );
+  return {
+    basis: 'server_snapshot_at_enqueue',
+    knownTasks: known.length,
+    unknownTasks: tasks.length - known.length,
+    paidTasks: paid.length,
+    paidFailed: paid.filter((task) => task.status === 'failed').length,
+    paidFailureRate:
+      paid.length >= minimumSample
+        ? paid.filter((task) => task.status === 'failed').length / paid.length
+        : null
+  };
+}
+
 async function loadRefundTransactions(supabase, taskIds) {
   const transactions = [];
   for (let offset = 0; offset < taskIds.length; offset += 200) {
@@ -183,7 +207,7 @@ export async function loadObservedImageGenerationMetrics(options = {}) {
       if (subscriptionError) throw new Error(subscriptionError.message);
       for (const subscription of subscriptions || []) {
         if (
-          !subscription.current_period_end ||
+          subscription.current_period_end &&
           new Date(subscription.current_period_end).getTime() > Date.now()
         ) {
           paidUserIds.add(subscription.user_id);
@@ -247,6 +271,7 @@ export async function loadObservedImageGenerationMetrics(options = {}) {
             : 'current_free_or_inactive',
         'total_duration_ms'
       ),
+      enqueueEntitlements: summarizeEnqueueEntitlements(tasks, minimumSample),
       planAccessBasis: 'current_subscription_at_report_time',
       byRequestProfile: buildOutcomeGroups(
         tasks,
@@ -280,9 +305,8 @@ export async function loadObservedImageGenerationMetrics(options = {}) {
               asNumber(attempt.attempt_index) <= 1 &&
               attempt.status === 'succeeded'
           ).length,
-          attempts.filter(
-            (attempt) => asNumber(attempt.attempt_index) <= 1
-          ).length
+          attempts.filter((attempt) => asNumber(attempt.attempt_index) <= 1)
+            .length
         ),
         retryOrFallbackAttempts: attempts.filter(
           (attempt) => asNumber(attempt.attempt_index) > 1

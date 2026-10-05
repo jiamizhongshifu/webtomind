@@ -90,4 +90,32 @@ describe('video submission failure feedback', () => {
       );
     }
   );
+  it('rejects a session not owned by the caller before charging or calling the provider', async () => {
+    const query = {
+      select: vi.fn(),
+      eq: vi.fn(),
+      contains: vi.fn(),
+      maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null })
+    };
+    query.select.mockReturnValue(query);
+    query.eq.mockReturnValue(query);
+    query.contains.mockReturnValue(query);
+    const rpc = vi.fn();
+    mocks.admin.mockReturnValue({ rpc, from: () => query });
+    mocks.fetch.mockClear();
+    const response = await handler(
+      new Request('https://webtomind.test/api/video/generate', {
+        method: 'POST',
+        body: JSON.stringify({
+          prompt: 'video',
+          model: 'seedance-2-5',
+          sessionId: 'other-session'
+        })
+      })
+    );
+    expect(response.status).toBe(404);
+    expect(query.eq).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(rpc).not.toHaveBeenCalled();
+    expect(mocks.fetch).not.toHaveBeenCalled();
+  });
 });

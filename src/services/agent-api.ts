@@ -849,6 +849,7 @@ export interface VisualImageGenerationResult {
 }
 
 export interface VisualVideoGenerationRequest {
+  sessionId?: string;
   prompt: string;
   model: string;
   aspectRatio?: string;

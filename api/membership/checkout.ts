@@ -1,3 +1,7 @@
+import {
+  resolvePendingSubscriptionCheckout,
+  isDefiniteCheckoutRejection
+} from './pending-checkout';
 import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
@@ -1000,6 +1004,20 @@ export default async function handler(request: Request) {
       .single();
 
     if (orderError) {
+      if (
+        type === 'subscription' &&
+        orderError.code === '23505' &&
+        orderError.message.includes('SUBSCRIPTION_CHECKOUT_IN_PROGRESS')
+      ) {
+        const pending = await resolvePendingSubscriptionCheckout(
+          orderDb,
+          stripe,
+          userId,
+          id,
+          billingCycle
+        );
+        return jsonResponse(pending, pending.url ? 200 : 409);
+      }
       console.error('[Checkout] Order transformation error:', orderError);
       throw new Error(`Failed to create order: ${orderError.message}`);
     }
@@ -1224,10 +1242,12 @@ export default async function handler(request: Request) {
       });
 
       // 更新订单，关联 Stripe Session ID
-      await orderDb
+      const { error: sessionSaveError } = await orderDb
         .from('payment_orders')
         .update({ provider_order_id: session.id })
         .eq('id', order.id);
+      if (sessionSaveError)
+        throw new Error('Checkout created but local confirmation is pending');
 
       return jsonResponse({
         id: order.id,
@@ -1239,18 +1259,30 @@ export default async function handler(request: Request) {
       console.error('[Checkout] Stripe Session Error:', stripeError);
       const errorSummary =
         stripeError instanceof Error ? stripeError.message : 'Unknown error';
-      await reconcileFailedCheckoutOrder({
-        supabase: orderDb,
-        order: createdOrder,
-        errorCode: 'CHECKOUT_PROVIDER_ERROR',
-        errorSummary
-      });
+      // Connection/API failures can occur AFTER Stripe created a payable session.
+      // Keep the order reserved until provider reconciliation; a new order would
+      // use another idempotency key and could create a second recurring bill.
+      if (isDefiniteCheckoutRejection(stripeError)) {
+        await reconcileFailedCheckoutOrder({
+          supabase: orderDb,
+          order: createdOrder,
+          errorCode: 'CHECKOUT_PROVIDER_ERROR',
+          errorSummary
+        });
+      }
 
       return jsonResponse(
-        {
-          error: 'Unable to start checkout',
-          errorCode: 'CHECKOUT_PROVIDER_ERROR'
-        },
+        isDefiniteCheckoutRejection(stripeError)
+          ? {
+              error: 'Unable to start checkout',
+              errorCode: 'CHECKOUT_PROVIDER_ERROR'
+            }
+          : {
+              error:
+                'Checkout confirmation is pending. Please do not start another payment; retry later or contact support with this order ID.',
+              errorCode: 'CHECKOUT_OUTCOME_UNKNOWN',
+              orderId: createdOrder?.id
+            },
         502
       );
     }

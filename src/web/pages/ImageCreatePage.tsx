@@ -3192,6 +3192,7 @@ export function ImageCreatePage() {
     deleteServerGenerationTask,
     deleteGenerationFromHistory
   } = useImageGeneration({
+    userId: user?.id,
     isAuthenticated: hasApiAuth,
     onRequireLogin: () => requestLogin('image_generate_gate'),
     settings,

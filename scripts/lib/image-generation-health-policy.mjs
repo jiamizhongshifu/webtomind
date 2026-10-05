@@ -16,8 +16,8 @@ function readCount(value, fallback) {
 
 export function getImageGenerationHealthPolicy(env = process.env) {
   return {
-    maxFailureRate: readRate(env.IMAGE_HEALTH_MAX_FAILURE_RATE, 0.6),
-    targetFailureRate: readRate(env.IMAGE_HEALTH_TARGET_FAILURE_RATE, 0.2),
+    maxFailureRate: readRate(env.IMAGE_HEALTH_MAX_FAILURE_RATE, 0.1),
+    targetFailureRate: readRate(env.IMAGE_HEALTH_TARGET_FAILURE_RATE, 0.1),
     routeWarningMinAttempts: readCount(
       env.IMAGE_HEALTH_ROUTE_WARNING_MIN_ATTEMPTS,
       20
@@ -46,10 +46,17 @@ export function evaluateImageGenerationHealth(report, policy = {}) {
   }
 
   const failureRate = asRate(report.failureRate);
+  if (failureRate === null) {
+    blockers.push({
+      class: 'image_failure_rate_unavailable',
+      detail:
+        'No measured failure rate is available; reliability has not been verified.'
+    });
+  }
   if (failureRate !== null && failureRate > effectivePolicy.maxFailureRate) {
     blockers.push({
       class: 'image_failure_rate_above_release_ceiling',
-      detail: `${(failureRate * 100).toFixed(1)}% exceeds the transitional release ceiling of ${(effectivePolicy.maxFailureRate * 100).toFixed(1)}%.`
+      detail: `${(failureRate * 100).toFixed(1)}% exceeds the release ceiling of ${(effectivePolicy.maxFailureRate * 100).toFixed(1)}%.`
     });
   } else if (
     failureRate !== null &&
@@ -65,6 +72,20 @@ export function evaluateImageGenerationHealth(report, policy = {}) {
     blockers.push({
       class: 'image_refund_ledger_incomplete',
       detail: `${report.refundedChargedFailures || 0}/${report.chargedFailures} charged failures have matching refund ledger facts.`
+    });
+  }
+
+  const paidFailureRate = asRate(report.enqueueEntitlements?.paidFailureRate);
+  if (paidFailureRate !== null && paidFailureRate > 0.05) {
+    blockers.push({
+      class: 'paid_image_failure_rate_above_target',
+      detail: `${(paidFailureRate * 100).toFixed(1)}% paid-cohort failures exceed the 5% target.`
+    });
+  } else if (paidFailureRate === null) {
+    warnings.push({
+      class: 'paid_image_reliability_unverified',
+      detail:
+        'Insufficient task-time paid-cohort samples; the 95% paid success target is not certified.'
     });
   }
 

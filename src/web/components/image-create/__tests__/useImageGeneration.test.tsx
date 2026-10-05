@@ -99,6 +99,7 @@ describe('useImageGeneration', () => {
     const { result, unmount } = renderHook(() =>
       useImageGeneration({
         isAuthenticated: true,
+        userId: 'user-a',
         onRequireLogin: vi.fn(),
         settings: defaultImagePromptSettings,
         promptMode: 'custom',
@@ -177,6 +178,7 @@ describe('useImageGeneration', () => {
     const { result, unmount } = renderHook(() =>
       useImageGeneration({
         isAuthenticated: true,
+        userId: 'user-a',
         onRequireLogin,
         settings: defaultImagePromptSettings,
         promptMode: 'custom',
@@ -250,6 +252,7 @@ describe('useImageGeneration', () => {
     const { result, unmount } = renderHook(() =>
       useImageGeneration({
         isAuthenticated: true,
+        userId: 'user-a',
         onRequireLogin,
         settings: {
           ...defaultImagePromptSettings,
@@ -330,6 +333,7 @@ describe('useImageGeneration', () => {
     const { result, unmount } = renderHook(() =>
       useImageGeneration({
         isAuthenticated: true,
+        userId: 'user-a',
         onRequireLogin,
         settings: {
           ...defaultImagePromptSettings,
@@ -383,6 +387,7 @@ describe('useImageGeneration', () => {
     const { result, unmount } = renderHook(() =>
       useImageGeneration({
         isAuthenticated: true,
+        userId: 'user-a',
         onRequireLogin,
         settings: {
           ...defaultImagePromptSettings,
@@ -435,6 +440,7 @@ describe('useImageGeneration', () => {
     const { result, unmount } = renderHook(() =>
       useImageGeneration({
         isAuthenticated: true,
+        userId: 'user-a',
         onRequireLogin,
         settings: {
           ...defaultImagePromptSettings,
@@ -531,6 +537,7 @@ describe('useImageGeneration', () => {
     const { result, unmount } = renderHook(() =>
       useImageGeneration({
         isAuthenticated: true,
+        userId: 'user-a',
         onRequireLogin: vi.fn(),
         settings: defaultImagePromptSettings,
         promptMode: 'custom',
@@ -579,6 +586,121 @@ describe('useImageGeneration', () => {
       )
     );
 
+    unmount();
+  });
+  const scopedParams = () => ({
+    onRequireLogin: vi.fn(),
+    settings: defaultImagePromptSettings,
+    promptMode: 'custom' as const,
+    customPromptText: 'private prompt',
+    customNegativePromptText: '',
+    selectedReferenceIds: [],
+    compiled: {
+      prompt: '',
+      negativePrompt: '',
+      selectedAssets: [],
+      warnings: []
+    },
+    setError: vi.fn(),
+    setStatusText: vi.fn(),
+    onGenerationSuccess: vi.fn()
+  });
+  it('discards ownerless legacy queues and never submits their prompts', async () => {
+    localStorage.setItem(
+      'webtomind_image_generation_queue_v1',
+      JSON.stringify([
+        {
+          id: 'private',
+          status: 'queued',
+          createdAt: Date.now(),
+          request: { prompt: 'private A' }
+        }
+      ])
+    );
+    const params = scopedParams();
+    const { result, unmount } = renderHook(() =>
+      useImageGeneration({ ...params, isAuthenticated: true, userId: 'user-b' })
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(result.current.generationQueue).toEqual([]);
+    expect(
+      localStorage.getItem('webtomind_image_generation_queue_v1')
+    ).toBeNull();
+    expect(agentApiMocks.generateVisualImage).not.toHaveBeenCalled();
+    unmount();
+  });
+  it('clears old-account state and ignores late completion after switching accounts', async () => {
+    let resolveTask!: (value: unknown) => void;
+    agentApiMocks.waitForVisualImageTask.mockReturnValue(
+      new Promise((resolve) => {
+        resolveTask = resolve;
+      })
+    );
+    const params = scopedParams();
+    const { result, rerender, unmount } = renderHook(
+      ({ userId }) =>
+        useImageGeneration({ ...params, isAuthenticated: !!userId, userId }),
+      { initialProps: { userId: 'user-a' } }
+    );
+    await act(async () => {
+      await result.current.handleGenerate();
+    });
+    await waitFor(() =>
+      expect(agentApiMocks.waitForVisualImageTask).toHaveBeenCalled()
+    );
+    expect(
+      localStorage.getItem('webtomind_image_generation_queue_v2:user-a')
+    ).toContain('private prompt');
+    rerender({ userId: 'user-b' });
+    expect(result.current.generationQueue).toEqual([]);
+    await act(async () => {
+      resolveTask({
+        generationId: 'private',
+        imageUrl: 'private-A.png',
+        images: [{ generationId: 'private', imageUrl: 'private-A.png' }]
+      });
+    });
+    expect(params.onGenerationSuccess).not.toHaveBeenCalled();
+    expect(result.current.resultImageUrl).toBeNull();
+    expect(result.current.generationHistory).toEqual([]);
+    expect(
+      localStorage.getItem('webtomind_image_generation_queue_v2:user-b')
+    ).toBeNull();
+    unmount();
+  });
+  it('does not continue a batch under a new account after an enqueue resolves', async () => {
+    let resolveEnqueue!: (value: { taskId: string }) => void;
+    agentApiMocks.enqueueVisualImageTask.mockReturnValue(
+      new Promise((resolve) => {
+        resolveEnqueue = resolve;
+      })
+    );
+    const params = scopedParams();
+    const { result, rerender, unmount } = renderHook(
+      ({ userId }) =>
+        useImageGeneration({ ...params, isAuthenticated: true, userId }),
+      { initialProps: { userId: 'user-a' } }
+    );
+    let running!: Promise<void>;
+    act(() => {
+      running = result.current.enqueueGenerationRequests([
+        { prompt: 'A', assetIds: [] } as never,
+        { prompt: 'A2', assetIds: [] } as never
+      ]);
+    });
+    await waitFor(() =>
+      expect(agentApiMocks.enqueueVisualImageTask).toHaveBeenCalledTimes(1)
+    );
+    rerender({ userId: 'user-b' });
+    await act(async () => {
+      resolveEnqueue({ taskId: 'old-task' });
+      await running;
+    });
+    expect(agentApiMocks.enqueueVisualImageTask).toHaveBeenCalledTimes(1);
+    expect(agentApiMocks.waitForVisualImageTask).not.toHaveBeenCalled();
+    expect(result.current.generationQueue).toEqual([]);
     unmount();
   });
 });

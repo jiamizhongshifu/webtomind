@@ -58,6 +58,7 @@ interface CompiledPrompt {
 
 export interface UseImageGenerationParams {
   isAuthenticated: boolean;
+  userId?: string | null;
   onRequireLogin: () => void;
   settings: ImagePromptSettings;
   promptMode: 'composed' | 'custom';
@@ -136,7 +137,9 @@ export interface ImageGenerateOverrides {
   creationContextOverride?: ImageCreationContext;
 }
 
-const GENERATION_QUEUE_STORAGE_KEY = 'webtomind_image_generation_queue_v1';
+const LEGACY_QUEUE_STORAGE_KEY = 'webtomind_image_generation_queue_v1';
+const queueStorageKey = (ownerId: string) =>
+  `webtomind_image_generation_queue_v2:${ownerId}`;
 const GENERATION_QUEUE_STORAGE_TTL_MS = 12 * 60 * 60 * 1000;
 const RECENT_GENERATION_HISTORY_LIMIT = 12;
 const ACTIVE_TASK_SYNC_INTERVAL_MS = 10 * 1000;
@@ -165,9 +168,15 @@ function isRestorableGenerationTask(
   return Boolean(item.serverTaskId) && item.status === 'running';
 }
 
-function readPersistedGenerationQueue(): ImageGenerationQueueItem[] {
+function readPersistedGenerationQueue(
+  ownerId: string | null
+): ImageGenerationQueueItem[] {
   if (!canUseGenerationQueueStorage()) return [];
   try {
+    // The legacy cache has no owner; it cannot safely be adopted by any account.
+    window.localStorage.removeItem(LEGACY_QUEUE_STORAGE_KEY);
+    if (!ownerId) return [];
+    const GENERATION_QUEUE_STORAGE_KEY = queueStorageKey(ownerId);
     const raw = window.localStorage.getItem(GENERATION_QUEUE_STORAGE_KEY);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as ImageGenerationQueueItem[];
@@ -192,10 +201,12 @@ function readPersistedGenerationQueue(): ImageGenerationQueueItem[] {
 }
 
 function writePersistedGenerationQueue(
-  queue: ImageGenerationQueueItem[]
+  queue: ImageGenerationQueueItem[],
+  ownerId: string | null
 ): void {
-  if (!canUseGenerationQueueStorage()) return;
+  if (!ownerId || !canUseGenerationQueueStorage()) return;
   try {
+    const GENERATION_QUEUE_STORAGE_KEY = queueStorageKey(ownerId);
     const active = queue.filter((item) => isRestorableGenerationTask(item));
     if (active.length === 0) {
       window.localStorage.removeItem(GENERATION_QUEUE_STORAGE_KEY);
@@ -339,6 +350,7 @@ export interface UseImageGenerationResult {
 
 export function useImageGeneration({
   isAuthenticated,
+  userId,
   onRequireLogin,
   settings,
   promptMode,
@@ -359,6 +371,26 @@ export function useImageGeneration({
   onGenerationFailure
 }: UseImageGenerationParams): UseImageGenerationResult {
   const { t } = useTranslation('imageCreate');
+  const ownerId = isAuthenticated ? userId || null : null;
+  const ownerRef = useRef(ownerId);
+  const epochRef = useRef(0);
+  const mountedRef = useRef(true);
+  const ownerChanged = ownerRef.current !== ownerId;
+  if (ownerChanged) {
+    ownerRef.current = ownerId;
+    epochRef.current += 1;
+  }
+  const epoch = epochRef.current;
+  const isCurrentOwner = useCallback(
+    () => mountedRef.current && epochRef.current === epoch,
+    [epoch]
+  );
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [resultImageUrl, setResultImageUrl] = useState<string | null>(null);
@@ -367,15 +399,14 @@ export function useImageGeneration({
     VisualImageHistoryItem[]
   >([]);
   const [generationHistoryTotal, setGenerationHistoryTotal] = useState(0);
-  const [generationHistoryLoaded, setGenerationHistoryLoaded] = useState(
-    !isAuthenticated
-  );
+  const [generationHistoryLoaded, setGenerationHistoryLoaded] =
+    useState(!isAuthenticated);
   const [activeGenerationId, setActiveGenerationId] = useState<string | null>(
     null
   );
   const [generationQueue, setGenerationQueueState] = useState<
     ImageGenerationQueueItem[]
-  >(() => (isAuthenticated ? readPersistedGenerationQueue() : []));
+  >(() => readPersistedGenerationQueue(ownerId));
   const generationQueueRef =
     useRef<ImageGenerationQueueItem[]>(generationQueue);
   const queueWorkerRunningRef = useRef(false);
@@ -383,23 +414,40 @@ export function useImageGeneration({
     useRef<Promise<ActiveServerTaskSyncResult> | null>(null);
   const emptyActiveTaskSyncCountRef = useRef(0);
 
+  if (ownerChanged) {
+    generationQueueRef.current = [];
+    queueWorkerRunningRef.current = false;
+    activeTaskSyncPromiseRef.current = null;
+    emptyActiveTaskSyncCountRef.current = 0;
+    setGenerationQueueState([]);
+    setGenerationHistory([]);
+    setGenerationHistoryTotal(0);
+    setGenerationHistoryLoaded(!ownerId);
+    setResultImageUrl(null);
+    setResultImageUrls([]);
+    setActiveGenerationId(null);
+    setIsGenerating(false);
+  }
+
   const replaceGenerationQueue = useCallback(
     (
       updater: (
         current: ImageGenerationQueueItem[]
       ) => ImageGenerationQueueItem[]
     ) => {
+      if (!isCurrentOwner()) return [];
       const next = updater(generationQueueRef.current);
       generationQueueRef.current = next;
       setGenerationQueueState(next);
-      writePersistedGenerationQueue(next);
+      writePersistedGenerationQueue(next, ownerId);
       return next;
     },
-    []
+    [ownerId, isCurrentOwner]
   );
 
   const loadGenerationHistory = useCallback(async () => {
-    if (!isAuthenticated) {
+    if (!isCurrentOwner()) return;
+    if (!ownerId) {
       setGenerationHistory([]);
       setGenerationHistoryTotal(0);
       setGenerationHistoryLoaded(true);
@@ -410,6 +458,7 @@ export function useImageGeneration({
       const result = await getVisualImageHistoryResult(
         RECENT_GENERATION_HISTORY_LIMIT
       );
+      if (!isCurrentOwner()) return;
       warmRecentGenerationImages(
         result.items.map(
           (item) => item.thumbnailUrl || item.previewUrl || item.imageUrl
@@ -418,13 +467,14 @@ export function useImageGeneration({
       setGenerationHistory(result.items);
       setGenerationHistoryTotal(result.total);
     } catch (historyError) {
+      if (!isCurrentOwner()) return;
       console.warn('[ImageCreate] load history failed:', historyError);
       setGenerationHistory([]);
       setGenerationHistoryTotal(0);
     } finally {
-      setGenerationHistoryLoaded(true);
+      if (isCurrentOwner()) setGenerationHistoryLoaded(true);
     }
-  }, [isAuthenticated]);
+  }, [ownerId, isCurrentOwner]);
 
   const insertGenerationResultIntoHistory = useCallback(
     (
@@ -543,7 +593,7 @@ export function useImageGeneration({
   );
 
   const runGenerationQueue = useCallback(async () => {
-    if (queueWorkerRunningRef.current) return;
+    if (!ownerId || !isCurrentOwner() || queueWorkerRunningRef.current) return;
 
     queueWorkerRunningRef.current = true;
     setIsGenerating(true);
@@ -557,7 +607,7 @@ export function useImageGeneration({
           (item) => item.status === 'queued' && !item.clientSubmissionPending
         );
       let nextTask = findNextTask();
-      while (nextTask) {
+      while (nextTask && isCurrentOwner()) {
         const activeTask = nextTask;
         const startedAt = activeTask.startedAt || Date.now();
         const initialDetail = getRunningDetail(startedAt);
@@ -579,6 +629,7 @@ export function useImageGeneration({
         setResultImageUrls([]);
 
         const progressTimer = window.setInterval(() => {
+          if (!isCurrentOwner()) return;
           const detail = getRunningDetail(startedAt);
           replaceGenerationQueue((current) =>
             current.map((item) =>
@@ -597,6 +648,7 @@ export function useImageGeneration({
             ? await waitForVisualImageTask(activeTask.serverTaskId)
             : await generateVisualImage(activeTask.request, {
                 onQueued: (serverTaskId) => {
+                  if (!isCurrentOwner()) return;
                   replaceGenerationQueue((current) =>
                     current.map((item) =>
                       item.id === activeTask.id
@@ -609,6 +661,7 @@ export function useImageGeneration({
                   );
                 }
               });
+          if (!isCurrentOwner()) return;
           const latestTask = generationQueueRef.current.find(
             (item) => item.id === activeTask.id
           );
@@ -695,6 +748,7 @@ export function useImageGeneration({
             taskId: activeTask.serverTaskId
           });
         } catch (generateError) {
+          if (!isCurrentOwner()) return;
           if (isImageTaskCancelledError(generateError)) {
             replaceGenerationQueue((current) =>
               current.filter((item) => item.id !== activeTask.id)
@@ -801,22 +855,28 @@ export function useImageGeneration({
             taskId: activeTask.serverTaskId
           });
         } finally {
-          window.dispatchEvent(new CustomEvent('credits-changed'));
-          window.setTimeout(() => {
-            void loadGenerationHistory();
-          }, 800);
+          if (isCurrentOwner()) {
+            window.dispatchEvent(new CustomEvent('credits-changed'));
+            window.setTimeout(() => {
+              if (isCurrentOwner()) void loadGenerationHistory();
+            }, 800);
+          }
           window.clearInterval(progressTimer);
         }
 
         nextTask = findNextTask();
       }
     } finally {
-      queueWorkerRunningRef.current = false;
-      setIsGenerating(
-        generationQueueRef.current.some(isActiveGenerationQueueItem)
-      );
+      if (isCurrentOwner()) {
+        queueWorkerRunningRef.current = false;
+        setIsGenerating(
+          generationQueueRef.current.some(isActiveGenerationQueueItem)
+        );
+      }
     }
   }, [
+    ownerId,
+    isCurrentOwner,
     getRunningDetail,
     insertGenerationResultIntoHistory,
     loadGenerationHistory,
@@ -833,7 +893,7 @@ export function useImageGeneration({
 
   const hydrateActiveServerTasks =
     useCallback(async (): Promise<ActiveServerTaskSyncResult> => {
-      if (!isAuthenticated) {
+      if (!ownerId || !isCurrentOwner()) {
         return { activeCount: 0, addedTaskIds: [] };
       }
 
@@ -849,6 +909,7 @@ export function useImageGeneration({
               .filter(Boolean)
           );
           const activeSnapshot = await getVisualImageTaskSnapshot(20);
+          if (!isCurrentOwner()) return { activeCount: 0, addedTaskIds: [] };
           const activeTasks = activeSnapshot.tasks;
           const addedTaskIds = activeTasks
             .map((task) => task.taskId)
@@ -977,6 +1038,7 @@ export function useImageGeneration({
           void runGenerationQueue();
           return { activeCount: activeTasks.length, addedTaskIds };
         } catch (serverTaskError) {
+          if (!isCurrentOwner()) return { activeCount: 0, addedTaskIds: [] };
           emptyActiveTaskSyncCountRef.current = Math.min(
             emptyActiveTaskSyncCountRef.current + 1,
             3
@@ -992,13 +1054,19 @@ export function useImageGeneration({
             addedTaskIds: []
           };
         } finally {
-          activeTaskSyncPromiseRef.current = null;
+          if (isCurrentOwner()) activeTaskSyncPromiseRef.current = null;
         }
       })();
 
       activeTaskSyncPromiseRef.current = syncPromise;
       return syncPromise;
-    }, [isAuthenticated, replaceGenerationQueue, runGenerationQueue, t]);
+    }, [
+      ownerId,
+      isCurrentOwner,
+      replaceGenerationQueue,
+      runGenerationQueue,
+      t
+    ]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -1006,7 +1074,7 @@ export function useImageGeneration({
       setGenerationQueueState([]);
       return;
     }
-    const persisted = readPersistedGenerationQueue();
+    const persisted = readPersistedGenerationQueue(ownerId);
     if (persisted.length > 0) {
       replaceGenerationQueue((current) => {
         const seen = new Set(current.map((item) => item.id));
@@ -1020,6 +1088,7 @@ export function useImageGeneration({
   }, [
     hydrateActiveServerTasks,
     isAuthenticated,
+    ownerId,
     replaceGenerationQueue,
     runGenerationQueue
   ]);
@@ -1085,7 +1154,7 @@ export function useImageGeneration({
       requests: VisualImageGenerationRequest[],
       options: { statusText?: string } = {}
     ) => {
-      if (requests.length === 0) return;
+      if (!ownerId || !isCurrentOwner() || requests.length === 0) return;
       const optimisticTasks: ImageGenerationQueueItem[] = requests.map(
         (request, index) =>
           ({
@@ -1104,12 +1173,15 @@ export function useImageGeneration({
       replaceGenerationQueue((current) => [...current, ...optimisticTasks]);
 
       await hydrateActiveServerTasks();
+      if (!isCurrentOwner()) return;
       setStatusText(options.statusText || (t('status.queued') as string));
       setIsGenerating(true);
 
       try {
         for (const [index, request] of requests.entries()) {
+          if (!isCurrentOwner()) return;
           const serverTask = await enqueueVisualImageTask(request);
+          if (!isCurrentOwner()) return;
           const optimisticTask = optimisticTasks[index];
           replaceGenerationQueue((current) =>
             current.map((item) =>
@@ -1146,6 +1218,7 @@ export function useImageGeneration({
         window.dispatchEvent(new CustomEvent('credits-changed'));
         void runGenerationQueue();
       } catch (enqueueError) {
+        if (!isCurrentOwner()) return;
         const optimisticIds = new Set(optimisticTasks.map((item) => item.id));
         if (
           enqueueError instanceof VisualImageGenerationError &&
@@ -1156,6 +1229,7 @@ export function useImageGeneration({
             current.filter((item) => !optimisticIds.has(item.id))
           );
           const activeSync = await hydrateActiveServerTasks();
+          if (!isCurrentOwner()) return;
           const syncedCount = Math.max(
             activeSync.activeCount,
             enqueueError.activeTasks?.length || 0,
@@ -1205,6 +1279,8 @@ export function useImageGeneration({
       }
     },
     [
+      ownerId,
+      isCurrentOwner,
       hydrateActiveServerTasks,
       onCreditBlocked,
       replaceGenerationQueue,
@@ -1297,6 +1373,7 @@ export function useImageGeneration({
       if (serverTaskId) {
         void cancelVisualImageTask(serverTaskId)
           .then((result) => {
+            if (!isCurrentOwner()) return;
             replaceGenerationQueue((current) =>
               current.map((item) =>
                 item.serverTaskId === serverTaskId || item.id === id
@@ -1318,6 +1395,7 @@ export function useImageGeneration({
             window.dispatchEvent(new CustomEvent('credits-changed'));
           })
           .catch((cancelError) => {
+            if (!isCurrentOwner()) return;
             console.warn(
               '[ImageCreate] cancel queued task failed:',
               cancelError
@@ -1344,7 +1422,7 @@ export function useImageGeneration({
       }
       setStatusText(t('status.queueCancelled'));
     },
-    [replaceGenerationQueue, setStatusText, t]
+    [isCurrentOwner, replaceGenerationQueue, setStatusText, t]
   );
 
   const cancelServerQueuedGeneration = useCallback(
@@ -1370,6 +1448,7 @@ export function useImageGeneration({
       ]);
       void cancelVisualImageTask(taskId)
         .then((result) => {
+          if (!isCurrentOwner()) return;
           replaceGenerationQueue((current) =>
             current.map((item) =>
               item.serverTaskId === taskId
@@ -1387,11 +1466,12 @@ export function useImageGeneration({
           window.dispatchEvent(new CustomEvent('credits-changed'));
         })
         .catch((cancelError) => {
+          if (!isCurrentOwner()) return;
           console.warn('[ImageCreate] cancel queued task failed:', cancelError);
         });
       setStatusText(t('status.queueCancelled'));
     },
-    [replaceGenerationQueue, setStatusText, t]
+    [isCurrentOwner, replaceGenerationQueue, setStatusText, t]
   );
 
   const cancelRunningGeneration = useCallback(
@@ -1421,6 +1501,7 @@ export function useImageGeneration({
       if (serverTaskId) {
         void cancelVisualImageTask(serverTaskId)
           .then((result) => {
+            if (!isCurrentOwner()) return;
             replaceGenerationQueue((current) =>
               current.map((item) =>
                 item.serverTaskId === serverTaskId || item.id === id
@@ -1442,6 +1523,7 @@ export function useImageGeneration({
             window.dispatchEvent(new CustomEvent('credits-changed'));
           })
           .catch((cancelError) => {
+            if (!isCurrentOwner()) return;
             console.warn(
               '[ImageCreate] cancel running task failed:',
               cancelError
@@ -1452,7 +1534,7 @@ export function useImageGeneration({
       setStatusText(t('status.taskCancelled'));
       window.dispatchEvent(new CustomEvent('credits-changed'));
     },
-    [replaceGenerationQueue, setError, setStatusText, t]
+    [isCurrentOwner, replaceGenerationQueue, setError, setStatusText, t]
   );
 
   const cancelServerRunningGeneration = useCallback(
@@ -1478,6 +1560,7 @@ export function useImageGeneration({
       ]);
       void cancelVisualImageTask(taskId)
         .then((result) => {
+          if (!isCurrentOwner()) return;
           replaceGenerationQueue((current) =>
             current.map((item) =>
               item.serverTaskId === taskId
@@ -1499,6 +1582,7 @@ export function useImageGeneration({
           window.dispatchEvent(new CustomEvent('credits-changed'));
         })
         .catch((cancelError) => {
+          if (!isCurrentOwner()) return;
           console.warn(
             '[ImageCreate] cancel running task failed:',
             cancelError
@@ -1508,7 +1592,7 @@ export function useImageGeneration({
       setStatusText(t('status.taskCancelled'));
       window.dispatchEvent(new CustomEvent('credits-changed'));
     },
-    [replaceGenerationQueue, setError, setStatusText, t]
+    [isCurrentOwner, replaceGenerationQueue, setError, setStatusText, t]
   );
 
   const retryGenerationTask = useCallback(
@@ -1525,6 +1609,7 @@ export function useImageGeneration({
         setStatusText(t('status.queued'));
         void retryVisualImageTask(failedServerTaskId)
           .then((retryTask) => {
+            if (!isCurrentOwner()) return;
             void deleteFailedVisualImageTask(failedServerTaskId).catch(
               (deleteError) => {
                 console.warn(
@@ -1571,6 +1656,7 @@ export function useImageGeneration({
             void runGenerationQueue();
           })
           .catch((retryError) => {
+            if (!isCurrentOwner()) return;
             const message = getFriendlyGenerationErrorMessage(
               retryError,
               t('errors.retryNotAllowed') as string,
@@ -1631,7 +1717,14 @@ export function useImageGeneration({
       setStatusText(t('status.queued'));
       void runGenerationQueue();
     },
-    [replaceGenerationQueue, runGenerationQueue, setError, setStatusText, t]
+    [
+      isCurrentOwner,
+      replaceGenerationQueue,
+      runGenerationQueue,
+      setError,
+      setStatusText,
+      t
+    ]
   );
 
   const retryServerGenerationTask = useCallback(
@@ -1645,6 +1738,7 @@ export function useImageGeneration({
       setStatusText(t('status.queued'));
       void retryVisualImageTask(taskId)
         .then((retryTask) => {
+          if (!isCurrentOwner()) return;
           if (options.deleteOriginalFailedTask !== false) {
             void deleteFailedVisualImageTask(taskId).catch((deleteError) => {
               console.warn(
@@ -1716,6 +1810,7 @@ export function useImageGeneration({
           void runGenerationQueue();
         })
         .catch((retryError) => {
+          if (!isCurrentOwner()) return;
           const message = getFriendlyGenerationErrorMessage(
             retryError,
             t('errors.retryNotAllowed') as string,
@@ -1758,7 +1853,14 @@ export function useImageGeneration({
           playGenerationFailedSound();
         });
     },
-    [replaceGenerationQueue, runGenerationQueue, setError, setStatusText, t]
+    [
+      isCurrentOwner,
+      replaceGenerationQueue,
+      runGenerationQueue,
+      setError,
+      setStatusText,
+      t
+    ]
   );
 
   const deleteGenerationTask = useCallback(
@@ -1818,6 +1920,7 @@ export function useImageGeneration({
 
   const deleteGenerationFromHistory = async (item: VisualImageHistoryItem) => {
     await deleteVisualImageHistoryItem(item.id);
+    if (!isCurrentOwner()) return;
     setGenerationHistory((current) =>
       current.filter((historyItem) => historyItem.id !== item.id)
     );

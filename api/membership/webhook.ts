@@ -1,4 +1,4 @@
-﻿import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { getCorsHeadersForRequest } from '../utils/auth';
 import { recordConversionEvent } from '../utils/conversion-events';
@@ -11,11 +11,14 @@ import {
   getStripeWebhookSecret
 } from '../utils/stripe-env';
 import {
-  SUBSCRIPTION_ACCESS_STATUSES,
   findSubscriptionBlockingCheckout,
   hasPaidSubscriptionAccess,
   isEligibleForSubscriptionCreditGrant
 } from './subscription-policy';
+import {
+  getStripeSubscriptionPeriod,
+  getStripeInvoiceSubscriptionId
+} from './stripe-period';
 import { REFERRAL_SUBSCRIPTION_REWARD_CREDITS } from '../../src/shared/referral-rewards';
 
 export const config = {
@@ -51,6 +54,7 @@ export interface VerifiedCheckoutPayment {
   payment_status: string;
   status: string | null;
   provider?: 'stripe' | 'zpay';
+  billingPeriod?: { start: string; end: string };
 }
 
 async function getRawBody(request: Request): Promise<string> {
@@ -153,16 +157,6 @@ function getStripeCustomerId(
   return typeof customer === 'string' ? customer : customer.id || null;
 }
 
-function getStripeSubscriptionDate(
-  subscription: Stripe.Subscription,
-  field: 'current_period_start' | 'current_period_end'
-): string {
-  const timestamp =
-    (subscription as unknown as Record<string, number | undefined>)[field] ||
-    Math.floor(Date.now() / 1000);
-  return new Date(timestamp * 1000).toISOString();
-}
-
 function normalizeStripeSubscriptionStatus(
   status: Stripe.Subscription.Status
 ): 'active' | 'canceled' | 'past_due' | 'incomplete' | 'trialing' {
@@ -202,14 +196,36 @@ export async function reconcilePaidSubscription(
 ): Promise<void> {
   const { data: subscriptionCandidates, error: lookupError } = await supabase
     .from('user_subscriptions')
-    .select('id,status,current_period_end')
+    .select(
+      'id,status,current_period_end,stripe_subscription_id,external_subscription_id'
+    )
     .eq('user_id', values.user_id)
-    .in('status', [...SUBSCRIPTION_ACCESS_STATUSES])
     .order('created_at', { ascending: false });
 
   if (lookupError) throw lookupError;
 
-  const existing = findSubscriptionBlockingCheckout(subscriptionCandidates);
+  const matching = (subscriptionCandidates || []).find((candidate) =>
+    values.stripe_subscription_id
+      ? candidate.stripe_subscription_id === values.stripe_subscription_id
+      : values.external_subscription_id
+        ? candidate.external_subscription_id === values.external_subscription_id
+        : false
+  );
+  const blocking = findSubscriptionBlockingCheckout(subscriptionCandidates);
+  if (!matching && blocking?.stripe_subscription_id) {
+    // Leave this paid order retryable and preserve the existing provider ID.
+    // Replacing it would hide an independently recurring bill from cancellation.
+    throw new Error(
+      'Another recurring subscription exists; payment reconciliation required'
+    );
+  }
+  const existing =
+    matching ||
+    blocking ||
+    (subscriptionCandidates || []).find(
+      (candidate) =>
+        candidate.status === 'active' && !candidate.stripe_subscription_id
+    );
   if (existing) {
     const { error: updateError } = await supabase
       .from('user_subscriptions')
@@ -360,14 +376,8 @@ export async function syncStripeSubscription(
   const normalizedStatus = normalizeStripeSubscriptionStatus(
     subscription.status
   );
-  const currentPeriodStart = getStripeSubscriptionDate(
-    subscription,
-    'current_period_start'
-  );
-  const currentPeriodEnd = getStripeSubscriptionDate(
-    subscription,
-    'current_period_end'
-  );
+  const { start: currentPeriodStart, end: currentPeriodEnd } =
+    getStripeSubscriptionPeriod(subscription);
   const customerId = getStripeCustomerId(subscription.customer);
   const { data: storedSubscription, error } = await supabase
     .from('user_subscriptions')
@@ -437,7 +447,8 @@ export async function syncStripeSubscription(
     userId: storedSubscription.user_id,
     planId: storedSubscription.plan_id,
     status: normalizedStatus,
-    currentPeriodEnd
+    currentPeriodEnd,
+    current_period_end: currentPeriodEnd
   };
 }
 
@@ -574,13 +585,17 @@ export async function fulfillOrder(
 
       if (!plan) throw new Error('Plan details not found');
 
-      const subscriptionStart = new Date();
+      const subscriptionStart = payment.billingPeriod
+        ? new Date(payment.billingPeriod.start)
+        : new Date();
       const expiresAt = new Date(subscriptionStart);
       if (billingCycle === 'yearly') {
         expiresAt.setFullYear(expiresAt.getFullYear() + 1);
       } else {
         expiresAt.setMonth(expiresAt.getMonth() + 1);
       }
+      if (payment.billingPeriod)
+        expiresAt.setTime(new Date(payment.billingPeriod.end).getTime());
       const creditGrantPeriod = getSubscriptionCreditGrantPeriod(
         subscriptionStart,
         expiresAt
@@ -850,7 +865,21 @@ export default async function handler(request: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
       const orderId = session.metadata?.order_id;
       if (orderId) {
-        await fulfillOrder(supabase, orderId, session, event.id);
+        const subscriptionId =
+          typeof session.subscription === 'string'
+            ? session.subscription
+            : session.subscription?.id;
+        const billingPeriod = subscriptionId
+          ? getStripeSubscriptionPeriod(
+              await stripe.subscriptions.retrieve(subscriptionId)
+            )
+          : undefined;
+        await fulfillOrder(
+          supabase,
+          orderId,
+          { ...session, billingPeriod },
+          event.id
+        );
       }
     } else if (event.type === 'checkout.session.expired') {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -864,10 +893,9 @@ export default async function handler(request: Request) {
         return jsonResponse({ success: true });
       }
 
-      const subscriptionId =
-        (invoice as { subscription?: string | null }).subscription ?? null;
+      const subscriptionId = getStripeInvoiceSubscriptionId(invoice);
       if (!subscriptionId) {
-        return jsonResponse({ success: true });
+        throw new Error('Renewal invoice is missing its subscription');
       }
 
       const liveSubscription =
@@ -878,7 +906,7 @@ export default async function handler(request: Request) {
       );
 
       if (!synchronized) {
-        return jsonResponse({ success: true });
+        throw new Error('Renewal subscription has not been reconciled locally');
       }
 
       await recordStripeSubscriptionRenewalEvent({
@@ -904,9 +932,22 @@ export default async function handler(request: Request) {
       if (grantError) {
         throw grantError;
       }
+    } else if (event.type === 'invoice.payment_failed') {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionId = getStripeInvoiceSubscriptionId(invoice);
+      if (subscriptionId) {
+        await syncStripeSubscription(
+          supabase,
+          await stripe.subscriptions.retrieve(subscriptionId)
+        );
+      }
     } else if (event.type === 'customer.subscription.updated') {
       const sub = event.data.object as Stripe.Subscription;
-      await syncStripeSubscription(supabase, sub);
+      // Stripe events can arrive out of order: use the current provider state.
+      await syncStripeSubscription(
+        supabase,
+        await stripe.subscriptions.retrieve(sub.id)
+      );
     } else if (event.type === 'customer.subscription.deleted') {
       const sub = event.data.object as Stripe.Subscription;
       await syncStripeSubscription(supabase, sub);

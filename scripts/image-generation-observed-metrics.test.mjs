@@ -1,3 +1,4 @@
+import { summarizeEnqueueEntitlements } from './lib/image-generation-observed-metrics.mjs';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { summarizeImageRefundLedger } from './lib/image-generation-observed-metrics.mjs';
@@ -49,4 +50,36 @@ test('supports partial refund rows that add up to the charged amount', () => {
     ]
   );
   assert.equal(result.refundedChargedFailures.length, 1);
+});
+
+test('does not infer historical paid access from current membership or charged credits', () => {
+  const result = summarizeEnqueueEntitlements(
+    [
+      {
+        status: 'failed',
+        request_payload: { prepaidCredit: { consumed: 100 } }
+      },
+      {
+        status: 'failed',
+        request_payload: { entitlementAtEnqueue: { paidAccess: true } }
+      },
+      {
+        status: 'succeeded',
+        request_payload: { entitlementAtEnqueue: { paidAccess: true } }
+      },
+      {
+        status: 'succeeded',
+        request_payload: { entitlementAtEnqueue: { paidAccess: false } }
+      }
+    ],
+    2
+  );
+  assert.deepEqual(result, {
+    basis: 'server_snapshot_at_enqueue',
+    knownTasks: 3,
+    unknownTasks: 1,
+    paidTasks: 2,
+    paidFailed: 1,
+    paidFailureRate: 0.5
+  });
 });

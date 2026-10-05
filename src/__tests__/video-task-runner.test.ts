@@ -137,7 +137,7 @@ function makeTask(overrides: Partial<VideoTaskRow> = {}): VideoTaskRow {
     generation_id: null,
     locked_until: null,
     queue_message_count: 0,
-    created_at: '2026-06-15T00:00:00.000Z',
+    created_at: new Date().toISOString(),
     updated_at: '2026-06-15T00:00:00.000Z',
     ...overrides
   };
@@ -153,6 +153,10 @@ class SupabaseQuery {
     private db: {
       video_generation_tasks: VideoTaskRow[];
       video_generations: VideoGenerationRow[];
+      rejectUpdate?: (
+        table: string,
+        payload: Record<string, unknown>
+      ) => boolean;
     }
   ) {}
 
@@ -172,12 +176,30 @@ class SupabaseQuery {
 
   eq(field: string, value: unknown) {
     this.filters.push({ field, value });
-    if (this.updateValue) {
-      this.applyUpdate();
-    }
     return this;
   }
 
+  is(field: string, value: unknown) {
+    this.filters.push({ field, value });
+    return this;
+  }
+  then(resolve: (value: unknown) => unknown) {
+    if (
+      this.updateValue &&
+      this.db.rejectUpdate?.(this.table, this.updateValue)
+    )
+      return Promise.resolve({
+        data: null,
+        error: { message: 'injected write failure' }
+      }).then(resolve);
+    if (this.updateValue) this.applyUpdate();
+    return Promise.resolve({ data: null, error: null }).then(resolve);
+  }
+  async maybeSingle() {
+    const row = this.rows().find((row) => this.matches(row));
+    if (row && this.updateValue) Object.assign(row, this.updateValue);
+    return { data: row || null, error: null };
+  }
   private rows() {
     return this.db[this.table as keyof typeof this.db] as Array<
       Record<string, unknown>
@@ -185,7 +207,14 @@ class SupabaseQuery {
   }
 
   private matches(row: Record<string, unknown>) {
-    return this.filters.every((filter) => row[filter.field] === filter.value);
+    return this.filters.every((filter) => {
+      if (filter.field === 'result_payload->>providerCreateStartedAt')
+        return (
+          (row.result_payload as Record<string, unknown> | null)
+            ?.providerCreateStartedAt == null
+        );
+      return row[filter.field] === filter.value;
+    });
   }
 
   private applyUpdate() {
@@ -207,7 +236,7 @@ class SupabaseQuery {
 
     const data = this.rows().find((row) => this.matches(row)) || null;
     return {
-      data,
+      data: data ? structuredClone(data) : null,
       error: data ? null : { message: 'not found' }
     };
   }
@@ -217,9 +246,11 @@ function createSupabaseMock(
   tasks: VideoTaskRow[],
   options: {
     claimError?: { message: string };
+    rejectUpdate?: (table: string, payload: Record<string, unknown>) => boolean;
   } = {}
 ) {
   const db = {
+    rejectUpdate: options.rejectUpdate,
     video_generation_tasks: tasks,
     video_generations: [] as VideoGenerationRow[]
   };
@@ -749,5 +780,138 @@ describe('video task runner', () => {
     expect(getRpcCalls(sb, 'claim_video_generation_task')).toHaveLength(1);
     expect(getRpcCalls(sb, 'refund_generation_credit')).toHaveLength(0);
     expect(getRpcCalls(sb, 'refund_image_generation_credit')).toHaveLength(0);
+  });
+  it('never creates again after a durable submission marker survived a failed ID write', async () => {
+    const task = makeTask({
+      status: 'running',
+      result_payload: { providerCreateStartedAt: new Date().toISOString() }
+    });
+    const sb = createSupabaseMock([task]);
+    getSupabaseAdminMock.mockReturnValue(sb);
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await runVideoGenerationTaskStep({
+      taskId: task.id,
+      phase: 'create'
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(result.status).toBe('failed');
+    expect(task.result_payload).toMatchObject({
+      code: 'VIDEO_CREATE_OUTCOME_UNKNOWN',
+      reconciliationRequired: true
+    });
+    expect(getRpcCalls(sb, 'refund_generation_credit')).toHaveLength(1);
+  });
+  it('ends an over-deadline task and refunds without another provider request', async () => {
+    const task = makeTask({
+      status: 'running',
+      provider_task_id: 'provider-1',
+      created_at: new Date(Date.now() - 46 * 60000).toISOString()
+    });
+    const sb = createSupabaseMock([task]);
+    getSupabaseAdminMock.mockReturnValue(sb);
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    const result = await runVideoGenerationTaskStep({
+      taskId: task.id,
+      phase: 'poll'
+    });
+    expect(result.status).toBe('failed');
+    expect(result.reenqueue).toBeUndefined();
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(getRpcCalls(sb, 'refund_generation_credit')).toHaveLength(1);
+  });
+  it.each([401, 403, 404])(
+    'does not endlessly retry permanent provider status %s',
+    async (status) => {
+      const task = makeTask({
+        status: 'running',
+        provider_task_id: 'provider-1'
+      });
+      const sb = createSupabaseMock([task]);
+      getSupabaseAdminMock.mockReturnValue(sb);
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => jsonResponse({}, status))
+      );
+      const result = await runVideoGenerationTaskStep({
+        taskId: task.id,
+        phase: 'poll'
+      });
+      expect(result.status).toBe('failed');
+      expect(result.reenqueue).toBeUndefined();
+      expect(getRpcCalls(sb, 'refund_generation_credit')).toHaveLength(1);
+    }
+  );
+  it('recovers a failed provider-ID write without issuing another create', async () => {
+    const task = makeTask();
+    let reject = true;
+    const sb = createSupabaseMock([task], {
+      rejectUpdate: (_table, payload) => {
+        if (payload.provider_task_id && reject) {
+          reject = false;
+          return true;
+        }
+        return false;
+      }
+    });
+    getSupabaseAdminMock.mockReturnValue(sb);
+    const fetchMock = vi.fn(async (_url: string | URL | Request) =>
+      jsonResponse({ id: 'provider-1', status: 'pending' })
+    );
+    vi.stubGlobal('fetch', fetchMock);
+    const first = await runVideoGenerationTaskStep({
+      taskId: task.id,
+      phase: 'create'
+    });
+    expect(first.status).toBe('running');
+    expect(task.provider_task_id).toBe('provider-1');
+    await runVideoGenerationTaskStep({ taskId: task.id, phase: 'create' });
+    expect(
+      fetchMock.mock.calls
+        .map((call) => String(call[0]))
+        .filter((url) => url.endsWith('/contents/generations/tasks'))
+    ).toHaveLength(1);
+    expect(getRpcCalls(sb, 'refund_generation_credit')).toHaveLength(0);
+  });
+  it('reuses an existing asset after the terminal task write fails', async () => {
+    const task = makeTask({
+      status: 'running',
+      provider_task_id: 'provider-1'
+    });
+    let reject = true;
+    const sb = createSupabaseMock([task], {
+      rejectUpdate: (_table, payload) => {
+        if (payload.status === 'succeeded' && reject) {
+          reject = false;
+          return true;
+        }
+        return false;
+      }
+    });
+    getSupabaseAdminMock.mockReturnValue(sb);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (url: string | URL | Request) =>
+        String(url).includes('/contents/generations/tasks/')
+          ? jsonResponse({
+              id: 'provider-1',
+              status: 'succeeded',
+              videoUrl: 'https://cdn.test/video.mp4'
+            })
+          : new Response(new Uint8Array([1, 2, 3]), { status: 200 })
+      )
+    );
+    expect(
+      (await runVideoGenerationTaskStep({ taskId: task.id, phase: 'poll' }))
+        .status
+    ).toBe('running');
+    expect(
+      (await runVideoGenerationTaskStep({ taskId: task.id, phase: 'poll' }))
+        .status
+    ).toBe('succeeded');
+    expect(sb.db.video_generations).toHaveLength(1);
+    expect(putObjectMock).toHaveBeenCalledTimes(1);
+    expect(getRpcCalls(sb, 'refund_generation_credit')).toHaveLength(0);
   });
 });

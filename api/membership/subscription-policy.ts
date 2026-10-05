@@ -9,6 +9,7 @@ export const SUBSCRIPTION_ACCESS_STATUSES = [
 export interface SubscriptionStateLike {
   status?: string | null;
   current_period_end?: string | null;
+  stripe_subscription_id?: string | null;
 }
 
 export interface StripeManageableSubscriptionStateLike extends SubscriptionStateLike {
@@ -26,7 +27,7 @@ function hasUnexpiredPeriod(
 ): boolean {
   if (!currentPeriodEnd) return false;
   const end = new Date(currentPeriodEnd).getTime();
-  return Number.isFinite(end) && end >= now.getTime();
+  return Number.isFinite(end) && end > now.getTime();
 }
 
 /**
@@ -44,7 +45,12 @@ export function blocksNewSubscriptionCheckout(
     subscription.status === 'trialing' ||
     subscription.status === 'past_due'
   ) {
-    return true;
+    // A live recurring subscription must still be managed, even if a delayed
+    // webhook left its local period stale. Never create a second recurring bill.
+    return (
+      Boolean(subscription.stripe_subscription_id) ||
+      hasUnexpiredPeriod(subscription.current_period_end, now)
+    );
   }
   return (
     isCanceledStatus(subscription.status) &&
@@ -99,11 +105,10 @@ export function hasPaidSubscriptionAccess(
   now = new Date()
 ): boolean {
   if (!subscription) return false;
-  if (subscription.status === 'active' || subscription.status === 'trialing') {
-    return true;
-  }
   return (
-    isCanceledStatus(subscription.status) &&
+    (subscription.status === 'active' ||
+      subscription.status === 'trialing' ||
+      isCanceledStatus(subscription.status)) &&
     hasUnexpiredPeriod(subscription.current_period_end, now)
   );
 }
@@ -120,9 +125,12 @@ export function findSubscriptionWithPaidAccess<T extends SubscriptionStateLike>(
 }
 
 export function isEligibleForSubscriptionCreditGrant(
-  subscription: SubscriptionStateLike | null | undefined
+  subscription: SubscriptionStateLike | null | undefined,
+  now = new Date()
 ): boolean {
   return (
-    subscription?.status === 'active' || subscription?.status === 'trialing'
+    (subscription?.status === 'active' ||
+      subscription?.status === 'trialing') &&
+    hasPaidSubscriptionAccess(subscription, now)
   );
 }

@@ -635,11 +635,9 @@ describe('CreateVideoPage Krea-style workflow', () => {
       items: [historyItem],
       missingIds: []
     });
+    let serverCompleted = false;
     testState.listImageSessionTurns.mockImplementation(async () => {
-      const successfulCall = testState.createImageSessionTurn.mock.calls.find(
-        ([, input]) => input.status === 'succeeded'
-      );
-      return successfulCall
+      return serverCompleted
         ? [
             {
               id: 'completed-turn',
@@ -677,6 +675,7 @@ describe('CreateVideoPage Krea-style workflow', () => {
     );
 
     await act(async () => {
+      serverCompleted = true;
       resolveTask?.({
         taskId: 'video-task-1',
         status: 'succeeded',
@@ -685,16 +684,13 @@ describe('CreateVideoPage Krea-style workflow', () => {
       await Promise.resolve();
     });
 
-    await waitFor(() => {
-      expect(testState.createImageSessionTurn).toHaveBeenCalledWith(
-        'video-session-1',
-        expect.objectContaining({
-          prompt: historyItem.prompt,
-          generationIds: [historyItem.generationId],
-          status: 'succeeded'
-        })
-      );
-    });
+    expect(testState.enqueueVisualVideoTask).toHaveBeenCalledWith(
+      expect.objectContaining({ sessionId: 'video-session-1' })
+    );
+    expect(testState.createImageSessionTurn).not.toHaveBeenCalled();
+    expect(testState.listImageSessionTurns).toHaveBeenCalledWith(
+      'video-session-1'
+    );
     expect(
       await screen.findByRole('button', { name: '预览生成视频' })
     ).toBeVisible();
