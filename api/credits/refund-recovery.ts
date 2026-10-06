@@ -35,6 +35,23 @@ export async function recoverFailedGenerationRefunds(
     }
     for (const task of tasks || []) {
       try {
+        // Move every inspected row to the back of the queue, including rows
+        // requiring manual evidence, so old ambiguous tasks cannot starve newer
+        // refunds. This conditional timestamp also claims the retry window.
+        const { data: claimed, error: claimError } = await db
+          .from(TABLES[kind])
+          .update({ updated_at: now.toISOString() })
+          .eq('id', task.id)
+          .eq('status', 'failed')
+          .eq('refund_failed', true)
+          .eq('updated_at', task.updated_at)
+          .select('id,updated_at')
+          .maybeSingle();
+        if (claimError) {
+          summary.errors.push(`${kind}: retry claim failed`);
+          continue;
+        }
+        if (!claimed) continue;
         const request = record(task.request_payload);
         const prepaid = record(request.prepaidCredit);
         const amount = Number(prepaid.consumed);
@@ -132,7 +149,7 @@ export async function recoverFailedGenerationRefunds(
           .eq('id', task.id)
           .eq('status', 'failed')
           .eq('refund_failed', true)
-          .eq('updated_at', task.updated_at)
+          .eq('updated_at', claimed.updated_at)
           .select('id')
           .maybeSingle();
         if (updateError)

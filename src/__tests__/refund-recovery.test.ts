@@ -21,34 +21,43 @@ function mock({
   rpcResult = { success: true, refunded: 80 } as unknown,
   rpcError = null as unknown,
   ledgerError = null as unknown,
-  updateError = null as unknown
+  updateError = null as unknown,
+  claimLost = false
 } = {}) {
   const updates: unknown[] = [];
+  const filters: unknown[][] = [];
   const rpc = vi.fn().mockResolvedValue({ data: rpcResult, error: rpcError });
   const from = vi.fn((table: string) => {
     const q: Record<string, ReturnType<typeof vi.fn>> = {};
     for (const name of ['select', 'eq', 'lt', 'order'])
       q[name] = vi.fn(() => q);
+    q.eq = vi.fn((...args) => {
+      filters.push(args);
+      return q;
+    });
     q.update = vi.fn((value) => {
       updates.push(value);
       return q;
     });
-    q.limit = vi
-      .fn()
-      .mockResolvedValue(
-        table === 'credit_transactions'
-          ? { data: refunds, error: ledgerError }
-          : {
-              data: table === `${kind}_generation_tasks` ? [row] : [],
-              error: null
-            }
-      );
+    q.limit = vi.fn().mockResolvedValue(
+      table === 'credit_transactions'
+        ? { data: refunds, error: ledgerError }
+        : {
+            data: table === `${kind}_generation_tasks` ? [row] : [],
+            error: null
+          }
+    );
     q.maybeSingle = vi
       .fn()
-      .mockResolvedValue({ data: { id: row.id }, error: updateError });
+      .mockResolvedValue({
+        data: claimLost
+          ? null
+          : { id: row.id, updated_at: '2026-10-07T00:00:00.000001Z' },
+        error: updateError
+      });
     return q;
   });
-  return { db: { from, rpc } as never, rpc, updates };
+  return { db: { from, rpc } as never, rpc, updates, filters };
 }
 const now = new Date('2026-10-07T00:00:00Z');
 describe('bounded refund recovery', () => {
@@ -70,12 +79,25 @@ describe('bounded refund recovery', () => {
           })
         })
       );
-      expect(m.updates[0]).toMatchObject({
+      expect(m.updates[1]).toMatchObject({
         refund_failed: false,
         result_payload: { errorDetails: { code: 'TIMEOUT' }, refunded: 80 }
       });
     }
   );
+  it('uses the timestamp returned by the database trigger for the final write', async () => {
+    const m = mock();
+    await recoverFailedGenerationRefunds(m.db, now);
+    expect(m.filters).toContainEqual([
+      'updated_at',
+      '2026-10-07T00:00:00.000001Z'
+    ]);
+  });
+  it('does not refund when another worker claimed the task', async () => {
+    const m = mock({ claimLost: true });
+    await recoverFailedGenerationRefunds(m.db, now);
+    expect(m.rpc).not.toHaveBeenCalled();
+  });
   it('clears a lost response flag using the ledger, without issuing a second refund', async () => {
     const m = mock({
       refunds: [
@@ -97,7 +119,7 @@ describe('bounded refund recovery', () => {
       expect(
         (await recoverFailedGenerationRefunds(m.db, now)).errors
       ).toContain('image: refund unconfirmed');
-      expect(m.updates).toEqual([]);
+      expect(m.updates).toEqual([{ updated_at: now.toISOString() }]);
     }
   );
   it('does not issue money when the ledger lookup fails', async () => {
@@ -151,10 +173,10 @@ describe('bounded refund recovery', () => {
       expect.objectContaining({ p_source: 'denoise_task:task-1:refund' })
     );
   });
-  it('reports a flag-write failure without claiming recovery', async () => {
+  it('does not refund when the retry claim fails', async () => {
     const m = mock({ updateError: { message: 'offline' } });
     const result = await recoverFailedGenerationRefunds(m.db, now);
     expect(result.recovered).toBe(0);
-    expect(result.errors).toContain('image: refund flag update failed');
+    expect(result.errors).toContain('image: retry claim failed');
   });
 });

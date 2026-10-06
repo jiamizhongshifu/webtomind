@@ -151,7 +151,11 @@ describe('bounded provider evidence', () => {
       (await findOrphanCheckoutSession(stripe as never, oldOrder)).session?.id
     ).toBe('cs_1');
     expect(stripe.checkout.sessions.list).toHaveBeenLastCalledWith(
-      expect.objectContaining({ starting_after: 'unrelated' })
+      expect.objectContaining({ starting_after: 'unrelated' }),
+      expect.objectContaining({
+        maxNetworkRetries: 0,
+        timeout: expect.any(Number)
+      })
     );
   });
   it.each([

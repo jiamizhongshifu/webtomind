@@ -4,7 +4,7 @@
 
 The serialized checkout recovery now reconciles a Stripe order whose local
 session ID is missing. It waits 30 minutes for in-flight creation, reads at most
-five pages of sessions from the order creation time through the present, and
+five pages within a 12-second budget from the order creation time through the present, and
 matches both order and user metadata. Partial scans, multiple matches, completed
 sessions and processing orders retain their reservation. A unique open session
 is linked and reused for the same plan/cycle. Confirmed absence or expiry releases
@@ -29,6 +29,8 @@ check now imports the shared formula rather than maintaining stale constants.
 ## Refund recovery
 
 The scheduled worker retries up to ten aged full-failure tasks per media type.
+Conditional timestamp claims prevent concurrent retries and rotate deferred rows
+so ambiguous historical records cannot starve newer refunds.
 It requires an intact prepaid breakdown, checks the original refund ledger, and
 reuses the original refund RPC, source and idempotency key (including the dedicated
 denoise path). Confirmed existing full refunds only clear the failure flag.

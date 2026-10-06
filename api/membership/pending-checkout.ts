@@ -17,16 +17,22 @@ export async function findOrphanCheckoutSession(
   ) {
     return { complete: false, session: null };
   }
+  const deadline = Date.now() + 12_000;
   let cursor: string | undefined;
   const matches: Stripe.Checkout.Session[] = [];
   for (let page = 0; page < MAX_RECONCILIATION_PAGES; page++) {
-    const sessions = await stripe.checkout.sessions.list({
-      // Include clock skew and scan through the present, not just the first
-      // minutes after creation. A lost response may still have created a session.
-      created: { gte: Math.floor(createdAt / 1000) - 60 },
-      limit: 100,
-      ...(cursor ? { starting_after: cursor } : {})
-    });
+    const remainingMs = deadline - Date.now();
+    if (remainingMs <= 0) return { complete: false, session: null };
+    const sessions = await stripe.checkout.sessions.list(
+      {
+        // Include clock skew and scan through the present, not just the first
+        // minutes after creation. A lost response may still have created a session.
+        created: { gte: Math.floor(createdAt / 1000) - 60 },
+        limit: 100,
+        ...(cursor ? { starting_after: cursor } : {})
+      },
+      { timeout: Math.min(4_000, remainingMs), maxNetworkRetries: 0 }
+    );
     for (const session of sessions.data) {
       if (session.metadata?.order_id !== order.id) continue;
       if (
