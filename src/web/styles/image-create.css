@@ -2715,7 +2715,6 @@
 }
 
 .create-character-form input {
-  min-height: 42px;
   padding: 0 12px;
 }
 
@@ -26079,7 +26078,7 @@ body:has(.image-create-page):has(
   position: fixed;
   right: 24px;
   bottom: 24px;
-  z-index: 1400;
+  z-index: var(--z-product-teaching);
   display: flex;
   width: min(380px, calc(100vw - 32px));
   min-height: 56px;
@@ -26258,7 +26257,7 @@ body:has(.image-create-page):has(
 .global-command-palette-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 400;
+  z-index: var(--z-product-command);
   display: grid;
   place-items: start center;
   padding: 12vh 16px 16px;

@@ -11,7 +11,7 @@ import {
   getPublicBlogPosts,
   type PublicBlogPost
 } from '@/services/marketing-api';
-import { imageFetchPriority } from '@/shared/ui';
+import { Button, imageFetchPriority } from '@/shared/ui';
 import { shouldUseEnglishFallback } from '../lib/locale-content';
 import { useMarketingLocale } from './MarketingPageShell';
 import { CreateWorkspaceFrame } from '@/web/components/image-create/CreateWorkspaceFrame';
@@ -328,19 +328,23 @@ export function UseCasesPage() {
           <div
             ref={categoryRowRef}
             className={`use-cases-category-row${categoryExpanded ? '' : ' collapsed'}`}
-            role="tablist"
+            role="group"
             aria-label={isZh ? '按分类筛选' : 'Filter by category'}
           >
-            <button
+            <Button
+              variant="ghost"
+              size="sm"
               type="button"
               className={`marketing-category-pill ${activeCategory === 'all' ? 'active' : ''}`}
               aria-pressed={activeCategory === 'all'}
               onClick={() => setActiveCategory('all')}
             >
               {isZh ? '全部' : 'All'}
-            </button>
+            </Button>
             {categories.map((category) => (
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 key={category}
                 type="button"
                 className={`marketing-category-pill ${activeCategory === category ? 'active' : ''}`}
@@ -348,7 +352,7 @@ export function UseCasesPage() {
                 onClick={() => setActiveCategory(category)}
               >
                 {category}
-              </button>
+              </Button>
             ))}
           </div>
           {(categoryOverflow || categoryExpanded) && (

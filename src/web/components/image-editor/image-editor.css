@@ -1,4 +1,11 @@
 .image-editor-page {
+  --z-editor-fill: 0;
+  --z-editor-image: 1;
+  --z-editor-selection: 2;
+  --z-editor-hint: 3;
+  --z-editor-panel-header: 4;
+  --z-editor-busy: 5;
+
   --tool-ink: #1d1d1f;
   --tool-muted: #6e6e73;
   --tool-line: rgba(29, 29, 31, 0.1);
@@ -515,7 +522,7 @@
   font-weight: 600;
   line-height: 1.5;
   text-align: center;
-  z-index: 3;
+  z-index: var(--z-editor-hint);
 }
 
 .image-editor-canvas {
@@ -577,7 +584,7 @@
 .image-editor-crop-extend-bg {
   position: absolute;
   inset: calc(-1 * var(--crop-extend, 30%)) 0;
-  z-index: 0;
+  z-index: var(--z-editor-fill);
   border-radius: 3px;
   background-color: #1b1b22;
   background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1px);
@@ -587,7 +594,7 @@
 
 .image-editor-canvas-image img {
   position: relative;
-  z-index: 1;
+  z-index: var(--z-editor-image);
 }
 
 .image-editor-canvas-stage img {
@@ -610,7 +617,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 2;
+  z-index: var(--z-editor-selection);
   pointer-events: none;
   mix-blend-mode: normal;
 }
@@ -631,7 +638,7 @@
 
 .image-editor-region {
   position: absolute;
-  z-index: 2;
+  z-index: var(--z-editor-selection);
   border: 2px solid color-mix(in srgb, var(--tool-accent) 92%, transparent);
   border-radius: 6px;
   background: color-mix(in srgb, var(--tool-accent) 16%, transparent);
@@ -669,7 +676,7 @@
   background: rgba(20, 20, 22, 0.82);
   pointer-events: auto;
   cursor: pointer;
-  z-index: 1;
+  z-index: var(--z-editor-image);
 }
 
 .image-editor-region-remove svg {
@@ -697,7 +704,7 @@
 .image-editor-crop-mask {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: var(--z-editor-image);
   overflow: hidden;
   pointer-events: none;
 }
@@ -711,7 +718,7 @@
   position: absolute;
   border: 1.5px solid rgba(255, 255, 255, 0.95);
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-editor-selection);
 }
 
 .image-editor-crop-box::before {
@@ -791,7 +798,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
-  z-index: 2;
+  z-index: var(--z-editor-selection);
   overflow: visible;
 }
 
@@ -812,7 +819,7 @@
 
 .image-editor-canvas-busy {
   position: absolute;
-  z-index: 5;
+  z-index: var(--z-editor-busy);
   inset: 0;
   display: flex;
   align-items: center;
@@ -2125,7 +2132,7 @@
 .image-editor-asset-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--z-product-asset-picker);
   display: grid;
   place-items: center;
   padding: 24px;
@@ -2575,7 +2582,7 @@
   position: absolute;
   min-height: 0;
   max-height: none;
-  z-index: 2;
+  z-index: var(--z-editor-selection);
 }
 .image-editor-region-tag { max-width: calc(100% - 46px); }
 @media (max-width: 767px) {
@@ -2598,8 +2605,8 @@
 .image-editor-view-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
 .image-editor-view-controls svg { width: 16px; height: 16px; }
 .image-editor-view-controls span { min-width: 38px; font-size: 12px; color: var(--tool-muted); text-align: center; }
-.image-editor-panel-header { position: sticky; top: -16px; z-index: 4; background: var(--editor-surface-strong); padding-block: 12px; }
-.image-editor-download-dock { position: fixed; bottom: max(18px, env(safe-area-inset-bottom)); right: 24px; z-index: 40; display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 16px; border: 1px solid var(--tool-line); border-radius: 999px; background: var(--editor-surface-strong); box-shadow: var(--tool-shadow-panel); }
+.image-editor-panel-header { position: sticky; top: -16px; z-index: var(--z-editor-panel-header); background: var(--editor-surface-strong); padding-block: 12px; }
+.image-editor-download-dock { position: fixed; bottom: max(18px, env(safe-area-inset-bottom)); right: 24px; z-index: var(--z-product-editor-dock); display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 16px; border: 1px solid var(--tool-line); border-radius: 999px; background: var(--editor-surface-strong); box-shadow: var(--tool-shadow-panel); }
 .image-editor-download-dock > span { color: var(--tool-muted); font-size: 12px; }
 @media (max-width: 1023px) {
   .image-editor-canvas-stage { height: clamp(260px, 48dvh, 460px); min-height: 0; flex: none; }

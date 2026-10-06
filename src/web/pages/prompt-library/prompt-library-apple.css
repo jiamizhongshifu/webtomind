@@ -192,7 +192,7 @@
 .prompt-browser-page .prompt-browser-tag-toolbar {
   position: sticky;
   top: 12px;
-  z-index: 20;
+  z-index: var(--z-page-header);
   align-items: center;
   gap: 10px;
   margin-bottom: 24px;

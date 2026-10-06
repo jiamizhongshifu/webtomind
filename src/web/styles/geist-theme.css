@@ -69,9 +69,11 @@
   --product-text-secondary: var(--geist-secondary);
   --product-text-muted: var(--geist-muted);
   --product-text-inverse: var(--geist-background-100);
-  --product-action-bg: var(--geist-primary);
+  --product-action-hsl: 0 0% 9.019608%;
+  --product-action-bg: hsl(var(--product-action-hsl));
   --product-action-hover: #000000;
-  --product-action-text: var(--geist-background-100);
+  --product-action-text-hsl: 0 0% 100%;
+  --product-action-text: hsl(var(--product-action-text-hsl));
   --product-accent-action-bg: #2f7df6;
   --product-accent-action-hover: #1f6ff2;
   --product-action-muted: var(--geist-gray-100);
@@ -104,13 +106,6 @@
   --web-action-secondary-border: var(--geist-gray-alpha-400);
 
   --radius: var(--radius-lg);
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
-  --radius-full: 9999px;
 
   --shadow-sm: 0 2px 2px rgba(0, 0, 0, 0.04);
   --shadow-md:
@@ -203,9 +198,11 @@ html {
   --product-text-secondary: #a0a0a0;
   --product-text-muted: #8f8f8f;
   --product-text-inverse: #000000;
-  --product-action-bg: #ededed;
+  --product-action-hsl: 0 0% 92.941176%;
+  --product-action-bg: hsl(var(--product-action-hsl));
   --product-action-hover: #ffffff;
-  --product-action-text: #000000;
+  --product-action-text-hsl: 0 0% 0%;
+  --product-action-text: hsl(var(--product-action-text-hsl));
   --product-accent-action-bg: #1f63d1;
   --product-accent-action-hover: #1c5ec7;
   --product-action-muted: rgba(255, 255, 255, 0.07);

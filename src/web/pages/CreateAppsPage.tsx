@@ -6,6 +6,7 @@ import {
   type CreateAppLocale
 } from '@/shared/create-apps';
 import { CreateWorkspaceFrame } from '@/web/components/image-create/CreateWorkspaceFrame';
+import { imageFetchPriority } from '@/shared/ui/imageAttributes';
 import { applySeo } from '@/web/lib/seo';
 import '@/web/styles/image-tools.css';
 
@@ -65,7 +66,7 @@ export function CreateAppsPage() {
                   alt={`${tool.title}工具封面`}
                   loading={index < 2 ? 'eager' : 'lazy'}
                   decoding="async"
-                  fetchPriority={index < 2 ? 'high' : 'auto'}
+                  {...imageFetchPriority(index < 2 ? 'high' : 'auto')}
                 />
                 <span className="tool-index">
                   {tool.featured ? (

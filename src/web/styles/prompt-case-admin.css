@@ -9,7 +9,7 @@
 .prompt-case-admin-topbar {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: var(--z-page-header);
   display: flex;
   min-height: 58px;
   align-items: center;

@@ -11,7 +11,7 @@
 .marketing-page-header {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: var(--z-page-header);
   border-bottom: 1px solid var(--web-border-soft);
   background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(8px);

@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useOverlayBehavior } from '@/shared/ui/useOverlayBehavior';
 
 const GlobalCommandPaletteDialog = lazy(() =>
   import('./GlobalCommandPaletteDialog').then((module) => ({
@@ -16,6 +17,8 @@ export function GlobalCommandPalette({
 }: GlobalCommandPaletteProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const close = useCallback(() => setOpen(false), []);
+  const panelRef = useOverlayBehavior<HTMLDivElement>({ open, onClose: close });
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -23,20 +26,10 @@ export function GlobalCommandPalette({
         event.preventDefault();
         setOpen((current) => !current);
       }
-      if (event.key === 'Escape') setOpen(false);
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
-
-  useEffect(() => {
-    if (!open) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [open]);
 
   const go = useCallback(
     (href: string) => {
@@ -54,6 +47,8 @@ export function GlobalCommandPalette({
           onClick={() => setOpen(false)}
         >
           <div
+            ref={panelRef}
+            tabIndex={-1}
             className="global-command-palette-panel"
             onClick={(event) => event.stopPropagation()}
             role="dialog"
@@ -63,7 +58,6 @@ export function GlobalCommandPalette({
             <Suspense fallback={null}>
               <GlobalCommandPaletteDialog
                 localePrefix={localePrefix}
-                onClose={() => setOpen(false)}
                 onNavigate={go}
               />
             </Suspense>

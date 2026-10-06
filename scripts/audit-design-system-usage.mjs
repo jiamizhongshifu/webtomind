@@ -113,6 +113,13 @@ function isTestFilePath(path) {
   );
 }
 
+function isHarnessFilePath(path) {
+  return (
+    /(?:^|\/)[^/]*Harness[^/]*\.[jt]sx?$/.test(path) ||
+    path.startsWith('src/web/routes/devHarnessRoutes.')
+  );
+}
+
 function isPausedSkillFeaturePath(path) {
   return (
     /^src\/web\/pages\/PublicSkill(?:sPage|DetailPage)\.tsx$/.test(path) ||
@@ -130,7 +137,11 @@ const cssFiles = files.filter((file) => file.endsWith('.css'));
 const componentFiles = files.filter((file) => file.endsWith('.tsx'));
 const productComponentSourceFiles = componentFiles.filter((file) => {
   const path = relative(root, file);
-  return !isTestFilePath(path) && !isPausedSkillFeaturePath(path);
+  return (
+    !isTestFilePath(path) &&
+    !isHarnessFilePath(path) &&
+    !isPausedSkillFeaturePath(path)
+  );
 });
 const pausedSkillFeatureFiles = componentFiles.filter((file) => {
   const path = relative(root, file);
@@ -145,6 +156,7 @@ const sourceCodeFiles = files.filter((file) => {
   return (
     (file.endsWith('.ts') || file.endsWith('.tsx')) &&
     !isTestFilePath(path) &&
+    !isHarnessFilePath(path) &&
     !isPausedSkillFeaturePath(path)
   );
 });
@@ -243,12 +255,9 @@ const registryText = readFileSync(
   join(root, 'src/design/component-registry.ts'),
   'utf8'
 );
-const zhongRulesPath = join(
-  root,
-  '.agents/skills/zhong-design-review/references/rules.md'
-);
-const zhongRulesText = existsSync(zhongRulesPath)
-  ? readFileSync(zhongRulesPath, 'utf8')
+const designRulesPath = join(root, 'docs/DESIGN_SYSTEM.md');
+const designRulesText = existsSync(designRulesPath)
+  ? readFileSync(designRulesPath, 'utf8')
   : '';
 const referencedRuleIds = new Set(
   patternChecks.map((check) => check.ruleId).filter(Boolean)
@@ -256,7 +265,7 @@ const referencedRuleIds = new Set(
 referencedRuleIds.add('rule/design-system-adapter-boundary');
 referencedRuleIds.add('rule/image-loading-priority-by-viewport');
 const missingRuleDefinitions = [...referencedRuleIds].filter(
-  (ruleId) => !zhongRulesText.includes(`## ${ruleId}`)
+  (ruleId) => !designRulesText.includes(`## ${ruleId}`)
 );
 const foundationTargetResults = [];
 const semanticallyMigratedCardSignals = new Map();
@@ -570,8 +579,8 @@ const sharedFixedFontSizeCount = files
     const text = readFileSync(file, 'utf8');
     return total + countMatches(text, /font-size:\s*[\d.]+px\b/g);
   }, 0);
-const MAX_HARDCODED_Z_INDEX_COUNT = 155;
-const MAX_SHARED_RADIX_COMPATIBILITY_IMPORT_COUNT = 190;
+const MAX_HARDCODED_Z_INDEX_COUNT = 153;
+const MAX_SHARED_RADIX_COMPATIBILITY_IMPORT_COUNT = 168;
 const sharedRadixCompatibilityImportCount =
   sharedRadixCompatibilityImports.reduce(
     (total, [, count]) => total + count,
@@ -612,6 +621,29 @@ if (existsSync(shadcnConfigPath)) {
 }
 
 console.log('WebToMind design-system usage audit');
+console.log('Scope counts (source files, not adoption percentages):');
+for (const [label, predicate] of [
+  ['active web consumers', (path) => path.startsWith('src/web/')],
+  [
+    'maintenance workspace consumers',
+    (path) => path.startsWith('src/workspace/')
+  ],
+  ['shared implementation', (path) => path.startsWith('src/shared/')]
+]) {
+  console.log(
+    `- ${label}: ${productComponentSourceFiles.filter((file) => predicate(relative(root, file))).length}`
+  );
+}
+console.log(
+  `- development harness components excluded: ${componentFiles.filter((file) => !isTestFilePath(relative(root, file)) && isHarnessFilePath(relative(root, file))).length}`
+);
+console.log(`- test components excluded: ${componentTestFiles.length}`);
+console.log(
+  `- paused feature components excluded: ${pausedSkillFeatureFiles.length}`
+);
+console.log(
+  'Import/tag/class totals below are occurrence signals, not distinct components.'
+);
 console.log('');
 console.log('Largest CSS files:');
 for (const [file, lines] of cssLineCounts) {
@@ -948,7 +980,7 @@ for (const result of foundationTargetResults) {
 }
 
 console.log('');
-console.log('Zhong Design Review rule definitions referenced by this audit:');
+console.log('public design-system rule definitions referenced by this audit:');
 for (const ruleId of referencedRuleIds) {
   console.log(
     `- ${missingRuleDefinitions.includes(ruleId) ? 'missing' : 'ok'} ${ruleId}`
@@ -979,11 +1011,11 @@ if (
   unsafeShadcnConfig
 ) {
   console.error(
-    'Result: failed. Foundation registry targets, referenced Zhong Design Review rules, and adapter boundaries must be valid.'
+    'Result: failed. Foundation registry targets, referenced public design-system rules, and adapter boundaries must be valid.'
   );
   if (missingRuleDefinitions.length > 0) {
     console.error(
-      `Missing Zhong Design Review rule definitions: ${missingRuleDefinitions.join(', ')}`
+      `Missing public design-system rule definitions: ${missingRuleDefinitions.join(', ')}`
     );
   }
   if (unsafeShadcnConfig) {

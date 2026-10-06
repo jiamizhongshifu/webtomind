@@ -9982,6 +9982,12 @@ html body .home-page .cta-actions .home-neon-button-secondary {
     box-shadow: 4px 4px 0 var(--neon-lime) !important;
   }
 
+  html body .home-page .hero-actions {
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
   html body .home-page .hero-actions .home-neon-button,
   html body .home-page .cta-actions .home-neon-button {
     width: 100% !important;

@@ -147,7 +147,8 @@
     "test:e2e:create-clone": "playwright test tests/e2e/create-workspace-clone.spec.ts",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:security": "playwright test tests/e2e/security.spec.ts",
-    "test:e2e:ui": "playwright test tests/e2e/workbench-chat.spec.ts"
+    "test:e2e:ui": "playwright test tests/e2e/workbench-chat.spec.ts",
+    "audit:design-system:browser": "node scripts/audit-design-system-browser.mjs"
   },
   "dependencies": {
     "@assistant-ui/react": "^0.15.15",

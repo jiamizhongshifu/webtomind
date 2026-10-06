@@ -2,29 +2,33 @@ name: CI
 
 on:
   pull_request:
-    paths-ignore:
-      - README.md
-      - AGENTS.md
-      - CLAUDE.md
-      - Design.md
-      - TECH_STACK.md
-      - .gitignore
-      - .vscode/**
-      - docs/**
-      - outputs/**
+    paths:
+      - '**'
+      - '!README.md'
+      - '!AGENTS.md'
+      - '!CLAUDE.md'
+      - '!Design.md'
+      - '!TECH_STACK.md'
+      - '!.gitignore'
+      - '!.vscode/**'
+      - '!docs/**'
+      - '!outputs/**'
+      - 'docs/DESIGN_SYSTEM.md'
   push:
     branches:
       - main
-    paths-ignore:
-      - README.md
-      - AGENTS.md
-      - CLAUDE.md
-      - Design.md
-      - TECH_STACK.md
-      - .gitignore
-      - .vscode/**
-      - docs/**
-      - outputs/**
+    paths:
+      - '**'
+      - '!README.md'
+      - '!AGENTS.md'
+      - '!CLAUDE.md'
+      - '!Design.md'
+      - '!TECH_STACK.md'
+      - '!.gitignore'
+      - '!.vscode/**'
+      - '!docs/**'
+      - '!outputs/**'
+      - 'docs/DESIGN_SYSTEM.md'
   workflow_dispatch:
 
 permissions:
@@ -73,6 +77,8 @@ jobs:
 
       - run: pnpm runtime:check
       - run: pnpm check:api-marketplace-migrations
+      - run: pnpm audit:ui-governance
+      - run: pnpm audit:design-system
       - run: pnpm lint
       - run: pnpm type-check:all
       - run: pnpm --dir server build
@@ -81,6 +87,25 @@ jobs:
       - run: pnpm test:security-audit
       - run: pnpm security:audit-production
       - run: pnpm build:web:prod-parity
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Verify design-system browser contracts
+        env:
+          DESIGN_SYSTEM_BASE_URL: http://127.0.0.1:4197
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4197 > /tmp/design-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid"' EXIT
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:4197/ > /dev/null; then break; fi
+            sleep 1
+          done
+          pnpm audit:design-system:browser
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: design-system-browser
+          path: output/design-system-browser
+          if-no-files-found: ignore
       - run: pnpm exec vitest run --maxWorkers=2 --reporter=dot
 
   release:

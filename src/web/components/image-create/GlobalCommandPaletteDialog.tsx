@@ -11,7 +11,6 @@ import {
 
 interface GlobalCommandPaletteDialogProps {
   localePrefix: '' | '/zh-CN' | '/en-US';
-  onClose: () => void;
   onNavigate: (href: string) => void;
 }
 
@@ -27,7 +26,6 @@ interface CommandItem {
 // 命令面板的内容（含 cmdk）在首次按下 ⌘K / Ctrl+K 时才加载。
 export function GlobalCommandPaletteDialog({
   localePrefix,
-  onClose,
   onNavigate
 }: GlobalCommandPaletteDialogProps) {
   const items: CommandItem[] = [
@@ -122,12 +120,7 @@ export function GlobalCommandPaletteDialog({
   ];
 
   return (
-    <Command
-      label="命令面板"
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') onClose();
-      }}
-    >
+    <Command label="命令面板">
       <Command.Input placeholder="搜索页面、工具与快捷动作…" />
       <Command.List>
         <Command.Empty>没有匹配结果</Command.Empty>

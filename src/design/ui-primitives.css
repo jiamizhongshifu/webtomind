@@ -251,7 +251,7 @@
 .web-app-stale-recovery {
   position: fixed;
   inset: 0;
-  z-index: 2147483647;
+  z-index: var(--z-product-recovery);
   min-height: 100dvh;
   display: grid;
   place-items: center;

@@ -18,7 +18,11 @@ function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
     container.querySelectorAll<HTMLElement>(focusableSelector)
   ).filter((element) => {
     const style = window.getComputedStyle(element);
-    return style.visibility !== 'hidden' && style.display !== 'none';
+    return (
+      element.tabIndex >= 0 &&
+      style.visibility !== 'hidden' &&
+      style.display !== 'none'
+    );
   });
 }
 
@@ -46,21 +50,38 @@ export function useOverlayBehavior<T extends HTMLElement>({
         ? document.activeElement
         : null;
     const previousOverflow = document.body.style.overflow;
-    const previousScrollbarGutter = document.documentElement.style.scrollbarGutter;
+    const previousScrollbarGutter =
+      document.documentElement.style.scrollbarGutter;
     document.documentElement.style.scrollbarGutter = 'stable';
     document.body.style.overflow = 'hidden';
 
-    window.requestAnimationFrame(() => {
+    // Suspense may mount the shell before its input. Keep the shell focused
+    // until a focusable child arrives, without stealing subsequent user focus.
+    const observer = new MutationObserver(focusInitialElement);
+    function focusInitialElement() {
       const container = containerRef.current;
-      if (!container || container.contains(document.activeElement)) {
-        return;
-      }
+      if (!container) return;
 
       const [firstFocusable] = getFocusableElements(container);
-      (firstFocusable ?? container).focus({ preventScroll: true });
-    });
+      if (
+        document.activeElement === container ||
+        !container.contains(document.activeElement)
+      ) {
+        (firstFocusable ?? container).focus({ preventScroll: true });
+      }
+      if (firstFocusable) observer.disconnect();
+    }
+    if (containerRef.current) {
+      observer.observe(containerRef.current, {
+        childList: true,
+        subtree: true
+      });
+    }
+    const frame = window.requestAnimationFrame(focusInitialElement);
 
     return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
       document.body.style.overflow = previousOverflow;
       document.documentElement.style.scrollbarGutter = previousScrollbarGutter;
       previouslyFocusedRef.current?.focus({ preventScroll: true });
@@ -97,7 +118,13 @@ export function useOverlayBehavior<T extends HTMLElement>({
       const lastElement = focusableElements[focusableElements.length - 1];
       const activeElement = document.activeElement;
 
-      if (event.shiftKey && activeElement === firstElement) {
+      if (
+        !containerRef.current?.contains(activeElement) ||
+        activeElement === containerRef.current
+      ) {
+        event.preventDefault();
+        (event.shiftKey ? lastElement : firstElement).focus();
+      } else if (event.shiftKey && activeElement === firstElement) {
         event.preventDefault();
         lastElement.focus();
       } else if (!event.shiftKey && activeElement === lastElement) {
