@@ -75,6 +75,9 @@ vi.mock('../services/payment-api', () => ({
 vi.mock('../services/api-marketplace', () => ({
   createApiKey: vi.fn(),
   getApiCreditPackages: vi.fn(),
+  getApiMarketplaceModels: vi
+    .fn()
+    .mockResolvedValue({ models: [], total: 0, currency: 'USD' }),
   getApiKeys: vi.fn(),
   getApiUsage: vi.fn(),
   getApiWallet: vi.fn(),
@@ -228,7 +231,9 @@ describe('ApiConsolePage usage section', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /创建 Key/ }));
 
-    expect(await screen.findByRole('dialog', { name: 'API Key 已创建' })).toBeTruthy();
+    expect(
+      await screen.findByRole('dialog', { name: 'API Key 已创建' })
+    ).toBeTruthy();
     expect(screen.getByText('sk-wtm_secret-only-once')).toBeTruthy();
     expect(
       screen.getAllByText('共享账户 API 额度 · 上次使用：尚未使用')

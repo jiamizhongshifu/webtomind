@@ -2125,3 +2125,37 @@
     border-color: var(--api-line);
   }
 }
+
+.api-quickstart-model {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+.api-quickstart-model select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 0.7rem;
+  color-scheme: dark;
+  border: 1px solid var(--api-line);
+  border-radius: 8px;
+  background: var(--api-panel-strong);
+  color: inherit;
+}
+.api-quickstart-price {
+  overflow-wrap: anywhere;
+}
+.api-console-connection > div {
+  min-width: 0;
+}
+
+.api-quickstart-model select:focus-visible {
+  outline: 2px solid var(--api-accent-strong);
+  outline-offset: 3px;
+}
+.api-console-connection .api-code-block pre {
+  white-space: pre;
+  overflow-wrap: normal;
+  max-height: 30rem;
+  overflow: auto;
+}

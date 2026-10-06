@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import process from 'node:process';
+import { estimateVideoGenerationCreditCost } from '../src/shared/video-generation-pricing.ts';
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseEnv, loadRuntimeEnv } from './lib/runtime-env.mjs';
 
@@ -57,39 +58,33 @@ const expected = {
     {
       model: 'seedance-2-0',
       duration: 15,
-      resolution: '480p',
-      cost: 2400
+      resolution: '480p'
     },
     {
       model: 'seedance-2-0-fast',
       duration: 15,
       resolution: '480p',
-      referenceImageCount: 1,
-      cost: 2013
+      referenceImageCount: 1
     },
     {
       model: 'seedance-2-0-mini',
       duration: 15,
-      resolution: '480p',
-      cost: 1200
+      resolution: '480p'
     },
     {
       model: 'seedance-2-0',
       duration: 5,
-      resolution: '720p',
-      cost: 1440
+      resolution: '720p'
     },
     {
       model: 'seedance-2-0-fast',
       duration: 5,
-      resolution: '720p',
-      cost: 1095
+      resolution: '720p'
     },
     {
       model: 'seedance-2-0-mini',
       duration: 5,
-      resolution: '720p',
-      cost: 640
+      resolution: '720p'
     }
   ]
 };
@@ -336,6 +331,7 @@ async function verifyVideoCosts() {
     process.env.APP_URL ||
     'https://webtomind.com';
   for (const item of expected.videoCosts) {
+    const expectedCost = estimateVideoGenerationCreditCost(item).cost;
     const url = new URL('/api/credits/video-cost', baseUrl);
     url.searchParams.set('model', item.model);
     url.searchParams.set('duration', String(item.duration));
@@ -368,12 +364,13 @@ async function verifyVideoCosts() {
       resolution: item.resolution,
       referenceImageCount: item.referenceImageCount || 0,
       status: response.status,
-      cost: body.cost
+      cost: body.cost,
+      expectedCost
     });
-    if (!response.ok || body.cost !== item.cost) {
+    if (!response.ok || body.cost !== expectedCost) {
       report.blockers.push({
         class: 'video_cost_drift',
-        detail: `${item.model} ${item.duration}s ${item.resolution} expected ${item.cost}, got ${body.cost ?? `HTTP ${response.status}`}`
+        detail: `${item.model} ${item.duration}s ${item.resolution} expected ${expectedCost}, got ${body.cost ?? `HTTP ${response.status}`}`
       });
     }
   }

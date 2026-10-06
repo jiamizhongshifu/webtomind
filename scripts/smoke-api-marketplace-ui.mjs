@@ -44,6 +44,7 @@ async function installMarketplaceRoutes(context) {
           unit: 'tokens_1m'
         },
         endpoints: ['openai'],
+        requestEndpoints: ['/chat/completions'],
         status: {
           label: '优秀',
           color: '#22c55e',
@@ -84,6 +85,8 @@ async function installMarketplaceRoutes(context) {
                 : model.status;
         return {
           ...model,
+          requestEndpoints:
+            index === 1 ? ['/images/generations'] : model.requestEndpoints,
           status,
           id: index === 0 ? model.id : `${model.id}-${index + 1}`,
           name: index === 0 ? model.name : `${model.name}-${index + 1}`
@@ -317,7 +320,10 @@ async function checkPage(page, pathName, label) {
 }
 
 await fs.mkdir(outputDir, { recursive: true });
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+  headless: true,
+  channel: process.env.PLAYWRIGHT_CHANNEL || undefined
+});
 try {
   const context = await browser.newContext({
     viewport: { width: 1440, height: 900 },
@@ -330,7 +336,11 @@ try {
     });
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
-      value: { writeText: async () => undefined }
+      value: {
+        writeText: async (value) => {
+          window.__copiedApiText = value;
+        }
+      }
     });
   });
   await installMarketplaceRoutes(context);
@@ -468,6 +478,53 @@ try {
     path: path.join(outputDir, 'console-desktop.png'),
     fullPage: true
   });
+
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await checkPage(page, '/zh-CN/models', `quickstart entry ${width}`);
+    await page
+      .locator('.api-model-card')
+      .first()
+      .getByRole('link', { name: /使用/ })
+      .click();
+    await page.getByLabel('调用模型').waitFor({ state: 'visible' });
+    assert(
+      (await page.getByLabel('调用模型').inputValue()) === 'deepseek-v3-all',
+      'Use link should retain model selection'
+    );
+    await page.getByRole('button', { name: '复制 Python 示例' }).click();
+    let copied = await page.evaluate(() => window.__copiedApiText);
+    assert(
+      copied.includes('client.chat.completions.create') &&
+        copied.includes('deepseek-v3-all'),
+      'Chat example should be a full request'
+    );
+    await page.getByLabel('调用模型').selectOption('deepseek-v3-all-2');
+    await page.getByRole('button', { name: '复制 Python 示例' }).click();
+    copied = await page.evaluate(() => window.__copiedApiText);
+    assert(
+      copied.includes('client.images.generate') &&
+        copied.includes('WEBTOMIND_API_KEY'),
+      'Image example should use the selected endpoint and environment key'
+    );
+    await assertNoHorizontalOverflow(page, `quickstart ${width}`);
+    await page
+      .locator('.api-console-connection')
+      .screenshot({ path: path.join(outputDir, `quickstart-${width}.png`) });
+    await checkPage(
+      page,
+      '/zh-CN/api-console?model=missing-model',
+      `unknown model ${width}`
+    );
+    await page
+      .getByText('所选模型已下架或不可用，请重新选择。')
+      .waitFor({ state: 'visible' });
+    assert(
+      (await page.getByRole('button', { name: '复制 Python 示例' }).count()) ===
+        0,
+      'Unknown models must not get an invented example'
+    );
+  }
 
   for (const { width, height } of [
     { width: 1024, height: 900 },

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ArrowDownLeft,
   ArrowUpRight,
-  Copy,
   KeyRound,
   Plus,
   ReceiptText,
@@ -37,6 +36,7 @@ import {
   getCustomApiCreditQuote,
   parseWholeUsdAmountToCents
 } from '@/shared/api-credit-pricing';
+import { ApiQuickstart } from './api-marketplace/ApiQuickstart';
 import { ApiKeyCreatedDialog } from './api-marketplace/ApiKeyCreatedDialog';
 import './api-marketplace.css';
 
@@ -463,8 +463,8 @@ export function ApiConsolePage() {
               <p className="api-marketplace-kicker">01 / Keys</p>
               <h2>API Keys</h2>
               <p>
-                每个 Key 都可以单独吊销；完整密钥只在创建完成时展示一次。
-                所有 Key 共享账户 API 额度，创建 Key 不会改变账户余额。
+                每个 Key 都可以单独吊销；完整密钥只在创建完成时展示一次。 所有
+                Key 共享账户 API 额度，创建 Key 不会改变账户余额。
               </p>
             </div>
             <div className="api-console-key-form">
@@ -503,7 +503,8 @@ export function ApiConsolePage() {
                     <strong>{key.name}</strong>
                     <code>{key.key_prefix}</code>
                     <small>
-                      共享账户 API 额度 · 上次使用：{formatDate(key.last_used_at)}
+                      共享账户 API 额度 · 上次使用：
+                      {formatDate(key.last_used_at)}
                     </small>
                   </div>
                   <div className="api-key-row-actions">
@@ -662,45 +663,7 @@ export function ApiConsolePage() {
           </div>
         </section>
 
-        <section className="api-console-section api-console-connection">
-          <div>
-            <p className="api-marketplace-kicker">03 / Connect</p>
-            <h2>接入方式</h2>
-            <p>
-              兼容 OpenAI SDK、LangChain 和常见客户端。把下面的 Base URL
-              与你刚创建的 Key 放进环境变量即可。
-            </p>
-          </div>
-          <div className="api-code-block">
-            <div>
-              <span>Base URL</span>
-              <button
-                type="button"
-                aria-label="复制 Base URL"
-                onClick={() => void copy(baseUrl, 'Base URL 已复制。')}
-              >
-                <Copy size={14} aria-hidden="true" />
-              </button>
-            </div>
-            <code>{baseUrl}</code>
-            <div>
-              <span>Python</span>
-              <button
-                type="button"
-                aria-label="复制 Python 示例"
-                onClick={() =>
-                  void copy(
-                    `from openai import OpenAI\nclient = OpenAI(api_key="YOUR_WEBTOMIND_KEY", base_url="${baseUrl}")`,
-                    'Python 示例已复制。'
-                  )
-                }
-              >
-                <Copy size={14} aria-hidden="true" />
-              </button>
-            </div>
-            <pre>{`from openai import OpenAI\n\nclient = OpenAI(\n  api_key="YOUR_WEBTOMIND_KEY",\n  base_url="${baseUrl}"\n)`}</pre>
-          </div>
-        </section>
+        <ApiQuickstart baseUrl={baseUrl} copy={copy} />
 
         <section className="api-console-section api-console-history">
           <div className="api-console-section-heading">
@@ -733,7 +696,9 @@ export function ApiConsolePage() {
                       <small>{presentation.description}</small>
                     </div>
                     <div className="api-transaction-meta">
-                      <strong>{formatSignedCents(transaction.amount_cents)}</strong>
+                      <strong>
+                        {formatSignedCents(transaction.amount_cents)}
+                      </strong>
                       <time dateTime={transaction.created_at}>
                         {formatDate(transaction.created_at)}
                       </time>

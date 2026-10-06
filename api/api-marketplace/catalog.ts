@@ -1,4 +1,8 @@
 import {
+  getPublicModelDescription,
+  getPublicRequestEndpoints
+} from './public-model';
+import {
   getApiMarketplaceCatalog,
   jsonResponse,
   preflightResponse
@@ -34,7 +38,7 @@ export default async function handler(request: Request) {
       id: model.id,
       name: model.name,
       createdAt: model.createdAt,
-      description: model.description,
+      description: getPublicModelDescription(model),
       tags: model.tags,
       pricingMode: model.pricingMode,
       customer: {
@@ -47,6 +51,7 @@ export default async function handler(request: Request) {
       groups: model.groups,
       pricing: model.pricing,
       endpoints: model.endpoints,
+      requestEndpoints: getPublicRequestEndpoints(model),
       ...(includeStatus ? { status: model.status } : {})
     }));
     return jsonResponse(

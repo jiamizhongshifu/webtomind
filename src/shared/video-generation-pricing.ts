@@ -2,7 +2,7 @@ import {
   getSeedanceVideoModelConfig,
   type SeedanceVideoModelId,
   type SeedanceVideoResolution
-} from './seedance-video-models';
+} from './seedance-video-models.ts';
 
 export const VIDEO_GENERATION_BASE_UNIT_CREDIT_COST = 400;
 export const VIDEO_GENERATION_BASE_UNIT_SECONDS = 5;

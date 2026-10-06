@@ -1,3 +1,4 @@
+import { recoverFailedGenerationRefunds } from '../api/credits/refund-recovery';
 import healthHandler from '../api/health';
 import contentBlogHandler from '../api/content/blog';
 import contentPromptAssetsHandler from '../api/content/prompt-assets';
@@ -4977,10 +4978,12 @@ export default {
         }
 
         if (apiMarketplaceAdmin) {
-          // Failed generation refunds are only flagged on the task; nothing
-          // retries them. Alert once per window so paid credits are returned.
+          // Recover bounded full failures with original refund keys, then alert
+          // on recent unresolved failures. Other refund phases stay manual.
           try {
             const windowEnd = new Date(controller.scheduledTime);
+            const recovery = await recoverFailedGenerationRefunds(apiMarketplaceAdmin, windowEnd);
+            console.log(JSON.stringify({ event: 'generation_refund_recovery', ...recovery }));
             const refundScan = await findRecentRefundFailures(
               apiMarketplaceAdmin,
               new Date(windowEnd.getTime() - 10 * 60 * 1000),

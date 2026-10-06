@@ -26,6 +26,8 @@ export type ApiMarketplaceModel = {
     unit: 'tokens_1m' | 'request';
   };
   endpoints: string[];
+  /** Verified POST paths exposed by the gateway, relative to /v1. */
+  requestEndpoints?: string[];
   status?: {
     label: string;
     color: string | null;

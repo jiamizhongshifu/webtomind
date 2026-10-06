@@ -2,8 +2,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Image and video tasks record `refund_failed = true` when a failed paid
- * generation could not return its prepaid credits. Nothing retries those
- * refunds automatically, so surface every newly flagged task to an operator.
+ * generation could not return its prepaid credits. Bounded full failures are
+ * retried by refund-recovery; surface unresolved and other refund phases.
  */
 const REFUND_FAILURE_TABLES = {
   image: 'image_generation_tasks',
