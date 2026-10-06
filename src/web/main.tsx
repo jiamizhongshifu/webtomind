@@ -8,7 +8,7 @@ import '@fontsource/geist-mono/latin-400.css';
 import '@fontsource/geist-mono/latin-500.css';
 
 // i18n 初始化（必须在其他组件之前导入）
-import '../i18n';
+import { i18nReady } from '../i18n';
 import {
   BrowserRouter,
   Routes,
@@ -175,8 +175,12 @@ const PrivacyPage = lazyRouteWithInitialPreload(
 const SharePage = lazy(() =>
   import('./pages/SharePage').then((mod) => ({ default: mod.SharePage }))
 );
-const UseCasesPage = lazy(() =>
-  import('./pages/UseCasesPage').then((mod) => ({ default: mod.UseCasesPage }))
+const UseCasesPage = lazyRouteWithInitialPreload(
+  (pathname) => stripLocaleRoutePrefix(pathname) === '/blog',
+  () =>
+    import('./pages/UseCasesPage').then((mod) => ({
+      default: mod.UseCasesPage
+    }))
 );
 const PublicSkillsPage = lazy(() =>
   import('./pages/PublicSkillsPage').then((mod) => ({
@@ -203,10 +207,15 @@ const CreateHomePage = lazy(() =>
     default: mod.CreateHomePage
   }))
 );
-const CreatePromptLibraryPage = lazy(() =>
-  import('./pages/CreatePromptLibraryPage').then((mod) => ({
-    default: mod.CreatePromptLibraryPage
-  }))
+// /zh-CN/prompts 与 /en-US/prompts 渲染这个包装页；首屏直接预取它的 chunk，
+// 不等 React 首次渲染后才发现。
+const CreatePromptLibraryPage = lazyRouteWithInitialPreload(
+  (pathname) =>
+    /^\/(zh-CN|en-US)\/prompts$/.test(pathname.replace(/\/+$/, '')),
+  () =>
+    import('./pages/CreatePromptLibraryPage').then((mod) => ({
+      default: mod.CreatePromptLibraryPage
+    }))
 );
 const CreateDiscoveryPage = lazy(() =>
   import('./pages/CreateDiscoveryPage').then((mod) => ({
@@ -1427,11 +1436,16 @@ if (rootElement) {
   (
     window as Window & { __WEBTOMIND_APP_MOUNTED__?: boolean }
   ).__WEBTOMIND_APP_MOUNTED__ = true;
-  ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
-      <AppErrorBoundary>
-        <App />
-      </AppErrorBoundary>
-    </React.StrictMode>
-  );
+  const mountApp = (): void => {
+    ReactDOM.createRoot(rootElement).render(
+      <React.StrictMode>
+        <AppErrorBoundary>
+          <App />
+        </AppErrorBoundary>
+      </React.StrictMode>
+    );
+  };
+  // 当前语言的文案按需加载（与路由 chunk 并行）；就绪后再挂载，避免首屏
+  // 闪现原始 key。加载失败也照常挂载，由 stale-asset 恢复逻辑兜底。
+  void i18nReady.then(mountApp, mountApp);
 }

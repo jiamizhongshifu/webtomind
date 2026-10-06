@@ -138,11 +138,12 @@ export function CreatorAccountMenu({
 
   const handleLanguageChange = async (nextLanguage: SupportedLanguage) => {
     if (languageLoading || nextLanguage === currentLanguage) return;
-    await changeLanguage(nextLanguage);
+    // 先跳转再切换：URL 是语言的唯一来源，避免页面的 URL 同步把语言改回去。
     navigate(
       `${mapPathToLocale(location.pathname, nextLanguage)}${location.search}${location.hash}`,
       { replace: true }
     );
+    await changeLanguage(nextLanguage);
   };
 
   const handleThemeChange = (nextTheme: Theme) => {

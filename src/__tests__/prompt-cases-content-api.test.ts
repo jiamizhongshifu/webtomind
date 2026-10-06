@@ -737,4 +737,91 @@ describe('/api/content/prompt-cases', () => {
     expect(body.items[0].mediaType).toBe('video');
     expect(body.items[0].durationSeconds).toBe(12);
   });
+  it('flags seoIndexable on plain library items from SEO status columns only', async () => {
+    const indexableRow = createPromptCaseRow({
+      id: 'indexable-case',
+      slug: 'indexable-case',
+      commercial_intent: '韩系写真商业案例'
+    });
+    const draftRow = createPromptCaseRow({
+      id: 'draft-case',
+      slug: 'draft-case',
+      commercial_intent: '韩系写真商业案例'
+    });
+    rpcMock.mockResolvedValueOnce({
+      data: {
+        items: [indexableRow, draftRow],
+        total: 2,
+        pageInfo: { nextCursor: null, hasMore: false },
+        version: 'prompt-library-v2',
+        source: 'database'
+      },
+      error: null
+    });
+    inMock.mockResolvedValueOnce({
+      data: [
+        {
+          id: 'indexable-case',
+          seo_status: 'indexable',
+          seo_reviewed_at: '2026-08-08T00:00:00.000Z',
+          seo_evidence: { source_verified: true, media_verified: true },
+          title_zh: 'SEO 表里的标题不应覆盖列表字段'
+        },
+        {
+          id: 'draft-case',
+          seo_status: 'draft',
+          seo_reviewed_at: null,
+          seo_evidence: {}
+        }
+      ],
+      error: null
+    });
+
+    const { default: handler } = await import('../../api/content/prompt-cases');
+    const response = await handler(
+      new Request(
+        'https://webtomind.test/api/content/prompt-cases?library=1&limit=12&locale=zh-CN&requireImage=1'
+      )
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(inMock).toHaveBeenCalled();
+    expect(body.items.map((item: { id: string }) => item.id)).toEqual([
+      'indexable-case',
+      'draft-case'
+    ]);
+    expect(body.items[0].seoIndexable).toBe(true);
+    expect(body.items[0].titleZh).toBe('GPT Image 2 韩系写真案例');
+    expect(body.items[1].seoIndexable).toBe(false);
+  });
+
+  it('leaves seoIndexable unknown when SEO status columns are unavailable', async () => {
+    rpcMock.mockResolvedValueOnce({
+      data: {
+        items: [createPromptCaseRow({ id: 'legacy-case', slug: 'legacy-case' })],
+        total: 1,
+        pageInfo: { nextCursor: null, hasMore: false },
+        version: 'prompt-library-v2',
+        source: 'database'
+      },
+      error: null
+    });
+    inMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: 'column seo_status does not exist' }
+    });
+
+    const { default: handler } = await import('../../api/content/prompt-cases');
+    const response = await handler(
+      new Request(
+        'https://webtomind.test/api/content/prompt-cases?library=1&limit=12&locale=zh-CN&requireImage=1'
+      )
+    );
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.items).toHaveLength(1);
+    expect(body.items[0].seoIndexable).toBeUndefined();
+  });
 });

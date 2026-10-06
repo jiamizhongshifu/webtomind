@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
-import { useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
-  ArrowRight,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -16,7 +15,6 @@ import {
   Plus,
   Settings,
   Sparkles,
-  Trash2,
   UserRound,
   Video,
   X
@@ -43,16 +41,10 @@ import {
   NavigationLink,
   useOverlayBehavior
 } from '@/shared/ui';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from '@/shared/ui/radix/dropdown-menu';
 import { deleteImageSession } from '@/services/create-workspace-v2-api';
-import { CreatorAccountMenu } from './CreatorAccountMenu';
-import { ReferralInviteDialog } from './ReferralInviteDialog';
+// 账户菜单的样式也作用于匿名访客的登录入口（.create-side-nav-profile），
+// 保持在原位置静态引入；组件本身登录后才懒加载。
+import '../../styles/creator-account-menu.css';
 import { TARGET_YEARLY_DISCOUNT_PERCENT } from '@/shared/pricing-catalog';
 import { REFERRAL_TOTAL_INVITER_REWARD_CREDITS } from '@/shared/referral-rewards';
 import {
@@ -64,6 +56,28 @@ import { useActivationStatus } from '../../lib/use-activation-status';
 import { useImageCreationSessions } from './useImageCreationSessions';
 import './CreateSideNavSessions.css';
 import './CreateSideNavUpgrade.css';
+
+// 账户菜单与会话菜单只对登录用户出现（依赖 Radix Popover/Select/
+// DropdownMenu）；登录后预加载，匿名访客的公开页面不再下载这部分代码。
+const loadCreatorAccountMenu = () => import('./CreatorAccountMenu');
+const loadSessionMenu = () => import('./CreateSideNavSessionMenu');
+const CreatorAccountMenu = lazy(() =>
+  loadCreatorAccountMenu().then((module) => ({
+    default: module.CreatorAccountMenu
+  }))
+);
+const CreateSideNavSessionMenu = lazy(() =>
+  loadSessionMenu().then((module) => ({
+    default: module.CreateSideNavSessionMenu
+  }))
+);
+
+// 邀请弹窗（带动画的 Dialog）点开时才加载，不进入导航栏的首屏代码。
+const ReferralInviteDialog = lazy(() =>
+  import('./ReferralInviteDialog').then((module) => ({
+    default: module.ReferralInviteDialog
+  }))
+);
 
 function getLocalePrefix(pathname: string): '' | '/zh-CN' | '/en-US' {
   if (pathname.startsWith('/en-US')) return '/en-US';
@@ -728,55 +742,32 @@ function ImageSessionNavItem({
         <span className="create-side-nav-session-title">{session.title}</span>
       </Link>
       {!collapsed && (
-        <DropdownMenu
-          open={menuOpen}
-          onOpenChange={(nextOpen) => {
-            setMenuOpen(nextOpen);
-            if (nextOpen) setDeleteError('');
-          }}
-        >
-          <DropdownMenuTrigger asChild>
-            <IconButton
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="create-side-nav-session-more"
-              label={`${copy.more}：${session.title}`}
-              aria-haspopup="menu"
-              aria-expanded={menuOpen}
-              icon={<MoreHorizontal aria-hidden="true" />}
-            />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="create-side-nav-session-menu"
-            aria-label={`${copy.more}：${session.title}`}
-            align="start"
-            side="right"
-            sideOffset={8}
-            collisionPadding={12}
-          >
-            <DropdownMenuItem asChild>
-              <Link to={href} onClick={() => setMenuOpen(false)}>
-                <ArrowRight aria-hidden="true" />
-                <span>{copy.open}</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              className="danger"
-              disabled={deleting}
-              onSelect={(event) => {
-                // 删除失败时需要保留菜单展示错误，关闭时机由 handleDelete 控制。
-                event.preventDefault();
-                void handleDelete();
-              }}
+        <Suspense
+          fallback={
+            <span
+              className="ui-icon-button ui-icon-button--ghost ui-icon-button--sm create-side-nav-session-more"
+              aria-hidden="true"
             >
-              <Trash2 aria-hidden="true" />
-              <span>{deleting ? copy.deleting : copy.delete}</span>
-            </DropdownMenuItem>
-            {deleteError && <p role="alert">{deleteError}</p>}
-          </DropdownMenuContent>
-        </DropdownMenu>
+              <span className="ui-icon-button__icon">
+                <MoreHorizontal />
+              </span>
+            </span>
+          }
+        >
+          <CreateSideNavSessionMenu
+            open={menuOpen}
+            onOpenChange={(nextOpen) => {
+              setMenuOpen(nextOpen);
+              if (nextOpen) setDeleteError('');
+            }}
+            label={`${copy.more}：${session.title}`}
+            href={href}
+            copy={copy}
+            deleting={deleting}
+            deleteError={deleteError}
+            onDelete={() => void handleDelete()}
+          />
+        </Suspense>
       )}
     </div>
   );
@@ -799,7 +790,17 @@ export function CreateSideNav({
     !activation.unavailable &&
     !activation.activated;
   const [announcementsOpen, setAnnouncementsOpen] = useState(false);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    void loadCreatorAccountMenu().catch(() => undefined);
+    void loadSessionMenu().catch(() => undefined);
+  }, [isAuthenticated]);
   const [referralInviteOpen, setReferralInviteOpen] = useState(false);
+  // 首次打开后保持挂载，关闭动画照常播放。
+  const [hasOpenedReferralInvite, setHasOpenedReferralInvite] = useState(false);
+  useEffect(() => {
+    if (referralInviteOpen) setHasOpenedReferralInvite(true);
+  }, [referralInviteOpen]);
   const [isCollapsed, setIsCollapsed] = useState(getStoredSideNavCollapsed);
   const [sessionsExpanded, setSessionsExpanded] = useState(true);
   const [hasUnreadAnnouncements, setHasUnreadAnnouncements] = useState(
@@ -1236,21 +1237,38 @@ export function CreateSideNav({
             )}
           </div>
           {isAuthenticated ? (
-            <CreatorAccountMenu
-              placement="sidebar"
-              compact={isCollapsed}
-              user={user}
-              userName={userName}
-              memberNumber={profile?.member_number_formatted}
-              accountStatusLabel={accountStatusLabel}
-              creditsTrailingLabel={navCopy.creditTrailing}
-              rechargeHref={rechargeHref}
-              pricingHref={pricingHref}
-              workspaceHref={boardsHref}
-              settingsHref={settingsHref}
-              copy={navCopy}
-              onSignOut={signOut}
-            />
+            <Suspense
+              fallback={
+                <div
+                  className={`create-side-nav-profile-wrap${
+                    isCollapsed ? ' is-compact' : ''
+                  }`}
+                  aria-hidden="true"
+                >
+                  <span
+                    className={`create-side-nav-profile${
+                      isCollapsed ? ' is-compact' : ''
+                    }`}
+                  />
+                </div>
+              }
+            >
+              <CreatorAccountMenu
+                placement="sidebar"
+                compact={isCollapsed}
+                user={user}
+                userName={userName}
+                memberNumber={profile?.member_number_formatted}
+                accountStatusLabel={accountStatusLabel}
+                creditsTrailingLabel={navCopy.creditTrailing}
+                rechargeHref={rechargeHref}
+                pricingHref={pricingHref}
+                workspaceHref={boardsHref}
+                settingsHref={settingsHref}
+                copy={navCopy}
+                onSignOut={signOut}
+              />
+            </Suspense>
           ) : (
             <Link
               to="/login"
@@ -1267,11 +1285,15 @@ export function CreateSideNav({
           )}
         </div>
       </aside>
-      <ReferralInviteDialog
-        open={referralInviteOpen}
-        isEnglish={isEnglish}
-        onClose={() => setReferralInviteOpen(false)}
-      />
+      {hasOpenedReferralInvite && (
+        <Suspense fallback={null}>
+          <ReferralInviteDialog
+            open={referralInviteOpen}
+            isEnglish={isEnglish}
+            onClose={() => setReferralInviteOpen(false)}
+          />
+        </Suspense>
+      )}
       <Navigation
         className="create-mobile-nav"
         aria-label={navCopy.ariaLabel}

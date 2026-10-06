@@ -1654,6 +1654,8 @@ export interface PromptCase {
   seoStatus?: 'draft' | 'review' | 'indexable' | 'retired';
   seoReviewedAt?: string;
   seoEvidence?: Record<string, unknown>;
+  /** Public list responses: false when the detail page renders noindex. */
+  seoIndexable?: boolean;
 }
 
 export type AdminPromptCaseWrite = Partial<

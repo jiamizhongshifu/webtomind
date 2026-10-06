@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import '../../../i18n';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n, { i18nReady } from '../../../i18n';
 import { PromptStyleGridPage } from '../PromptStyleGridPage';
 
 const testState = vi.hoisted(() => ({
@@ -62,6 +62,13 @@ function getTemplateButton(label: string): HTMLButtonElement {
 }
 
 describe('PromptStyleGridPage', () => {
+  // Locales load lazily; preload both so route-driven language switches apply
+  // synchronously, as they do for the page's own locale in the browser.
+  beforeAll(async () => {
+    await i18nReady;
+    await i18n.loadLanguages(['zh-CN', 'en-US']);
+  });
+
   beforeEach(() => {
     testState.getPublicPromptCases.mockReset();
     testState.trackEvent.mockReset();

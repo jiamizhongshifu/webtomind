@@ -96,6 +96,27 @@ describe('PromptLibraryMasonry', () => {
     expect(onOpenCase).not.toHaveBeenCalled();
   });
 
+  it('marks links to noindex cases as nofollow and keeps others followable', () => {
+    renderMasonry({
+      columns: [
+        [{ caseItem: { ...cases[0], seoIndexable: true }, index: 0 }],
+        [{ caseItem: { ...cases[1], seoIndexable: false }, index: 1 }]
+      ]
+    });
+
+    const grid = screen.getByLabelText('Prompt 案例');
+    expect(
+      within(grid).getByRole('link', {
+        name: '预览 Prompt 案例：Editorial portrait'
+      })
+    ).not.toHaveAttribute('rel');
+    expect(
+      within(grid).getByRole('link', {
+        name: '预览 Prompt 案例：Product visual'
+      })
+    ).toHaveAttribute('rel', 'nofollow');
+  });
+
   // Initial-viewport cards keep their reserved ratio (CLS guard); cards beyond
   // the stable window may still adopt their natural ratio.
   it('updates aspect ratios from natural dimensions beyond the stable first screen', () => {

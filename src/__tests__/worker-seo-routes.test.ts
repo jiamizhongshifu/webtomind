@@ -560,6 +560,131 @@ describe('Cloudflare Worker SEO route matching', () => {
     );
   });
 
+  it('serves browsers the prompt detail bootstrap with the SSR body hidden', async () => {
+    const indexHtml =
+      '<!doctype html><html lang="zh-CN"><head><title>Home</title><link rel="canonical" href="https://webtomind.com/" /></head><body><div id="root"></div></body></html>';
+    const get = vi.fn(async () => null);
+    const response = await worker.fetch(
+      new Request(
+        'https://webtomind.com/zh-CN/create/prompts/share/legacy-no-slug',
+        {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 Chrome/150',
+            Accept: 'text/html',
+            Cookie: 'webtomind-language=zh-CN'
+          }
+        }
+      ),
+      {
+        CANONICAL_HOST: 'webtomind.com',
+        SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_ANON_KEY: 'anon',
+        ASSETS: { fetch: vi.fn(async () => new Response(indexHtml)) },
+        WEBTOMIND_PUBLIC_CACHE: { get, put: vi.fn(async () => undefined) }
+      } as never,
+      { waitUntil: () => undefined } as never
+    );
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-webtomind-seo-renderer')).toBe(
+      'cloudflare-browser-prompt-detail'
+    );
+    expect(response.headers.get('cache-control')).toContain('no-store');
+    expect(html).toContain('id="webtomind-prompt-bootstrap"');
+    expect(html).toContain('id="webtomind-browser-ssr-style"');
+    expect(html).toContain('<div id="root"><template data-webtomind-ssr-body>');
+    expect(html).not.toContain('webtomind-ssr-body-start');
+    // The rendered HTML does not depend on cookies, so browsers share the KV cache.
+    expect(get).toHaveBeenCalled();
+    expect(
+      getSeoRouteLabelForTest('/zh-CN/create/prompts/share/legacy-no-slug')
+    ).toBe('worker-seo');
+  });
+
+  it('drops the LCP image preload and inerts the SSR body for browsers', async () => {
+    const { toBrowserPromptDetailHtml } = await import('../../workers/webtomind');
+    const html = toBrowserPromptDetailHtml(
+      '<html><head><link rel="preload" as="image" href="https://img/a.webp" fetchpriority="high" data-webtomind-prompt-image-preload="1" />\n    <script id="webtomind-prompt-bootstrap" type="application/json">{}</script></head><body><div id="root"><!--webtomind-ssr-body-start--><main class="prompt-detail-ssr"><img src="https://img/a.webp" /></main><!--webtomind-ssr-body-end--></div></body></html>'
+    );
+    expect(html).not.toContain('rel="preload" as="image"');
+    expect(html).toContain('id="webtomind-prompt-bootstrap"');
+    expect(html).toContain(
+      '<div id="root"><template data-webtomind-ssr-body><main class="prompt-detail-ssr">'
+    );
+    expect(html).toContain('</main></template></div>');
+  });
+
+  it('modulepreloads only the locale chunk named by the URL prefix', async () => {
+    const { injectLocalePreload } = await import('../../workers/webtomind');
+    const html =
+      '<html><head><script id="webtomind-locale-assets" type="application/json">{"zh-CN":"/assets/index.zh1.js","en-US":"/assets/index.en1.js"}</script></head><body></body></html>';
+    const zh = injectLocalePreload(html, '/zh-CN/prompts/case');
+    expect(zh).toContain(
+      '<link rel="modulepreload" crossorigin href="/assets/index.zh1.js" data-webtomind-locale-preload="1" />'
+    );
+    expect(zh).not.toContain('href="/assets/index.en1.js"');
+    expect(injectLocalePreload(zh, '/zh-CN/prompts/case')).toBe(zh);
+    expect(injectLocalePreload(html, '/en-US')).toContain(
+      'href="/assets/index.en1.js" data-webtomind-locale-preload'
+    );
+    expect(injectLocalePreload(html, '/prompts/case')).toBe(html);
+    expect(
+      injectLocalePreload(
+        html.replace('/assets/index.zh1.js', 'https://evil.test/x.js'),
+        '/zh-CN'
+      )
+    ).not.toContain('data-webtomind-locale-preload');
+  });
+
+  it('adds the locale preload to the plain app shell', async () => {
+    const response = await worker.fetch(
+      new Request('https://webtomind.com/en-US/pricing', {
+        headers: { 'User-Agent': 'Mozilla/5.0 Chrome/150', Accept: 'text/html' }
+      }),
+      {
+        CANONICAL_HOST: 'webtomind.com',
+        ASSETS: {
+          fetch: vi.fn(
+            async () =>
+              new Response(
+                '<html><head><script id="webtomind-locale-assets" type="application/json">{"zh-CN":"/assets/index.zh1.js","en-US":"/assets/index.en1.js"}</script></head><body><div id="root"></div></body></html>',
+                { headers: { 'Content-Type': 'text/html' } }
+              )
+          )
+        }
+      } as never,
+      { waitUntil: () => undefined } as never
+    );
+    const html = await response.text();
+    expect(response.status).toBe(200);
+    expect(html).toContain('href="/assets/index.en1.js" data-webtomind-locale-preload');
+  });
+
+  it('keeps crawler prompt detail HTML visible', async () => {
+    const indexHtml =
+      '<!doctype html><html lang="zh-CN"><head><title>Home</title></head><body><div id="root"></div></body></html>';
+    const response = await worker.fetch(
+      new Request(
+        'https://webtomind.com/zh-CN/create/prompts/share/legacy-no-slug',
+        { headers: { 'User-Agent': 'Googlebot/2.1' } }
+      ),
+      {
+        CANONICAL_HOST: 'webtomind.com',
+        SUPABASE_URL: 'https://example.supabase.co',
+        SUPABASE_ANON_KEY: 'anon',
+        ASSETS: { fetch: vi.fn(async () => new Response(indexHtml)) }
+      } as never,
+      { waitUntil: () => undefined } as never
+    );
+    const html = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(html).toContain('id="webtomind-prompt-bootstrap"');
+    expect(html).not.toContain('webtomind-browser-ssr-style');
+    expect(html).not.toContain('<template data-webtomind-ssr-body>');
+  });
+
   it('renders prompt library preview URLs through the prompt detail SEO route', () => {
     expect(getSeoTargetForTest('/zh-CN/prompts?caseId=case-123')).toBe(
       '/api/prompt-page?locale=zh-CN&id=case-123'

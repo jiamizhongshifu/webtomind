@@ -1985,17 +1985,22 @@ export function ImageCreatePage() {
     [t]
   );
 
-  // URL 前缀同步：/zh-CN/create 或 /en-US/create 直达时强制对齐 i18n.language
+  // URL 前缀同步：/zh-CN/create 或 /en-US/create 直达时强制对齐 i18n.language。
+  // 只在路径变化时执行；language/changeLanguage 随语言切换而变化，放进依赖会在
+  // “已切换语言、尚未跳转”的瞬间把语言改回旧路径的语言。
+  const languageSyncRef = useRef({ language, changeLanguage });
+  languageSyncRef.current = { language, changeLanguage };
   useEffect(() => {
     const pathname = location.pathname;
     let targetLang: 'zh-CN' | 'en-US' | null = null;
     if (pathname.startsWith('/en-US')) targetLang = 'en-US';
     else if (pathname === '/ai-image-generator') targetLang = 'en-US';
     else if (pathname.startsWith('/zh-CN')) targetLang = 'zh-CN';
-    if (targetLang && language !== targetLang) {
-      void changeLanguage(targetLang);
+    const current = languageSyncRef.current;
+    if (targetLang && current.language !== targetLang) {
+      void current.changeLanguage(targetLang);
     }
-  }, [location.pathname, language, changeLanguage]);
+  }, [location.pathname]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);

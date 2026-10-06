@@ -1,4 +1,11 @@
-import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import {
+  type FormEvent,
+  type SyntheticEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
@@ -22,6 +29,10 @@ import {
   subscribeMarketingEmail,
   type PromptCase
 } from '../../services/agent-api';
+import {
+  getOptimizedPromptCaseImageUrl,
+  getPromptCaseResponsiveImageSet
+} from '../../shared/prompt-case-image';
 import neonCollageHeroProduct from '../assets/home/neon-collage-hero-product.webp';
 import neonCollageStickers from '../assets/home/neon-collage-stickers.webp';
 import neonCollageWorkflow from '../assets/home/neon-collage-workflow.webp';
@@ -55,6 +66,20 @@ type NewsletterStatus =
 
 function getCaseTitle(caseItem: PromptCase, fallback: string): string {
   return caseItem.title?.trim() || fallback;
+}
+
+const HOME_CASE_IMAGE_WIDTHS = [320, 480, 640];
+
+// 缩略图走 Supabase 渲染端点；端点失败时退回原图，避免卡片空白。
+function fallbackToOriginalImage(
+  event: SyntheticEvent<HTMLImageElement>,
+  originalUrl: string
+): void {
+  const image = event.currentTarget;
+  if (!originalUrl || image.dataset.originalFallback === '1') return;
+  image.dataset.originalFallback = '1';
+  image.removeAttribute('srcset');
+  image.src = originalUrl;
 }
 
 function getCaseHref(caseItem: PromptCase, locale: 'zh-CN' | 'en-US'): string {
@@ -530,11 +555,15 @@ export function HomePage() {
     }
   }, [authLoading, isAuthenticated, localePrefix, navigate, pathname]);
 
+  // 只跟随 URL 语言前缀同步。i18n 包装对象会随语言变化而更换，若放进依赖，
+  // 切换语言后、跳转完成前这里会把语言改回旧 URL 的语言。
+  const i18nRef = useRef(i18n);
+  i18nRef.current = i18n;
   useEffect(() => {
-    if (i18n.language !== localeFromPath) {
-      void i18n.changeLanguage(localeFromPath);
+    if (i18nRef.current.language !== localeFromPath) {
+      void i18nRef.current.changeLanguage(localeFromPath);
     }
-  }, [i18n, localeFromPath]);
+  }, [localeFromPath]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1070,7 +1099,16 @@ export function HomePage() {
                 >
                   <img
                     className="hot-case-cover"
-                    src={caseItem.imageUrl}
+                    src={getOptimizedPromptCaseImageUrl(caseItem.imageUrl, {
+                      width: 480
+                    })}
+                    srcSet={getPromptCaseResponsiveImageSet(
+                      caseItem.imageUrl,
+                      HOME_CASE_IMAGE_WIDTHS
+                    )}
+                    onError={(event) =>
+                      fallbackToOriginalImage(event, caseItem.imageUrl)
+                    }
                     alt={caseItem.title}
                     loading={index < 4 ? 'eager' : 'lazy'}
                     decoding="async"
@@ -1144,7 +1182,17 @@ export function HomePage() {
                         fit="cover"
                       >
                         <img
-                          src={caseItem.imageUrl}
+                          src={getOptimizedPromptCaseImageUrl(
+                            caseItem.imageUrl,
+                            { width: 320 }
+                          )}
+                          srcSet={getPromptCaseResponsiveImageSet(
+                            caseItem.imageUrl,
+                            HOME_CASE_IMAGE_WIDTHS
+                          )}
+                          onError={(event) =>
+                            fallbackToOriginalImage(event, caseItem.imageUrl)
+                          }
                           alt={caseItem.title}
                           loading="lazy"
                           decoding="async"

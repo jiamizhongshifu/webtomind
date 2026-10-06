@@ -1,4 +1,9 @@
-import { defineConfig, loadEnv, Plugin } from 'vite';
+import {
+  defineConfig,
+  loadEnv,
+  Plugin,
+  type HtmlTagDescriptor
+} from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import fs from 'fs';
@@ -136,6 +141,12 @@ function renameHtmlPlugin(outDir: string): Plugin {
   };
 }
 
+const SIDE_EFFECT_FREE_SOURCE_PATTERN = /\/src\/shared\/ui\/.+\.tsx?$/;
+
+function isSideEffectfulModule(id: string): boolean {
+  return !SIDE_EFFECT_FREE_SOURCE_PATTERN.test(id);
+}
+
 function performanceHintsPlugin(supabaseUrl: string): Plugin {
   return {
     name: 'web-performance-hints',
@@ -151,6 +162,16 @@ function performanceHintsPlugin(supabaseUrl: string): Plugin {
               rel: 'preconnect',
               href: origin,
               crossorigin: ''
+            },
+            injectTo: 'head'
+          },
+          // <img> 走 no-cors 请求，无法复用上面的 crossorigin 连接；
+          // 再预连一个匿名连接给 Storage 图片（LCP 卡片图）。
+          {
+            tag: 'link',
+            attrs: {
+              rel: 'preconnect',
+              href: origin
             },
             injectTo: 'head'
           },
@@ -180,12 +201,32 @@ function promptRouteAssetsPlugin(): Plugin {
       handler(_html, context) {
         const bundle = context.bundle;
         if (!bundle) return [];
+        // 每种语言文案 chunk 的文件名：Worker 按 URL 语言前缀 modulepreload，
+        // 让它与入口 JS 并行下载，而不是等入口执行完才发起请求。
+        const localeAssets = Object.fromEntries(
+          ['zh-CN', 'en-US'].flatMap((locale) => {
+            const chunk = Object.values(bundle).find(
+              (item) =>
+                item.type === 'chunk' &&
+                item.facadeModuleId?.endsWith(`/i18n/locales/${locale}/index.ts`)
+            );
+            return chunk ? [[locale, `/${chunk.fileName}`]] : [];
+          })
+        );
+        const tags: HtmlTagDescriptor[] = [
+          {
+            tag: 'script',
+            attrs: { id: 'webtomind-locale-assets', type: 'application/json' },
+            children: JSON.stringify(localeAssets),
+            injectTo: 'head'
+          }
+        ];
         const route = Object.values(bundle).find(
           (item) =>
             item.type === 'chunk' &&
             item.facadeModuleId?.endsWith('/pages/PromptSeoLandingPage.tsx')
         );
-        if (!route || route.type !== 'chunk') return [];
+        if (!route || route.type !== 'chunk') return tags;
         const files = new Set<string>();
         const visit = (file: string) => {
           if (files.has(file)) return;
@@ -195,17 +236,16 @@ function promptRouteAssetsPlugin(): Plugin {
           chunk.imports.forEach(visit);
         };
         visit(route.fileName);
-        return [
-          {
-            tag: 'script',
-            attrs: {
-              id: 'webtomind-prompt-route-assets',
-              type: 'application/json'
-            },
-            children: JSON.stringify([...files].map((file) => `/${file}`)),
-            injectTo: 'head'
-          }
-        ];
+        tags.push({
+          tag: 'script',
+          attrs: {
+            id: 'webtomind-prompt-route-assets',
+            type: 'application/json'
+          },
+          children: JSON.stringify([...files].map((file) => `/${file}`)),
+          injectTo: 'head'
+        });
+        return tags;
       }
     }
   };
@@ -364,6 +404,13 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         input: {
           index: path.resolve(__dirname, 'web.html')
+        },
+        treeshake: {
+          // shadcn 风格封装在模块顶层调用 forwardRef、读取 Radix 的
+          // displayName，Rollup 无法证明无副作用，只要从 @/shared/ui
+          // 引入任一组件就会把整套 Select/Popover/Dialog 依赖打进入口。
+          // 这些模块只导出组件和 hook，没有需要保留的副作用。
+          moduleSideEffects: isSideEffectfulModule
         },
         output: {
           entryFileNames: 'assets/[name].[hash].js',

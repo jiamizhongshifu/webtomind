@@ -2,96 +2,100 @@
  * i18next 初始化配置
  */
 
-import i18n from 'i18next';
+import i18n, { type BackendModule, type ResourceLanguage } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
-import { DEFAULT_LANGUAGE, getInitialLanguageSync } from './config';
+import {
+  type SupportedLanguage,
+  SUPPORTED_LANGUAGES,
+  getInitialLanguageSync
+} from './config';
 
 // 导入类型增强
 import './types';
 
-// 静态导入所有语言文件（Chrome 扩展要求）
-import common_zhCN from './locales/zh-CN/common.json';
-import home_zhCN from './locales/zh-CN/home.json';
-import auth_zhCN from './locales/zh-CN/auth.json';
-import workspace_zhCN from './locales/zh-CN/workspace.json';
-import popup_zhCN from './locales/zh-CN/popup.json';
-import floatingCard_zhCN from './locales/zh-CN/floatingCard.json';
-import settings_zhCN from './locales/zh-CN/settings.json';
-import boards_zhCN from './locales/zh-CN/boards.json';
-import sidepanel_zhCN from './locales/zh-CN/sidepanel.json';
-import imageCreate_zhCN from './locales/zh-CN/imageCreate.json';
-import themeCard_zhCN from './locales/zh-CN/themeCard.json';
+type LocaleResources = Record<string, ResourceLanguage[string]>;
 
-import common_enUS from './locales/en-US/common.json';
-import home_enUS from './locales/en-US/home.json';
-import auth_enUS from './locales/en-US/auth.json';
-import workspace_enUS from './locales/en-US/workspace.json';
-import popup_enUS from './locales/en-US/popup.json';
-import floatingCard_enUS from './locales/en-US/floatingCard.json';
-import settings_enUS from './locales/en-US/settings.json';
-import boards_enUS from './locales/en-US/boards.json';
-import sidepanel_enUS from './locales/en-US/sidepanel.json';
-import imageCreate_enUS from './locales/en-US/imageCreate.json';
-import themeCard_enUS from './locales/en-US/themeCard.json';
+// 每种语言一个 chunk：访客只下载当前语言的文案，切换语言时
+// i18next 先经由下方 backend 加载目标语言，再完成切换。
+const LOCALE_LOADERS: Record<
+  SupportedLanguage,
+  () => Promise<{ default: LocaleResources }>
+> = {
+  'zh-CN': () => import('./locales/zh-CN'),
+  'en-US': () => import('./locales/en-US')
+};
 
-// 资源配置
-const resources = {
-  'zh-CN': {
-    common: common_zhCN,
-    home: home_zhCN,
-    auth: auth_zhCN,
-    workspace: workspace_zhCN,
-    popup: popup_zhCN,
-    floatingCard: floatingCard_zhCN,
-    settings: settings_zhCN,
-    boards: boards_zhCN,
-    sidepanel: sidepanel_zhCN,
-    imageCreate: imageCreate_zhCN,
-    themeCard: themeCard_zhCN
+const localeRequests = new Map<SupportedLanguage, Promise<LocaleResources>>();
+
+function isSupportedLanguage(language: string): language is SupportedLanguage {
+  return (SUPPORTED_LANGUAGES as readonly string[]).includes(language);
+}
+
+function loadLocale(language: SupportedLanguage): Promise<LocaleResources> {
+  let request = localeRequests.get(language);
+  if (!request) {
+    request = LOCALE_LOADERS[language]().then((module) => module.default);
+    // 失败后允许下次切换时重试。
+    request.catch(() => localeRequests.delete(language));
+    localeRequests.set(language, request);
+  }
+  return request;
+}
+
+const lazyLocaleBackend: BackendModule = {
+  type: 'backend',
+  init() {
+    // 无需配置
   },
-  'en-US': {
-    common: common_enUS,
-    home: home_enUS,
-    auth: auth_enUS,
-    workspace: workspace_enUS,
-    popup: popup_enUS,
-    floatingCard: floatingCard_enUS,
-    settings: settings_enUS,
-    boards: boards_enUS,
-    sidepanel: sidepanel_enUS,
-    imageCreate: imageCreate_enUS,
-    themeCard: themeCard_enUS
+  read(language, namespace, callback) {
+    if (!isSupportedLanguage(language)) {
+      callback(null, {});
+      return;
+    }
+    loadLocale(language).then(
+      (resources) => callback(null, resources[namespace] ?? {}),
+      (error: unknown) =>
+        callback(error instanceof Error ? error : new Error(String(error)), false)
+    );
   }
 };
 
-// 初始化 i18next
-i18n.use(initReactI18next).init({
-  resources,
-  lng: getInitialLanguageSync(),
-  fallbackLng: DEFAULT_LANGUAGE,
-  defaultNS: 'common',
-  ns: [
-    'common',
-    'home',
-    'auth',
-    'workspace',
-    'popup',
-    'floatingCard',
-    'settings',
-    'boards',
-    'sidepanel',
-    'imageCreate',
-    'themeCard'
-  ],
+const initialLanguage = getInitialLanguageSync();
+// 尽早发起当前语言的请求，与路由 chunk 并行下载。
+void loadLocale(initialLanguage).catch(() => undefined);
 
-  interpolation: {
-    escapeValue: false // React 已经处理了 XSS
-  },
+// 初始化 i18next；应用在 i18nReady 之后再挂载，首屏不会出现原始 key。
+export const i18nReady: Promise<unknown> = i18n
+  .use(lazyLocaleBackend)
+  .use(initReactI18next)
+  .init({
+    lng: initialLanguage,
+    // 两种语言的 key 保持一致（见 locale parity 测试），不再额外下载回退语言。
+    fallbackLng: false,
+    load: 'currentOnly',
+    defaultNS: 'common',
+    ns: [
+      'common',
+      'home',
+      'auth',
+      'workspace',
+      'popup',
+      'floatingCard',
+      'settings',
+      'boards',
+      'sidepanel',
+      'imageCreate',
+      'themeCard'
+    ],
 
-  react: {
-    useSuspense: false // Chrome 扩展中禁用 Suspense
-  }
-});
+    interpolation: {
+      escapeValue: false // React 已经处理了 XSS
+    },
+
+    react: {
+      useSuspense: false // Chrome 扩展中禁用 Suspense
+    }
+  });
 
 export default i18n;

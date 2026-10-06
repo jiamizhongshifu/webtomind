@@ -1,4 +1,6 @@
 import {
+  lazy,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -17,10 +19,19 @@ import { CreateSideNav } from './CreateSideNav';
 import { GlobalCommandPalette } from './GlobalCommandPalette';
 import { isCreateWorkspaceFeatureEnabled } from '../../lib/create-workspace-flags';
 import { CREATE_WORKSPACE_FEATURE_FLAGS } from '@/shared/create-workspace-v2';
-import {
-  DailyLoginRewardModal,
-  DailyLoginRewardNotice
-} from './DailyLoginRewardModal';
+
+// 每日奖励弹窗（含 canvas-confetti 与带动画的 Dialog）只在真正有奖励时
+// 才加载，不占用公开页面的首屏下载。
+const DailyLoginRewardModal = lazy(() =>
+  import('./DailyLoginRewardModal').then((module) => ({
+    default: module.DailyLoginRewardModal
+  }))
+);
+const DailyLoginRewardNotice = lazy(() =>
+  import('./DailyLoginRewardModal').then((module) => ({
+    default: module.DailyLoginRewardNotice
+  }))
+);
 
 interface CreateWorkspaceFrameProps {
   className?: string;
@@ -137,6 +148,13 @@ export function CreateWorkspaceFrame({
     todayKey
   ]);
 
+  const isDailyRewardOpen = Boolean(dailyReward && dailyReward.reward > 0);
+  // 首次打开后保持挂载，关闭动画照常播放。
+  const [hasShownDailyReward, setHasShownDailyReward] = useState(false);
+  useEffect(() => {
+    if (isDailyRewardOpen) setHasShownDailyReward(true);
+  }, [isDailyRewardOpen]);
+
   const closeDailyReward = useCallback(() => {
     markDailyRewardSeen();
     setDailyReward(null);
@@ -156,20 +174,24 @@ export function CreateWorkspaceFrame({
       <CreateSideNav />
       <main className="create-workspace-page">{children}</main>
       <GlobalCommandPalette localePrefix={localePrefix} />
-      {prefersInlineDailyReward ? (
-        <DailyLoginRewardNotice
-          open={Boolean(dailyReward && dailyReward.reward > 0)}
-          reward={dailyReward?.reward || 0}
-          localePrefix={localePrefix}
-          onClose={closeDailyReward}
-        />
-      ) : (
-        <DailyLoginRewardModal
-          open={Boolean(dailyReward && dailyReward.reward > 0)}
-          reward={dailyReward?.reward || 0}
-          localePrefix={localePrefix}
-          onClose={closeDailyReward}
-        />
+      {hasShownDailyReward && (
+        <Suspense fallback={null}>
+          {prefersInlineDailyReward ? (
+            <DailyLoginRewardNotice
+              open={isDailyRewardOpen}
+              reward={dailyReward?.reward || 0}
+              localePrefix={localePrefix}
+              onClose={closeDailyReward}
+            />
+          ) : (
+            <DailyLoginRewardModal
+              open={isDailyRewardOpen}
+              reward={dailyReward?.reward || 0}
+              localePrefix={localePrefix}
+              onClose={closeDailyReward}
+            />
+          )}
+        </Suspense>
       )}
     </div>
   );

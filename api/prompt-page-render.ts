@@ -13,6 +13,8 @@ import {
 
 const SITE_URL = 'https://webtomind.com';
 const FALLBACK_IMAGE = `${SITE_URL}/icons/icon128.png`;
+export const PROMPT_SSR_BODY_START_MARKER = '<!--webtomind-ssr-body-start-->';
+export const PROMPT_SSR_BODY_END_MARKER = '<!--webtomind-ssr-body-end-->';
 const PROMPT_DETAIL_IMAGE_SIZES = '(max-width: 900px) 100vw, 56vw';
 const PROMPT_DETAIL_IMAGE_WIDTHS = [640, 960, 1280];
 
@@ -841,7 +843,7 @@ function renderPromptImagePreload(caseItem: PromptCaseSeo | null): string {
   );
   return `<link rel="preload" as="image" href="${escapeHtml(
     href
-  )}" imagesrcset="${escapeHtml(srcSet)}" imagesizes="${PROMPT_DETAIL_IMAGE_SIZES}" fetchpriority="high" />`;
+  )}" imagesrcset="${escapeHtml(srcSet)}" imagesizes="${PROMPT_DETAIL_IMAGE_SIZES}" fetchpriority="high" data-webtomind-prompt-image-preload="1" />`;
 }
 
 export function injectPromptSeo(
@@ -1017,9 +1019,11 @@ export function injectPromptSeo(
 
   const seoBody = renderPromptSeoBody(caseItem, locale, relatedCases);
   if (seoBody) {
+    // 标记 SSR 正文边界：Worker 给真实浏览器的版本会把这段换成惰性
+    // <template>，正文与其中图片都不渲染、不下载；爬虫拿到的 HTML 不受影响。
     nextHtml = nextHtml.replace(
       /<div id="root"><\/div>/,
-      `<div id="root">${seoBody}</div>`
+      `<div id="root">${PROMPT_SSR_BODY_START_MARKER}${seoBody}${PROMPT_SSR_BODY_END_MARKER}</div>`
     );
   }
 

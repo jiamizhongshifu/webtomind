@@ -39,6 +39,8 @@ export function PromptLibraryCard({
     <div className="prompt-browser-case-shell">
       <Link
         to={href}
+        // noindex 案例的详情页不参与索引，不让列表把抓取预算导向它们。
+        rel={caseItem.seoIndexable === false ? 'nofollow' : undefined}
         className={
           index < highPriorityCount
             ? 'prompt-browser-case-card prompt-browser-case-card-priority'

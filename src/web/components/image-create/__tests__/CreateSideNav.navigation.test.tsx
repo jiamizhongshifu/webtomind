@@ -157,7 +157,9 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
       'is-compact'
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'Zhong · Free' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Zhong · Free' })
+    );
     expect(screen.queryByTestId('credits-display')).toBeNull();
     expect(await screen.findByRole('link', { name: '充值' })).toHaveAttribute(
       'href',
@@ -362,7 +364,8 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
       </MemoryRouter>
     );
 
-    const trigger = screen.getByRole('button', {
+    // 会话菜单登录后懒加载，等真正的触发按钮挂载。
+    const trigger = await screen.findByRole('button', {
       name: '更多操作：Horsea'
     });
     // DropdownMenu 触发器在 pointerdown 时打开（与真实鼠标行为一致）
@@ -626,7 +629,7 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
     );
 
     expect(container.querySelector('.create-side-nav-upgrade')).toBeNull();
-    const trigger = screen.getByRole('button', {
+    const trigger = await screen.findByRole('button', {
       name: /Paid Creator.*4\.3k 积分/i
     });
     expect(trigger).toHaveTextContent('4.3k 积分');
@@ -687,7 +690,7 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
       </MemoryRouter>
     );
 
-    const trigger = screen.getByRole('button', {
+    const trigger = await screen.findByRole('button', {
       name: /E2E User.*Free/i
     });
     fireEvent.click(trigger);
@@ -706,7 +709,7 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
     });
   });
 
-  it('does not flash a Free account label while account data is unresolved', () => {
+  it('does not flash a Free account label while account data is unresolved', async () => {
     authState.user = {
       email: 'loading@webtomind.test',
       user_metadata: { name: 'Loading Creator' }
@@ -721,7 +724,7 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
 
     expect(container.querySelector('.create-side-nav-upgrade')).toBeNull();
     expect(
-      screen.getByRole('button', { name: 'Loading Creator · —' })
+      await screen.findByRole('button', { name: 'Loading Creator · —' })
     ).toBeVisible();
     expect(screen.queryByText('Free')).toBeNull();
   });

@@ -155,7 +155,11 @@ import {
   IMAGE_TOOL_MODELS,
   isPublishedImageToolModel
 } from '../src/shared/image-tool-models';
-import { renderPromptPageHtml } from '../api/prompt-page-render';
+import {
+  PROMPT_SSR_BODY_END_MARKER,
+  PROMPT_SSR_BODY_START_MARKER,
+  renderPromptPageHtml
+} from '../api/prompt-page-render';
 import {
   injectPromptLibraryBootstrap,
   renderNoindexAppShellHtml,
@@ -2700,14 +2704,54 @@ async function reenqueueImageTasksFromDrainResult(
   );
 }
 
+const LOCALE_ASSETS_PATTERN =
+  /<script\b[^>]*id="webtomind-locale-assets"[^>]*>([\s\S]*?)<\/script>/i;
+const LOCALE_ASSET_PATH_PATTERN = /^\/assets\/[a-zA-Z0-9._-]+\.js$/;
+
+// 文案按语言拆成独立 chunk，应用要等它加载完才挂载。只按 URL 语言前缀
+// 预加载（与缓存键无关的确定结果）；无前缀的路径由客户端照常加载。
+export function injectLocalePreload(html: string, pathname: string): string {
+  const locale = /^\/(zh-CN|en-US)(?:\/|$)/.exec(pathname)?.[1];
+  if (!locale || html.includes('data-webtomind-locale-preload')) return html;
+  const raw = html.match(LOCALE_ASSETS_PATTERN)?.[1];
+  if (!raw) return html;
+  let assets: unknown;
+  try {
+    assets = JSON.parse(raw);
+  } catch {
+    return html;
+  }
+  const asset =
+    assets && typeof assets === 'object'
+      ? (assets as Record<string, unknown>)[locale]
+      : undefined;
+  if (typeof asset !== 'string' || !LOCALE_ASSET_PATH_PATTERN.test(asset)) {
+    return html;
+  }
+  return html.replace(
+    '</head>',
+    `<link rel="modulepreload" crossorigin href="${asset}" data-webtomind-locale-preload="1" />\n  </head>`
+  );
+}
+
 async function fetchIndex(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
+  const pathname = url.pathname;
   url.pathname = '/index.html';
   url.search = '';
   const response = await env.ASSETS.fetch(new Request(url.toString(), request));
   const headers = new Headers(response.headers);
   applyAppShellNoStoreHeaders(headers);
-  return new Response(response.body, { status: response.status, headers });
+  const contentType = headers.get('content-type') || '';
+  if (!response.ok || !contentType.includes('text/html')) {
+    return new Response(response.body, { status: response.status, headers });
+  }
+  const html = injectLocalePreload(await response.text(), pathname);
+  headers.delete('content-length');
+  return new Response(request.method === 'HEAD' ? null : html, {
+    status: response.status,
+    headers
+  });
 }
 
 async function fetchPromptLibraryIndex(
@@ -2749,12 +2793,15 @@ async function fetchPromptLibraryIndex(
     if (!bootstrap?.queryEcho || !Array.isArray(bootstrap.items))
       bootstrap = null;
   }
-  const html = injectPromptLibraryBootstrap(
-    await htmlPromise,
-    {
-      promptLibraryBootstrap: bootstrap
-    },
-    true
+  const html = injectLocalePreload(
+    injectPromptLibraryBootstrap(
+      await htmlPromise,
+      {
+        promptLibraryBootstrap: bootstrap
+      },
+      true
+    ),
+    url.pathname
   );
   const headers = new Headers({
     'Content-Type': 'text/html; charset=utf-8',
@@ -2798,12 +2845,73 @@ function getSeoHtmlAssetFingerprint(indexHtml: string): string {
   );
 }
 
-function canUsePublicSeoHtmlCache(request: Request, env: Env): boolean {
+function canUsePublicSeoHtmlCache(
+  request: Request,
+  env: Env,
+  options: { cacheIgnoresCookies?: boolean } = {}
+): boolean {
   return (
     request.method === 'GET' &&
     Boolean(env.WEBTOMIND_PUBLIC_CACHE) &&
     !request.headers.has('authorization') &&
-    !request.headers.has('cookie')
+    (options.cacheIgnoresCookies === true || !request.headers.has('cookie'))
+  );
+}
+
+// 浏览器访问案例详情页时也走 SSR，只为拿到 #webtomind-prompt-bootstrap：
+// 客户端无需再等案例接口即可渲染 LCP 图片。
+// - SSR 正文与应用界面样式不同：放进惰性 <template>，不渲染也不下载其中
+//   图片，避免刷新时闪现另一套页面；无边界标记的旧缓存用样式兜底隐藏。
+// - 去掉首图 preload：实测慢网下它与入口 JS 抢带宽，LCP 反而变慢。
+// 爬虫拿到的 HTML 不变。
+const BROWSER_PROMPT_DETAIL_SSR_STYLE =
+  '<style id="webtomind-browser-ssr-style">.prompt-detail-ssr{display:none!important}</style>';
+const PROMPT_IMAGE_PRELOAD_PATTERN =
+  /<link rel="preload" as="image"[^>]*data-webtomind-prompt-image-preload="1"[^>]*>\s*/g;
+
+export function toBrowserPromptDetailHtml(html: string): string {
+  return html
+    .replace(PROMPT_SSR_BODY_START_MARKER, '<template data-webtomind-ssr-body>')
+    .replace(PROMPT_SSR_BODY_END_MARKER, '</template>')
+    .replace(PROMPT_IMAGE_PRELOAD_PATTERN, '')
+    .replace('</head>', `${BROWSER_PROMPT_DETAIL_SSR_STYLE}\n  </head>`);
+}
+
+function isBrowserPromptDetailTarget(
+  request: Request,
+  target: string
+): boolean {
+  return (
+    (request.method === 'GET' || request.method === 'HEAD') &&
+    target.startsWith('/api/prompt-page?') &&
+    !isCrawlerRequest(request)
+  );
+}
+
+async function renderBrowserPromptDetailFromAssets(
+  request: Request,
+  env: Env,
+  target: string,
+  context?: WorkerExecutionContext
+): Promise<Response> {
+  // 渲染结果与 Cookie 无关（会员 Prompt 不进 bootstrap），可共用 KV 缓存。
+  const response = await renderSeoTargetFromAssets(
+    request,
+    env,
+    target,
+    context,
+    { cacheIgnoresCookies: true }
+  );
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('text/html')) return response;
+  const html = await response.text();
+  const headers = new Headers(response.headers);
+  // 与 SPA 壳一致不缓存：部署后不会拿到引用旧 hash 资源的 HTML。
+  applyAppShellNoStoreHeaders(headers);
+  headers.set('x-webtomind-seo-renderer', 'cloudflare-browser-prompt-detail');
+  return new Response(
+    request.method === 'HEAD' ? '' : toBrowserPromptDetailHtml(html),
+    { status: response.status, headers }
   );
 }
 
@@ -3029,11 +3137,12 @@ async function renderSeoTargetFromAssets(
   request: Request,
   env: Env,
   target: string,
-  context?: WorkerExecutionContext
+  context?: WorkerExecutionContext,
+  options: { cacheIgnoresCookies?: boolean } = {}
 ): Promise<Response> {
   const url = new URL(target, 'https://webtomind.local');
   const indexHtml = await readAssetIndexHtml(request, env);
-  const canUseCache = canUsePublicSeoHtmlCache(request, env);
+  const canUseCache = canUsePublicSeoHtmlCache(request, env, options);
   const cacheKey = buildPublicSeoHtmlCacheKey(target, indexHtml);
 
   if (canUseCache) {
@@ -3046,7 +3155,10 @@ async function renderSeoTargetFromAssets(
           'x-webtomind-kv-cache': 'HIT'
         });
         applyPublicSeoCacheHeaders(headers);
-        return new Response(cached, { status: 200, headers });
+        return new Response(
+          injectLocalePreload(cached, new URL(request.url).pathname),
+          { status: 200, headers }
+        );
       }
     } catch (error) {
       console.warn('[Cloudflare KV] public SEO cache read failed:', error);
@@ -3133,10 +3245,15 @@ async function renderSeoTargetFromAssets(
     }
   }
 
-  return new Response(request.method === 'HEAD' ? '' : html, {
-    status,
-    headers
-  });
+  return new Response(
+    request.method === 'HEAD'
+      ? ''
+      : injectLocalePreload(html, new URL(request.url).pathname),
+    {
+      status,
+      headers
+    }
+  );
 }
 
 async function renderNoindexAppShellFromAssets(
@@ -3156,7 +3273,10 @@ async function renderNoindexAppShellFromAssets(
     pathLocale ||
     detectLocaleFromCookie(request.headers.get('cookie')) ||
     detectLocaleFromAcceptLanguage(request.headers.get('accept-language'));
-  const html = renderNoindexAppShellHtml(indexHtml, pathname, shellLocale);
+  const html = injectLocalePreload(
+    renderNoindexAppShellHtml(indexHtml, pathname, shellLocale),
+    pathname
+  );
   const headers = new Headers({
     'Content-Type': 'text/html; charset=utf-8',
     'x-webtomind-seo-renderer': 'cloudflare-noindex-shell'
@@ -4397,6 +4517,14 @@ async function handleRequest(
     if (isWorkerRenderableSeoTarget(seoTarget) && isCrawlerRequest(request)) {
       return renderSeoTargetFromAssets(request, env, seoTarget, context);
     }
+    if (isBrowserPromptDetailTarget(request, seoTarget)) {
+      return renderBrowserPromptDetailFromAssets(
+        request,
+        env,
+        seoTarget,
+        context
+      );
+    }
     if (
       request.method === 'GET' &&
       seoTarget.startsWith('/api/seo-page?') &&
@@ -4482,7 +4610,10 @@ function getRequestRouteLabel(request: Request, env: Env): string {
   const seoTarget = getSeoTarget(url);
   if (seoTarget) {
     if (isWorkerRenderableSeoTarget(seoTarget)) {
-      return isCrawlerRequest(request) ? 'worker-seo' : 'worker-seo-skip';
+      if (isCrawlerRequest(request)) return 'worker-seo';
+      return isBrowserPromptDetailTarget(request, seoTarget)
+        ? 'worker-seo-browser'
+        : 'worker-seo-skip';
     }
     return 'worker-seo-fallback';
   }

@@ -189,11 +189,12 @@ export function TopNav() {
   const handleLanguagePromptContinue = async (
     targetLanguage: SupportedLanguage
   ) => {
-    await changeLanguage(targetLanguage);
+    // 先跳转再切换：URL 是语言的唯一来源，避免页面的 URL 同步把语言改回去。
     if (targetLanguage !== locale) {
       navigate(mapPathToLocale(location.pathname, targetLanguage));
     }
     dismissLanguagePrompt();
+    await changeLanguage(targetLanguage);
   };
 
   useEffect(() => {
@@ -306,10 +307,10 @@ export function TopNav() {
                       key={code}
                       onClick={() => {
                         const targetLang = code as 'zh-CN' | 'en-US';
-                        changeLanguage(targetLang);
                         navigate(
                           mapPathToLocale(location.pathname, targetLang)
                         );
+                        void changeLanguage(targetLang);
                         dismissLanguagePrompt();
                         setShowLangMenu(false);
                       }}

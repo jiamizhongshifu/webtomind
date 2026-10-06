@@ -3,7 +3,7 @@
  * 提供语言切换、检测和持久化功能
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -55,8 +55,15 @@ export function useLanguage(): UseLanguageReturn {
   const language = i18n.language as SupportedLanguage;
   const languageName = LANGUAGE_NAMES[language] || LANGUAGE_NAMES['zh-CN'];
 
+  // react-i18next 在每次语言变化后都会返回新的 i18n 包装对象。初始化只应在
+  // 挂载时执行一次：若依赖 i18n，切换语言后它会按当时的 URL/存储把语言改回去，
+  // 与页面的 URL 同步逻辑互相覆盖，形成无限更新。
+  const i18nRef = useRef(i18n);
+  i18nRef.current = i18n;
+
   // 初始化时从存储加载语言偏好
   useEffect(() => {
+    const i18n = i18nRef.current;
     const initLanguage = async () => {
       const routeLang =
         typeof window !== 'undefined'
@@ -78,7 +85,7 @@ export function useLanguage(): UseLanguageReturn {
     };
 
     initLanguage();
-  }, [i18n]);
+  }, []);
 
   // 监听扩展环境中的语言变更消息
   useEffect(() => {

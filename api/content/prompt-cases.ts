@@ -326,7 +326,13 @@ async function mapPromptCase(
     isPublished: item.is_published,
     createdByEmail: item.created_by_email || undefined,
     createdAt: item.created_at,
-    updatedAt: item.updated_at
+    updatedAt: item.updated_at,
+    // Only known when the row carries the SEO columns; matches the robots
+    // decision of the SSR detail page so list links can skip noindex cases.
+    seoIndexable:
+      typeof item.seo_status === 'string'
+        ? isPromptCaseSeoIndexable(item, { allowLegacy: false })
+        : undefined
   };
 }
 
@@ -1110,6 +1116,22 @@ function buildPromptLibraryFacets(params: {
   };
 }
 
+const PROMPT_CASE_SEO_STATUS_COLUMNS = [
+  'seo_status',
+  'seo_reviewed_at',
+  'seo_evidence'
+] as const;
+
+function pickPromptCaseSeoStatusColumns(
+  row: Record<string, unknown>
+): Record<string, unknown> {
+  const picked: Record<string, unknown> = {};
+  for (const key of PROMPT_CASE_SEO_STATUS_COLUMNS) {
+    if (key in row) picked[key] = row[key];
+  }
+  return picked;
+}
+
 async function buildPromptLibraryResponse(params: {
   supabase: SupabaseClient;
   promptAccess: PromptCasePromptAccess;
@@ -1140,9 +1162,10 @@ async function buildPromptLibraryResponse(params: {
     cursor: params.cursor || undefined,
     limit: params.limit
   };
-  // Always prefer the public search RPC (fresh Supabase reads). When
-  // mediaType/seoOnly are requested, the RPC result is enriched with the SEO
-  // columns below and filtered, instead of relying on the 20k-row stats
+  // Always prefer the public search RPC (fresh Supabase reads). The RPC result
+  // is always enriched with the SEO columns below so each card can report
+  // seoIndexable (noindex cases get rel=nofollow links), and filtered when
+  // mediaType/seoOnly are requested, instead of relying on the 20k-row stats
   // snapshot which can serve stale rows through Hyperdrive query caching.
   const rpcPayload = await searchPromptLibraryPublic(params.supabase, {
     ...queryEcho,
@@ -1151,7 +1174,10 @@ async function buildPromptLibraryResponse(params: {
 
   if (rpcPayload && Array.isArray(rpcPayload.items)) {
     let responseRows = rpcPayload.items as Record<string, unknown>[];
-    if (params.seoOnly || params.mediaType) {
+    // Filtered requests need every quality column to re-evaluate the rows;
+    // plain listings only borrow the SEO status columns for seoIndexable.
+    const mergesAllSeoColumns = params.seoOnly || Boolean(params.mediaType);
+    {
       const ids = responseRows
         .map((item) => readTrimmedString(item.id))
         .filter(Boolean);
@@ -1176,10 +1202,16 @@ async function buildPromptLibraryResponse(params: {
             ])
           );
           responseRows = responseRows
-            .map((item) => ({
-              ...item,
-              ...(seoById.get(readTrimmedString(item.id)) || {})
-            }))
+            .map((item) => {
+              const seoRow = seoById.get(readTrimmedString(item.id));
+              if (!seoRow) return item;
+              return mergesAllSeoColumns
+                ? { ...item, ...seoRow }
+                : {
+                    ...item,
+                    ...pickPromptCaseSeoStatusColumns(seoRow)
+                  };
+            })
             .filter((item) =>
               params.mediaType
                 ? readTrimmedString(item.media_type) === params.mediaType

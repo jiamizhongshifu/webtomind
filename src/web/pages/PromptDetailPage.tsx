@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties
 } from 'react';
@@ -78,6 +79,24 @@ import {
 } from './prompt-library/promptLibraryDisplay';
 import { CreateWorkspaceFrame } from '../components/image-create/CreateWorkspaceFrame';
 import { readPromptDetailBootstrap } from './prompt-detail/promptDetailBootstrap';
+
+const PAGE_LOAD_IDLE_DELAY_MS = 1200;
+
+function runAfterPageLoad(callback: () => void): () => void {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const schedule = () => {
+    timer = setTimeout(callback, PAGE_LOAD_IDLE_DELAY_MS);
+  };
+  if (document.readyState === 'complete') {
+    schedule();
+  } else {
+    window.addEventListener('load', schedule, { once: true });
+  }
+  return () => {
+    window.removeEventListener('load', schedule);
+    if (timer) clearTimeout(timer);
+  };
+}
 
 function getLocale(pathname: string): 'zh-CN' | 'en-US' {
   return pathname.startsWith('/en-US') ? 'en-US' : 'zh-CN';
@@ -338,16 +357,47 @@ export function PromptDetailPage() {
     [getAccessToken, locale, location.hash, location.pathname, location.search]
   );
 
+  // 公开案例不等登录态就开始拉取（LCP 图片依赖它）；登录态确定后若已登录，
+  // 再静默刷新一次以解锁会员 Prompt（退出登录同理）。匿名访客不会重复请求。
+  // 用请求序号代替 effect 清理：登录态变化不能作废仍在进行的匿名请求，
+  // 只有更新的请求（换 slug 或登录后刷新）才会让旧结果失效。
+  const loadedCaseKeyRef = useRef('');
+  const trackedViewCaseIdRef = useRef('');
+  const fetchedAsAuthenticatedRef = useRef(false);
+  const caseRequestSeqRef = useRef(0);
+  useEffect(
+    () => () => {
+      caseRequestSeqRef.current += 1;
+      // StrictMode replays mount effects with the same refs. A cancelled
+      // initial request must not make the replay look like an auth refresh.
+      loadedCaseKeyRef.current = '';
+    },
+    []
+  );
   useEffect(() => {
-    if (authLoading) return;
-    let cancelled = false;
-    setIsLoading(!bootstrapCase);
-    setError('');
+    const caseKey = `${locale}:${slug}`;
+    const isPostAuthRefresh = loadedCaseKeyRef.current === caseKey;
+    const fetchAsAuthenticated = !authLoading && isAuthenticated;
+    if (
+      isPostAuthRefresh &&
+      (authLoading || fetchedAsAuthenticatedRef.current === fetchAsAuthenticated)
+    ) {
+      return;
+    }
+    loadedCaseKeyRef.current = caseKey;
+    fetchedAsAuthenticatedRef.current = fetchAsAuthenticated;
+    caseRequestSeqRef.current += 1;
+    const requestSeq = caseRequestSeqRef.current;
+    const isStale = () => caseRequestSeqRef.current !== requestSeq;
+    if (!isPostAuthRefresh) {
+      setIsLoading(!bootstrapCase);
+      setError('');
+    }
     getPublicPromptCase(slug, { by: 'slug', locale })
       .then((nextCase) => {
-        if (cancelled) return;
+        if (isStale()) return;
         if (!nextCase) {
-          if (!bootstrapCase) {
+          if (!bootstrapCase && !isPostAuthRefresh) {
             setCaseItem(null);
             setError(t('promptDetail.notFound') as string);
           }
@@ -355,6 +405,8 @@ export function PromptDetailPage() {
         }
         setCaseItem(nextCase);
         setIsLoading(false);
+        if (trackedViewCaseIdRef.current === nextCase.id) return;
+        trackedViewCaseIdRef.current = nextCase.id;
         void trackPromptCaseEvent(nextCase.id, 'view');
         trackPromptShareView({
           caseId: nextCase.id,
@@ -366,7 +418,7 @@ export function PromptDetailPage() {
           locale
         })
           .then((items) => {
-            if (!cancelled) {
+            if (!isStale()) {
               setRelatedCases(items.filter((item) => item.id !== nextCase.id));
             }
           })
@@ -375,7 +427,7 @@ export function PromptDetailPage() {
           });
       })
       .catch((loadError) => {
-        if (!cancelled && !bootstrapCase) {
+        if (!isStale() && !bootstrapCase && !isPostAuthRefresh) {
           setError(
             loadError instanceof Error
               ? loadError.message
@@ -384,25 +436,27 @@ export function PromptDetailPage() {
         }
       })
       .finally(() => {
-        if (!cancelled) setIsLoading(false);
+        if (!isStale()) setIsLoading(false);
       });
-    return () => {
-      cancelled = true;
-    };
   }, [authLoading, bootstrapCase, isAuthenticated, locale, slug, t]);
 
   useEffect(() => {
     if (!visualRecipeSelection || visualRecipeSelectedCount === 0) return;
     let cancelled = false;
-    loadPublicImagePromptAssetLibrary()
-      .then((library) => {
-        if (!cancelled) setPublicRecipeAssets(library.assets);
-      })
-      .catch(() => {
-        // The resolver already falls back to the bundled library. Keep local assets.
-      });
+    // 完整素材目录体积大（数百 KB），首屏先用内置核心素材渲染配方；
+    // 等页面 load 之后再加载，避免与 LCP 图片和入口资源抢带宽。
+    const cancelScheduled = runAfterPageLoad(() => {
+      loadPublicImagePromptAssetLibrary()
+        .then((library) => {
+          if (!cancelled) setPublicRecipeAssets(library.assets);
+        })
+        .catch(() => {
+          // The resolver already falls back to the bundled library. Keep local assets.
+        });
+    });
     return () => {
       cancelled = true;
+      cancelScheduled();
     };
   }, [visualRecipeSelectedCount, visualRecipeSelection]);
 
