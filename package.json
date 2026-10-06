@@ -299,7 +299,10 @@
       "protobufjs": "7.6.5",
       "qs": "6.16.0",
       "undici": "7.29.1",
-      "yaml": "2.8.3"
+      "yaml": "2.8.3",
+      "seroval": "1.6.3",
+      "source-map-js": "1.2.2",
+      "proxy-addr": "2.0.8"
     }
   },
   "packageManager": "pnpm@8.15.0",
