@@ -25,6 +25,7 @@ import {
   QUEUED_PIPELINE_DEADLINE_MS,
   QUEUED_TUZI_DEADLINE_RESERVE_MS,
   QUEUED_TUZI_PER_IMAGE_TIMEOUT_MS,
+  QUEUED_TUZI_MODEL_TIMEOUT_MS,
   SYNC_TUZI_MODEL_TIMEOUT_MS,
   TUZI_VIP_TIMEOUT_MS
 } from './constants.js';
@@ -594,4 +595,24 @@ export function getTuziModelTimeoutMs(
       ? Math.max(perAttemptBudget, multiImageFloor)
       : perAttemptBudget;
   return Math.max(10000, Math.min(effectiveBudget, splitBudget, attemptBudget));
+}
+
+/** Each attempt spends the same absolute budget; fallback never resets it. */
+export function getTuziAttemptTimeoutMs(
+  options: ImageGenerationRunOptions,
+  modelCount: number,
+  imageCount = 1,
+  now = Date.now()
+): number {
+  let timeout = getTuziModelTimeoutMs(options, modelCount, imageCount);
+  if (options.mode === 'queued' && modelCount > 1 && imageCount === 1) {
+    timeout = Math.min(timeout, QUEUED_TUZI_MODEL_TIMEOUT_MS);
+  }
+  if (options.generationDeadlineAt !== undefined) {
+    const remaining =
+      options.generationDeadlineAt - now - QUEUED_TUZI_DEADLINE_RESERVE_MS;
+    if (remaining < 10_000) return 0;
+    timeout = Math.min(timeout, remaining);
+  }
+  return timeout;
 }

@@ -83,3 +83,38 @@ test('does not infer historical paid access from current membership or charged c
     paidFailureRate: 0.5
   });
 });
+
+import { summarizeImageFailureReasons } from './lib/image-generation-observed-metrics.mjs';
+test('separates historical provider refusals and configuration errors without rewriting total failure rate', () => {
+  const tasks = [
+    { status: 'succeeded' },
+    { status: 'failed', failure_category: 'provider_policy' },
+    {
+      status: 'failed',
+      failure_category: 'provider_unavailable',
+      error_message: '该提示可能违反了我们的内容政策'
+    },
+    {
+      status: 'failed',
+      failure_category: 'provider_http',
+      error_message: 'Model has not been priced by the administrator'
+    },
+    { status: 'failed', failure_category: 'pipeline_deadline' },
+    {
+      status: 'failed',
+      failure_category: 'unknown',
+      request_payload: { prompt: 'policy test' }
+    },
+    { status: 'running' }
+  ];
+  const result = summarizeImageFailureReasons(tasks);
+  assert.equal(result.total, 6);
+  assert.equal(result.failed, 5);
+  assert.equal(result.totalFailureRate, 0.8333);
+  assert.equal(result.policyRefusals, 2);
+  assert.equal(result.technicalFailures, 2);
+  assert.equal(result.otherFailures, 1);
+  assert.equal(result.technicalFailureRateAmongNonPolicyTasks, 0.5);
+  assert.equal(result.historicalCategoryMismatchCount, 2);
+  assert.equal(tasks[2].failure_category, 'provider_unavailable');
+});

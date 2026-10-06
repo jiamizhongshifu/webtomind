@@ -209,6 +209,7 @@ export function buildImageProviderHealthLookup(
 export function getImageProviderRoutingDecision(
   record?: ImageProviderHealthRecord | null
 ): ImageProviderRoutingDecision {
+  record = technicalHealthRecord(record);
   if (!record || record.healthState === 'insufficient_data') {
     return {
       blocked: false,
@@ -295,6 +296,45 @@ export function getImageProviderRoutingDecision(
   };
 }
 
+// Content decisions describe a request, not whether the route can serve a
+// different allowed request. Preserve raw counts; adjust routing only.
+function technicalHealthRecord(record?: ImageProviderHealthRecord | null) {
+  if (!record || record.policyCount <= 0) return record;
+  const technicalFailures = Math.max(
+    0,
+    record.failedAttempts - record.policyCount
+  );
+  const completed = record.succeededAttempts + technicalFailures;
+  const score = Math.max(
+    0,
+    Math.min(
+      100,
+      (completed ? (record.succeededAttempts / completed) * 100 : 100) -
+        (record.authErrorCount > 0 ? 45 : 0) -
+        Math.min(35, record.rateLimitCount * 10) -
+        Math.min(30, record.timeoutCount * 12) -
+        Math.min(30, record.unavailableCount * 10) -
+        (record.p95DurationMs !== null &&
+        record.p95DurationMs > 180_000 &&
+        technicalFailures > 0
+          ? 15
+          : 0)
+    )
+  );
+  return {
+    ...record,
+    healthScore: score,
+    healthState:
+      record.healthState === 'circuit_open'
+        ? ('circuit_open' as const)
+        : completed < DEFAULT_MIN_ATTEMPTS
+          ? ('insufficient_data' as const)
+          : score < 60
+            ? ('degraded' as const)
+            : ('healthy' as const)
+  };
+}
+
 /**
  * 模型级 unavailable 熔断：聚合某 provider+model 在健康表里全部 channel 的
  * unavailable 次数。低频死模型（如 seedream-5-0-lite / wan-image-2.7-pro）
@@ -320,12 +360,13 @@ export function isModelUnavailableBlocked(
 export function shouldSkipImageProviderFallbackRoute(
   record?: ImageProviderHealthRecord | null
 ): boolean {
+  record = technicalHealthRecord(record);
   if (!record || record.healthState === 'insufficient_data') return false;
 
   if (
     record.totalAttempts >= DEFAULT_MIN_ATTEMPTS &&
     record.succeededAttempts === 0 &&
-    record.failedAttempts >= DEFAULT_MIN_ATTEMPTS
+    record.failedAttempts - record.policyCount >= DEFAULT_MIN_ATTEMPTS
   ) {
     return true;
   }

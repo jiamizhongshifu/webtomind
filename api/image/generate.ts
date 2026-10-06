@@ -1,4 +1,9 @@
 import {
+  getImageModelReadiness,
+  imageModelReadinessFailure,
+  isImageModelConfigurationError
+} from './model-readiness.js';
+import {
   IMAGE_MASK_EDIT_UNSUPPORTED,
   ImageMaskEditUnsupportedError
 } from '../../src/shared/image-mask-edit.js';
@@ -117,6 +122,7 @@ import {
   getTuziAttemptHealthRecord,
   getTuziImageRoutingDiagnostics,
   getTuziModelTimeoutMs,
+  getTuziAttemptTimeoutMs,
   rankTuziAttemptsByProviderHealth
 } from './generate/tuzi-routing.js';
 import { recordFirstPostPurchaseGenerationSuccess } from './post-purchase-activation.js';
@@ -2000,6 +2006,16 @@ function getFailureDetails(error: unknown): ImageGenerationFailureDetails {
     };
   }
   if (error instanceof ProviderHttpError) {
+    if (isImageModelConfigurationError(error.message)) {
+      return {
+        code: 'IMAGE_MODEL_CONFIGURATION_REQUIRED',
+        category: 'provider_configuration',
+        retryable: false,
+        httpStatus: error.httpStatus,
+        provider: error.provider,
+        model: error.model
+      };
+    }
     const category: ImageGenerationFailureCategory =
       error.httpStatus === 429
         ? 'provider_rate_limit'
@@ -3671,6 +3687,7 @@ function shouldStopTuziFallback(error: unknown): boolean {
   const details = getFailureDetails(error);
   return (
     details.category === 'provider_policy' ||
+    details.category === 'provider_configuration' ||
     details.category === 'invalid_request' ||
     details.category === 'credit'
   );
@@ -3819,6 +3836,10 @@ async function generateWithTuzi(
   let attemptOrdinal = 0;
   for (const [attemptIndex, tuziAttempt] of attempts.entries()) {
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      const timeoutMs = getTuziAttemptTimeoutMs(
+        options, attempts.length, input.imageCount
+      );
+      if (!timeoutMs) throw new PipelineDeadlineError();
       attemptOrdinal += 1;
       const attemptStartedAt = new Date();
       const healthRecord = getTuziAttemptHealthRecord(
@@ -4206,6 +4227,8 @@ async function generateWithSelectedProvider(
       if (
         index >= providers.length - 1 ||
         details.category === 'invalid_request' ||
+        details.category === 'provider_configuration' ||
+        details.category === 'pipeline_deadline' ||
         details.category === 'credit'
       ) {
         break;
@@ -5309,6 +5332,12 @@ export async function executeImageGenerationJob({
     : null;
   const executionOptions: ImageGenerationRunOptions = {
     ...options,
+    generationDeadlineAt:
+      options.generationDeadlineAt ??
+      (jobStartedAt + (options.pipelineDeadlineMs ||
+        (options.mode === 'queued'
+          ? QUEUED_PIPELINE_DEADLINE_MS
+          : SYNC_PIPELINE_DEADLINE_MS))),
     policyFallbackBudget:
       options.policyFallbackBudget ||
       createDailyPolicyFallbackBudget(sb, {
@@ -5371,6 +5400,18 @@ export async function executeImageGenerationJob({
   let usedSingleImageRescue = false;
 
   try {
+    const readiness = requestedProvider === 'tuzi'
+      ? await getImageModelReadiness(sb, sanitizedInput.model)
+      : 'ready';
+    if (readiness !== 'ready') {
+      throw new ProviderHttpError(
+        readiness === 'configuration_required'
+          ? '模型价格尚未配置，请切换其他可用模型或联系管理员。'
+          : '暂时无法确认模型可用性，请稍后重试。',
+        503,
+        { provider: 'tuzi', model: sanitizedInput.model }
+      );
+    }
     if (getImageMaskEditFailure(sanitizedInput, options.disableProviderFallback)) {
       throw new ImageMaskEditUnsupportedError();
     }
@@ -5560,7 +5601,9 @@ export async function executeImageGenerationJob({
         new Promise<never>((_, reject) => {
           deadlineTimer = setTimeout(
             () => reject(new PipelineDeadlineError()),
-            options.pipelineDeadlineMs || SYNC_PIPELINE_DEADLINE_MS
+            Math.max(
+              1, (executionOptions.generationDeadlineAt || Date.now()) - Date.now()
+            )
           );
         })
       ]);
@@ -6126,6 +6169,13 @@ export async function handleImageGenerateRequest(
   if (!sb) {
     return jsonResponse({ error: 'Supabase not configured' }, corsHeaders, 500);
   }
+
+  const readinessFailure = imageModelReadinessFailure(
+    sanitizedInput.provider === 'tuzi'
+      ? await getImageModelReadiness(sb, sanitizedInput.model)
+      : 'ready'
+  );
+  if (readinessFailure) return jsonResponse(readinessFailure, corsHeaders, 503);
 
   if (input.async) {
     const taskId = crypto.randomUUID();

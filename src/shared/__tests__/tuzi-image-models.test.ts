@@ -1,4 +1,20 @@
-import { describe, expect, it } from 'vitest';
+vi.mock('../../../api/utils/auth.js', () => ({
+  getCorsHeadersForRequest: () => ({}),
+  getSupabaseAdmin: () => ({
+    rpc: async () => ({ data: [], error: null }),
+    from: () => {
+      const q = {
+        select: () => q,
+        eq: () => q,
+        or: () => q,
+        order: () => q,
+        limit: async () => ({ data: [], error: null })
+      };
+      return q;
+    }
+  })
+}));
+import { describe, expect, it, vi } from 'vitest';
 import imageModelsHandler from '../../../api/image/models';
 import {
   TUZI_IMAGE_MODELS,

@@ -25,6 +25,7 @@ export function useRuntimeImageModels() {
       })
       .catch(() => {
         runtimeModelsPromise = null;
+        if (active) setModels(mergeRuntimeImageModelOptions([]));
       })
       .finally(() => {
         if (active) setLoaded(true);

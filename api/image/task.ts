@@ -371,7 +371,8 @@ function getTaskFailureDetails(task: ImageGenerationTaskRecord):
   return resolveImageGenerationFailureDetails({
     payloadDetails: details,
     failureCategory: task.failure_category,
-    failureCode: task.failure_code
+    failureCode: task.failure_code,
+    errorMessage: task.error_message
   });
 }
 

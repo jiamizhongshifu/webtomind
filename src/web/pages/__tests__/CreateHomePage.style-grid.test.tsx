@@ -142,10 +142,9 @@ describe('CreateHomePage inspiration modules', () => {
     testState.getPublicPromptLibraryResult.mockReturnValue(
       new Promise(() => {})
     );
-    testState.getVisualImageModels.mockResolvedValue({
-      enabled: true,
-      models: []
-    });
+    testState.getVisualImageModels.mockResolvedValue([
+      { id: 'gpt-image-2.5', status: 'available' }
+    ]);
     testState.getVisualImageHistoryResult.mockResolvedValue({
       items: [],
       total: 0

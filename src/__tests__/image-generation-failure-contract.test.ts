@@ -103,3 +103,16 @@ describe('image generation failure retry contract', () => {
     });
   });
 });
+
+
+describe('historical provider errors', () => {
+  it('renders an old 5xx policy refusal as non-retryable without changing the stored task', () => {
+    const task = failedTask({failure_category: 'provider_unavailable', failure_code: 'OPENAI_COMPAT_PROVIDER_UNAVAILABLE', error_message: '该提示可能违反了我们的内容政策', result_payload: {errorDetails: {category: 'provider_unavailable',retryable: true}}});
+    const item = toActiveTaskResponseItem(task as never);
+    expect(item).toMatchObject({errorCategory: 'provider_policy',retryable: false});
+    expect(task.failure_category).toBe('provider_unavailable');
+  });
+  it('does not retry configuration errors even when an old payload permits retries', () => {
+    expect(resolveImageGenerationFailureDetails({failureCategory:'provider_http',errorMessage:'模型价格尚未由管理员配置',payloadDetails:{retryable:true}})).toMatchObject({category:'provider_configuration',retryable:false});
+  });
+});

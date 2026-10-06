@@ -1,3 +1,7 @@
+vi.mock('../../api/image/model-readiness.js', async (importOriginal) => ({
+  ...await importOriginal<typeof import('../../api/image/model-readiness')>(),
+  getImageModelReadiness: async () => 'ready'
+}));
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import dotenv from 'dotenv';
 import {
@@ -631,7 +635,7 @@ describe('Tuzi image model fallback', () => {
       options: {
         skipCreditCharge: true,
         disableProviderFallback: true,
-        pipelineDeadlineMs: 25_000
+        pipelineDeadlineMs: 120_000
       }
     });
 
@@ -3363,7 +3367,7 @@ describe('Tuzi image model fallback', () => {
         skipCreditCharge: true,
         mode: 'queued',
         taskId: 'task-tuzi-timeout-no-fallback',
-        pipelineDeadlineMs: 25000
+        pipelineDeadlineMs: 120000
       }
     });
 
@@ -4696,4 +4700,40 @@ it('refunds an already queued masked edit when the configured channel cannot pre
   expect(rpcCalls[0]).toEqual(['refund_generation_credit', expect.objectContaining({ p_user_id: 'fictional-user', p_amount: 80, p_source: 'image_task:fictional-task:refund' })]);
   expect(fetchMock).not.toHaveBeenCalled();
   expect(insertedGenerations).toHaveLength(0);
+});
+
+describe('shared generation deadline', () => {
+  it('shrinks the next channel timeout and stops before another charged attempt can outlive the job', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-06T00:00:00Z'));
+    process.env.TUZI_API_KEY = 'fixture-default';
+    process.env.TUZI_OFFICIAL_API_KEY = 'fixture-official';
+    process.env.TUZI_OPENAI_ORIGINAL_API_KEY = 'fixture-original';
+    process.env.TUZI_IMAGE_CHANNEL_ORDER = 'default,official,openai_original';
+    process.env.TUZI_GPT_IMAGE_25_ENABLED = 'true';
+    const started = Date.now();
+    const fetchMock = vi.fn(async (_url, init) => {
+      if (fetchMock.mock.calls.length === 1) {
+        await new Promise(resolve => setTimeout(resolve, 80_000));
+        return new Response(JSON.stringify({error:{message:'upstream unavailable'}}),{status:502});
+      }
+      return new Promise<Response>((_resolve,reject) => {
+        init.signal.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError')),{once:true});
+      });
+    });
+    vi.stubGlobal('fetch',fetchMock);
+    try {
+      const sanitized=sanitizeImageGenerateInput({model:'gpt-image-2.5',prompt:'A blue cup',imageCount:1});
+      if(!sanitized.ok) throw new Error('invalid fixture');
+      const {sb,insertedAttempts}=createImageGenerateSupabaseMock({});
+      const pending=executeImageGenerationJob({request:new Request('https://fixture.test'),userId:'test-user',sanitizedInput:sanitized.value,sb:sb as never,options:{mode:'queued',skipCreditCharge:true,disableProviderFallback:true,pipelineDeadlineMs:240_000,tuziVipTimeoutMs:260_000}});
+      await vi.runAllTimersAsync();
+      const result=await pending;
+      expect(result.ok).toBe(false);
+      expect(result.failureDetails?.category).toBe('pipeline_deadline');
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(insertedAttempts).toHaveLength(2);
+      expect(Date.now()-started).toBe(195_000);
+    } finally {vi.useRealTimers();}
+  });
 });

@@ -1,6 +1,7 @@
 import type { TuziImageModelConfig } from '../../src/shared/tuzi-image-models.js';
 import {
   getImageProviderHealthKey,
+  getImageProviderRoutingDecision,
   isModelUnavailableBlocked,
   shouldSkipImageProviderFallbackRoute,
   type ImageProviderHealthRecord
@@ -82,8 +83,7 @@ export function resolveRuntimeImageModelAvailability(
   const degraded =
     viableRoutes.length < routes.length ||
     records.some(
-      (record) =>
-        record.healthState === 'degraded' || record.healthState === 'circuit_open'
+      (record) => getImageProviderRoutingDecision(record).deprioritized
     );
   return {
     status: degraded ? 'degraded' : 'available',

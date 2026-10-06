@@ -207,3 +207,22 @@ describe('image creator model options', () => {
     }
   });
 });
+
+
+describe('runtime model readiness', () => {
+  it('fails closed for an empty or incomplete directory without removing model labels', () => {
+    const empty = mergeRuntimeImageModelOptions([]);
+    expect(empty).toHaveLength(modelOptions.length);
+    expect(getSelectableImageModelOptions(empty)).toEqual([]);
+    const partial = mergeRuntimeImageModelOptions([{id:'gpt-image-2.5',status:'available'}]);
+    expect(getSelectableImageModelOptions(partial).map(m=>m.value)).toEqual(['gpt-image-2.5']);
+  });
+  it('explains configuration blocks while keeping healthy choices available', () => {
+    const models = mergeRuntimeImageModelOptions([
+      {id:'gpt-image-2.5',status:'available'},
+      {id:'seedream-5-pro',status:'unavailable',availabilityReason:'provider_configuration_required'}
+    ]);
+    expect(models.find(m=>m.value==='seedream-5-pro')).toMatchObject({status:'unavailable',description:expect.stringContaining('上游尚未完成配置')});
+    expect(getSelectableImageModelOptions(models).map(m=>m.value)).toEqual(['gpt-image-2.5']);
+  });
+});

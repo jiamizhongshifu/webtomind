@@ -190,3 +190,46 @@ describe('image provider health', () => {
     warn.mockRestore();
   });
 });
+
+describe('content refusals are separate from route reliability', () => {
+  it('does not circuit-break a route solely because it refused content', () => {
+    const record = makeHealthRecord({
+      totalAttempts: 10,
+      succeededAttempts: 0,
+      failedAttempts: 10,
+      policyCount: 10,
+      healthScore: 0,
+      healthState: 'degraded'
+    });
+    expect(getImageProviderRoutingDecision(record)).toMatchObject({
+      blocked: false,
+      deprioritized: false
+    });
+    expect(shouldSkipImageProviderFallbackRoute(record)).toBe(false);
+    expect(record.failedAttempts).toBe(10);
+  });
+  it('still blocks technical failures and authentication circuits with refusals present', () => {
+    expect(
+      shouldSkipImageProviderFallbackRoute(
+        makeHealthRecord({
+          totalAttempts: 7,
+          succeededAttempts: 0,
+          failedAttempts: 7,
+          policyCount: 4,
+          unavailableCount: 3,
+          healthScore: 0,
+          healthState: 'degraded'
+        })
+      )
+    ).toBe(true);
+    expect(
+      getImageProviderRoutingDecision(
+        makeHealthRecord({
+          policyCount: 1,
+          healthState: 'circuit_open',
+          authErrorCount: 2
+        })
+      ).blocked
+    ).toBe(true);
+  });
+});

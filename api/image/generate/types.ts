@@ -113,6 +113,7 @@ export type ImageGenerationFailureCategory =
   | 'provider_timeout'
   | 'provider_unavailable'
   | 'provider_rate_limit'
+  | 'provider_configuration'
   | 'provider_policy'
   | 'provider_http'
   | 'credit'
@@ -215,6 +216,7 @@ export interface ImageGenerationRunOptions {
   taskId?: string;
   cloudDenoiseTask?: boolean;
   pipelineDeadlineMs?: number;
+  generationDeadlineAt?: number;
   tuziVipTimeoutMs?: number;
   openAICompatibleTimeoutMs?: number;
   lockedTuziAttempt?: LockedTuziAttempt;

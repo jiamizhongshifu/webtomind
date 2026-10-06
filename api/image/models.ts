@@ -1,3 +1,4 @@
+import { getImageModelReadiness } from './model-readiness.js';
 import { supportsImageMaskEditing } from './generate.js';
 import { sanitizeImageGenerateInput } from './generate/request.js';
 import { getCorsHeadersForRequest, getSupabaseAdmin } from '../utils/auth.js';
@@ -109,40 +110,60 @@ export default async function handler(request: Request) {
     ? await safeFetchImageProviderHealth(supabase, { minAttempts: 1 })
     : [];
   const healthLookup = buildImageProviderHealthLookup(healthRecords);
-  const models = TUZI_IMAGE_MODELS.map((model) => ({
-    id: model.id,
-    label: model.label,
-    provider: model.provider,
-    supportsTextToImage: model.supportsTextToImage,
-    supportsReferenceImage: model.supportsReferenceImage,
-    supportsMaskEditing: (() => {
-      const input = sanitizeImageGenerateInput({
-        model: model.id,
-        prompt: 'Check selection editing support'
-      });
-      return input.ok && supportsImageMaskEditing(input.value);
-    })(),
-    supportsMultipleImages: model.supportsMultipleImages,
-    maxImageCount: model.maxImageCount,
-    maxReferenceImages: model.maxReferenceImages,
-    referenceTransport: model.referenceTransport,
-    preferredResponseFormat: model.preferredResponseFormat,
-    allowProviderFallback: model.allowProviderFallback,
-    group: model.group,
-    description: model.description,
-    badges: model.badges,
-    recommendedImageSizes: model.recommendedImageSizes,
-    creditMultiplier: model.creditMultiplier,
-    ...resolveRuntimeImageModelAvailability(
-      model,
-      buildTuziImageAttemptPlan(model.id, {
+  const models = await Promise.all(
+    TUZI_IMAGE_MODELS.map(async (model) => {
+      const attempts = buildTuziImageAttemptPlan(model.id, {
         imageCount: 1,
         imageSize: model.recommendedImageSizes[0]
-      }),
-      healthLookup,
-      getRuntimeFallbackRoutes(model.id)
-    )
-  }));
+      });
+      const readiness =
+        attempts.length === 0
+          ? 'ready'
+          : supabase
+            ? await getImageModelReadiness(supabase, model.id)
+            : 'unknown';
+      return {
+        id: model.id,
+        label: model.label,
+        provider: model.provider,
+        supportsTextToImage: model.supportsTextToImage,
+        supportsReferenceImage: model.supportsReferenceImage,
+        supportsMaskEditing: (() => {
+          const input = sanitizeImageGenerateInput({
+            model: model.id,
+            prompt: 'Check selection editing support'
+          });
+          return input.ok && supportsImageMaskEditing(input.value);
+        })(),
+        supportsMultipleImages: model.supportsMultipleImages,
+        maxImageCount: model.maxImageCount,
+        maxReferenceImages: model.maxReferenceImages,
+        referenceTransport: model.referenceTransport,
+        preferredResponseFormat: model.preferredResponseFormat,
+        allowProviderFallback: model.allowProviderFallback,
+        group: model.group,
+        description: model.description,
+        badges: model.badges,
+        recommendedImageSizes: model.recommendedImageSizes,
+        creditMultiplier: model.creditMultiplier,
+        ...resolveRuntimeImageModelAvailability(
+          model,
+          attempts,
+          healthLookup,
+          getRuntimeFallbackRoutes(model.id)
+        ),
+        ...(readiness !== 'ready'
+          ? {
+              status: 'unavailable',
+              availabilityReason:
+                readiness === 'configuration_required'
+                  ? 'provider_configuration_required'
+                  : 'readiness_unavailable'
+            }
+          : {})
+      };
+    })
+  );
 
   return jsonResponse(
     {

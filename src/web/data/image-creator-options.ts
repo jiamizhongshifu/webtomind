@@ -370,18 +370,28 @@ export const modelOptions: ImageCreatorModelOption[] = TUZI_IMAGE_MODELS.map(
 export function mergeRuntimeImageModelOptions(
   runtimeModels: RuntimeImageModelDirectoryEntry[]
 ): ImageCreatorModelOption[] {
-  if (runtimeModels.length === 0) return modelOptions;
   const runtimeById = new Map(runtimeModels.map((model) => [model.id, model]));
   return modelOptions.map((model) => {
     const runtime = runtimeById.get(model.value);
     return runtime
       ? {
           ...model,
-          status: runtime.status || 'available',
+          description:
+            runtime.availabilityReason === 'provider_configuration_required'
+              ? '上游尚未完成配置，暂不可用，请选择其他模型。'
+              : runtime.availabilityReason === 'readiness_unavailable'
+                ? '暂时无法确认可用性，请稍后刷新。'
+                : model.description,
+          status: runtime.status || 'unavailable',
           availabilityReason: runtime.availabilityReason,
           supportsMaskEditing: runtime.supportsMaskEditing
         }
-      : model;
+      : {
+          ...model,
+          status: 'unavailable',
+          availabilityReason: 'readiness_unavailable',
+          description: '暂时无法确认可用性，请稍后刷新。'
+        };
   });
 }
 

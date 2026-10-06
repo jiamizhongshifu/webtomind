@@ -1,3 +1,7 @@
+import {
+  isLikelyImagePolicyError,
+  isImageModelConfigurationError
+} from '../../src/shared/image-provider-errors.ts';
 import { createClient } from '@supabase/supabase-js';
 import { getSupabaseEnv, loadRuntimeEnv } from './runtime-env.mjs';
 
@@ -13,6 +17,64 @@ function asNumber(value) {
 function safeRate(numerator, denominator) {
   if (!denominator) return null;
   return Number((numerator / denominator).toFixed(4));
+}
+
+export function summarizeImageFailureReasons(tasks) {
+  const rawCategories = {};
+  const diagnosedCategories = {};
+  let historicalCategoryMismatchCount = 0;
+  for (const task of tasks.filter((task) => task.status === 'failed')) {
+    const stored = task.failure_category || 'unknown';
+    const message = String(task.error_message || '');
+    let diagnosed = stored;
+    if (
+      [
+        'provider_http',
+        'provider_unavailable',
+        'provider_configuration'
+      ].includes(stored)
+    ) {
+      if (isImageModelConfigurationError(message))
+        diagnosed = 'provider_configuration';
+      else if (isLikelyImagePolicyError(message)) diagnosed = 'provider_policy';
+    }
+    rawCategories[stored] = (rawCategories[stored] || 0) + 1;
+    diagnosedCategories[diagnosed] = (diagnosedCategories[diagnosed] || 0) + 1;
+    if (stored !== diagnosed) historicalCategoryMismatchCount++;
+  }
+  const completed = tasks.filter((task) =>
+    ['succeeded', 'failed'].includes(task.status)
+  );
+  const failed = completed.filter((task) => task.status === 'failed').length;
+  const policyRefusals = diagnosedCategories.provider_policy || 0;
+  const technicalFailures = [
+    'provider_configuration',
+    'provider_http',
+    'provider_timeout',
+    'provider_unavailable',
+    'provider_rate_limit',
+    'pipeline_deadline',
+    'worker_timeout'
+  ].reduce((total, key) => total + (diagnosedCategories[key] || 0), 0);
+  return {
+    basis: 'task_outcomes_and_provider_error_text',
+    total: completed.length,
+    failed,
+    policyRefusals,
+    technicalFailures,
+    otherFailures: failed - policyRefusals - technicalFailures,
+    totalFailureRate: safeRate(failed, completed.length),
+    policyRefusalRate: safeRate(policyRefusals, completed.length),
+    technicalFailureRate: safeRate(technicalFailures, completed.length),
+    nonPolicyTaskCount: completed.length - policyRefusals,
+    technicalFailureRateAmongNonPolicyTasks: safeRate(
+      technicalFailures,
+      completed.length - policyRefusals
+    ),
+    rawCategories,
+    diagnosedCategories,
+    historicalCategoryMismatchCount
+  };
 }
 
 function getRefundedCredits(task) {
@@ -172,7 +234,7 @@ export async function loadObservedImageGenerationMetrics(options = {}) {
       supabase
         .from('image_generation_tasks')
         .select(
-          'id,user_id,status,attempt_count,refund_failed,failure_category,request_payload,result_payload,created_at,total_duration_ms,provider_latency_ms,queue_wait_ms'
+          'id,user_id,status,attempt_count,refund_failed,failure_category,error_message,request_payload,result_payload,created_at,total_duration_ms,provider_latency_ms,queue_wait_ms'
         )
         .gte('created_at', cutoff)
         .in('status', ['succeeded', 'failed'])
@@ -263,6 +325,7 @@ export async function loadObservedImageGenerationMetrics(options = {}) {
       providerBilledLossUsd: null,
       providerBilledLossStatus: 'provider_invoice_not_integrated',
       failureCategories,
+      failureBreakdown: summarizeImageFailureReasons(tasks),
       byPlanAccess: buildOutcomeGroups(
         tasks,
         (task) =>

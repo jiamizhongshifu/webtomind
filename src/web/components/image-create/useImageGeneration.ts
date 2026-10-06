@@ -235,7 +235,7 @@ function getFriendlyGenerationErrorMessage(
     return t('errors.pipelineDeadline') as string;
   }
   if (category === 'provider_policy') {
-    return t('errors.providerPolicy') as string;
+    return error.message || (t('errors.providerPolicy') as string);
   }
   if (
     category === 'provider_unavailable' ||
