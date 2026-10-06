@@ -224,7 +224,7 @@
     "react-player": "^3.4.0",
     "react-router-dom": "^7.18.3",
     "remark-gfm": "^4.0.1",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "sonner": "^2.0.7",
     "stripe": "^22.3.0",
     "tailwind-merge": "^3.6.0",
