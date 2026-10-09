@@ -1,3 +1,4 @@
+export { apiMarketplaceRetiredResponse as default } from '../utils/api-marketplace-retired';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   API_MARKETPLACE_MARKUP,
@@ -682,7 +683,8 @@ type GatewayExecutionContext = {
   waitUntil(promise: Promise<unknown>): void;
 };
 
-export default async function handler(
+// Retained for historical settlement diagnostics; no public route invokes it.
+export async function legacyHandler(
   request: Request,
   context?: GatewayExecutionContext
 ): Promise<Response> {

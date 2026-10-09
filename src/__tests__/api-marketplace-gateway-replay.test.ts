@@ -57,7 +57,7 @@ vi.mock('../../api/api-marketplace/runtime', async (importOriginal) => {
   };
 });
 
-import handler, {
+import { legacyHandler as handler,
   classifyReservationReplay
 } from '../../api/api-marketplace/gateway';
 

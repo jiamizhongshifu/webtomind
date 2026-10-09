@@ -155,7 +155,6 @@ const CREATE_SIDE_NAV_COPY = {
     mobileItems: {
       home: '首页',
       apps: '应用',
-      apiModels: '模型广场',
       useCases: '博客',
       moodboards: '情绪板',
       image: '图像创作',
@@ -174,8 +173,6 @@ const CREATE_SIDE_NAV_COPY = {
       gallery: '资产库',
       characters: '角色',
       apps: '应用',
-      apiModels: '模型广场',
-      apiConsole: '令牌管理',
       useCases: '博客',
       tasks: '积分与任务',
       favorites: '收藏',
@@ -230,7 +227,6 @@ const CREATE_SIDE_NAV_COPY = {
     mobileItems: {
       home: 'Home',
       apps: 'Apps',
-      apiModels: 'Model plaza',
       useCases: 'Blog',
       moodboards: 'Boards',
       image: 'Create',
@@ -249,8 +245,6 @@ const CREATE_SIDE_NAV_COPY = {
       gallery: 'Gallery',
       characters: 'Characters',
       apps: 'Apps',
-      apiModels: 'Model plaza',
-      apiConsole: 'Token management',
       useCases: 'Blog',
       tasks: 'Credits',
       favorites: 'Saved',
@@ -346,16 +340,6 @@ const SYSTEM_ANNOUNCEMENTS = {
       tone: 'critical'
     },
     {
-      title: '模型广场与令牌管理正式上线',
-      body: [
-        '「模型广场」已向所有登录用户开放：459 个模型的输入/输出/按次价格、计费方式、可用端点与实时健康状态一目了然，支持搜索、标签筛选与双语浏览。',
-        '「令牌管理」同步上线：登录后即可创建属于你的 API Key（sk-wtm_ 前缀），所有 Key 共享账户 API 额度，支持自定义命名、随时启用或吊销。',
-        'OpenAI 兼容接口 https://webtomind.com/v1 已就绪，覆盖对话、视频、生图、音频等端点；每次调用都按模型广场展示的价格精确计费，失败请求不计费。所有用户共享每分钟 60 次、每日 5000 次的调用额度，钱包余额可在令牌管理页随时充值。'
-      ],
-      meta: 'API 开放平台 · 2026-08-27',
-      tone: 'critical'
-    },
-    {
       title: '全新 AI 图片编辑器上线',
       body: [
         '新增「图片编辑」工具：从创作会话或资产库一键带入图片，用文字指令完成局部修改、区域框选、多图融合、裁剪扩图与光影调整，支持版本历史随时回退。',
@@ -445,16 +429,6 @@ const SYSTEM_ANNOUNCEMENTS = {
         'The GPT Image 2 entry has been retired. Your existing creations remain available, and you can reuse their prompts to start something new.'
       ],
       meta: 'Image creation · 2026-09-09',
-      tone: 'critical'
-    },
-    {
-      title: 'Model Plaza and Token Management are live',
-      body: [
-        'The Model Plaza is now open to every signed-in user: browse 459 models with input/output/per-request pricing, billing modes, supported endpoints, and live health status — with search, tag filters, and full bilingual support.',
-        'Token Management arrives alongside: create your own API keys (sk-wtm_ prefix) after signing in. All keys share one account-level API balance, with custom names and instant enable/revoke.',
-        'Our OpenAI-compatible endpoint https://webtomind.com/v1 covers chat, video, image, and audio APIs. Every call is billed exactly at the plaza price, and failed requests are never charged. Rate limits are 60 requests/minute and 5,000/day per account; top up your wallet anytime from the console.'
-      ],
-      meta: 'API platform · 2026-08-27',
       tone: 'critical'
     },
     {
@@ -861,7 +835,6 @@ export function CreateSideNav({
     )
   )}`;
   const isPromptCaseAdmin = Boolean(user);
-  const isApiMarketplaceAdmin = Boolean(user);
   const defaultPromptLibraryAdminItem: CreateSideNavPromptItem | undefined =
     isPromptCaseAdmin
       ? {
@@ -919,22 +892,9 @@ export function CreateSideNav({
   const visibleNavItems = createNavItems.filter(
     (item) =>
       (item.id !== 'moodboards' || moodboardsEnabled) &&
-      item.id !== 'apiModels' &&
-      (item.id !== 'apiConsole' || isApiMarketplaceAdmin) &&
       (!hideFutureCreationEntries ||
         (item.id !== 'video' && item.id !== 'apps'))
   );
-  const apiModelsEntryIndex = visibleNavItems.findIndex(
-    (item) => item.id === 'apiConsole'
-  );
-  const apiModelsEntry = createNavItems.find((item) => item.id === 'apiModels');
-  if (apiModelsEntry) {
-    visibleNavItems.splice(
-      apiModelsEntryIndex === -1 ? visibleNavItems.length : apiModelsEntryIndex,
-      0,
-      apiModelsEntry
-    );
-  }
   const primaryNavGroups = [
     {
       id: 'default' as const,

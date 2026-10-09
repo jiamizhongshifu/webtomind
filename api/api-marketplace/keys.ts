@@ -1,3 +1,4 @@
+export { apiMarketplaceRetiredResponse as default } from '../utils/api-marketplace-retired';
 import {
   getBearerToken,
   hashApiKey,
@@ -10,7 +11,8 @@ import {
 
 export const config = { runtime: 'edge' };
 
-export default async function handler(request: Request) {
+// Retained for historical settlement diagnostics; no public route invokes it.
+export async function legacyHandler(request: Request) {
   const preflight = preflightResponse(request);
   if (preflight) return preflight;
   const context = await requireUserContextPublic(request);

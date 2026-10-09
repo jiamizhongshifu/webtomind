@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
-  Code2,
   Gift,
   Globe2,
   LogOut,
@@ -158,9 +157,6 @@ const COPY = {
     inviteReward: '+5 积分 / 人',
     inviteLimit: '最多 3 人',
     inviteCta: '复制邀请链接',
-    apiTitle: '模型广场与 API',
-    apiDesc: '充值 API 余额，创建自己的 Key，把 WebToMind 模型接入你的产品。',
-    apiCta: '打开令牌管理',
     preferences: '偏好设置',
     language: '语言',
     theme: '主题',
@@ -213,9 +209,6 @@ const COPY = {
     inviteReward: '+5 credits / person',
     inviteLimit: 'Up to 3 people',
     inviteCta: 'Copy invite link',
-    apiTitle: 'Model plaza & API',
-    apiDesc: 'Top up API balance, create your own Key, and connect WebToMind models to your product.',
-    apiCta: 'Open token management',
     preferences: 'Preferences',
     language: 'Language',
     theme: 'Theme',
@@ -481,19 +474,6 @@ export function CreateAccountPage() {
           </Button>
         </Card>
 
-        <Card as="section" className="create-account-invite-card">
-          <div>
-            <span className="create-account-section-icon">
-              <Code2 size={18} />
-            </span>
-            <h2>{copy.apiTitle}</h2>
-            <p>{copy.apiDesc}</p>
-          </div>
-          <ButtonLink to={`${localePrefix}/api-console`} variant="outline">
-            {copy.apiCta}
-            <ArrowRight size={16} />
-          </ButtonLink>
-        </Card>
 
         <section className="create-account-section">
           <h2>{copy.preferences}</h2>

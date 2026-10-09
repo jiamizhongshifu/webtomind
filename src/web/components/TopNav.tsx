@@ -12,6 +12,7 @@ import {
 } from '../../shared/ui';
 import '../styles/top-nav.css';
 import '../styles/language-switch-banner.css';
+import { AiRechargeLink } from './AiRechargeLink';
 import { LanguageSwitchBanner } from './LanguageSwitchBanner';
 const ENGLISH_SEO_PATHS = new Set([
   '/ai-image-prompts',
@@ -276,6 +277,11 @@ export function TopNav() {
               <NavigationLink href={pricingHref} className="nav-link-item">
                 {navFallback.pricing}
               </NavigationLink>
+              <AiRechargeLink
+                placement="top_nav"
+                locale={locale}
+                className="nav-link-item"
+              />
             </Navigation>
             <div className="relative" ref={langMenuRef}>
               <IconButton

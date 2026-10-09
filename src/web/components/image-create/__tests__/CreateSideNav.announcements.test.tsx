@@ -8,7 +8,7 @@ const source = readFileSync(
 );
 
 describe('CreateSideNav system announcements', () => {
-  it('publishes the marketplace launch and recent creation updates', () => {
+  it('publishes creation updates without promoting the retired API service', () => {
     expect(source).toContain(
       "const SYSTEM_ANNOUNCEMENTS_VERSION = '2026-09-09.1'"
     );
@@ -21,13 +21,13 @@ describe('CreateSideNav system announcements', () => {
       'GPT image generation and editing have been upgraded to GPT Image 2.5'
     );
     expect(source).toContain('The GPT Image 2 entry has been retired');
-    expect(source).toContain('模型广场与令牌管理正式上线');
-    expect(source).toContain('459 个模型');
-    expect(source).toContain('sk-wtm_');
-    expect(source).toContain('https://webtomind.com/v1');
-    expect(source).toContain('每分钟 60 次、每日 5000 次');
-    expect(source).toContain('Model Plaza and Token Management are live');
-    expect(source).toContain('60 requests/minute and 5,000/day');
+    expect(source).not.toContain('模型广场与令牌管理正式上线');
+    expect(source).not.toContain('459 个模型');
+    expect(source).not.toContain('sk-wtm_');
+    expect(source).not.toContain('https://webtomind.com/v1');
+    expect(source).not.toContain('每分钟 60 次、每日 5000 次');
+    expect(source).not.toContain('Model Plaza and Token Management are live');
+    expect(source).not.toContain('60 requests/minute and 5,000/day');
     expect(source).toContain('全新 AI 图片编辑器上线');
     expect(source).toContain('从创作会话或资产库一键带入图片');
     expect(source).toContain('Enter 发送、Shift+Enter 换行');
@@ -65,7 +65,7 @@ describe('CreateSideNav system announcements', () => {
 
   it('keeps the GPT Image 2.5 announcement first in both locales', () => {
     expect(source.indexOf('GPT Image 2.5 已上线')).toBeLessThan(
-      source.indexOf('模型广场与令牌管理正式上线')
+      source.indexOf('全新 AI 图片编辑器上线')
     );
     expect(source.indexOf('全新 AI 图片编辑器上线')).toBeLessThan(
       source.indexOf('Seedance 2.5 已接入视频创作')
@@ -80,7 +80,7 @@ describe('CreateSideNav system announcements', () => {
       source.indexOf('Clipboard reference uploads are more reliable')
     );
     expect(source.indexOf('GPT Image 2.5 is now available')).toBeLessThan(
-      source.indexOf('Model Plaza and Token Management are live')
+      source.indexOf('A new AI Image Editor is here')
     );
   });
 

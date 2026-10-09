@@ -1,3 +1,4 @@
+import { AiRechargeLink } from './AiRechargeLink';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMarketingLocale } from '../lib/marketing-locale';
@@ -26,6 +27,11 @@ export function MarketingFooter() {
         </div>
 
         <div className="marketing-footer-links">
+          <AiRechargeLink
+            placement="footer"
+            locale={locale}
+            className="marketing-footer-link"
+          />
           <Link to="/terms" className="marketing-footer-link">
             {t('footer.terms')}
           </Link>

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import handler from '../../api/api-marketplace/usage';
+import { legacyHandler as handler } from '../../api/api-marketplace/usage';
 import { requireUserContextPublic } from '../../api/api-marketplace/runtime';
 import { getAccessToken } from '../services/workspace-api';
 import { getApiUsage } from '../services/api-marketplace';

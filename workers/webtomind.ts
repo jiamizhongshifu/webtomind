@@ -1,3 +1,7 @@
+import {
+  apiMarketplaceRetiredResponse,
+  isRetiredApiMarketplacePath
+} from '../api/utils/api-marketplace-retired';
 import { recoverFailedGenerationRefunds } from '../api/credits/refund-recovery';
 import healthHandler from '../api/health';
 import contentBlogHandler from '../api/content/blog';
@@ -96,13 +100,6 @@ import membershipTasksHandler from '../api/membership/tasks';
 import membershipWebhookHandler from '../api/membership/webhook';
 import membershipZpayNotifyHandler from '../api/membership/zpay-notify';
 import membershipZpayReturnHandler from '../api/membership/zpay-return';
-import apiMarketplaceCatalogHandler from '../api/api-marketplace/catalog';
-import apiMarketplaceKeysHandler from '../api/api-marketplace/keys';
-import apiMarketplaceKeyFundHandler from '../api/api-marketplace/key-fund';
-import apiMarketplaceWalletHandler from '../api/api-marketplace/wallet';
-import apiMarketplacePackagesHandler from '../api/api-marketplace/packages';
-import apiMarketplaceUsageHandler from '../api/api-marketplace/usage';
-import apiMarketplaceGatewayHandler from '../api/api-marketplace/gateway';
 import marketingEmailDrainHandler from '../api/marketing/email-drain';
 import { handleMarketingEmailSchedulerRequest } from '../api/marketing/email-scheduler';
 import marketingResendWebhookHandler from '../api/marketing/resend-webhook';
@@ -1228,12 +1225,6 @@ const WORKER_API_ROUTES = new Map<
   ['/api/membership/webhook', membershipWebhookHandler],
   ['/api/membership/zpay-notify', membershipZpayNotifyHandler],
   ['/api/membership/zpay-return', membershipZpayReturnHandler],
-  ['/api/api-marketplace/catalog', apiMarketplaceCatalogHandler],
-  ['/api/api-marketplace/keys', apiMarketplaceKeysHandler],
-  ['/api/api-marketplace/keys/fund', apiMarketplaceKeyFundHandler],
-  ['/api/api-marketplace/wallet', apiMarketplaceWalletHandler],
-  ['/api/api-marketplace/packages', apiMarketplacePackagesHandler],
-  ['/api/api-marketplace/usage', apiMarketplaceUsageHandler],
   ['/api/marketing/email-drain', marketingEmailDrainHandler],
   ['/api/marketing/email-scheduler', handleMarketingEmailSchedulerRequest],
   ['/api/marketing/resend-webhook', marketingResendWebhookHandler],
@@ -1268,7 +1259,8 @@ function getWorkerApiHandler(
 ): ((request: Request) => Promise<Response> | Response) | null {
   const exactHandler = WORKER_API_ROUTES.get(pathname);
   if (exactHandler) return exactHandler;
-  if (/^\/v1(?:\/|$)/.test(pathname)) return apiMarketplaceGatewayHandler;
+  if (isRetiredApiMarketplacePath(pathname))
+    return apiMarketplaceRetiredResponse;
   if (
     /^\/api\/admin\/prompt-asset-production-batches\/[^/]+\/run$/.test(pathname)
   )
@@ -4363,10 +4355,8 @@ async function handleRequest(
     return withRuntimeEnv(env, () => sitemapHandler(request));
   }
 
-  if (/^\/v1(?:\/|$)/.test(pathname)) {
-    return withRuntimeEnv(env, () =>
-      apiMarketplaceGatewayHandler(request, context)
-    );
+  if (isRetiredApiMarketplacePath(pathname)) {
+    return withRuntimeEnv(env, () => apiMarketplaceRetiredResponse(request));
   }
 
   if (isNlmApiPath(pathname) || pathname.startsWith('/api/')) {

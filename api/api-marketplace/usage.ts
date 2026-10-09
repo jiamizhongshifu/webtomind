@@ -1,3 +1,4 @@
+export { apiMarketplaceRetiredResponse as default } from '../utils/api-marketplace-retired';
 import {
   jsonResponse,
   preflightResponse,
@@ -33,7 +34,8 @@ function parseLimit(value: string | null): number {
   return Math.min(parsed, MAX_LIMIT);
 }
 
-export default async function handler(request: Request) {
+// Retained for historical settlement diagnostics; no public route invokes it.
+export async function legacyHandler(request: Request) {
   const preflight = preflightResponse(request);
   if (preflight) return preflight;
   if (request.method !== 'GET') {

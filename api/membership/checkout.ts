@@ -6,6 +6,7 @@ import { createClient } from '@supabase/supabase-js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { getCorsHeadersForRequest } from '../utils/auth';
+import { apiMarketplaceRetiredResponse } from '../utils/api-marketplace-retired';
 import { recordConversionEvent } from '../utils/conversion-events';
 import {
   getStripeSecretKey,
@@ -507,6 +508,11 @@ export default async function handler(request: Request) {
   let body: CheckoutRequest;
   try {
     const rawBody = await request.json();
+    // Reject stale clients before auth, database access or payment creation.
+    // Existing payment webhooks remain available to settle historical orders.
+    if (rawBody?.type === 'api_credit_package') {
+      return apiMarketplaceRetiredResponse(request);
+    }
     const validationError = getCheckoutRequestValidationError(rawBody);
     if (validationError) {
       return jsonResponse({ error: validationError }, 400);

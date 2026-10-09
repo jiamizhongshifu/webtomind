@@ -4,11 +4,9 @@ import {
   AppWindow,
   BookImage,
   BookOpenText,
-  Code2,
   Compass,
   GalleryHorizontalEnd,
   Image,
-  KeyRound,
   PanelsTopLeft,
   Sparkles,
   Trophy,
@@ -36,9 +34,7 @@ export interface CreateNavItem {
     | 'apps'
     | 'useCases'
     | 'tasks'
-    | 'imageEdit'
-    | 'apiModels'
-    | 'apiConsole';
+    | 'imageEdit';
   label: string;
   href: string;
   icon: LucideIcon;
@@ -128,21 +124,6 @@ export const createNavItems: CreateNavItem[] = [
     motionIcon: 'apps'
   },
   {
-    id: 'apiModels',
-    label: '模型广场',
-    href: '/models',
-    icon: Code2,
-    group: 'tools'
-  },
-  {
-    id: 'apiConsole',
-    label: '令牌管理',
-    href: '/api-console',
-    icon: KeyRound,
-    group: 'tools',
-    requiresAuth: true
-  },
-  {
     id: 'useCases',
     label: '使用案例',
     href: '/blog',
@@ -182,9 +163,6 @@ export function localizeCreateHref(
   if (href.startsWith('/use-cases'))
     return `${localePrefix}/blog${href.slice('/use-cases'.length)}`;
   if (href.startsWith('/blog')) return `${localePrefix}${href}`;
-  if (href.startsWith('/models') || href.startsWith('/api-console')) {
-    return `${localePrefix}${href}`;
-  }
   if (
     href.startsWith('/moodboards') ||
     href.startsWith('/characters') ||

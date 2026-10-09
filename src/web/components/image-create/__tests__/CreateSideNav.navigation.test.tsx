@@ -467,19 +467,9 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
       '图片编辑',
       '提示词库',
       '应用',
-      '模型广场',
-      '令牌管理',
       '博客',
       '案例管理'
     ]);
-    expect(getTopLevelNavEntry(container, '模型广场')).toHaveAttribute(
-      'href',
-      '/zh-CN/models'
-    );
-    expect(getTopLevelNavEntry(container, '令牌管理')).toHaveAttribute(
-      'href',
-      '/zh-CN/api-console'
-    );
 
     const accountActions = container.querySelector(
       '.create-side-nav-account-actions'
@@ -503,7 +493,7 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
     );
   });
 
-  it('shows the API model plaza and console to any authenticated user (full launch)', () => {
+  it('does not expose the retired API business to authenticated users', () => {
     authState.user = { id: 'regular-user', email: 'user@example.com' };
     authState.isAuthenticated = true;
 
@@ -513,11 +503,11 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
       </MemoryRouter>
     );
 
-    expect(getTopLevelNavLabels(container)).toContain('模型广场');
-    expect(getTopLevelNavLabels(container)).toContain('令牌管理');
+    expect(getTopLevelNavLabels(container)).not.toContain('模型广场');
+    expect(getTopLevelNavLabels(container)).not.toContain('令牌管理');
   });
 
-  it('keeps the API model plaza visible to guests while the console stays hidden', () => {
+  it('does not expose the retired API business to guests', () => {
     authState.user = null;
     authState.isAuthenticated = false;
 
@@ -527,7 +517,7 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
       </MemoryRouter>
     );
 
-    expect(getTopLevelNavLabels(container)).toContain('模型广场');
+    expect(getTopLevelNavLabels(container)).not.toContain('模型广场');
     expect(getTopLevelNavLabels(container)).not.toContain('令牌管理');
   });
 

@@ -27,7 +27,7 @@ export const preflightResponse=()=>null;
 `;
 const auth = `export const getSupabaseAdmin=()=>globalThis.mockDatabase;`;
 const entry = `
-import handler from './api/api-marketplace/gateway.ts';
+import { legacyHandler as handler } from './api/api-marketplace/gateway.ts';
 const state={calls:[],upstreamCancelled:false,upstreamFinished:false,waitUntilFinished:false};
 globalThis.mockDatabase={
  from(){const b={select:()=>b,eq:()=>b,maybeSingle:async()=>({data:{id:'key',user_id:'user',status:'active'}})};return b;},

@@ -122,7 +122,7 @@ vi.mock('../../api/api-marketplace/runtime', async (importOriginal) => ({
   getUpstreamBaseUrl: () => 'https://upstream.test'
 }));
 
-import handler from '../../api/api-marketplace/gateway';
+import { legacyHandler as handler } from '../../api/api-marketplace/gateway';
 
 function request(
   path = '/embeddings',

@@ -1,13 +1,14 @@
 # WebToMind
 
-面向内容创作者和开发者的 AI 创作平台，包含两条业务线：
+面向内容创作者与小团队的 AI 视觉创作平台：
 
 - **商业视觉创作**：参考图 → Prompt 配方 → 图片/视频生成 → 历史与图库 → 情绪板与再创作 → 导出。
-- **开发者 API**：模型目录与价格 → API Key 与账户钱包 → OpenAI 兼容网关调用 → 用量与结算记录。
+
+模型广场与开发者 API 业务已下线；历史订单和结算仅作兼容维护。
 
 本仓库是 [webtomind.com](https://webtomind.com) 的开源版本，使用 [AGPL-3.0](./LICENSE) 许可证。
 
-> English summary: WebToMind is an AI creation platform (image/video generation workspace plus an OpenAI-compatible API gateway with a prepaid wallet), running on Cloudflare Workers and Supabase. Licensed under AGPL-3.0.
+> English summary: WebToMind is an AI creation platform (image/video generation workspace), running on Cloudflare Workers and Supabase. Licensed under AGPL-3.0.
 
 ## 技术栈
 
@@ -23,7 +24,7 @@
 
 | 目录 | 说明 |
 | --- | --- |
-| `src/web/` | Web 应用：首页、创作台、图库、API 控制台等页面 |
+| `src/web/` | Web 应用：首页、创作台、图库等页面 |
 | `src/workspace/` | 早期知识工作台（兼容维护，不再扩展） |
 | `src/shared/` | 前后端共享的类型与工具 |
 | `api/` | 业务处理器，由 Worker 显式路由调用 |
@@ -55,7 +56,7 @@ pnpm test:release-integrity       # 发布门禁脚本测试
 pnpm check:api-marketplace-migrations
 ```
 
-API 钱包账本（`src/__tests__/api-marketplace-ledger-sql.test.ts`）会在进程内的 PGlite 中执行真实迁移，不需要外部数据库。
+历史 API 钱包账本（`src/__tests__/api-marketplace-ledger-sql.test.ts`）会在进程内的 PGlite 中执行真实迁移，不需要外部数据库。
 
 ## 开源版与托管版的差异
 

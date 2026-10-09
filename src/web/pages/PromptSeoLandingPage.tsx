@@ -88,6 +88,7 @@ import {
 } from '../lib/masonry';
 import { applySeo } from '../lib/seo';
 import { useMarketingLocale } from '../lib/marketing-locale';
+import { AiRechargeLink } from '../components/AiRechargeLink';
 import { PromptLibraryShellNav } from './prompt-library/PromptLibraryShellNav';
 import {
   buildPromptTextForVisualRecipe,
@@ -3332,6 +3333,11 @@ export function PromptSeoLandingPage({
   function renderPromptLibraryContent() {
     return (
       <>
+        <AiRechargeLink
+          placement="prompt_library"
+          locale={locale}
+          variant="banner"
+        />
         <header className="prompt-browser-header">
           <div className="prompt-browser-header-copy">
             <p className="prompt-browser-kicker">

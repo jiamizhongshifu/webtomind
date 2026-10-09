@@ -31,7 +31,6 @@ const queryClient = new QueryClient({
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { ApiMarketplaceAdminRoute } from './components/ApiMarketplaceAdminRoute';
 import { GoogleOneTapLoginPrompt } from './components/GoogleOneTapLoginPrompt';
 import { AnalyticsConsentGate } from './components/AnalyticsConsentGate';
 import { CreditsUpgradePrompt } from './components/CreditsUpgradePrompt';
@@ -307,14 +306,9 @@ const CreateRechargePage = lazy(() =>
     default: mod.CreateRechargePage
   }))
 );
-const ApiModelsPage = lazy(() =>
-  import('./pages/ApiModelsPage').then((mod) => ({
-    default: mod.ApiModelsPage
-  }))
-);
-const ApiConsolePage = lazy(() =>
-  import('./pages/ApiConsolePage').then((mod) => ({
-    default: mod.ApiConsolePage
+const ApiServiceRetiredPage = lazy(() =>
+  import('./pages/ApiServiceRetiredPage').then((mod) => ({
+    default: mod.ApiServiceRetiredPage
   }))
 );
 const ComfyWorkflowCheckerPage = lazy(() =>
@@ -901,14 +895,10 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/models" element={<ApiModelsPage />} />
+                  <Route path="/models" element={<ApiServiceRetiredPage />} />
                   <Route
                     path="/api-console"
-                    element={
-                      <ApiMarketplaceAdminRoute>
-                        <ApiConsolePage />
-                      </ApiMarketplaceAdminRoute>
-                    }
+                    element={<ApiServiceRetiredPage />}
                   />
                   <Route path="/zh-CN/create" element={<CreateEntryRoute />} />
                   {[
@@ -981,14 +971,10 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/zh-CN/models" element={<ApiModelsPage />} />
+                  <Route path="/zh-CN/models" element={<ApiServiceRetiredPage />} />
                   <Route
                     path="/zh-CN/api-console"
-                    element={
-                      <ApiMarketplaceAdminRoute>
-                        <ApiConsolePage />
-                      </ApiMarketplaceAdminRoute>
-                    }
+                    element={<ApiServiceRetiredPage />}
                   />
                   <Route
                     path="/prompts"
@@ -1163,14 +1149,10 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/en-US/models" element={<ApiModelsPage />} />
+                  <Route path="/en-US/models" element={<ApiServiceRetiredPage />} />
                   <Route
                     path="/en-US/api-console"
-                    element={
-                      <ApiMarketplaceAdminRoute>
-                        <ApiConsolePage />
-                      </ApiMarketplaceAdminRoute>
-                    }
+                    element={<ApiServiceRetiredPage />}
                   />
                   <Route
                     path="/tools/comfyui-workflow-checker"

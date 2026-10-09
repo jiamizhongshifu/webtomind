@@ -1,5 +1,11 @@
 # Gateway result delivery and settlement
 
+Retired on 2026-10-09: public API gateway and management endpoints now return
+`410 API_MARKETPLACE_RETIRED`, and API recharge checkout is blocked. The
+behavior below documents the retained legacy settlement implementation used
+for historical diagnostics. Existing payment callbacks and settlement recovery
+remain active to finish historical orders; this is not an available API product.
+
 The gateway returns successful upstream output even when internal settlement is
 unavailable. Ordinary JSON/text and aggregated chat completions retain their
 successful response schema and status. Billing failures do not replace output

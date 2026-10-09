@@ -1,3 +1,4 @@
+export { apiMarketplaceRetiredResponse as default } from '../utils/api-marketplace-retired';
 import {
   getCanonicalApiCreditCents,
   getApiCreditPackageQuote,
@@ -14,7 +15,8 @@ import { getZpayConfig, hasZpayCheckoutConfig } from '../utils/zpay';
 
 export const config = { runtime: 'edge' };
 
-export default async function handler(request: Request) {
+// Retained for historical settlement diagnostics; no public route invokes it.
+export async function legacyHandler(request: Request) {
   const preflight = preflightResponse(request);
   if (preflight) return preflight;
   if (request.method !== 'GET')

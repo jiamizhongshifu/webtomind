@@ -10,6 +10,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { applySeo } from '../lib/seo';
+import { AiRechargeLink } from '../components/AiRechargeLink';
 import { TopNav } from '../components/TopNav';
 import '../styles/home.css';
 import {
@@ -1020,6 +1021,11 @@ export function HomePage() {
                 {t('hero.installExtension')}
               </Button>
             </div>
+            <AiRechargeLink
+              placement="home"
+              locale={localeFromPath}
+              variant="banner"
+            />
             <div className="hero-stats">
               <div className="hero-stat">
                 <div className="hero-stat-value">500+</div>
@@ -1335,6 +1341,11 @@ export function HomePage() {
             <span className="footer-logo-text">WebToMind</span>
           </div>
           <div className="footer-links">
+            <AiRechargeLink
+              placement="footer"
+              locale={localeFromPath}
+              className="footer-link"
+            />
             <a href="/terms" className="footer-link">
               {t('footer.terms')}
             </a>
