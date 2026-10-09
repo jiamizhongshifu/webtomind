@@ -36,3 +36,43 @@ test('rejects pending and failed runs', () => {
   assert.equal(result.ok, false);
   assert.match(result.reason, /has not passed/);
 });
+
+test('accepts the exact-commit check job independently of a failed release', () => {
+  assert.equal(
+    assessReleaseCiRuns(commit, [
+      {
+        headSha: commit,
+        status: 'completed',
+        conclusion: 'failure',
+        jobs: [
+          { name: 'check', status: 'completed', conclusion: 'success' },
+          { name: 'release', status: 'completed', conclusion: 'failure' }
+        ]
+      }
+    ]).ok,
+    true
+  );
+});
+test('does not accept skipped, pending, failed, wrong-name or wrong-commit quality jobs', () => {
+  for (const job of [
+    { name: 'check', status: 'completed', conclusion: 'skipped' },
+    { name: 'check', status: 'in_progress', conclusion: null },
+    { name: 'check', status: 'completed', conclusion: 'failure' },
+    { name: 'release', status: 'completed', conclusion: 'success' }
+  ])
+    assert.equal(
+      assessReleaseCiRuns(commit, [
+        { headSha: commit, conclusion: 'failure', jobs: [job] }
+      ]).ok,
+      false
+    );
+  assert.equal(
+    assessReleaseCiRuns(commit, [
+      {
+        headSha: 'b'.repeat(40),
+        jobs: [{ name: 'check', status: 'completed', conclusion: 'success' }]
+      }
+    ]).ok,
+    false
+  );
+});

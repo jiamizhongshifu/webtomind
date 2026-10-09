@@ -85,7 +85,7 @@ interface QueryOverrides {
 }
 
 function buildQuery(overrides: QueryOverrides = {}) {
-  const query: Record<string, any> = {};
+  const query: Record<string, ReturnType<typeof vi.fn>> = {};
   query.select = vi.fn((_columns?: string) => query);
   query.eq = vi.fn(() => query);
   query.in = vi.fn(() => query);

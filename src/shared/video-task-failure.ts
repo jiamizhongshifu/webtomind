@@ -5,6 +5,7 @@ import {
 
 export interface VideoTaskFailureDetails {
   code: string;
+  category: string;
   message: string;
   requestId?: string;
   retryable: boolean;
@@ -59,9 +60,33 @@ export function describeVideoTaskFailure(
   const requestId = rawMessage.match(REQUEST_ID_PATTERN)?.[1];
   const normalized = rawMessage.toLowerCase();
 
+  const code =
+    resultPayload && typeof resultPayload === 'object'
+      ? (resultPayload as Record<string, unknown>).code
+      : undefined;
+  if (
+    code === 'VIDEO_TASK_DEADLINE' ||
+    code === 'VIDEO_CREATE_OUTCOME_UNKNOWN'
+  ) {
+    return {
+      code,
+      category:
+        code === 'VIDEO_TASK_DEADLINE'
+          ? 'pipeline_deadline'
+          : 'provider_outcome_unknown',
+      message:
+        rawMessage ||
+        (code === 'VIDEO_TASK_DEADLINE'
+          ? '视频任务超过处理时限。'
+          : '视频提交结果尚无法确认。'),
+      requestId,
+      retryable: code !== 'VIDEO_CREATE_OUTCOME_UNKNOWN'
+    };
+  }
   if (REAL_PERSON_IMAGE_PATTERN.test(rawMessage)) {
     return {
       code: 'REFERENCE_IMAGE_REAL_PERSON_REJECTED',
+      category: 'provider_policy',
       message: `Seedance 检测到${rejectedImageLabel(rawMessage, referenceInput)}可能包含真人面孔，拒绝了本次生成。请移除该图片或更换为不含真人面孔的素材后重试；直接重试相同素材可能再次失败。`,
       requestId,
       retryable: false
@@ -71,10 +96,12 @@ export function describeVideoTaskFailure(
   if (
     normalized.includes('content policy') ||
     normalized.includes('safety policy') ||
-    normalized.includes('moderation')
+    normalized.includes('moderation') ||
+    /内容.{0,8}(?:违规|安全|审核)|安全策略|敏感内容|未通过审核/.test(rawMessage)
   ) {
     return {
       code: 'VIDEO_CONTENT_POLICY_REJECTED',
+      category: 'provider_policy',
       message:
         '提示词或参考素材未通过 Seedance 的内容安全检查。请调整相关内容后重试。',
       requestId,
@@ -89,15 +116,21 @@ export function describeVideoTaskFailure(
   ) {
     return {
       code: 'VIDEO_PROVIDER_CAPACITY_LIMIT',
+      category: 'provider_unavailable',
       message: 'Seedance 当前生成容量已满，请稍后重试。',
       requestId,
       retryable: true
     };
   }
 
-  if (normalized.includes('timeout') || normalized.includes('timed out')) {
+  if (
+    normalized.includes('timeout') ||
+    normalized.includes('timed out') ||
+    normalized.includes('超时')
+  ) {
     return {
       code: 'VIDEO_PROVIDER_TIMEOUT',
+      category: 'provider_timeout',
       message: 'Seedance 请求超时，请稍后重试。',
       requestId,
       retryable: true
@@ -106,6 +139,7 @@ export function describeVideoTaskFailure(
 
   return {
     code: 'VIDEO_PROVIDER_FAILED',
+    category: 'provider_unknown',
     message: rawMessage || '视频生成失败，请稍后重试。',
     requestId,
     retryable: true

@@ -1,3 +1,4 @@
+import { describeVideoTaskFailure } from '../../src/shared/video-task-failure.js';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { getSupabaseAdmin } from '../utils/auth.js';
 import {
@@ -617,11 +618,18 @@ async function markTaskFailed(
         : '，积分退款未完成，请联系客服。'
       : '，本次未扣积分。';
   }
+  const failure = describeVideoTaskFailure(
+    message,
+    metadata,
+    task.request_payload
+  );
   const { error: failureError } = await sb
     .from('video_generation_tasks')
     .update({
       status: 'failed',
       error_message: message,
+      failure_category: failure.category,
+      failure_code: failure.code,
       refund_failed: !refundSucceeded,
       locked_until: null,
       result_payload: {

@@ -105,6 +105,7 @@
     "security:tracked-secrets": "node scripts/check-tracked-secrets.mjs",
     "security:tracked-secrets:strict": "node scripts/check-tracked-secrets.mjs --strict-index",
     "security:audit-production": "node scripts/audit-production-dependencies.mjs",
+    "test:analytics-tools": "node --test scripts/google-report.test.mjs scripts/renewal-reconciliation.test.mjs",
     "test:security-audit": "node --test scripts/audit-production-dependencies.test.mjs",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",

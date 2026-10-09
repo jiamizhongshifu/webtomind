@@ -948,6 +948,8 @@ export default async function handler(request: Request) {
       await updateVideoTask(taskId, {
         status: 'failed',
         error_message: message,
+        failure_category: failure.category,
+        failure_code: failure.code,
         refund_failed: !refundSucceeded,
         completed_at: new Date().toISOString(),
         result_payload: {

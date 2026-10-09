@@ -290,6 +290,19 @@ function cleanAcquisition(value: unknown): AcquisitionSnapshot | undefined {
   };
 }
 
+function getZpayReturnUrl(successUrl?: string): string {
+  const appUrl = process.env.APP_URL || 'https://webtomind.com';
+  const returnUrl = new URL('/api/membership/zpay-return', appUrl);
+  const requested = new URL(
+    getSafeRedirectUrl(successUrl, new URL('/pricing', appUrl).toString())
+  );
+  returnUrl.searchParams.set(
+    'returnTo',
+    `${requested.pathname}${requested.search}`
+  );
+  return returnUrl.toString();
+}
+
 function getZpayProductName(input: {
   type: CheckoutRequest['type'];
   productName: string;
@@ -1020,7 +1033,22 @@ export default async function handler(request: Request) {
           stripe,
           userId,
           id,
-          billingCycle
+          billingCycle,
+          {
+            paymentProvider,
+            ...(zpay
+              ? {
+                  zpay: {
+                    config: zpay,
+                    notifyUrl: new URL(
+                      '/api/membership/zpay-notify',
+                      process.env.APP_URL || 'https://webtomind.com'
+                    ).toString(),
+                    returnUrl: getZpayReturnUrl(successUrl)
+                  }
+                }
+              : {})
+          }
         );
         return jsonResponse(pending, pending.url ? 200 : 409);
       }
@@ -1082,16 +1110,6 @@ export default async function handler(request: Request) {
     );
     if (paymentProvider === 'alipay' && zpay) {
       const appUrl = process.env.APP_URL || 'https://webtomind.com';
-      const zpayReturnUrl = new URL('/api/membership/zpay-return', appUrl);
-      const requestedReturnUrl = getSafeRedirectUrl(
-        successUrl,
-        defaultSuccessUrl.toString()
-      );
-      const requestedReturn = new URL(requestedReturnUrl);
-      zpayReturnUrl.searchParams.set(
-        'returnTo',
-        `${requestedReturn.pathname}${requestedReturn.search}`
-      );
       const fields = buildZpayCheckoutFields({
         config: zpay,
         orderId: order.id,
@@ -1102,7 +1120,7 @@ export default async function handler(request: Request) {
         }),
         cnyCents: orderAmount,
         notifyUrl: new URL('/api/membership/zpay-notify', appUrl).toString(),
-        returnUrl: zpayReturnUrl.toString()
+        returnUrl: getZpayReturnUrl(successUrl)
       });
       const { error: providerOrderError } = await orderDb
         .from('payment_orders')

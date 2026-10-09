@@ -1,5 +1,10 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type Stripe from 'stripe';
+import {
+  buildZpayCheckoutFields,
+  buildZpayOutTradeNo,
+  type ZpayConfig
+} from '../utils/zpay';
 
 const ORPHAN_RECONCILIATION_DELAY_MS = 30 * 60 * 1000;
 const MAX_RECONCILIATION_PAGES = 5;
@@ -58,12 +63,16 @@ export async function resolvePendingSubscriptionCheckout(
   stripe: Stripe | null,
   userId: string,
   productId: string,
-  billingCycle: string
+  billingCycle: string,
+  recovery?: {
+    paymentProvider: 'stripe' | 'alipay';
+    zpay?: { config: ZpayConfig; notifyUrl: string; returnUrl: string };
+  }
 ): Promise<Record<string, unknown>> {
   const { data: orders, error } = await database
     .from('payment_orders')
     .select(
-      'id,user_id,created_at,provider,provider_order_id,product_id,metadata,status'
+      'id,user_id,created_at,provider,provider_order_id,product_id,metadata,status,amount,currency'
     )
     .eq('user_id', userId)
     .eq('product_type', 'subscription')
@@ -71,7 +80,66 @@ export async function resolvePendingSubscriptionCheckout(
     .order('created_at', { ascending: false });
   if (error) throw error;
   const order = orders?.[0];
-  if (order?.status === 'pending' && order.provider === 'stripe' && stripe) {
+  if (
+    order?.status === 'pending' &&
+    order.provider === 'zpay' &&
+    recovery?.paymentProvider === 'alipay' &&
+    recovery.zpay &&
+    order.product_id === productId &&
+    order.metadata?.billingCycle === billingCycle &&
+    Number.isSafeInteger(order.amount) &&
+    order.amount > 0 &&
+    order.currency === 'cny' &&
+    typeof order.metadata?.productName === 'string' &&
+    order.metadata.productName.trim()
+  ) {
+    const merchantOrderId = buildZpayOutTradeNo(order.id);
+    // Never redirect an existing provider order to a different merchant number.
+    if (
+      !order.provider_order_id ||
+      order.provider_order_id === merchantOrderId
+    ) {
+      const fields = buildZpayCheckoutFields({
+        ...recovery.zpay,
+        orderId: order.id,
+        productName: `WebToMind ${order.metadata.productName} ${billingCycle === 'yearly' ? '年度' : '月度'}会员`,
+        cnyCents: order.amount
+      });
+      let claim = database
+        .from('payment_orders')
+        .update({
+          provider_order_id: merchantOrderId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', order.id)
+        .eq('user_id', userId)
+        .eq('status', 'pending')
+        .eq('amount', order.amount)
+        .eq('currency', order.currency);
+      claim = order.provider_order_id
+        ? claim.eq('provider_order_id', order.provider_order_id)
+        : claim.is('provider_order_id', null);
+      const { data: current, error: claimError } = await claim
+        .select('id')
+        .maybeSingle();
+      if (claimError) throw claimError;
+      if (current)
+        return {
+          id: order.id,
+          url: recovery.zpay.config.submitUrl,
+          method: 'POST',
+          fields,
+          paymentProvider: 'alipay',
+          reused: true
+        };
+    }
+  }
+  if (
+    order?.status === 'pending' &&
+    order.provider === 'stripe' &&
+    stripe &&
+    recovery?.paymentProvider !== 'alipay'
+  ) {
     let session: Stripe.Checkout.Session | null = null;
     let absenceConfirmed = false;
     if (order.provider_order_id) {

@@ -57,10 +57,27 @@ try {
       'databaseId,status,conclusion,headSha,url,createdAt'
     ]) || '[]'
   );
+  // A failed deployment/health gate does not erase a completed code-quality job.
+  // Fetch jobs from the exact run, never from a different commit or workflow.
+  for (const run of runs.filter((run) => run.headSha === commit)) {
+    if (run.status === 'completed' && run.conclusion === 'success') continue;
+    const detail = JSON.parse(
+      capture('gh', [
+        'run',
+        'view',
+        String(run.databaseId),
+        '--json',
+        'headSha,jobs'
+      ])
+    );
+    if (detail.headSha !== commit)
+      throw new Error('CI run commit changed unexpectedly');
+    run.jobs = detail.jobs;
+  }
   const result = assessReleaseCiRuns(commit, runs);
   if (!result.ok) throw new Error(result.reason);
   console.log(
-    `PASS GitHub CI succeeded for ${commit.slice(0, 12)}: ${result.run.url || result.run.databaseId}.`
+    `PASS GitHub CI quality check succeeded for ${commit.slice(0, 12)}: ${result.run.url || result.run.databaseId}.`
   );
 } catch (error) {
   console.error(

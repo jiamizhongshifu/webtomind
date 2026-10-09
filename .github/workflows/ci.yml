@@ -84,6 +84,7 @@ jobs:
       - run: pnpm --dir server build
       - run: pnpm test:release-integrity
       - run: pnpm release:contracts:source
+      - run: pnpm test:analytics-tools
       - run: pnpm test:security-audit
       - run: pnpm security:audit-production
       - run: pnpm build:web:prod-parity

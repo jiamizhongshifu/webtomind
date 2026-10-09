@@ -9,6 +9,7 @@ describe('video task failure details', () => {
       )
     ).toEqual({
       code: 'REFERENCE_IMAGE_REAL_PERSON_REJECTED',
+      category: 'provider_policy',
       message:
         'Seedance 检测到输入图片可能包含真人面孔，拒绝了本次生成。请移除该图片或更换为不含真人面孔的素材后重试；直接重试相同素材可能再次失败。',
       requestId: '021784959299766f5028489cb353b460b901382cc774869215553',
@@ -28,6 +29,7 @@ describe('video task failure details', () => {
     );
     expect(failure).toMatchObject({
       code: 'REFERENCE_IMAGE_REAL_PERSON_REJECTED',
+      category: 'provider_policy',
       requestId: 'req-indexed',
       retryable: false
     });
@@ -99,3 +101,28 @@ describe('video task failure details', () => {
     });
   });
 });
+
+it.each([
+  ['请求超时', undefined, 'provider_timeout', true],
+  ['内容未通过审核', undefined, 'provider_policy', false],
+  [
+    '任务超过处理时限',
+    { code: 'VIDEO_TASK_DEADLINE' },
+    'pipeline_deadline',
+    true
+  ],
+  [
+    '提交结果未知',
+    { code: 'VIDEO_CREATE_OUTCOME_UNKNOWN' },
+    'provider_outcome_unknown',
+    false
+  ]
+])(
+  'classifies %s for reporting and retry guidance',
+  (message, payload, category, retryable) => {
+    expect(describeVideoTaskFailure(message, payload)).toMatchObject({
+      category,
+      retryable
+    });
+  }
+);

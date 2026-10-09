@@ -67,7 +67,11 @@ async function readJson(filePath) {
 }
 
 function pct(value) {
-  if (value === null || value === undefined || !Number.isFinite(Number(value))) {
+  if (
+    value === null ||
+    value === undefined ||
+    !Number.isFinite(Number(value))
+  ) {
     return '-';
   }
   return `${(Number(value) * 100).toFixed(1)}%`;
@@ -103,7 +107,7 @@ async function main() {
     } else if (qualityFails) {
       warnings.push(
         `GA4 数据质量未达标（${(dq.blockingReasons || []).join('；') || '未知'}）；` +
-          '手动 unwanted-referrals 配置完成前按警告处理，见 docs/seo/ga4-unwanted-referrals-runbook.md'
+          '请检查 GA4 着陆页与会话事件采集'
       );
     }
     const notSetRows = (ga4Report.data?.notSetLandingBySource?.rows || [])
@@ -128,7 +132,9 @@ async function main() {
   if (!gscReport) {
     warnings.push('GSC 报告缺失，等待下次同步');
   } else if (!freshWithinDays(gscReport.generatedAt, days)) {
-    warnings.push(`GSC 报告过期（${gsc.date}，生成于 ${gscReport.generatedAt}）`);
+    warnings.push(
+      `GSC 报告过期（${gsc.date}，生成于 ${gscReport.generatedAt}）`
+    );
   } else {
     const currentTotals = gscReport.totals?.current || {};
     const impressions = Number(currentTotals.impressions ?? 0);
@@ -152,9 +158,13 @@ async function main() {
     );
   } else {
     const health = conversionReport.conversionHealth || {};
-    const generation = health.generation || {};
+    const generation = conversionReport.taskOutcomes?.image || {};
+    if (!conversionReport.taskOutcomes)
+      failures.push('任务表成功率不可用；不以事件漏斗代替任务结果');
     const successRate = Number(generation.successRate ?? Number.NaN);
-    const categoryText = Object.entries(generation.failureCategories || {})
+    const categoryText = Object.entries(
+      health.generation?.failureCategories || {}
+    )
       .map(([key, value]) => `${key}:${value}`)
       .join('，');
     if (Number.isFinite(successRate) && successRate < 0.4) {
@@ -167,7 +177,7 @@ async function main() {
       );
     }
     lines.push(
-      `Supabase: 生成成功率 ${pct(successRate)} | 失败分类: ${
+      `Supabase: 生成成功率 ${pct(successRate)} | 事件失败分类（采样）: ${
         categoryText || '无'
       } | 订单 ${health.checkout?.succeededOrders ?? 0} 成功 / ${
         health.checkout?.expiredOrders ?? 0

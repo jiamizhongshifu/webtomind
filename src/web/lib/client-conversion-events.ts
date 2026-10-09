@@ -8,6 +8,7 @@ import { rememberSeoConversionAttribution } from './seo-conversion-attribution';
 const log = createLogger('ClientConversionEvents');
 
 export type ClientConversionEventName =
+  | 'ai_recharge_click'
   | 'pricing_view'
   | 'pricing_item_view'
   | 'pricing_promo_view'
@@ -82,8 +83,7 @@ export async function recordClientConversionEvent(
         typeof body.metadata?.contentId === 'string'
           ? body.metadata.contentId
           : body.entityId || undefined,
-      mediaType:
-        body.metadata?.mediaType === 'video' ? 'video' : 'image',
+      mediaType: body.metadata?.mediaType === 'video' ? 'video' : 'image',
       model:
         typeof body.metadata?.model === 'string'
           ? body.metadata.model

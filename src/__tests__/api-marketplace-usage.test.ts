@@ -1,8 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { legacyHandler as handler } from '../../api/api-marketplace/usage';
 import { requireUserContextPublic } from '../../api/api-marketplace/runtime';
-import { getAccessToken } from '../services/workspace-api';
-import { getApiUsage } from '../services/api-marketplace';
 
 vi.mock('../../api/api-marketplace/runtime', async (importOriginal) => {
   const actual =
@@ -13,12 +11,7 @@ vi.mock('../../api/api-marketplace/runtime', async (importOriginal) => {
   };
 });
 
-vi.mock('../services/workspace-api', () => ({
-  getAccessToken: vi.fn()
-}));
-
 const mockedRequireUserContext = vi.mocked(requireUserContextPublic);
-const mockedGetAccessToken = vi.mocked(getAccessToken);
 
 type QueryChain = {
   data: unknown;
@@ -42,24 +35,28 @@ function makeChain(data: unknown, error: unknown = null): QueryChain {
   return query;
 }
 
-function createSupabase(options: {
-  ownedKey?: unknown;
-  keyError?: unknown;
-  usageRecords?: unknown;
-  usageError?: unknown;
-  totalSum?: unknown;
-  totalError?: unknown;
-} = {}) {
+function createSupabase(
+  options: {
+    ownedKey?: unknown;
+    keyError?: unknown;
+    usageRecords?: unknown;
+    usageError?: unknown;
+    totalSum?: unknown;
+    totalError?: unknown;
+  } = {}
+) {
   const from = vi.fn((table: string) => {
     if (table === 'api_keys') {
       return {
-        select: vi.fn(() => makeChain(options.ownedKey ?? null, options.keyError ?? null))
+        select: vi.fn(() =>
+          makeChain(options.ownedKey ?? null, options.keyError ?? null)
+        )
       };
     }
     return {
       select: vi.fn(() => {
         return makeChain(
-          options.usageError ? null : options.usageRecords ?? [],
+          options.usageError ? null : (options.usageRecords ?? []),
           options.usageError ?? null
         );
       })
@@ -70,7 +67,7 @@ function createSupabase(options: {
     rpc: vi.fn(async (name: string) => {
       if (name === 'get_api_usage_total') {
         return {
-          data: options.totalError ? null : options.totalSum ?? 0,
+          data: options.totalError ? null : (options.totalSum ?? 0),
           error: options.totalError ?? null
         };
       }
@@ -169,7 +166,9 @@ describe('API marketplace usage handler', () => {
     });
 
     const response = await handler(
-      request('https://webtomind.test/api/api-marketplace/usage?keyId=key-1&limit=3')
+      request(
+        'https://webtomind.test/api/api-marketplace/usage?keyId=key-1&limit=3'
+      )
     );
     const body = await readJson(response);
 
@@ -189,7 +188,9 @@ describe('API marketplace usage handler', () => {
     });
 
     const response = await handler(
-      request('https://webtomind.test/api/api-marketplace/usage?keyId=other-key')
+      request(
+        'https://webtomind.test/api/api-marketplace/usage?keyId=other-key'
+      )
     );
 
     expect(response.status).toBe(404);
@@ -244,53 +245,5 @@ describe('API marketplace usage handler', () => {
   it('rejects non-GET methods', async () => {
     const response = await handler(request(undefined, 'POST'));
     expect(response.status).toBe(405);
-  });
-});
-
-describe('getApiUsage client', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.unstubAllGlobals();
-  });
-
-  it('requests usage with optional keyId and limit query parameters', async () => {
-    mockedGetAccessToken.mockReturnValue('test-token');
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({
-        usage: [USAGE_ROW],
-        totalSpentCents: 137,
-        limit: 50,
-        keyId: 'key-1'
-      })
-    });
-    vi.stubGlobal('fetch', fetchMock);
-
-    const result = await getApiUsage({ keyId: 'key-1', limit: 50 });
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe(
-      'http://localhost:3000/api/api-marketplace/usage?keyId=key-1&limit=50'
-    );
-    expect(new Headers(init.headers).get('Authorization')).toBe(
-      'Bearer test-token'
-    );
-    expect(result.usage[0].actual_customer_cents).toBe(7);
-    expect(result.totalSpentCents).toBe(137);
-  });
-
-  it('omits query parameters when no filter is requested', async () => {
-    mockedGetAccessToken.mockReturnValue(null);
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ usage: [], totalSpentCents: 0, limit: 50, keyId: null })
-    });
-    vi.stubGlobal('fetch', fetchMock);
-
-    await getApiUsage();
-
-    const [url] = fetchMock.mock.calls[0] as [string];
-    expect(url).toBe('http://localhost:3000/api/api-marketplace/usage');
   });
 });

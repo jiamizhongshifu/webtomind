@@ -540,6 +540,8 @@ export default async function handler(request: Request) {
         .update({
           status: 'failed',
           error_message: providerStatus.errorMessage || failure.message,
+          failure_category: failure.category,
+          failure_code: failure.code,
           refund_failed: !refundSucceeded,
           result_payload: {
             error: 'VIDEO_PROVIDER_FAILED',

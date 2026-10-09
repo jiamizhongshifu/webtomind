@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+import {
+  loadTaskOutcomeReport,
+  countFirstSuccessUsers
+} from '../src/shared/task-outcome-report.ts';
 
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -12,6 +16,7 @@ const ROOT = path.resolve(__dirname, '..');
 const DEFAULT_OUT_DIR = path.join(ROOT, 'outputs', 'conversion');
 
 const DURABLE_CONVERSION_EVENT_NAMES = [
+  'ai_recharge_click',
   'pricing_view',
   'identity_linked',
   'checkout_start',
@@ -385,7 +390,8 @@ function buildSeoConversionFunnel(rows) {
       attribution.slug ||
       undefined;
     const cluster = attribution.cluster || undefined;
-    const contentId = attribution.content_id || attribution.contentId || undefined;
+    const contentId =
+      attribution.content_id || attribution.contentId || undefined;
     const cta = attribution.cta || undefined;
     const rawSource = attribution.source || row.cta_source || 'unknown';
     const source = [
@@ -539,6 +545,8 @@ function buildConversionHealthSummary(events, orders, exactEventCounts = {}) {
 
   return {
     generation: {
+      basis: 'conversion_events',
+      firstSucceededUsersAreSampled: true,
       succeeded: generationSucceeded,
       failed: generationFailed,
       successRate: safeRate(
@@ -643,8 +651,7 @@ function buildAcquisitionBreakdown(orders) {
         ? metadata.checkout_attribution
         : {};
     const acquisition =
-      attribution.acquisition &&
-      typeof attribution.acquisition === 'object'
+      attribution.acquisition && typeof attribution.acquisition === 'object'
         ? attribution.acquisition
         : metadata.acquisition;
     const utm =
@@ -964,6 +971,14 @@ async function buildReport({ days, limit }) {
     reconciledOrders,
     exactEventCounts
   );
+  const [taskOutcomeResult, firstSuccessResult] = await Promise.allSettled([
+    loadTaskOutcomeReport(supabase, cutoff),
+    countFirstSuccessUsers(supabase, cutoff)
+  ]);
+  const taskOutcomes =
+    taskOutcomeResult.status === 'fulfilled' ? taskOutcomeResult.value : null;
+  const firstSucceededUsersExact =
+    firstSuccessResult.status === 'fulfilled' ? firstSuccessResult.value : null;
   const sampledEventRows = sampledEvents.length;
   const totalEventRows = recentEvents.count ?? sampledEventRows;
   const sampledDurableEventRows = sampledDurableEvents.length;
@@ -988,6 +1003,14 @@ async function buildReport({ days, limit }) {
         Object.keys(exactEventCountErrors).length
           ? `Exact event counts failed for: ${Object.keys(exactEventCountErrors).join(', ')}; affected metrics fall back to sampled rows.`
           : null,
+        ...(taskOutcomes
+          ? []
+          : [
+              'Canonical task outcomes unavailable; do not substitute event success rate.'
+            ]),
+        ...(firstSucceededUsersExact === null
+          ? ['Exact first-success user count unavailable.']
+          : []),
         ...purchaseOrderReconciliation.warnings,
         ...conversionHealth.warnings,
         ...sourceFunnelSummary.flatMap((item) => item.warnings)
@@ -999,6 +1022,8 @@ async function buildReport({ days, limit }) {
     generatedAt: new Date().toISOString(),
     windowDays: days,
     success:
+      taskOutcomeResult.status === 'fulfilled' &&
+      firstSuccessResult.status === 'fulfilled' &&
       Object.values(errors).every((error) => !error) &&
       Object.keys(exactEventCountErrors).length === 0,
     errors: {
@@ -1020,6 +1045,18 @@ async function buildReport({ days, limit }) {
     },
     exactEventCounts,
     exactEventCountErrors,
+    taskOutcomes,
+    firstSucceededUsersExact,
+    outcomeReportErrors: {
+      taskOutcomes:
+        taskOutcomeResult.status === 'rejected'
+          ? String(taskOutcomeResult.reason)
+          : null,
+      firstSucceededUsers:
+        firstSuccessResult.status === 'rejected'
+          ? String(firstSuccessResult.reason)
+          : null
+    },
     conversionHealth,
     purchaseOrderReconciliation,
     acquisitionBreakdown: buildAcquisitionBreakdown(reconciledOrders),
@@ -1073,6 +1110,26 @@ function buildMarkdown(report) {
         ? '订单全部停留 pending；先用 Stripe session 状态区分真实待支付与已过期，不直接归因 webhook。'
         : '继续按来源漏斗和订单状态排查。'
   }
+
+## Canonical task outcomes
+
+来源：任务表，全量计数，包含内部测试；按任务创建时间入窗。失败包含内容拒绝，取消单独列出。
+
+${mdTable(
+  ['Media', 'Succeeded', 'Failed', 'Cancelled', 'Success rate'],
+  ['image', 'video'].map((kind) => {
+    const row = report.taskOutcomes?.[kind];
+    return [
+      kind,
+      row?.succeeded ?? '-',
+      row?.failed ?? '-',
+      row?.cancelled ?? '-',
+      pct(row?.successRate)
+    ];
+  })
+)}
+
+首图成功用户（全量去重）：${report.firstSucceededUsersExact ?? 'unavailable'}。下方事件漏斗与任务结果是不同数据源，不混用分母。
 
 ## Source Funnel
 

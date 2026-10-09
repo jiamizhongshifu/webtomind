@@ -8,6 +8,7 @@ export const config = {
 };
 
 const ALLOWED_EVENTS = new Set([
+  'ai_recharge_click',
   'pricing_view',
   'pricing_item_view',
   'pricing_promo_view',
@@ -27,6 +28,7 @@ const ALLOWED_EVENTS = new Set([
 ]);
 
 const ANONYMOUS_ALLOWED_EVENTS = new Set([
+  'ai_recharge_click',
   'prompt_detail_view',
   'prompt_detail_copy',
   'prompt_detail_use',
@@ -36,6 +38,8 @@ const ANONYMOUS_ALLOWED_EVENTS = new Set([
 ]);
 
 const ANONYMOUS_METADATA_KEYS = new Set([
+  'placement',
+  'link_domain',
   'caseId',
   'caseSlug',
   'slug',
@@ -225,9 +229,7 @@ export default async function handler(request: Request) {
     eventSource: isAnonymous ? 'web_client_anonymous' : 'web_client',
     userId,
     anonymousId:
-      isAnonymous || eventName === 'identity_linked'
-        ? anonymousId
-        : undefined,
+      isAnonymous || eventName === 'identity_linked' ? anonymousId : undefined,
     sessionId,
     entityType: cleanString(body.entityType, 80),
     entityId: cleanString(body.entityId, 160),

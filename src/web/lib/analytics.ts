@@ -93,6 +93,12 @@ function isGtmDataLayerReady(): boolean {
   });
 }
 
+export function isAnalyticsCollectionAllowed(): boolean {
+  return (
+    analyticsCollectionEnabled === true && analyticsConsentState === 'granted'
+  );
+}
+
 function canTrack(): boolean {
   return analyticsCollectionEnabled === true && isGtmDataLayerReady();
 }
@@ -156,7 +162,11 @@ export function updateAnalyticsConsent(consent: AnalyticsConsentState) {
   // 数组形式（GTM 约定）在直连 gtag.js 时会被忽略，必须 push arguments。
   if (!window.dataLayer) window.dataLayer = [];
   const queue = window.dataLayer;
-  const consentCommand = function (_command: string, _action: string, _params: object) {
+  const consentCommand = function (
+    _command: string,
+    _action: string,
+    _params: object
+  ) {
     // eslint-disable-next-line prefer-rest-params -- gtag.js 回放需要 Arguments 对象
     queue.push(arguments as unknown as unknown[]);
   };

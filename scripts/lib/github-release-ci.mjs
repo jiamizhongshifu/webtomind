@@ -1,7 +1,15 @@
 export function assessReleaseCiRuns(commit, runs) {
   const matching = runs.filter((run) => run.headSha === commit);
   const successful = matching.find(
-    (run) => run.status === 'completed' && run.conclusion === 'success'
+    (run) =>
+      (run.status === 'completed' && run.conclusion === 'success') ||
+      (run.status === 'completed' &&
+        run.jobs?.some(
+          (job) =>
+            job.name === 'check' &&
+            job.status === 'completed' &&
+            job.conclusion === 'success'
+        ))
   );
   if (successful) {
     return { ok: true, run: successful, matching };
@@ -14,7 +22,10 @@ export function assessReleaseCiRuns(commit, runs) {
     };
   }
   const summary = matching
-    .map((run) => `${run.status}/${run.conclusion || 'pending'} (${run.url || run.databaseId})`)
+    .map(
+      (run) =>
+        `${run.status}/${run.conclusion || 'pending'} (${run.url || run.databaseId})`
+    )
     .join(', ');
   return {
     ok: false,

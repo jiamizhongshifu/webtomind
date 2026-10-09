@@ -471,6 +471,9 @@ export async function recordStripeSubscriptionRenewalEvent(params: {
     productId: planId,
     ctaSource: 'subscription_renewal',
     idempotencyKey: `subscription_renewal_succeeded:${invoice.id}`,
+    occurredAt: invoice.status_transitions?.paid_at
+      ? new Date(invoice.status_transitions.paid_at * 1000).toISOString()
+      : undefined,
     metadata: {
       stripe_event_id: eventId,
       stripe_invoice_id: invoice.id,

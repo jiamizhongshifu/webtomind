@@ -182,3 +182,92 @@ describe('bounded provider evidence', () => {
     }
   );
 });
+
+describe('ZPay same-order subscription recovery', () => {
+  const id = '11111111-1111-4111-8111-111111111111';
+  const recovery = {
+    paymentProvider: 'alipay' as const,
+    zpay: {
+      config: {
+        pid: 'test',
+        key: 'fixture-key',
+        usdToCnyRate: 8,
+        submitUrl: 'https://zpayz.cn/submit.php'
+      },
+      notifyUrl: 'https://webtomind.com/api/membership/zpay-notify',
+      returnUrl: 'https://webtomind.com/api/membership/zpay-return'
+    }
+  };
+  const resume = (db: ReturnType<typeof mockOrder>) =>
+    resolvePendingSubscriptionCheckout(
+      db as never,
+      null,
+      'user-1',
+      'pro',
+      'monthly',
+      recovery
+    );
+  const pending = {
+    id,
+    provider: 'zpay',
+    provider_order_id: null,
+    amount: 14200,
+    currency: 'cny',
+    metadata: { billingCycle: 'monthly', productName: 'Pro' }
+  };
+  it('resumes an old order with its snapshotted amount, independent of current exchange rate', async () => {
+    const db = mockOrder(pending);
+    const result = await resume(db);
+    expect(result).toMatchObject({
+      id,
+      reused: true,
+      method: 'POST',
+      paymentProvider: 'alipay',
+      fields: { money: '142.00', param: id }
+    });
+    expect(db.q.eq).toHaveBeenCalledWith('status', 'pending');
+    expect(db.q.eq).toHaveBeenCalledWith('amount', 14200);
+    expect(db.q.is).toHaveBeenCalledWith('provider_order_id', null);
+    const again = await resume(
+      mockOrder({
+        ...pending,
+        provider_order_id: (result.fields as Record<string, string>)
+          .out_trade_no
+      })
+    );
+    expect(again.fields).toEqual(result.fields);
+  });
+  it.each([
+    { status: 'processing' },
+    { product_id: 'max' },
+    { currency: 'usd' },
+    { amount: 0 },
+    { amount: 1.5 },
+    { provider_order_id: 'another-merchant-order' },
+    { metadata: { billingCycle: 'yearly', productName: 'Pro' } },
+    { metadata: { billingCycle: 'monthly' } }
+  ])(
+    'keeps incompatible or incomplete orders reserved: %j',
+    async (override) => {
+      const db = mockOrder({ ...pending, ...override });
+      expect((await resume(db)).url).toBeUndefined();
+      expect(db.q.update).not.toHaveBeenCalled();
+    }
+  );
+  it('does not return payable fields after a concurrent webhook changes the order', async () => {
+    expect((await resume(mockOrder(pending, null))).fields).toBeUndefined();
+  });
+  it('does not switch providers when a Stripe checkout already exists', async () => {
+    const stripe = provider();
+    const result = await resolvePendingSubscriptionCheckout(
+      mockOrder() as never,
+      stripe as never,
+      'user-1',
+      'pro',
+      'monthly',
+      recovery
+    );
+    expect(result.url).toBeUndefined();
+    expect(stripe.checkout.sessions.retrieve).not.toHaveBeenCalled();
+  });
+});

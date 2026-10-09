@@ -58,6 +58,46 @@ describe('conversion event API', () => {
     );
   });
 
+  it('records anonymous AICZ clicks while stripping unapproved metadata and URL queries', async () => {
+    const response = await handler(
+      request(
+        {
+          eventName: 'ai_recharge_click',
+          anonymousId: 'session-1',
+          sessionId: 'session-1',
+          entityId: 'aicz',
+          ctaSource: 'home',
+          idempotencyKey: 'click-1',
+          metadata: {
+            placement: 'home',
+            link_domain: 'aicz.vip',
+            path: '/zh-CN/?email=private',
+            email: 'private',
+            locale: 'zh-CN'
+          }
+        },
+        {
+          authenticated: false,
+          origin: 'https://webtomind.com',
+          url: 'https://webtomind.com/api/analytics/conversion-event'
+        }
+      )
+    );
+    expect(response.status).toBe(200);
+    expect(recordConversionEvent).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({
+        eventName: 'ai_recharge_click',
+        metadata: {
+          placement: 'home',
+          link_domain: 'aicz.vip',
+          path: '/zh-CN/',
+          locale: 'zh-CN'
+        }
+      })
+    );
+  });
+
   it('records durable pricing funnel events for authenticated users', async () => {
     const response = await handler(
       request({

@@ -2,6 +2,7 @@ import {
   defineConfig,
   loadEnv,
   Plugin,
+  type ViteDevServer,
   type HtmlTagDescriptor
 } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -9,6 +10,19 @@ import path from 'path';
 import fs from 'fs';
 import { execSync } from 'child_process';
 import { BOOT_WATCHDOG_SOURCE } from './src/shared/boot-watchdog';
+
+function configureBootWatchdogServer(
+  server: Pick<ViteDevServer, 'middlewares'>
+) {
+  server.middlewares.use('/boot-watchdog.js', (_request, response, next) => {
+    if (response.headersSent) {
+      next();
+      return;
+    }
+    response.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    response.end(BOOT_WATCHDOG_SOURCE);
+  });
+}
 
 if (process.env.NODE_ENV !== 'production') {
   process.env.NODE_ENV = 'production';
@@ -208,7 +222,9 @@ function promptRouteAssetsPlugin(): Plugin {
             const chunk = Object.values(bundle).find(
               (item) =>
                 item.type === 'chunk' &&
-                item.facadeModuleId?.endsWith(`/i18n/locales/${locale}/index.ts`)
+                item.facadeModuleId?.endsWith(
+                  `/i18n/locales/${locale}/index.ts`
+                )
             );
             return chunk ? [[locale, `/${chunk.fileName}`]] : [];
           })
@@ -363,22 +379,8 @@ export default defineConfig(({ command, mode }) => {
       {
         name: 'webtomind-boot-watchdog-dev',
         apply: 'serve',
-        configureServer(server) {
-          server.middlewares.use(
-            '/boot-watchdog.js',
-            (_request, response, next) => {
-              if (response.headersSent) {
-                next();
-                return;
-              }
-              response.setHeader(
-                'Content-Type',
-                'application/javascript; charset=utf-8'
-              );
-              response.end(BOOT_WATCHDOG_SOURCE);
-            }
-          );
-        }
+        configureServer: configureBootWatchdogServer,
+        configurePreviewServer: configureBootWatchdogServer
       },
       performanceHintsPlugin(supabaseUrl),
       promptRouteAssetsPlugin(),

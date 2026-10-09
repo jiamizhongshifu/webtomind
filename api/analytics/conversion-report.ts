@@ -1,3 +1,7 @@
+import {
+  loadTaskOutcomeReport,
+  countFirstSuccessUsers
+} from '../../src/shared/task-outcome-report.js';
 import { createClient } from '@supabase/supabase-js';
 import { isAuthorizedCronRequest } from '../marketing/email-worker-utils.js';
 
@@ -46,6 +50,7 @@ function safeRate(numerator: number, denominator: number): number | null {
 }
 
 export const DURABLE_CONVERSION_EVENT_NAMES = [
+  'ai_recharge_click',
   'pricing_view',
   'identity_linked',
   'checkout_start',
@@ -576,6 +581,8 @@ export function buildConversionHealthSummary(
 
   return {
     generation: {
+      basis: 'conversion_events',
+      firstSucceededUsersAreSampled: true,
       succeeded: generationSucceeded,
       failed: generationFailed,
       successRate: safeRate(
@@ -912,6 +919,16 @@ export default async function handler(request: Request): Promise<Response> {
       reconciledOrders,
       exactEventCounts
     );
+    const [taskOutcomeResult, firstSuccessResult] = await Promise.allSettled([
+      loadTaskOutcomeReport(supabase, cutoff),
+      countFirstSuccessUsers(supabase, cutoff)
+    ]);
+    const taskOutcomes =
+      taskOutcomeResult.status === 'fulfilled' ? taskOutcomeResult.value : null;
+    const firstSucceededUsersExact =
+      firstSuccessResult.status === 'fulfilled'
+        ? firstSuccessResult.value
+        : null;
     const sampledEventRows = sampledEvents.length;
     const totalEventRows = recentEvents.count ?? sampledEventRows;
     const sampledDurableEventRows = sampledDurableEvents.length;
@@ -936,6 +953,14 @@ export default async function handler(request: Request): Promise<Response> {
           Object.keys(exactEventCountErrors).length
             ? `Exact event counts failed for: ${Object.keys(exactEventCountErrors).join(', ')}; affected metrics fall back to sampled rows.`
             : null,
+          ...(taskOutcomes
+            ? []
+            : [
+                'Canonical task outcomes unavailable; do not substitute event success rate.'
+              ]),
+          ...(firstSucceededUsersExact === null
+            ? ['Exact first-success user count unavailable.']
+            : []),
           ...purchaseOrderReconciliation.warnings,
           ...conversionHealth.warnings,
           ...sourceFunnelSummary.flatMap((item) => item.warnings)
@@ -945,6 +970,8 @@ export default async function handler(request: Request): Promise<Response> {
 
     return json(200, {
       success:
+        taskOutcomeResult.status === 'fulfilled' &&
+        firstSuccessResult.status === 'fulfilled' &&
         Object.values(errors).every((error) => !error) &&
         Object.keys(exactEventCountErrors).length === 0,
       generatedAt: new Date().toISOString(),
@@ -968,6 +995,18 @@ export default async function handler(request: Request): Promise<Response> {
       },
       exactEventCounts,
       exactEventCountErrors,
+      taskOutcomes,
+      firstSucceededUsersExact,
+      outcomeReportErrors: {
+        taskOutcomes:
+          taskOutcomeResult.status === 'rejected'
+            ? String(taskOutcomeResult.reason)
+            : null,
+        firstSucceededUsers:
+          firstSuccessResult.status === 'rejected'
+            ? String(firstSuccessResult.reason)
+            : null
+      },
       conversionHealth,
       purchaseOrderReconciliation,
       seoConversionFunnel: buildSeoConversionFunnel(sampledDurableEvents),

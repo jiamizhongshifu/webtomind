@@ -1,6 +1,7 @@
 import { ArrowUpRight } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
-import { trackEvent } from '../lib/analytics';
+import { trackEvent, isAnalyticsCollectionAllowed } from '../lib/analytics';
+import { recordClientConversionEvent } from '../lib/client-conversion-events';
 import '../styles/ai-recharge-link.css';
 
 type AiRechargeLinkProps = {
@@ -44,15 +45,30 @@ export function AiRechargeLink({
           ? '前往 AICZ AI 会员代充（新窗口打开）'
           : 'Visit AICZ AI membership top-ups (opens in a new tab)'
       }
-      onClick={() =>
+      onClick={() => {
         trackEvent('ai_recharge_click', {
           placement,
           link_url: destination.toString(),
           link_domain: 'aicz.vip',
           page_path: pathname,
           locale
-        })
-      }
+        });
+        if (isAnalyticsCollectionAllowed()) {
+          void recordClientConversionEvent(null, {
+            eventName: 'ai_recharge_click',
+            entityType: 'outbound_link',
+            entityId: 'aicz',
+            ctaSource: placement,
+            idempotencyKey: crypto.randomUUID(),
+            metadata: {
+              placement,
+              path: pathname,
+              locale,
+              link_domain: 'aicz.vip'
+            }
+          });
+        }
+      }}
     >
       {variant === 'banner' ? (
         <>

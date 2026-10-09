@@ -666,6 +666,10 @@ describe('video task runner', () => {
       refundFailed: false
     });
     expect(task.status).toBe('failed');
+    expect(task).toMatchObject({
+      failure_category: 'provider_unknown',
+      failure_code: 'VIDEO_PROVIDER_FAILED'
+    });
     expect(getRpcCalls(sb, 'claim_video_generation_task')).toHaveLength(1);
     expect(getRpcCalls(sb, 'refund_generation_credit')).toHaveLength(1);
   });
