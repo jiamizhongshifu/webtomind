@@ -47,6 +47,16 @@ test('changed public source is not overwritten and validation precedes all write
   assert.equal(readFileSync(path.join(root, 'public/example.txt'), 'utf8'), 'public');
 });
 
+test('overlay receipt is written and verified in a linked worktree', () => {
+  const root = repo();
+  const worktree = path.join(mkdtempSync(path.join(tmpdir(), 'hosted-overlay-worktree-')), 'checkout');
+  execFileSync('git', ['worktree', 'add', '--detach', worktree, 'HEAD'], { cwd: root, stdio: 'pipe' });
+  const digest = 'ab'.repeat(32);
+  applyHostedOverlay(worktree, fixture, digest);
+  assert.equal(verifyHostedOverlay(worktree, digest).files.length, 1);
+  assert.equal(readFileSync(path.join(root, 'public/example.txt'), 'utf8'), 'public');
+});
+
 test('receipt cannot be reused for another overlay digest or commit', () => {
   const root = repo();
   applyHostedOverlay(root, fixture, 'ab'.repeat(32));

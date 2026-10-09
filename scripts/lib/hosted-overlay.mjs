@@ -79,7 +79,7 @@ export function applyHostedOverlay(root, bundle, digest) {
     writeFileSync(entry.target, entry.bytes);
   }
   const receipt = { commit: git(root, ['rev-parse', 'HEAD']), digest, files: prepared.map(({ path: file, sha256: hash }) => ({ path: file, sha256: hash })) };
-  writeFileSync(path.join(root, git(root, ['rev-parse', '--git-path', 'hosted-overlay.json'])), JSON.stringify(receipt), { mode: 0o600 });
+  writeFileSync(path.resolve(root, git(root, ['rev-parse', '--git-path', 'hosted-overlay.json'])), JSON.stringify(receipt), { mode: 0o600 });
   return receipt;
 }
 
