@@ -168,7 +168,7 @@ export async function main(argv, io = {}) {
     if (caught instanceof CliError) {
       error(`Error [${caught.code}]: ${caught.message}`);
       if (caught.code === 'SKILL_ENTITLEMENT_REQUIRED') {
-        error(`Upgrade at ${resolveApiUrl(env)}${caught.details.upgradeUrl || '/pricing'}`);
+        error(`Upgrade at ${resolveApiUrl(env)}${caught.details.upgradeUrl || '/skills/pricing'}`);
       }
       return caught.exitCode;
     }

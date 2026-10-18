@@ -103,7 +103,8 @@ export function createSupabaseSkillCatalogStore(
         ratingCount: asNumber(row.rating_count),
         latestVersion: asNullableString(row.latest_version),
         compatibleAgents: asStrings(row.compatible_agents),
-        publishedAt: asNullableString(row.published_at)
+        publishedAt: asNullableString(row.published_at),
+        coverUrl: asNullableString(row.cover_url)
       }));
       return { items, total: rows.length ? asNumber(rows[0].total_count) : 0 };
     },

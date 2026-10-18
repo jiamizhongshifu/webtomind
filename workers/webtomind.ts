@@ -101,6 +101,7 @@ import membershipWebhookHandler from '../api/membership/webhook';
 import membershipZpayNotifyHandler from '../api/membership/zpay-notify';
 import {
   SKILL_CATALOG_DETAIL_PATH,
+  isSkillInstallGuidePath,
   skillCatalogHandlers
 } from '../api/skill-catalog/handlers';
 import membershipZpayReturnHandler from '../api/membership/zpay-return';
@@ -4373,6 +4374,10 @@ async function handleRequest(
 
   if (isRetiredApiMarketplacePath(pathname)) {
     return withRuntimeEnv(env, () => apiMarketplaceRetiredResponse(request));
+  }
+
+  if (isSkillInstallGuidePath(pathname)) {
+    return withRuntimeEnv(env, () => skillCatalogHandlers.installGuide(request));
   }
 
   if (isNlmApiPath(pathname) || pathname.startsWith('/api/')) {

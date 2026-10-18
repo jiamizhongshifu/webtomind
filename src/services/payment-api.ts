@@ -11,7 +11,7 @@ import type { AcquisitionSnapshot } from '../web/lib/seo-conversion-attribution'
 const API_BASE = getApiBaseUrl();
 
 interface CheckoutRequest {
-  type: 'subscription' | 'credit_package' | 'api_credit_package';
+  type: 'subscription' | 'credit_package' | 'api_credit_package' | 'skill_lifetime';
   id: string;
   paymentProvider?: 'stripe' | 'alipay';
   customAmountUsdCents?: number;
@@ -68,7 +68,7 @@ const PENDING_CHECKOUT_INTENT_KEY = 'webtomind:pending-checkout-intent:v1';
 const PENDING_CHECKOUT_INTENT_TTL_MS = 15 * 60 * 1000;
 
 export interface PendingCheckoutIntent {
-  type: 'subscription' | 'credit_package' | 'api_credit_package';
+  type: 'subscription' | 'credit_package' | 'api_credit_package' | 'skill_lifetime';
   id: string;
   paymentProvider?: 'stripe' | 'alipay';
   billingCycle?: 'monthly' | 'yearly';

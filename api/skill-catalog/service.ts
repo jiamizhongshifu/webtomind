@@ -108,6 +108,7 @@ export interface CatalogListItem {
   latestVersion: string | null;
   compatibleAgents: string[];
   publishedAt: string | null;
+  coverUrl: string | null;
 }
 
 export interface SkillVersionRecord {
@@ -676,7 +677,7 @@ export async function requestSkillInstall(
     throw new SkillCatalogError(
       'SKILL_ENTITLEMENT_REQUIRED',
       'This premium Skill requires an active Pro subscription, lifetime access or a purchase',
-      { slug: skill.slug, tier: skill.tier, upgradeUrl: '/pricing' }
+      { slug: skill.slug, tier: skill.tier, upgradeUrl: '/skills/pricing' }
     );
   }
 

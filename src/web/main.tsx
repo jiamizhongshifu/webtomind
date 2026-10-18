@@ -137,10 +137,13 @@ function lazyRouteWithInitialPreload<T extends React.ComponentType<unknown>>(
   return lazy(() => initialRouteModulePromise || loader());
 }
 
-const HomePage = lazyRouteWithInitialPreload(
+const SkillHomePage = lazyRouteWithInitialPreload(
   (pathname) =>
     pathname === '/' || stripLocaleRoutePrefix(pathname) === '/overview',
-  () => import('./pages/HomePage').then((mod) => ({ default: mod.HomePage }))
+  () =>
+    import('./pages/SkillHomePage').then((mod) => ({
+      default: mod.SkillHomePage
+    }))
 );
 const AuthCallback = lazy(() =>
   import('./pages/AuthCallback').then((mod) => ({ default: mod.AuthCallback }))
@@ -181,14 +184,24 @@ const UseCasesPage = lazyRouteWithInitialPreload(
       default: mod.UseCasesPage
     }))
 );
-const PublicSkillsPage = lazy(() =>
-  import('./pages/PublicSkillsPage').then((mod) => ({
-    default: mod.PublicSkillsPage
+const SkillCatalogPage = lazy(() =>
+  import('./pages/SkillCatalogPage').then((mod) => ({
+    default: mod.SkillCatalogPage
   }))
 );
-const PublicSkillDetailPage = lazy(() =>
-  import('./pages/PublicSkillDetailPage').then((mod) => ({
-    default: mod.PublicSkillDetailPage
+const SkillDetailPage = lazy(() =>
+  import('./pages/SkillDetailPage').then((mod) => ({
+    default: mod.SkillDetailPage
+  }))
+);
+const SkillPricingPage = lazy(() =>
+  import('./pages/SkillPricingPage').then((mod) => ({
+    default: mod.SkillPricingPage
+  }))
+);
+const CliDevicePage = lazy(() =>
+  import('./pages/CliDevicePage').then((mod) => ({
+    default: mod.CliDevicePage
   }))
 );
 const ImageCreatePage = lazy(() =>
@@ -763,7 +776,7 @@ function App() {
               <LocaleGuard>
                 <Routes>
                   {/* 公开路由 */}
-                  <Route path="/" element={<HomePage />} />
+                  <Route path="/" element={<SkillHomePage />} />
                   <Route
                     path="/zh-CN"
                     element={<Navigate to="/zh-CN/overview" replace />}
@@ -776,8 +789,8 @@ function App() {
                     path="/overview"
                     element={<LocaleRedirect to="/overview" />}
                   />
-                  <Route path="/zh-CN/overview" element={<HomePage />} />
-                  <Route path="/en-US/overview" element={<HomePage />} />
+                  <Route path="/zh-CN/overview" element={<SkillHomePage />} />
+                  <Route path="/en-US/overview" element={<SkillHomePage />} />
                   <Route
                     path="/use-cases"
                     element={<LocaleRedirect to="/blog" />}
@@ -798,15 +811,28 @@ function App() {
                     path="/en-US/use-cases/:slug"
                     element={<LegacyUseCaseDetailRedirect />}
                   />
-                  <Route path="/zh-CN/skills" element={<PublicSkillsPage />} />
-                  <Route path="/en-US/skills" element={<PublicSkillsPage />} />
+                  <Route path="/zh-CN/skills" element={<SkillCatalogPage />} />
+                  <Route path="/en-US/skills" element={<SkillCatalogPage />} />
+                  <Route
+                    path="/zh-CN/skills/pricing"
+                    element={<SkillPricingPage />}
+                  />
+                  <Route
+                    path="/en-US/skills/pricing"
+                    element={<SkillPricingPage />}
+                  />
                   <Route
                     path="/zh-CN/skills/:id"
-                    element={<PublicSkillDetailPage />}
+                    element={<SkillDetailPage />}
                   />
                   <Route
                     path="/en-US/skills/:id"
-                    element={<PublicSkillDetailPage />}
+                    element={<SkillDetailPage />}
+                  />
+                  <Route path="/cli/device" element={<CliDevicePage />} />
+                  <Route
+                    path="/skills/pricing"
+                    element={<LocaleRedirect to="/skills/pricing" />}
                   />
                   <Route path="/create" element={<CreateEntryRoute />} />
                   {[

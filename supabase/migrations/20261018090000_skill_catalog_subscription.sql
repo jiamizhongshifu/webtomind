@@ -394,6 +394,7 @@ RETURNS TABLE (
   latest_version TEXT,
   compatible_agents TEXT[],
   published_at TIMESTAMPTZ,
+  cover_url TEXT,
   total_count BIGINT
 )
 LANGUAGE sql
@@ -420,7 +421,14 @@ AS $$
         FROM public.skill_installs installs
         WHERE installs.skill_id = catalog.id
           AND installs.created_at > NOW() - INTERVAL '7 days'
-      ) AS installs_7d
+      ) AS installs_7d,
+      (
+        SELECT COALESCE(example.poster_url, example.media_url)
+        FROM public.skill_catalog_examples example
+        WHERE example.version_id = version.id
+        ORDER BY example.sort_order, example.created_at
+        LIMIT 1
+      ) AS cover_url
     FROM public.skill_catalog catalog
     CROSS JOIN params
     LEFT JOIN public.skill_catalog_versions version
@@ -454,6 +462,7 @@ AS $$
     filtered.latest_version,
     filtered.compatible_agents,
     filtered.published_at,
+    filtered.cover_url,
     count(*) OVER () AS total_count
   FROM filtered
   ORDER BY

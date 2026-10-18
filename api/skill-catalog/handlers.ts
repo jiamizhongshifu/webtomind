@@ -41,6 +41,12 @@ import {
   type SkillCatalogStore
 } from './service';
 import { createSupabaseSkillCatalogStore } from './supabase-store';
+import {
+  AGENT_GUIDE_PATH,
+  SKILL_GUIDE_PATH,
+  renderAgentGuide,
+  renderSkillGuide
+} from './install-docs';
 
 export const config = {
   runtime: 'edge'
@@ -303,7 +309,42 @@ export function createSkillCatalogHandlers(
     }
   );
 
+  // Markdown install guides for agents. Public and cacheable; no secrets.
+  async function installGuide(request: Request): Promise<Response> {
+    const markdown = (body: string, status = 200) =>
+      new Response(body, {
+        status,
+        headers: {
+          'Content-Type': 'text/markdown; charset=utf-8',
+          'Cache-Control': status === 200 ? 'public, max-age=300' : 'no-store',
+          'X-Content-Type-Options': 'nosniff'
+        }
+      });
+    if (request.method !== 'GET' && request.method !== 'HEAD') {
+      return markdown('Method not allowed\n', 405);
+    }
+    const { pathname } = new URL(request.url);
+    const appUrl = deps.appUrl().replace(/\/+$/, '');
+    if (pathname === AGENT_GUIDE_PATH) return markdown(renderAgentGuide(appUrl));
+
+    const slug = SKILL_GUIDE_PATH.exec(pathname)?.[1];
+    const store = deps.getStore();
+    if (!slug || !store) return markdown('# Skill not found\n', 404);
+    try {
+      return markdown(renderSkillGuide(appUrl, await getSkillDetail(store, slug)));
+    } catch (error) {
+      if (error instanceof SkillCatalogError && error.code === 'SKILL_NOT_FOUND') {
+        return markdown(`# Skill not found\n\nBrowse ${appUrl}/en-US/skills instead.\n`, 404);
+      }
+      console.error('[SkillCatalog] Install guide failed:', {
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+      return markdown('# Temporarily unavailable\n', 503);
+    }
+  }
+
   return {
+    installGuide,
     list,
     detail,
     deviceCode,
@@ -317,3 +358,7 @@ export function createSkillCatalogHandlers(
 
 export const skillCatalogHandlers = createSkillCatalogHandlers();
 export const SKILL_CATALOG_DETAIL_PATH = /^\/api\/skill-catalog\/skills\/[^/]+$/;
+
+export function isSkillInstallGuidePath(pathname: string): boolean {
+  return pathname === AGENT_GUIDE_PATH || SKILL_GUIDE_PATH.test(pathname);
+}

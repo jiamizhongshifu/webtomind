@@ -279,6 +279,20 @@ describe('skill catalog migration', () => {
     expect(Number(all.rows[0].total_count)).toBe(2);
     expect(await scalar<number>(`SELECT install_count FROM skill_catalog WHERE id = $1`, [premium.skillId])).toBe(2);
 
+    await db.query(
+      `INSERT INTO skill_catalog_examples (version_id, media_type, media_url, poster_url, sort_order)
+       VALUES ($1, 'video', 'https://media.test/b.mp4', 'https://media.test/b.jpg', 1),
+              ($1, 'video', 'https://media.test/a.png', NULL, 0)`,
+      [premium.versionId]
+    );
+    const covers = await db.query<{ slug: string; cover_url: string | null }>(
+      `SELECT slug, cover_url FROM search_skill_catalog(p_sort => 'trending')`
+    );
+    expect(covers.rows).toEqual([
+      { slug: 'launch-deck', cover_url: 'https://media.test/a.png' },
+      { slug: 'xhs-cover', cover_url: null }
+    ]);
+
     const zh = await db.query(`SELECT slug FROM search_skill_catalog(p_query => '封面', p_tier => 'free')`);
     expect(zh.rows).toEqual([{ slug: 'xhs-cover' }]);
     const wildcard = await db.query(`SELECT slug FROM search_skill_catalog(p_query => '%')`);

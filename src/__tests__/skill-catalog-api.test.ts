@@ -113,7 +113,7 @@ describe('install', () => {
     expect(await response.json()).toMatchObject({
       code: 'SKILL_ENTITLEMENT_REQUIRED',
       slug: 'launch-deck',
-      upgradeUrl: '/pricing'
+      upgradeUrl: '/skills/pricing'
     });
     expect(signDownloadUrl).not.toHaveBeenCalled();
     expect(store.recordInstall).not.toHaveBeenCalled();
@@ -313,5 +313,36 @@ describe('catalog', () => {
       new Request('https://webtomind.test/api/skill-catalog/skills/missing')
     );
     expect(missing.status).toBe(404);
+  });
+});
+
+describe('install guides', () => {
+  const get = (path: string) => new Request(`https://webtomind.test${path}`);
+
+  it('serves the agent connect guide as Markdown without secrets', async () => {
+    const response = await handlers.installGuide(get('/install/agent.md'));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('Content-Type')).toContain('text/markdown');
+    const body = await response.text();
+    expect(body).toContain('npx --yes webtomind-cli@latest login');
+    expect(body).toContain('https://webtomind.test/cli/device');
+    expect(body).toContain('Do not ask the user to create or paste an API key');
+  });
+
+  it('lists per-agent commands and the upgrade path for a Pro Skill', async () => {
+    const response = await handlers.installGuide(get('/install/skills/launch-deck.md'));
+    expect(response.status).toBe(200);
+    const body = await response.text();
+    expect(body).toContain('`npx --yes webtomind-cli@latest install launch-deck`');
+    expect(body).toContain('install launch-deck --agent codex');
+    expect(body).not.toContain('--agent cursor');
+    expect(body).toContain('SKILL_ENTITLEMENT_REQUIRED');
+    expect(body).not.toContain(VERSION.r2ObjectKey);
+  });
+
+  it('returns 404 Markdown for unknown Skills', async () => {
+    const response = await handlers.installGuide(get('/install/skills/missing-skill.md'));
+    expect(response.status).toBe(404);
+    expect(response.headers.get('Cache-Control')).toBe('no-store');
   });
 });
