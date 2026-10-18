@@ -99,6 +99,10 @@ import membershipSubscriptionHandler from '../api/membership/subscription';
 import membershipTasksHandler from '../api/membership/tasks';
 import membershipWebhookHandler from '../api/membership/webhook';
 import membershipZpayNotifyHandler from '../api/membership/zpay-notify';
+import {
+  SKILL_CATALOG_DETAIL_PATH,
+  skillCatalogHandlers
+} from '../api/skill-catalog/handlers';
 import membershipZpayReturnHandler from '../api/membership/zpay-return';
 import marketingEmailDrainHandler from '../api/marketing/email-drain';
 import { handleMarketingEmailSchedulerRequest } from '../api/marketing/email-scheduler';
@@ -1225,6 +1229,16 @@ const WORKER_API_ROUTES = new Map<
   ['/api/membership/webhook', membershipWebhookHandler],
   ['/api/membership/zpay-notify', membershipZpayNotifyHandler],
   ['/api/membership/zpay-return', membershipZpayReturnHandler],
+  ['/api/skill-catalog', skillCatalogHandlers.list],
+  ['/api/skill-catalog/device/code', skillCatalogHandlers.deviceCode],
+  ['/api/skill-catalog/device/token', skillCatalogHandlers.deviceToken],
+  ['/api/skill-catalog/device/verify', skillCatalogHandlers.deviceVerify],
+  [
+    '/api/skill-catalog/credentials/revoke',
+    skillCatalogHandlers.revokeCredential
+  ],
+  ['/api/skill-catalog/me', skillCatalogHandlers.me],
+  ['/api/skill-catalog/install', skillCatalogHandlers.install],
   ['/api/marketing/email-drain', marketingEmailDrainHandler],
   ['/api/marketing/email-scheduler', handleMarketingEmailSchedulerRequest],
   ['/api/marketing/resend-webhook', marketingResendWebhookHandler],
@@ -1272,6 +1286,8 @@ function getWorkerApiHandler(
   if (/^\/api\/admin\/prompt-case-drafts\/[^/]+$/.test(pathname))
     return adminPromptCaseDraftDetailHandler;
   if (/^\/api\/share\/[^/]+$/.test(pathname)) return shareTokenHandler;
+  if (SKILL_CATALOG_DETAIL_PATH.test(pathname))
+    return skillCatalogHandlers.detail;
   if (/^\/api\/moodboards\/[^/]+\/items$/.test(pathname))
     return moodboardItemsHandler;
   if (/^\/api\/moodboards\/[^/]+\/analyze$/.test(pathname))

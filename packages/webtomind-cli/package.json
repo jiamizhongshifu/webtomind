@@ -1,0 +1,18 @@
+{
+  "name": "webtomind-cli",
+  "version": "0.1.0",
+  "description": "Install WebToMind Skills into Claude Code, Codex, Cursor, Gemini CLI, Kimi Code, Antigravity and Trae.",
+  "type": "module",
+  "bin": {
+    "webtomind-cli": "bin/webtomind-cli.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "AGPL-3.0-only"
+}

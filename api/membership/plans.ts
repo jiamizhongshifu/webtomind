@@ -33,6 +33,17 @@ type RawPlan = {
   limits?: Record<string, unknown>;
   sort_order?: number;
   is_active?: boolean;
+  billing_kind?: 'recurring' | 'one_time';
+  skill_tier_access?: 'free' | 'premium';
+  price_one_time?: number | null;
+  price_cny_monthly?: number | null;
+  price_cny_yearly?: number | null;
+  price_cny_one_time?: number | null;
+};
+
+const positiveCents = (value: unknown): number | null => {
+  const amount = Number(value);
+  return Number.isSafeInteger(amount) && amount > 0 ? amount : null;
 };
 
 function formatPlan(
@@ -66,18 +77,52 @@ function formatPlan(
         ? {
             alipay: {
               currency: 'CNY' as const,
-              priceMonthly: usdCentsToCnyCents(
-                Number(plan.price_monthly),
-                options.alipayUsdToCnyRate
-              ),
-              priceYearly: usdCentsToCnyCents(
-                Number(plan.price_yearly),
-                options.alipayUsdToCnyRate
-              )
+              priceMonthly:
+                positiveCents(plan.price_cny_monthly) ??
+                usdCentsToCnyCents(
+                  Number(plan.price_monthly),
+                  options.alipayUsdToCnyRate
+                ),
+              priceYearly:
+                positiveCents(plan.price_cny_yearly) ??
+                usdCentsToCnyCents(
+                  Number(plan.price_yearly),
+                  options.alipayUsdToCnyRate
+                )
             }
           }
         : undefined,
+    skillTierAccess: plan.skill_tier_access || 'free',
     checkoutUnavailableReason: options.checkoutUnavailableReason
+  };
+}
+
+function formatOneTimeProduct(
+  plan: RawPlan,
+  checkoutProviders: Array<'stripe' | 'alipay'>,
+  alipayUsdToCnyRate?: number
+) {
+  const priceUsd = positiveCents(plan.price_one_time);
+  return {
+    id: plan.id,
+    name: plan.name,
+    displayName: plan.display_name,
+    features: plan.features,
+    checkoutType: 'skill_lifetime' as const,
+    skillTierAccess: plan.skill_tier_access || 'free',
+    price: priceUsd,
+    checkoutEnabled: Boolean(priceUsd) && checkoutProviders.length > 0,
+    checkoutProviders,
+    checkoutPrices: alipayUsdToCnyRate
+      ? {
+          alipay: {
+            currency: 'CNY' as const,
+            price:
+              positiveCents(plan.price_cny_one_time) ??
+              (priceUsd ? usdCentsToCnyCents(priceUsd, alipayUsdToCnyRate) : null)
+          }
+        }
+      : undefined
   };
 }
 
@@ -181,7 +226,14 @@ export default async function handler(request: Request) {
       });
     }
 
-    const formattedPlans = plans.map((plan) =>
+    const oneTimeProducts = plans
+      .filter((plan) => plan.billing_kind === 'one_time')
+      .map((plan) =>
+        formatOneTimeProduct(plan, checkoutProviders, zpayConfig?.usdToCnyRate)
+      );
+    const formattedPlans = plans
+      .filter((plan) => plan.billing_kind !== 'one_time')
+      .map((plan) =>
       formatPlan(plan, {
         checkoutEnabled:
           plan.name === 'free'
@@ -198,7 +250,7 @@ export default async function handler(request: Request) {
       })
     );
 
-    return jsonResponse({ plans: formattedPlans });
+    return jsonResponse({ plans: formattedPlans, oneTimeProducts });
   } catch (error) {
     console.error('[Plans] Error:', error);
     return jsonResponse({

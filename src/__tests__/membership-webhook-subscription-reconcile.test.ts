@@ -136,7 +136,9 @@ function createStripeSyncMock() {
   }));
   const creditUpdateEq = vi.fn(async () => ({ error: null }));
   const creditUpdate = vi.fn(() => ({ eq: creditUpdateEq }));
+  const rpc = vi.fn(async () => ({ data: 1, error: null }));
   const supabase = {
+    rpc,
     from: vi.fn((table: string) => {
       if (table === 'user_subscriptions') {
         return { update: subscriptionUpdate };
@@ -153,7 +155,8 @@ function createStripeSyncMock() {
     subscriptionUpdate,
     planSelect,
     creditUpdate,
-    creditUpdateEq
+    creditUpdateEq,
+    rpc
   };
 }
 
@@ -189,6 +192,13 @@ describe('Stripe subscription synchronization', () => {
       })
     );
     expect(mock.creditUpdateEq).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(mock.rpc).toHaveBeenCalledWith(
+      'sync_subscription_skill_entitlements',
+      expect.objectContaining({
+        p_external_subscription_id: 'sub_1',
+        p_has_access: true
+      })
+    );
   });
 
   it('revokes subscription credits and restores free limits when past due', async () => {

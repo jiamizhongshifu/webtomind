@@ -404,6 +404,19 @@ export async function syncStripeSubscription(
     current_period_end: currentPeriodEnd
   });
 
+  // Renewals extend premium Skill access, lapses suspend it, recovery restores
+  // it. Refund revocations stay terminal inside the RPC.
+  const { error: skillEntitlementError } = await supabase.rpc(
+    'sync_subscription_skill_entitlements',
+    {
+      p_external_subscription_id: subscription.id,
+      p_has_access: keepsPaidAccess,
+      p_ends_at: currentPeriodEnd,
+      p_metadata: { stripe_status: subscription.status }
+    }
+  );
+  if (skillEntitlementError) throw skillEntitlementError;
+
   if (!keepsPaidAccess) {
     const { error: revokeError } = await supabase
       .from('user_credits')
@@ -484,6 +497,72 @@ export async function recordStripeSubscriptionRenewalEvent(params: {
       acquisition_event: false
     }
   });
+}
+
+async function grantSkillEntitlement(
+  supabase: SupabaseClient,
+  input: {
+    userId: string;
+    orderId: string;
+    source: 'subscription' | 'lifetime';
+    startsAt: string;
+    endsAt: string | null;
+    externalSubscriptionId: string | null;
+    metadata: Record<string, unknown>;
+  }
+) {
+  // Idempotent per payment order, so retried fulfillment cannot double grant.
+  const { error } = await supabase.rpc('grant_skill_entitlement', {
+    p_user_id: input.userId,
+    p_payment_order_id: input.orderId,
+    p_source: input.source,
+    p_skill_id: null,
+    p_starts_at: input.startsAt,
+    p_ends_at: input.endsAt,
+    p_external_subscription_id: input.externalSubscriptionId,
+    p_metadata: input.metadata
+  });
+  if (error) throw error;
+}
+
+/**
+ * A fully refunded Stripe charge revokes the Skill entitlements created by its
+ * checkout order. Lifetime orders are also marked refunded; other products keep
+ * their existing refund handling.
+ */
+export async function revokeRefundedCheckoutEntitlements(
+  supabase: SupabaseClient,
+  stripe: Pick<Stripe, 'checkout'>,
+  charge: Stripe.Charge
+): Promise<string | null> {
+  if (!charge.refunded) return null;
+  const paymentIntentId =
+    typeof charge.payment_intent === 'string'
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+  if (!paymentIntentId) return null;
+
+  const sessions = await stripe.checkout.sessions.list({
+    payment_intent: paymentIntentId,
+    limit: 1
+  });
+  const orderId = sessions.data[0]?.metadata?.order_id;
+  if (!orderId) return null;
+
+  const { error: revokeError } = await supabase.rpc(
+    'revoke_skill_entitlements_for_order',
+    { p_payment_order_id: orderId, p_reason: `stripe_refund:${charge.id}` }
+  );
+  if (revokeError) throw revokeError;
+
+  const { error: orderError } = await supabase
+    .from('payment_orders')
+    .update({ status: 'refunded', updated_at: new Date().toISOString() })
+    .eq('id', orderId)
+    .eq('product_type', 'skill_lifetime')
+    .eq('status', 'succeeded');
+  if (orderError) throw orderError;
+  return orderId;
 }
 
 export class PaymentOrderInProgressError extends Error {
@@ -674,6 +753,55 @@ export async function fulfillOrder(
       if (referralSubscriptionRewardError) {
         throw referralSubscriptionRewardError;
       }
+
+      if (plan.skill_tier_access === 'premium') {
+        await grantSkillEntitlement(supabase, {
+          userId,
+          orderId,
+          source: 'subscription',
+          startsAt: subscriptionStart.toISOString(),
+          endsAt: expiresAt.toISOString(),
+          externalSubscriptionId:
+            (payment.provider || 'stripe') === 'stripe'
+              ? typeof payment.subscription === 'string'
+                ? payment.subscription
+                : null
+              : payment.id,
+          metadata: {
+            plan_id: planId,
+            billing_cycle: billingCycle,
+            payment_provider: payment.provider || 'stripe',
+            provider_payment_id: payment.id
+          }
+        });
+      }
+    } else if (paymentOrder.product_type === 'skill_lifetime') {
+      const { data: product, error: productError } = await supabase
+        .from('subscription_plans')
+        .select('id,billing_kind,skill_tier_access')
+        .eq('id', paymentOrder.product_id)
+        .maybeSingle();
+      if (productError) throw productError;
+      if (
+        !product ||
+        product.billing_kind !== 'one_time' ||
+        product.skill_tier_access !== 'premium'
+      ) {
+        throw new Error('Skill lifetime product not found');
+      }
+      await grantSkillEntitlement(supabase, {
+        userId,
+        orderId,
+        source: 'lifetime',
+        startsAt: new Date().toISOString(),
+        endsAt: null,
+        externalSubscriptionId: null,
+        metadata: {
+          product_id: product.id,
+          payment_provider: payment.provider || 'stripe',
+          provider_payment_id: payment.id
+        }
+      });
     } else if (paymentOrder.product_type === 'credit_package') {
       const packageId = paymentOrder.product_id;
       const { data: pkg } = await supabase
@@ -954,6 +1082,12 @@ export default async function handler(request: Request) {
     } else if (event.type === 'customer.subscription.deleted') {
       const sub = event.data.object as Stripe.Subscription;
       await syncStripeSubscription(supabase, sub);
+    } else if (event.type === 'charge.refunded') {
+      await revokeRefundedCheckoutEntitlements(
+        supabase,
+        stripe,
+        event.data.object as Stripe.Charge
+      );
     }
 
     return jsonResponse({ success: true });
