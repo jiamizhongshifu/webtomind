@@ -847,10 +847,11 @@ END;
 $$;
 
 -- Prices: USD cents (price_*) and CNY fen (price_cny_*). Seeded inactive so the
--- current pricing page and checkout are unchanged until launch; activate with
--- `UPDATE subscription_plans SET is_active = true WHERE id IN (...)` once the
--- monthly web-run credits for Skill Pro are decided (monthly_credits is 0 and
--- limits copy the current Pro plan until then).
+-- current pricing page and checkout are unchanged until launch; the launch
+-- runbook activates them with `UPDATE subscription_plans SET is_active = true`.
+-- Skill Pro mirrors the current Pro plan's monthly web-run credits and limits,
+-- so subscription fulfillment (which replaces free daily credits with the
+-- plan's monthly grant) behaves exactly as it does for Pro.
 INSERT INTO public.subscription_plans (
   id, name, display_name, description, price_monthly, price_yearly,
   monthly_credits, features, limits, sort_order, is_active,
@@ -862,7 +863,8 @@ VALUES
     'skill_pro', 'skill_pro',
     '{"zh-CN": "Skill Pro", "en-US": "Skill Pro"}'::jsonb,
     'All premium Skills, updates and new Skills, monthly web-run credits',
-    999, 7900, 0,
+    999, 7900,
+    COALESCE((SELECT monthly_credits FROM public.subscription_plans WHERE id = 'pro'), 0),
     '["premium_skills", "skill_updates", "web_run_credits"]'::jsonb,
     COALESCE((SELECT limits FROM public.subscription_plans WHERE id = 'pro'), '{}'::jsonb),
     50, false,
@@ -881,6 +883,153 @@ VALUES
     NULL, NULL, 89900
   )
 ON CONFLICT (id) DO NOTHING;
+
+-- Existing paid plans include every premium Skill.
+UPDATE public.subscription_plans
+SET skill_tier_access = 'premium', updated_at = NOW()
+WHERE id IN ('pro', 'max') AND skill_tier_access <> 'premium';
+
+-- ---------------------------------------------------------------------------
+-- Backfill: premium Skill access for subscriptions that are paid right now
+-- ---------------------------------------------------------------------------
+
+-- Covers only subscriptions with current paid access (active / trialing, or
+-- canceled with time left; past_due is excluded, matching
+-- hasPaidSubscriptionAccess). Each grant is tied to the paying order:
+-- ZPAY by its trade number, Stripe by the user's latest succeeded
+-- subscription checkout (same plan first). Subscriptions without a traceable
+-- order are reported, never granted. Idempotent; refunded (revoked) grants are
+-- never restored. p_apply = false is a dry run.
+CREATE OR REPLACE FUNCTION public.backfill_subscription_skill_entitlements(
+  p_apply BOOLEAN DEFAULT false,
+  p_user_id UUID DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_sub RECORD;
+  v_order_id UUID;
+  v_method TEXT;
+  v_external TEXT;
+  v_existing public.skill_entitlements%ROWTYPE;
+  v_eligible INTEGER := 0;
+  v_granted INTEGER := 0;
+  v_current INTEGER := 0;
+  v_revoked INTEGER := 0;
+  v_unmatched JSONB := '[]'::jsonb;
+BEGIN
+  FOR v_sub IN
+    SELECT subscription.*
+    FROM public.user_subscriptions subscription
+    JOIN public.subscription_plans plan ON plan.id = subscription.plan_id
+    WHERE plan.skill_tier_access = 'premium'
+      AND subscription.status IN ('active', 'trialing', 'canceled', 'cancelled')
+      AND subscription.current_period_end > NOW()
+      AND (p_user_id IS NULL OR subscription.user_id = p_user_id)
+    ORDER BY subscription.created_at
+  LOOP
+    v_eligible := v_eligible + 1;
+    v_order_id := NULL;
+    v_external := COALESCE(v_sub.stripe_subscription_id, v_sub.external_subscription_id);
+
+    IF v_sub.payment_provider = 'zpay' THEN
+      v_method := 'zpay_trade_no';
+      SELECT id INTO v_order_id
+      FROM public.payment_orders
+      WHERE user_id = v_sub.user_id
+        AND provider = 'zpay'
+        AND product_type = 'subscription'
+        AND status = 'succeeded'
+        AND metadata ->> 'provider_payment_id' = v_sub.external_subscription_id
+      LIMIT 1;
+    ELSE
+      v_method := 'latest_stripe_subscription_order';
+      SELECT id INTO v_order_id
+      FROM public.payment_orders
+      WHERE user_id = v_sub.user_id
+        AND COALESCE(provider, 'stripe') = 'stripe'
+        AND product_type = 'subscription'
+        AND status = 'succeeded'
+        AND created_at <= v_sub.current_period_end
+      ORDER BY (product_id = v_sub.plan_id) DESC, created_at DESC
+      LIMIT 1;
+    END IF;
+
+    IF v_order_id IS NULL THEN
+      v_unmatched := v_unmatched || jsonb_build_object(
+        'user_subscription_id', v_sub.id,
+        'user_id', v_sub.user_id,
+        'plan_id', v_sub.plan_id,
+        'payment_provider', v_sub.payment_provider
+      );
+      CONTINUE;
+    END IF;
+
+    SELECT * INTO v_existing
+    FROM public.skill_entitlements
+    WHERE payment_order_id = v_order_id AND skill_id IS NULL;
+
+    IF FOUND AND v_existing.status = 'revoked' THEN
+      v_revoked := v_revoked + 1;
+      CONTINUE;
+    END IF;
+    IF FOUND
+      AND v_existing.status = 'active'
+      AND v_existing.ends_at >= v_sub.current_period_end
+    THEN
+      v_current := v_current + 1;
+      CONTINUE;
+    END IF;
+
+    v_granted := v_granted + 1;
+    IF NOT p_apply THEN
+      CONTINUE;
+    END IF;
+
+    IF FOUND THEN
+      UPDATE public.skill_entitlements
+      SET status = 'active',
+          ends_at = GREATEST(ends_at, v_sub.current_period_end),
+          external_subscription_id = COALESCE(external_subscription_id, v_external),
+          updated_at = NOW()
+      WHERE id = v_existing.id;
+    ELSE
+      PERFORM public.grant_skill_entitlement(
+        v_sub.user_id,
+        v_order_id,
+        'subscription',
+        NULL,
+        v_sub.current_period_start,
+        v_sub.current_period_end,
+        v_external,
+        jsonb_build_object(
+          'backfill', true,
+          'match_method', v_method,
+          'user_subscription_id', v_sub.id,
+          'plan_id', v_sub.plan_id
+        )
+      );
+    END IF;
+  END LOOP;
+
+  RETURN jsonb_build_object(
+    'applied', p_apply,
+    'eligible', v_eligible,
+    CASE WHEN p_apply THEN 'granted' ELSE 'would_grant' END, v_granted,
+    'already_current', v_current,
+    'revoked_skipped', v_revoked,
+    'unmatched', v_unmatched
+  );
+END;
+$$;
+
+REVOKE EXECUTE ON FUNCTION public.backfill_subscription_skill_entitlements(BOOLEAN, UUID)
+  FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.backfill_subscription_skill_entitlements(BOOLEAN, UUID)
+  TO service_role;
 
 -- Allow the lifetime purchase as a payment order product. Historic rows are
 -- not re-validated (NOT VALID) so legacy product types cannot block deploys.

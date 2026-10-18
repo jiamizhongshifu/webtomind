@@ -21,10 +21,15 @@ type Row = Record<string, unknown>;
 
 /** Minimal in-memory PostgREST stand-in for the calls fulfillment makes. */
 function createFakeDb(tables: Record<string, Row[]>) {
-  const rpc = vi.fn(async (_name: string, _args: Record<string, unknown>) => ({
-    data: null,
-    error: null
-  }));
+  const rpc = vi.fn(
+    async (
+      _name: string,
+      _args: Record<string, unknown>
+    ): Promise<{ data: unknown; error: { message: string } | null }> => ({
+      data: null,
+      error: null
+    })
+  );
   function from(table: string) {
     let op: 'select' | 'update' | 'insert' = 'select';
     let patch: Row = {};
@@ -88,7 +93,8 @@ const now = new Date().toISOString();
 
 function plans() {
   return [
-    { id: 'pro', name: 'pro', monthly_credits: 0, limits: {}, skill_tier_access: 'free', billing_kind: 'recurring' },
+    { id: 'pro', name: 'pro', monthly_credits: 0, limits: {}, skill_tier_access: 'premium', billing_kind: 'recurring' },
+    { id: 'legacy', name: 'legacy', monthly_credits: 0, limits: {}, skill_tier_access: 'free', billing_kind: 'recurring' },
     { id: 'skill_pro', name: 'skill_pro', monthly_credits: 0, limits: { dailyImageGeneration: 5 }, skill_tier_access: 'premium', billing_kind: 'recurring' },
     { id: 'skill_lifetime', name: 'skill_lifetime', monthly_credits: 0, limits: {}, skill_tier_access: 'premium', billing_kind: 'one_time' }
   ];
@@ -223,18 +229,70 @@ describe('Stripe subscription fulfillment', () => {
     expect(fake.tables.payment_orders[0].status).toBe('succeeded');
   });
 
-  it('does not grant Skills for plans without premium Skill access', async () => {
-    const fake = createFakeDb({
+  it('grants premium Skills to existing Pro/Max plans but not to free-tier plans', async () => {
+    const pro = createFakeDb({
       subscription_plans: plans(),
       payment_orders: [subscriptionOrder('pro')],
       user_subscriptions: [],
       user_credits: [{ user_id: USER }]
     });
-    await fulfillOrder(fake.db, ORDER, {
+    await fulfillOrder(pro.db, ORDER, {
       ...payment,
       metadata: { ...payment.metadata, product_id: 'pro' }
     });
-    expect(grants(fake.rpc)).toHaveLength(0);
+    expect(grants(pro.rpc)).toHaveLength(1);
+    expect(grants(pro.rpc)[0][1]).toMatchObject({
+      p_source: 'subscription',
+      p_ends_at: '2026-11-18T00:00:00.000Z',
+      p_metadata: expect.objectContaining({ plan_id: 'pro' })
+    });
+
+    const legacy = createFakeDb({
+      subscription_plans: plans(),
+      payment_orders: [subscriptionOrder('legacy')],
+      user_subscriptions: [],
+      user_credits: [{ user_id: USER }]
+    });
+    await fulfillOrder(legacy.db, ORDER, {
+      ...payment,
+      metadata: { ...payment.metadata, product_id: 'legacy' }
+    });
+    expect(grants(legacy.rpc)).toHaveLength(0);
+  });
+
+  it('backfills an order-traced grant when a paid subscription has none yet', async () => {
+    const periodEnd = Math.floor(Date.now() / 1000) + 2_592_000;
+    const subscription = {
+      id: 'sub_legacy',
+      status: 'active',
+      customer: 'cus_1',
+      cancel_at_period_end: false,
+      items: { data: [{ current_period_start: periodEnd - 2_592_000, current_period_end: periodEnd }] }
+    } as unknown as Stripe.Subscription;
+    const fake = createFakeDb({
+      subscription_plans: plans(),
+      user_subscriptions: [{ id: 's1', user_id: USER, plan_id: 'pro', stripe_subscription_id: 'sub_legacy' }],
+      user_credits: [{ user_id: USER }]
+    });
+    fake.rpc.mockImplementation(async (name: string) => ({
+      data: name === 'sync_subscription_skill_entitlements' ? 0 : null,
+      error: null
+    }));
+    await syncStripeSubscription(fake.db, subscription);
+    expect(fake.rpc).toHaveBeenCalledWith('backfill_subscription_skill_entitlements', {
+      p_apply: true,
+      p_user_id: USER
+    });
+
+    fake.rpc.mockClear();
+    fake.rpc.mockImplementation(async (name: string) => ({
+      data: name === 'sync_subscription_skill_entitlements' ? 1 : null,
+      error: null
+    }));
+    await syncStripeSubscription(fake.db, subscription);
+    expect(fake.rpc.mock.calls.map(([name]) => name)).not.toContain(
+      'backfill_subscription_skill_entitlements'
+    );
   });
 
   it('leaves the order retryable when the entitlement grant fails', async () => {
@@ -246,7 +304,7 @@ describe('Stripe subscription fulfillment', () => {
     });
     fake.rpc.mockImplementation(async (name: string) =>
       name === 'grant_skill_entitlement'
-        ? ({ data: null, error: { message: 'db down' } } as never)
+        ? { data: null, error: { message: 'db down' } }
         : { data: null, error: null }
     );
     await expect(fulfillOrder(fake.db, ORDER, payment)).rejects.toBeTruthy();

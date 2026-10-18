@@ -62,7 +62,20 @@ beforeAll(async () => {
       created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
     );
     INSERT INTO public.subscription_plans (id, name, price_monthly, price_yearly, monthly_credits, limits)
-      VALUES ('pro', 'pro', 2000, 16800, 10000, '{"dailyImageGeneration": -1}');
+      VALUES ('pro', 'pro', 2000, 16800, 10000, '{"dailyImageGeneration": -1}'),
+             ('max', 'max', 10000, 84000, 60000, '{"dailyImageGeneration": -1}'),
+             ('free', 'free', 0, 0, 0, '{}');
+    CREATE TABLE public.user_subscriptions (
+      id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+      user_id uuid NOT NULL REFERENCES auth.users(id),
+      plan_id text NOT NULL REFERENCES public.subscription_plans(id),
+      status text NOT NULL, billing_cycle text,
+      current_period_start timestamptz NOT NULL, current_period_end timestamptz NOT NULL,
+      cancel_at_period_end boolean DEFAULT false,
+      stripe_subscription_id text, stripe_customer_id text,
+      payment_provider text, external_subscription_id text,
+      created_at timestamptz DEFAULT now(), updated_at timestamptz DEFAULT now()
+    );
     CREATE TABLE public.payment_orders (
       id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       user_id uuid NOT NULL REFERENCES auth.users(id),
@@ -87,6 +100,7 @@ beforeEach(async () => {
     DELETE FROM skill_catalog_versions;
     ALTER TABLE skill_catalog_versions ENABLE TRIGGER guard_skill_catalog_version_immutability;
     DELETE FROM skill_catalog;
+    DELETE FROM user_subscriptions;
     DELETE FROM payment_orders;
   `);
 });
@@ -127,6 +141,112 @@ describe('skill catalog migration', () => {
     ]);
     await expect(insertOrder(userA, 'skill_lifetime')).resolves.toBeTruthy();
     await expect(insertOrder(userA, 'unknown_product')).rejects.toThrow();
+  });
+
+  it('aligns Skill Pro with Pro and gives existing paid plans premium Skills', async () => {
+    const rows = await db.query<{
+      id: string;
+      skill_tier_access: string;
+      monthly_credits: number;
+      limits: unknown;
+    }>(
+      `SELECT id, skill_tier_access, monthly_credits, limits FROM subscription_plans
+       WHERE id IN ('free', 'pro', 'max', 'skill_pro') ORDER BY id`
+    );
+    const byId = Object.fromEntries(rows.rows.map((row) => [row.id, row]));
+    expect(byId.skill_pro.monthly_credits).toBe(byId.pro.monthly_credits);
+    expect(byId.skill_pro.limits).toEqual(byId.pro.limits);
+    expect(byId.pro.skill_tier_access).toBe('premium');
+    expect(byId.max.skill_tier_access).toBe('premium');
+    expect(byId.free.skill_tier_access).toBe('free');
+  });
+
+  it('backfills only currently paid subscriptions, traced to their orders, idempotently', async () => {
+    const { skillId } = await seedSkill('launch-deck', 'premium');
+    const day = 86_400_000;
+    const future = new Date(Date.now() + 20 * day).toISOString();
+    const start = new Date(Date.now() - 10 * day).toISOString();
+    const past = new Date(Date.now() - day).toISOString();
+    const order = (userId: string, provider: string, productId: string, paymentId: string, status = 'succeeded') =>
+      scalar<string>(
+        `INSERT INTO payment_orders (user_id, amount, status, provider, product_type, product_id, metadata, created_at)
+         VALUES ($1, 2000, $2, $3, 'subscription', $4, jsonb_build_object('provider_payment_id', $5::text), now() - interval '10 days')
+         RETURNING id`,
+        [userId, status, provider, productId, paymentId]
+      );
+    const subscription = (userId: string, planId: string, status: string, end: string, provider: string, stripeId: string | null, externalId: string | null) =>
+      db.query(
+        `INSERT INTO user_subscriptions (user_id, plan_id, status, current_period_start, current_period_end, payment_provider, stripe_subscription_id, external_subscription_id)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [userId, planId, status, start, end, provider, stripeId, externalId]
+      );
+    const userC = '00000000-0000-0000-0000-00000000000c';
+    const userD = '00000000-0000-0000-0000-00000000000d';
+    await db.query(`INSERT INTO auth.users VALUES ($1), ($2) ON CONFLICT DO NOTHING`, [userC, userD]);
+
+    // Stripe Pro, active: older Max order and newer Pro order -> Pro order wins.
+    await order(userA, 'stripe', 'max', 'cs_old');
+    const proOrder = await order(userA, 'stripe', 'pro', 'cs_pro');
+    await subscription(userA, 'pro', 'active', future, 'stripe', 'sub_a', null);
+    // ZPAY Max, canceled with time left: matched by trade number.
+    await order(userB, 'zpay', 'max', 'trade_other');
+    const zpayOrder = await order(userB, 'zpay', 'max', 'trade_b');
+    await subscription(userB, 'max', 'canceled', future, 'zpay', null, 'trade_b');
+    // Not eligible: past_due, expired, free plan.
+    await order(userC, 'stripe', 'pro', 'cs_c');
+    await subscription(userC, 'pro', 'past_due', future, 'stripe', 'sub_c', null);
+    await subscription(userC, 'max', 'active', past, 'stripe', 'sub_c2', null);
+    await subscription(userC, 'free', 'active', future, 'stripe', null, null);
+    // Eligible but no traceable order -> reported, not granted.
+    await subscription(userD, 'pro', 'active', future, 'stripe', 'sub_d', null);
+
+    const dryRun = await scalar<Record<string, unknown>>('SELECT backfill_subscription_skill_entitlements(false)');
+    expect(dryRun).toMatchObject({ applied: false, eligible: 3, would_grant: 2, already_current: 0 });
+    expect(dryRun.unmatched).toEqual([
+      expect.objectContaining({ user_id: userD, plan_id: 'pro' })
+    ]);
+    expect(await scalar<number>('SELECT count(*)::int FROM skill_entitlements')).toBe(0);
+
+    const applied = await scalar<Record<string, unknown>>('SELECT backfill_subscription_skill_entitlements(true)');
+    expect(applied).toMatchObject({ applied: true, granted: 2 });
+    const grants = await db.query<{
+      user_id: string;
+      payment_order_id: string;
+      external_subscription_id: string;
+      ends_at: Date;
+      metadata: Record<string, unknown>;
+    }>('SELECT user_id, payment_order_id, external_subscription_id, ends_at, metadata FROM skill_entitlements ORDER BY user_id');
+    expect(grants.rows.map((row) => [row.user_id, row.payment_order_id, row.external_subscription_id])).toEqual([
+      [userA, proOrder, 'sub_a'],
+      [userB, zpayOrder, 'trade_b']
+    ]);
+    expect(new Date(grants.rows[0].ends_at).toISOString()).toBe(future);
+    expect(grants.rows[0].metadata).toMatchObject({ backfill: true, match_method: 'latest_stripe_subscription_order' });
+
+    const again = await scalar<Record<string, unknown>>('SELECT backfill_subscription_skill_entitlements(true)');
+    expect(again).toMatchObject({ granted: 0, already_current: 2 });
+    expect(await scalar<number>('SELECT count(*)::int FROM skill_entitlements')).toBe(2);
+    expect(await scalar('SELECT skill_catalog_user_access($1, $2)', [userA, skillId])).toEqual({
+      allowed: true,
+      source: 'subscription'
+    });
+
+    // A refunded order is never restored; a lapsed-then-renewed grant is reactivated.
+    await db.query(`SELECT revoke_skill_entitlements_for_order($1, 'refund')`, [zpayOrder]);
+    await db.query(`SELECT sync_subscription_skill_entitlements('sub_a', false, now())`);
+    const healed = await scalar<Record<string, unknown>>('SELECT backfill_subscription_skill_entitlements(true)');
+    expect(healed).toMatchObject({ granted: 1, revoked_skipped: 1 });
+    expect(await scalar('SELECT skill_catalog_user_access($1, $2)', [userB, skillId])).toEqual({
+      allowed: false,
+      reason: 'entitlement_required'
+    });
+    expect(await scalar('SELECT skill_catalog_user_access($1, $2)', [userA, skillId])).toEqual({
+      allowed: true,
+      source: 'subscription'
+    });
+
+    const scoped = await scalar<Record<string, unknown>>('SELECT backfill_subscription_skill_entitlements(false, $1)', [userD]);
+    expect(scoped).toMatchObject({ eligible: 1, would_grant: 0 });
   });
 
   it('keeps published versions immutable except for yanking', async () => {

@@ -406,16 +406,23 @@ export async function syncStripeSubscription(
 
   // Renewals extend premium Skill access, lapses suspend it, recovery restores
   // it. Refund revocations stay terminal inside the RPC.
-  const { error: skillEntitlementError } = await supabase.rpc(
-    'sync_subscription_skill_entitlements',
-    {
+  const { data: syncedEntitlements, error: skillEntitlementError } =
+    await supabase.rpc('sync_subscription_skill_entitlements', {
       p_external_subscription_id: subscription.id,
       p_has_access: keepsPaidAccess,
       p_ends_at: currentPeriodEnd,
       p_metadata: { stripe_status: subscription.status }
-    }
-  );
+    });
   if (skillEntitlementError) throw skillEntitlementError;
+  // A paid subscription that predates Skill entitlements (or missed the
+  // one-off backfill) gets its order-traced grant on its next provider event.
+  if (keepsPaidAccess && syncedEntitlements === 0) {
+    const { error: backfillError } = await supabase.rpc(
+      'backfill_subscription_skill_entitlements',
+      { p_apply: true, p_user_id: storedSubscription.user_id }
+    );
+    if (backfillError) throw backfillError;
+  }
 
   if (!keepsPaidAccess) {
     const { error: revokeError } = await supabase
