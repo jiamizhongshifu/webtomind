@@ -76,8 +76,8 @@ export function AiRechargeLink({
             <strong>{isZh ? 'AI 会员代充' : 'AI membership top-ups'}</strong>
             <span>
               {isZh
-                ? 'ChatGPT · Claude · Grok，前往 AICZ 选择套餐'
-                : 'ChatGPT · Claude · Grok — explore plans at AICZ'}
+                ? 'ChatGPT 会员 · Codex 额度，前往 AICZ 选择套餐'
+                : 'ChatGPT subscriptions · Codex credits — explore plans at AICZ'}
             </span>
           </span>
           <span className="ai-recharge-link__action">
