@@ -357,8 +357,9 @@ async function stripeWebhook(
   } catch {
     throw new CommerceError('INVALID_SIGNATURE', 400);
   }
-  const expectedLive = env.SISKILL_STRIPE_SECRET_KEY?.startsWith('sk_live_');
-  if (event.livemode !== expectedLive)
+  const mode = env.SISKILL_STRIPE_SECRET_KEY?.match(/^(?:sk|rk)_(live|test)_/);
+  if (!mode) throw new CommerceError('WEBHOOK_UNAVAILABLE', 503);
+  if (event.livemode !== (mode[1] === 'live'))
     throw new CommerceError('PAYMENT_MODE_MISMATCH', 400);
   await processStripeEvent(event, deps);
   return json({ received: true });

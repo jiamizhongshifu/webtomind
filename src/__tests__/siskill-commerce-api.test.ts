@@ -368,6 +368,34 @@ describe('SiSkill checkout and provider boundary', () => {
       (await handleCommerce(bad, f.env, { ...f.deps, stripe })).status
     ).toBe(400);
   });
+  it('accepts restricted live Stripe keys but rejects test/live event crossover', async () => {
+    const f = fixture();
+    f.env.SISKILL_STRIPE_SECRET_KEY = 'rk_live_local_fixture';
+    const stripe = new Stripe('rk_live_local_fixture');
+    for (const livemode of [true, false]) {
+      const payload = JSON.stringify({
+        id: 'evt_mode',
+        type: 'checkout.session.completed',
+        livemode,
+        data: { object: { metadata: { product_scope: 'webtomind' } } }
+      });
+      const signature = stripe.webhooks.generateTestHeaderString({
+        payload,
+        secret: 'whsec_local'
+      });
+      const request = new Request(
+        'https://siskill.dev/api/siskill/stripe-webhook',
+        {
+          method: 'POST',
+          headers: { 'stripe-signature': signature },
+          body: payload
+        }
+      );
+      expect(
+        (await handleCommerce(request, f.env, { ...f.deps, stripe })).status
+      ).toBe(livemode ? 200 : 400);
+    }
+  });
   it('reuses Alipay signing but binds callback and return to SiSkill', async () => {
     const f = fixture();
     Object.assign(f.order, { provider: 'zpay', amount: 5900, currency: 'cny' });
