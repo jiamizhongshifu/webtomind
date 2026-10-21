@@ -576,6 +576,14 @@ export default function Account({ locale }: { locale: string }) {
                 {t('One-time purchase', '单次购买')} · v
                 {offer.siskill_releases.version}
               </p>
+              {offer.siskill_releases.slug === 'notebooklm-video' && (
+                <p>
+                  {t(
+                    'Requires your own Google Gemini Notebook account, internet access and available Video Overview quota. Google fees are separate. This Skill prepares the workflow; Google generates the video. Formats and results depend on your account and require review.',
+                    '需要自己的 Google Gemini Notebook 账号、网络和可用视频概览额度，Google 费用另计。此 Skill 负责准备工作流，视频由 Google 生成；格式和结果取决于账号，成片需审阅。'
+                  )}
+                </p>
+              )}
               <p>
                 {t(
                   'Includes this Skill and its updates while the service operates. No WebToMind credits or SiSkill subscription.',
