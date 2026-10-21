@@ -2,14 +2,19 @@ import { freeDownload } from './server/free-download.ts';
 import catalog from './catalog.json';
 import { handleCommerce } from './server/handler.ts';
 
-const ORIGIN = 'https://siskill.dev';
-const locales = ['en-US', 'zh-CN'];
-const paths = [
-  '/overview',
-  '/skills',
-  '/skills/pricing',
-  ...catalog.map((s) => `/skills/${s.slug}`)
-];
+import {
+  origin as ORIGIN,
+  locales,
+  publicPaths as paths,
+  pageMetadata,
+  structuredData,
+  available
+} from './discovery.ts';
+import {
+  publicContent,
+  escapeHtml as esc,
+  serializeJsonLd
+} from './seo-content.ts';
 export function route(input) {
   const url = new URL(input);
   const local = ['localhost', '127.0.0.1'].includes(url.hostname);
@@ -33,7 +38,14 @@ export function route(input) {
       return {
         redirect: `${local ? url.origin : ORIGIN}/${match[1]}${path}${url.search}`
       };
+    if (path === '/skills' && url.searchParams.get('tier') === 'free') {
+      url.searchParams.delete('tier');
+      return {
+        redirect: `${local ? url.origin : ORIGIN}/${match[1]}/skills/free${url.search}`
+      };
+    }
     return {
+      search: url.search,
       locale: match[1],
       path,
       status: 200,
@@ -42,40 +54,7 @@ export function route(input) {
   }
   return { locale: match?.[1] || 'en-US', path: url.pathname, status: 404 };
 }
-export function metadata(page) {
-  const zh = page.locale === 'zh-CN';
-  const title =
-    page.path === '/account'
-      ? 'Your library | SiSkill'
-      : page.status === 404
-        ? 'Page not found | SiSkill'
-        : page.skill
-          ? `${page.skill.name[page.locale]} | SiSkill`
-          : page.path === '/skills/pricing'
-            ? 'SiSkill — Membership & pricing'
-            : page.path === '/skills'
-              ? 'SiSkill — Explore creative Skills'
-              : 'SiSkill — Your agent. A creative studio.';
-  const description =
-    page.skill?.summary[page.locale] ||
-    (zh
-      ? '为图文、演示、网页和视频打造的可复用 Skill。先看真实演示，再了解可编辑的交付成果。'
-      : 'Reusable Skills for visuals, decks, websites and video. Explore real demonstrations and editable outputs.');
-  return {
-    title,
-    description,
-    canonical: `${ORIGIN}/${page.locale}${page.path}`,
-    image: `${ORIGIN}${page.skill?.coverUrl || '/skill-previews/og-image.png'}`
-  };
-}
-const esc = (s) =>
-  String(s).replace(
-    /[&<>"']/g,
-    (c) =>
-      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[
-        c
-      ]
-  );
+export const metadata = pageMetadata;
 function secure(response, html = false) {
   const headers = new Headers(response.headers);
   headers.set('X-Content-Type-Options', 'nosniff');
@@ -119,7 +98,30 @@ export default {
       );
     if (url.pathname === '/sitemap.xml')
       return new Response(
-        `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${locales.flatMap((l) => paths.map((p) => `<url><loc>${ORIGIN}/${l}${p}</loc></url>`)).join('')}</urlset>`,
+        `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">${locales
+          .flatMap((l) =>
+            paths
+              .filter(
+                (p) =>
+                  !catalog.some(
+                    (s) => p === `/skills/${s.slug}` && !available(s)
+                  )
+              )
+              .map(
+                (p) =>
+                  `<url><loc>${ORIGIN}/${l}${p}</loc>${metadata({
+                    locale: l,
+                    path: p,
+                    status: 200
+                  })
+                    .alternates.map(
+                      (a) =>
+                        `<xhtml:link rel="alternate" hreflang="${a.hreflang}" href="${a.href}"/>`
+                    )
+                    .join('')}</url>`
+              )
+          )
+          .join('')}</urlset>`,
         { headers: { 'Content-Type': 'application/xml; charset=utf-8' } }
       );
     if (
@@ -133,12 +135,37 @@ export default {
     const source = await env.ASSETS.fetch(new Request(index));
     if (!source.ok) return new Response('Service unavailable', { status: 503 });
     const meta = metadata(page);
-    const head = `<meta name="robots" content="${page.status === 404 || page.path === '/account' ? 'noindex,follow' : 'index,follow'}"><meta property="og:site_name" content="SiSkill"><meta property="og:type" content="website"><meta property="og:title" content="${esc(meta.title)}"><meta property="og:description" content="${esc(meta.description)}"><meta property="og:url" content="${esc(meta.canonical)}"><meta property="og:image" content="${esc(meta.image)}"><meta name="twitter:card" content="summary_large_image">${page.status === 200 ? locales.map((l) => `<link rel="alternate" hreflang="${l}" href="${ORIGIN}/${l}${page.path}">`).join('') : ''}`;
-    const fallbackMessage =
-      page.locale === 'zh-CN'
-        ? '浏览 Skill 功能演示。启用 JavaScript 并登录后，可免费下载 Open Graph Image，或查看付费 Skill 和 Pro 的购买选项。'
-        : 'Explore Skill demos. Enable JavaScript and sign in for free Open Graph Image downloads, paid Skill purchases and Pro options.';
-    const fallback = `<noscript><main><h1>${esc(meta.title)}</h1><p>${esc(meta.description)}</p><p>${fallbackMessage}</p><ul>${catalog.map((s) => `<li><a href="/${page.locale}/skills/${s.slug}">${esc(s.name[page.locale])}</a></li>`).join('')}</ul></main></noscript>`;
+    let offers = [];
+    // Anonymous public catalog only. Never use incoming cookies or auth for SEO.
+    if (page.skill?.tier === 'premium' && available(page.skill)) {
+      let timer;
+      try {
+        const response = await Promise.race([
+          handleCommerce(
+            new Request(new URL('/api/siskill/products', url)),
+            env
+          ),
+          new Promise((resolve) => {
+            timer = setTimeout(() => resolve(null), 2500);
+          })
+        ]);
+        if (response?.ok) {
+          const data = await response.json();
+          if (data.checkoutOpen)
+            offers = (data.products || []).filter(
+              (p) =>
+                Number.isSafeInteger(p.usd_cents) &&
+                p.usd_cents > 0 &&
+                p.siskill_releases?.status === 'published'
+            );
+        }
+      } catch {
+        /* Keep public content useful when commerce is unavailable. */
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+    const head = `<meta name="robots" content="${meta.robots}"><meta property="og:site_name" content="SiSkill"><meta property="og:type" content="website"><meta property="og:title" content="${esc(meta.title)}"><meta property="og:description" content="${esc(meta.description)}"><meta property="og:url" content="${esc(meta.canonical)}"><meta property="og:image" content="${esc(meta.image)}"><meta property="og:locale" content="${page.locale.replace('-', '_')}"><meta name="twitter:card" content="summary_large_image">${meta.alternates.map((a) => `<link rel="alternate" hreflang="${a.hreflang}" href="${esc(a.href)}">`).join('')}<script type="application/ld+json" id="webtomind-seo-jsonld">${serializeJsonLd(structuredData(page, offers))}</script>`;
     const rewritten = new HTMLRewriter()
       .on('html', { element: (e) => e.setAttribute('lang', page.locale) })
       .on('title', { element: (e) => e.setInnerContent(meta.title) })
@@ -149,12 +176,18 @@ export default {
         element: (e) => e.setAttribute('href', meta.canonical)
       })
       .on('head', { element: (e) => e.append(head, { html: true }) })
-      .on('body', { element: (e) => e.append(fallback, { html: true }) })
+      .on('#root', {
+        element: (e) =>
+          e.setInnerContent(publicContent(page, offers), { html: true })
+      })
       .transform(source);
     return secure(
       new Response(request.method === 'HEAD' ? null : rewritten.body, {
         status: page.status,
-        headers: rewritten.headers
+        headers: new Headers([
+          ...rewritten.headers,
+          ['X-Robots-Tag', meta.robots]
+        ])
       }),
       true
     );

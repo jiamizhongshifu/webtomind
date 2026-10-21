@@ -29,31 +29,25 @@ import {
   outputLabel
 } from '../../src/web/pages/skill-catalog/skillCatalogShared';
 import { SkillPreviewGallery } from '../../src/web/pages/skill-catalog/SkillPreviewGallery';
-import {
-  skillShowcases as sharedSkillShowcases,
-  type SkillShowcase
-} from '../../src/web/pages/skill-catalog/skillShowcases';
-import localShowcases from './showcases.json';
 import { applySeo } from '../../src/web/lib/seo';
+import { pickLocalized } from '../../src/services/skill-catalog-api';
 import {
-  pickLocalized,
-  type SkillCatalogItem
-} from '../../src/services/skill-catalog-api';
-import products from './catalog.json';
+  catalog,
+  showcases as skillShowcases,
+  available,
+  dependenciesFor,
+  discover,
+  relatedSkills,
+  guidePath,
+  pageMetadata,
+  structuredData,
+  type PublicOffer
+} from './discovery';
+import { GettingStarted, InstallGuide } from './getting-started';
 import { SkillPurchaseLink } from './purchase';
 import { FreeSkillDownload } from './free-download';
 import freeReleases from './free-releases.json';
 const Account = lazy(() => import('./account'));
-const skillShowcases: Record<string, SkillShowcase> = {
-  ...sharedSkillShowcases,
-  ...localShowcases
-};
-
-const catalog = products as (SkillCatalogItem & {
-  availability: string;
-  formats: string[];
-})[];
-const origin = 'https://siskill.dev';
 const contact = 'mailto:support@webtomind.com?subject=SiSkill';
 function Site() {
   const location = useLocation();
@@ -68,7 +62,9 @@ function Site() {
   const [search, setSearch] = useState('');
   const [sales, setSales] = useState({
     slugs: [] as string[],
-    membershipOpen: false
+    membershipOpen: false,
+    offers: [] as PublicOffer[],
+    loaded: false
   });
   useEffect(() => {
     let active = true;
@@ -89,10 +85,14 @@ function Site() {
                     v.siskill_releases.slug
                 )
               : [],
-            membershipOpen: Boolean(m?.membershipOpen && m.plans.length)
+            membershipOpen: Boolean(m?.membershipOpen && m.plans.length),
+            offers: p?.checkoutOpen ? p.products : [],
+            loaded: true
           });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (active) setSales((s) => ({ ...s, loaded: true }));
+      });
     return () => {
       active = false;
     };
@@ -106,20 +106,15 @@ function Site() {
   const freeRelease = freeReleases.find((r) => r.slug === detailSlug);
   const paidAvailable = sales.slugs.includes(detailSlug);
   const params = new URLSearchParams(location.search);
-  const filtered = catalog.filter(
-    (s) =>
-      (!params.get('tier') || s.tier === params.get('tier')) &&
-      (!params.get('type') || s.outputTypes.includes(params.get('type')!)) &&
-      (!params.get('q') ||
-        JSON.stringify([s.name, s.summary])
-          .toLowerCase()
-          .includes(params.get('q')!.toLowerCase()))
-  );
+  const isFree = path === '/skills/free';
+  const filtered = discover(params, isFree);
   const isHome = path === '/overview';
   const known =
     isHome ||
     path === '/account' ||
     path === '/skills' ||
+    isFree ||
+    path === guidePath ||
     path === '/skills/pricing' ||
     Boolean(skill);
   useEffect(() => {
@@ -127,6 +122,12 @@ function Site() {
       const explicit = /^\/zh-CN(?:\/|$)/.test(location.pathname);
       const preferred = explicit ? 'zh-CN' : 'en-US';
       navigate(`/${preferred}${path}${location.search}${location.hash}`, {
+        replace: true
+      });
+    }
+    if (path === '/skills' && params.get('tier') === 'free') {
+      params.delete('tier');
+      navigate(`/${locale}/skills/free${params.size ? '?' + params : ''}`, {
         replace: true
       });
     }
@@ -140,42 +141,27 @@ function Site() {
     document.addEventListener('keydown', close);
     return () => document.removeEventListener('keydown', close);
   }, []);
-  useEffect(
-    () =>
-      applySeo({
-        title:
-          path === '/account'
-            ? 'Your library | SiSkill'
-            : skill
-              ? `${pickLocalized(skill.name, locale)} | SiSkill`
-              : path === '/skills/pricing'
-                ? 'SiSkill — Membership & pricing'
-                : path === '/skills'
-                  ? 'SiSkill — Explore creative Skills'
-                  : 'SiSkill — Your agent. A creative studio.',
-        description: skill
-          ? pickLocalized(skill.summary, locale)
-          : t(
-              'Reusable Skills for visuals, decks, websites and video. Explore real demonstrations and editable outputs.',
-              '为图文、演示、网页和视频打造的可复用 Skill。先看真实演示，再了解可编辑的交付成果。'
-            ),
-        canonical: `${origin}/${locale}${path}`,
-        htmlLang: locale,
-        robots:
-          known && path !== '/account' ? 'index,follow' : 'noindex,follow',
-        ogImage: `${origin}${skill ? skillShowcases[skill.slug].poster : '/skill-previews/og-image.png'}`,
-        alternates: [
-          { hreflang: 'en-US', href: `${origin}/en-US${path}` },
-          { hreflang: 'zh-CN', href: `${origin}/zh-CN${path}` },
-          { hreflang: 'x-default', href: `${origin}/en-US${path}` }
-        ]
-      }),
-    [locale, path, known, skill]
-  );
+  useEffect(() => {
+    const page = {
+      locale,
+      path,
+      status: known ? 200 : 404,
+      skill,
+      search: location.search
+    };
+    const meta = pageMetadata(page);
+    return applySeo({
+      ...meta,
+      htmlLang: locale,
+      ogImage: meta.image,
+      ogLocale: locale.replace('-', '_'),
+      jsonLd: structuredData(page, sales.offers)
+    });
+  }, [locale, path, known, skill, location.search, sales.offers]);
   const navLinks = (
     <>
       <Link to={`/${locale}/skills`}>{t('Explore Skills', '发现 Skill')}</Link>
-      <Link to={`/${locale}/skills?tier=free`}>
+      <Link to={`/${locale}/skills/free`}>
         {t('Free Skills', '免费 Skill')}
       </Link>
       <Link to={`/${locale}/skills/pricing`}>{t('Pricing', '会员与价格')}</Link>
@@ -195,7 +181,14 @@ function Site() {
               ? t('Download free Skill →', '免费下载 Skill →')
               : sales.slugs.includes(s.slug)
                 ? t('Buy Skill →', '购买 Skill →')
-                : t('Coming soon · See demo →', '即将开放 · 查看演示 →')
+                : available(s)
+                  ? t(
+                      sales.loaded
+                        ? 'View workflow →'
+                        : 'Checking availability…',
+                      sales.loaded ? '查看工作流 →' : '正在查询购买状态…'
+                    )
+                  : t('Preview · See demo →', '预览 · 查看演示 →')
           }
         />
       ))}
@@ -224,14 +217,16 @@ function Site() {
         </div>
         <ButtonLink
           variant="ghost"
-          to={`/${locale}/skills?tier=${paid ? 'premium' : 'free'}`}
+          to={
+            paid ? `/${locale}/skills?tier=premium` : `/${locale}/skills/free`
+          }
         >
           {t('View all', '查看全部')}
         </ButtonLink>
       </div>
       {grid(
         catalog
-          .filter((s) => s.tier === (paid ? 'premium' : 'free'))
+          .filter((s) => available(s) && s.tier === (paid ? 'premium' : 'free'))
           .slice(0, 4)
       )}
     </section>
@@ -301,12 +296,7 @@ function Site() {
           </Suspense>
         ) : isHome ? (
           <>
-            <SkillBrandHero
-              locale={locale}
-              isZh={zh}
-              brandName="SiSkill"
-              freeSkillsComingSoon
-            />
+            <SkillBrandHero locale={locale} isZh={zh} brandName="SiSkill" />
             <section className="skill-discovery-heading">
               <h2>{t('What will you make next?', '今天，你想做点什么？')}</h2>
               <form
@@ -337,7 +327,7 @@ function Site() {
               className="skill-task-nav"
               aria-label={t('Discover by deliverable', '按交付任务发现')}
             >
-              {['image', 'slides', 'web', 'video'].map((type, i) => (
+              {['image', 'slides', 'writing', 'video', 'web'].map((type, i) => (
                 <Link key={type} to={`/${locale}/skills?type=${type}`}>
                   <span>0{i + 1}</span>
                   <strong>{outputLabel(type, zh)}</strong>
@@ -366,15 +356,15 @@ function Site() {
                   [
                     t('Choose your workflow', '选择工作流'),
                     t(
-                      'Find a Skill that fits the job. Free and paid packages are being prepared.',
-                      '找到适合任务的 Skill。免费与付费安装包正在准备中。'
+                      'Choose a released Skill. Sign in for a free download, a single purchase or Pro access.',
+                      '选择已发布的 Skill，登录后免费下载、单独购买，或通过 Pro 获取。'
                     )
                   ],
                   [
                     t('Make it yours', '做成自己的作品'),
                     t(
-                      'When packages launch, run them in your agent with your material and edit the result.',
-                      '安装包开放后，在你的 Agent 中运行，使用自己的资料修改并导出作品。'
+                      'Install the package in your agent. Run a starter brief with your materials and edit the result.',
+                      '将安装包放进 Agent，用首次使用需求和自己的资料运行，修改并导出作品。'
                     )
                   ]
                 ].map(([title, body], i) => (
@@ -429,10 +419,14 @@ function Site() {
               ))}
             </section>
           </>
-        ) : path === '/skills' ? (
+        ) : path === '/skills' || isFree ? (
           <>
             <header className="skill-hero">
-              <h1>{t('Find your next Skill', '找到你的下一个 Skill')}</h1>
+              <h1>
+                {isFree
+                  ? t('Free Agent Skills', '免费 Agent Skill')
+                  : t('Find your next Skill', '找到你的下一个 Skill')}
+              </h1>
               <p>
                 {t(
                   'See what it makes. Find the workflow for your next project.',
@@ -463,7 +457,7 @@ function Site() {
               </Button>
             </form>
             <div className="siskill-filters">
-              {['', 'free', 'premium'].map((tier) => (
+              {(isFree ? [] : ['', 'free', 'premium']).map((tier) => (
                 <Link
                   key={tier}
                   aria-current={
@@ -494,11 +488,42 @@ function Site() {
                 )
               )}
             </div>
+            <nav
+              className="siskill-filters"
+              aria-label={t('Release status', '发布状态')}
+            >
+              {['available', 'preview', 'all'].map((state) => (
+                <Link
+                  key={state}
+                  aria-current={
+                    (params.get('availability') || 'available') === state
+                      ? 'page'
+                      : undefined
+                  }
+                  to={`?${new URLSearchParams({ ...Object.fromEntries(params), availability: state })}`}
+                >
+                  {state === 'available'
+                    ? t('Available now', '现已开放')
+                    : state === 'preview'
+                      ? t('Preview', '演示预览')
+                      : t('All releases', '全部状态')}
+                </Link>
+              ))}
+            </nav>
             <p className="skill-muted">
               {t(
                 'Explore the collection. Open Graph Image is free; available paid Skills show a purchase link.',
                 '探索作品与演示。Open Graph Image 登录后免费，已开放的付费 Skill 将显示购买入口。'
               )}
+            </p>
+            <p role="status">
+              {filtered.length} {t('workflows', '个工作流')} ·{' '}
+              <Link to={`/${locale}${guidePath}`}>
+                {t(
+                  'New here? Installation guide →',
+                  '首次使用？查看安装指引 →'
+                )}
+              </Link>
             </p>
             {filtered.length ? (
               grid(filtered)
@@ -507,10 +532,18 @@ function Site() {
                 <h2>{t('No matching workflows', '没有匹配的工作流')}</h2>
                 <Link to={`/${locale}/skills`}>
                   {t('Clear filters', '清除筛选')}
+                </Link>{' '}
+                ·{' '}
+                <Link
+                  to={`?${new URLSearchParams({ ...Object.fromEntries(params), availability: 'all' })}`}
+                >
+                  {t('Include previews', '包含预览内容')}
                 </Link>
               </div>
             )}
           </>
+        ) : path === guidePath ? (
+          <InstallGuide locale={locale} />
         ) : path === '/skills/pricing' ? (
           <>
             <header className="skill-hero">
@@ -576,15 +609,24 @@ function Site() {
                             'Paid workflow · Available now',
                             '付费工作流 · 现已开放'
                           )
-                        : skill.tier === 'free'
+                        : available(skill)
                           ? t(
-                              'Free workflow · Coming soon',
-                              '免费工作流 · 即将开放'
+                              sales.loaded
+                                ? 'Published workflow · Check purchase options below'
+                                : 'Published workflow · Checking availability…',
+                              sales.loaded
+                                ? '已发布工作流 · 请查看下方购买状态'
+                                : '已发布工作流 · 正在查询购买状态…'
                             )
-                          : t(
-                              'Paid workflow · Coming soon',
-                              '付费工作流 · 即将开放'
-                            )}
+                          : skill.tier === 'free'
+                            ? t(
+                                'Free workflow · Coming soon',
+                                '免费工作流 · 即将开放'
+                              )
+                            : t(
+                                'Paid workflow · Coming soon',
+                                '付费工作流 · 即将开放'
+                              )}
                   </p>
                   <h1>{pickLocalized(skill.name, locale)}</h1>
                   <p className="skill-detail-summary">
@@ -598,10 +640,18 @@ function Site() {
                       {t(
                         paidAvailable
                           ? 'Purchase once for this Skill and its updates, or join Pro for access during your paid membership.'
-                          : 'This workflow is a preview. Its package is not available yet.',
+                          : available(skill)
+                            ? sales.loaded
+                              ? 'Checkout is temporarily unavailable. Please try again later.'
+                              : 'Checking current purchase options…'
+                            : 'This workflow is a preview. Its package is not available yet.',
                         paidAvailable
                           ? '单次购买获得此 Skill 及更新，或开通 Pro 在有效期内访问。'
-                          : '此工作流仍为预览，安装包尚未开放。'
+                          : available(skill)
+                            ? sales.loaded
+                              ? '结账暂不可用，请稍后重试。'
+                              : '正在查询当前购买选项…'
+                            : '此工作流仍为预览，安装包尚未开放。'
                       )}
                     </p>
                   )}
@@ -622,6 +672,13 @@ function Site() {
                 </div>
               </div>
             </div>
+            {available(skill) && (
+              <GettingStarted
+                key={`${locale}-${skill.slug}`}
+                slug={skill.slug}
+                locale={locale}
+              />
+            )}
             <div className="skill-product-sections">
               {(['outputs', 'inputs', 'dependencies'] as const).map(
                 (key, i) => (
@@ -636,21 +693,8 @@ function Site() {
                       }
                     </h2>
                     <ul>
-                      {(freeRelease && key === 'dependencies'
-                        ? [
-                            {
-                              'en-US':
-                                'Node.js 18+; verified here with Node 24 on macOS.',
-                              'zh-CN':
-                                'Node.js 18+，本次使用 macOS 与 Node 24 验证。'
-                            },
-                            {
-                              'en-US':
-                                'Playwright and Chromium / Chrome, installed separately. Dependency setup requires internet; rendering then runs offline.',
-                              'zh-CN':
-                                '需单独安装 Playwright 与 Chromium / Chrome；依赖安装需要联网，渲染可离线运行。'
-                            }
-                          ]
+                      {(key === 'dependencies'
+                        ? dependenciesFor(skill.slug)
                         : skillShowcases[skill.slug][key]
                       ).map((v) => (
                         <li key={v['en-US']}>{pickLocalized(v, locale)}</li>
@@ -668,7 +712,7 @@ function Site() {
             </div>
             <section>
               <h2>{t('More to make', '更多创作可能')}</h2>
-              {grid(catalog.filter((s) => s.slug !== skill.slug).slice(0, 4))}
+              {grid(relatedSkills(skill.slug))}
             </section>
           </>
         ) : (
@@ -687,6 +731,9 @@ function Site() {
         </Link>
         <nav>
           {navLinks}
+          <Link to={`/${locale}${guidePath}`}>
+            {t('Installation guide', '安装指引')}
+          </Link>
           <a href={contact}>{t('Contact', '联系我们')}</a>
         </nav>
         <p>
@@ -822,7 +869,11 @@ function Pricing({
             ) : (
               <ButtonLink
                 variant="secondary"
-                to={`/${locale}/skills?tier=${i === 0 ? 'free' : 'premium'}`}
+                to={
+                  i === 0
+                    ? `/${locale}/skills/free`
+                    : `/${locale}/skills?tier=premium`
+                }
               >
                 {t('Explore workflows', '探索工作流')}
               </ButtonLink>

@@ -1,3 +1,4 @@
+import { available, catalog } from './discovery';
 import { useEffect, useState } from 'react';
 import { Button, ButtonLink } from '../../src/shared/ui';
 import type { Product } from './account';
@@ -9,9 +10,11 @@ export function SkillPurchaseLink({
   locale: string;
 }) {
   const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
   useEffect(() => {
     let active = true;
     setProduct(null);
+    setLoading(true);
     fetch('/api/siskill/products', { cache: 'no-store' })
       .then(async (r) => {
         if (!r.ok) return;
@@ -23,7 +26,10 @@ export function SkillPurchaseLink({
             ) || null
           );
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
@@ -38,7 +44,17 @@ export function SkillPurchaseLink({
     </ButtonLink>
   ) : (
     <Button variant="primary" disabled>
-      {locale === 'zh-CN' ? '即将开放' : 'Coming soon'}
+      {loading
+        ? locale === 'zh-CN'
+          ? '正在查询…'
+          : 'Checking availability…'
+        : catalog.some((s) => s.slug === slug && available(s))
+          ? locale === 'zh-CN'
+            ? '结账暂不可用'
+            : 'Checkout unavailable'
+          : locale === 'zh-CN'
+            ? '即将开放'
+            : 'Coming soon'}
     </Button>
   );
 }

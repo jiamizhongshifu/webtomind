@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { client } from './auth-client';
 import { Button } from '../../src/shared/ui';
 import releases from './free-releases.json';
+import { guidePath } from './discovery';
 export function FreeSkillDownload({
   slug,
   locale
@@ -34,12 +35,9 @@ export function FreeSkillDownload({
       unsubscribe?.();
     };
   }, []);
-  const [agent, setAgent] = useState('codex');
   const zh = locale === 'zh-CN',
     t = (en: string, cn: string) => (zh ? cn : en);
   if (!release) return null;
-  const directory =
-    agent === 'codex' ? '.agents/skills/og-image/' : '.claude/skills/og-image/';
   async function download() {
     if (!release || state === 'loading') return;
     setState('loading');
@@ -124,45 +122,10 @@ export function FreeSkillDownload({
           )}
         </p>
       )}
-      <h3>{t('Install in your project', '安装到你的项目')}</h3>
-      <label htmlFor="siskill-install-agent">
-        {t('Your agent', '选择 Agent')}
-      </label>
-      <select
-        id="siskill-install-agent"
-        value={agent}
-        onChange={(e) => setAgent(e.target.value)}
-      >
-        <option value="codex">Codex</option>
-        <option value="claude-code">Claude Code</option>
-      </select>
-      <ol>
-        <li>
-          {t(
-            'Extract the archive and review SKILL.md, LICENSE.md and scripts/render.mjs.',
-            '解压安装包，查看 SKILL.md、LICENSE.md 和 scripts/render.mjs。'
-          )}
-        </li>
-        <li>
-          {t(
-            'Copy the og-image folder to this project path. Back up an existing installation first.',
-            '将 og-image 文件夹复制到项目内的下列路径。已有同名安装请先备份。'
-          )}{' '}
-          <code>{directory}</code>
-        </li>
-        <li>
-          {t(
-            'Follow DEPENDENCIES.md to set up Node.js, Playwright and a browser, then open your agent in this project.',
-            '按 DEPENDENCIES.md 配置 Node.js、Playwright 和浏览器，然后在该项目中打开 Agent。'
-          )}
-        </li>
-      </ol>
-      <h3>{t('Try this brief', '试试这段需求')}</h3>
-      <p className="siskill-example-brief">
-        {t(
-          'Use the og-image Skill to make a 1200 × 630 launch image for the fictional Story kit. Use the grape palette and example.com/demo. Deliver an editable HTML and PNG.',
-          '使用 og-image Skill，为虚构的「Story kit」制作 1200 × 630 发布分享图，使用 grape 配色和 example.com/demo，交付可编辑 HTML 和 PNG。'
-        )}
+      <p>
+        <Link to={`/${locale}${guidePath}`}>
+          {t('Installation & troubleshooting guide →', '安装与排错指引 →')}
+        </Link>
       </p>
       <p className="skill-muted">
         {t(

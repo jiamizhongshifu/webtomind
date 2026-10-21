@@ -3,6 +3,7 @@
   "compilerOptions": { "noUnusedLocals": true, "noUnusedParameters": true },
   "include": [
     "*.tsx",
+    "*.ts",
     "vite.config.ts",
     "server/**/*.ts",
     "../../src/__tests__/siskill-commerce-*.test.ts"

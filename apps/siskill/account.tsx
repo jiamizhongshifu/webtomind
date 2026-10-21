@@ -1,3 +1,4 @@
+import { catalog, text, guidePath } from './discovery';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { client, redirectsReady } from './auth-client';
@@ -689,7 +690,18 @@ export default function Account({ locale }: { locale: string }) {
                 <div className="siskill-library">
                   {library.grants.map((g) => (
                     <article key={g.release_id}>
-                      <h3>{g.siskill_releases.slug}</h3>
+                      <h3>
+                        <Link
+                          to={`/${locale}/skills/${g.siskill_releases.slug}`}
+                        >
+                          {text(
+                            catalog.find(
+                              (s) => s.slug === g.siskill_releases.slug
+                            )?.name || { 'en-US': g.siskill_releases.slug },
+                            locale
+                          )}
+                        </Link>
+                      </h3>
                       <p>v{g.siskill_releases.version}</p>
                       <Button
                         disabled={busy || g.downloadable === false}
@@ -697,6 +709,14 @@ export default function Account({ locale }: { locale: string }) {
                       >
                         {t('Download package', '下载安装包')}
                       </Button>
+                      <p>
+                        <Link to={`/${locale}${guidePath}`}>
+                          {t(
+                            'Install & run your first task →',
+                            '安装并完成第一个任务 →'
+                          )}
+                        </Link>
+                      </p>
                       {g.downloadable === false && (
                         <p>
                           {t(

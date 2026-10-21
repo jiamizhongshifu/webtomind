@@ -64,7 +64,7 @@ test('sitemap owns the new domain and robots advertises it', async () => {
   const map = await (
     await worker.fetch(new Request('https://siskill.dev/sitemap.xml'), {})
   ).text();
-  assert.equal((map.match(/<loc>/g) || []).length, 30);
+  assert.equal((map.match(/<loc>/g) || []).length, 18);
   assert.ok(!map.includes('webtomind.com'));
   assert.match(
     await (
@@ -260,4 +260,124 @@ test('all free downloads, including HEAD, reject missing and invalid auth before
   const valid = await freeDownload(request(), bucket(), [release]);
   assert.equal(valid.headers.get('Cache-Control'), 'private, no-store');
   assert.equal(valid.headers.get('Vary'), 'Authorization');
+});
+
+import { catalog, discover, structuredData } from './discovery.ts';
+import { publicContent, serializeJsonLd } from './seo-content.ts';
+test('discovery defaults to released packages and previews are explicitly discoverable', () => {
+  assert.deepEqual(
+    discover(new URLSearchParams())
+      .map((s) => s.slug)
+      .sort(),
+    [
+      'case-study-deck',
+      'creator-content-workflow',
+      'notebooklm-video',
+      'og-image'
+    ]
+  );
+  assert.equal(discover(new URLSearchParams('availability=preview')).length, 8);
+  assert.equal(discover(new URLSearchParams('availability=all')).length, 12);
+  assert.equal(discover(new URLSearchParams(), true)[0].slug, 'og-image');
+  assert.equal(discover(new URLSearchParams('q=不存在的任务')).length, 0);
+});
+test('free collection redirects keep search and attribution without leaving a duplicate tier query', () => {
+  assert.equal(
+    route(
+      'https://siskill.dev/en-US/skills?tier=free&utm_source=webtomind&type=image'
+    ).redirect,
+    'https://siskill.dev/en-US/skills/free?utm_source=webtomind&type=image'
+  );
+  for (const path of ['/en-US/skills/free', '/zh-CN/learn/install-skills'])
+    assert.equal(route('https://siskill.dev' + path).status, 200);
+});
+test('private, preview and filtered pages are noindex; campaign tags preserve indexability', async () => {
+  for (const path of [
+    '/en-US/account?skill=case-study-deck',
+    '/en-US/skills?q=deck',
+    '/en-US/skills/free?availability=all',
+    `/en-US/skills/${catalog.find((s) => s.availability !== 'available').slug}`
+  ])
+    assert.equal(
+      metadata(route('https://siskill.dev' + path)).robots,
+      'noindex,follow'
+    );
+  const meta = metadata(
+    route(
+      'https://siskill.dev/en-US/skills/creator-content-workflow?utm_source=webtomind'
+    )
+  );
+  assert.equal(meta.robots, 'index,follow');
+  assert.equal(meta.alternates.length, 3);
+  const xml = await (
+    await worker.fetch(new Request('https://siskill.dev/sitemap.xml'), {})
+  ).text();
+  assert.equal((xml.match(/hreflang="x-default"/g) || []).length, 18);
+  for (const s of catalog.filter((s) => s.availability !== 'available'))
+    assert.ok(!xml.includes('/skills/' + s.slug));
+});
+test('Product offers use active exact release prices, never stale releases or invented ratings', () => {
+  const page = route(
+    'https://siskill.dev/en-US/skills/creator-content-workflow'
+  );
+  const offer = {
+    sku: 'fixture',
+    usd_cents: 1299,
+    siskill_releases: {
+      slug: page.skill.slug,
+      version: page.skill.latestVersion,
+      status: 'published'
+    }
+  };
+  const product = (offers) =>
+    structuredData(page, offers).find((x) => x['@type'] === 'Product');
+  assert.equal(product([offer]).offers.price, '12.99');
+  assert.equal(product([]).offers, undefined);
+  assert.equal(
+    product([
+      {
+        ...offer,
+        siskill_releases: { ...offer.siskill_releases, version: 'old' }
+      }
+    ]).offers,
+    undefined
+  );
+  assert.equal(product([{ ...offer, usd_cents: -1 }]).offers, undefined);
+  assert.equal(product([offer]).aggregateRating, undefined);
+  assert.equal(
+    structuredData(route('https://siskill.dev/en-US/skills/og-image')).find(
+      (x) => x['@type'] === 'Product'
+    ).offers.price,
+    '0.00'
+  );
+  assert.deepEqual(
+    structuredData(route('https://siskill.dev/en-US/account'), [offer]),
+    []
+  );
+});
+test('public initial HTML includes useful product content without scripts, hidden text or account data', () => {
+  const page = route(
+    'https://siskill.dev/en-US/skills/creator-content-workflow'
+  );
+  const html = publicContent(page);
+  assert.match(html, /<h1>Creator Content Workflow<\/h1>/);
+  assert.match(html, /What you provide/);
+  assert.match(html, /\/en-US\/learn\/install-skills/);
+  assert.ok(!html.includes('<noscript>'));
+  assert.ok(!html.includes('display:none'));
+  const dangerous = {
+    ...page,
+    skill: { ...page.skill, name: { 'en-US': '<script>alert(1)</script>' } }
+  };
+  assert.ok(!publicContent(dangerous).includes('<script>'));
+  const encoded = serializeJsonLd({
+    text: '</script><script>alert(1)</script>'
+  });
+  assert.ok(!encoded.includes('<'));
+  assert.equal(JSON.parse(encoded).text, '</script><script>alert(1)</script>');
+  assert.ok(
+    !publicContent(
+      route('https://siskill.dev/en-US/account?token=private-value')
+    ).includes('private-value')
+  );
 });
