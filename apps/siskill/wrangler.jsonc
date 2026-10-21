@@ -7,7 +7,7 @@
   "preview_urls": false,
   "vars": {
     "SISKILL_COMMERCE_ENABLED": "false",
-    "SISKILL_AUTH_REDIRECTS_READY": "false"
+    "SISKILL_AUTH_REDIRECTS_READY": "true"
   },
   "assets": {
     "directory": "./dist",

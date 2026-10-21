@@ -11,7 +11,8 @@ workflow demonstrations, a searchable catalog, product detail pages and planned 
 Cards play silent 16:9 demos on hover; touch and reduced-motion users have an explicit
 play control. All packages are marked coming soon. Sales and private archive distribution remain closed. The account page uses the shared
 WebToMind user database with separate SiSkill sessions, orders and grants. Email/password
-sign-in is supported; Google/signup/recovery stay gated until redirect configuration is verified. An independent,
+sign-in is supported; Google/signup/recovery entry points use the verified SiSkill redirect allowlist.
+Google authorization handoff is verified; full Google login and email delivery remain separate acceptance items. An independent,
 default-closed `/api/siskill/*` commerce handler is now included in the Worker source.
 The listed compatibility comes from package metadata, not a claim of testing every agent.
 

@@ -59,10 +59,11 @@ migration has been applied, RLS/function ACLs verified, with zero active SKUs/or
 No legacy WebToMind data was migrated or modified.
 
 The account/library page supports shared email/password sign-in, own orders and downloads.
-Google OAuth, signup and password recovery are implemented but gated by
-`SISKILL_AUTH_REDIRECTS_READY`. Keep this false until the two exact SiSkill account URLs
-are saved and verified in Supabase's redirect allowlist. The dashboard currently requires
-human sign-in/captcha; no configuration was changed through that blocked session.
+Google OAuth, signup and password recovery use `SISKILL_AUTH_REDIRECTS_READY=true`.
+The two exact SiSkill account URLs were saved and verified after a dashboard reload on
+2026-10-21. All nine existing redirect entries and the WebToMind Site URL were preserved.
+Both locales reach Google authorization; this proves the handoff, not completed Google
+sign-in or email delivery. Those end-to-end outcomes require separate acceptance.
 Password updates affect the shared account and are described that way in the UI.
 A return URL/query parameter is never proof of payment.
 

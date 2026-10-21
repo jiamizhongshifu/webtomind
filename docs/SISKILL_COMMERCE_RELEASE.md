@@ -5,7 +5,9 @@
 This is a default-closed backend, not an announcement that purchasing is available.
 The public app remains the preview storefront. No active SKU, paid archive, provider
 secret, subscription plan, customer purchase or grant is seeded by this change. Shared email/password sign-in
-and an independent account/library UI are included; other auth methods remain gated.
+and an independent account/library UI are included. The verified redirect allowlist
+enables Google/signup/recovery entry points; completed Google sign-in and real email
+delivery are not covered by the authorization handoff check.
 
 | Endpoint                                | Purpose                                                   | Gate                                                                                  |
 | --------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
@@ -30,7 +32,7 @@ All product rows default inactive. No products or grants are inserted.
 
 The user selected shared WebToMind identity. This exact migration was applied to
 project `slixamjkvpoijrnbwzxi` via the Supabase migration API on 2026-10-21, using name
-`siskill_isolated_one_time_commerce`. Hosted verification confirmed all five tables have
+`siskill_isolated_one_time_commerce` (hosted version `20261021011654`). Hosted verification confirmed all five tables have
 RLS enabled, authenticated users cannot execute settlement RPCs, service role can, and
 active SKU/order/grant counts are zero. Existing customer records were not queried.
 
@@ -45,7 +47,7 @@ Worker secrets/bindings, never as `VITE_*` variables or public catalog metadata:
 
 - `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`: approved shared project.
 - `SUPABASE_ANON_KEY`: public auth key; `/auth-config` rejects a service-role key.
-- `SISKILL_AUTH_REDIRECTS_READY=false`: enable only after saving and verifying
+- `SISKILL_AUTH_REDIRECTS_READY=true`: saved and verified on 2026-10-21:
   `https://siskill.dev/en-US/account` and `https://siskill.dev/zh-CN/account` in
   the existing auth redirect allowlist. Preserve all WebToMind entries and Site URL.
 - `SISKILL_STRIPE_SECRET_KEY`, `SISKILL_STRIPE_WEBHOOK_SECRET`: matching test or live
@@ -67,8 +69,9 @@ separate. WebToMind's deployed credentials, callback URLs and fulfillment are un
 ## Requirements before enabling the first sale
 
 1. Shared account model is confirmed and the account/library UI is implemented.
-   Finish dashboard login/captcha, save the two redirect URLs, and verify Google OAuth,
-   signup and password recovery before opening those methods. Verify post-checkout status. Do not make the success query
+   Both redirect URLs are saved and the Google authorization handoff is verified.
+   Complete real Google sign-in, signup email and password recovery acceptance.
+   Verify post-checkout status. Do not make the success query
    string or a cancelled browser tab authorize a download.
 2. Review the exact first package and license contract: original/licensed source,
    attribution, personal paths/credentials/customer data removed, reproducible agent
