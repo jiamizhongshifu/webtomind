@@ -9,6 +9,9 @@ on:
       - 'src/web/styles/**'
       - 'src/shared/skill-showcases.json'
       - '.github/workflows/siskill.yml'
+      - 'src/__tests__/siskill-commerce-*.test.ts'
+      - 'supabase/migrations/*siskill*.sql'
+      - 'api/utils/zpay.ts'
 permissions:
   contents: read
 jobs:
@@ -25,6 +28,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec tsc --noEmit -p apps/siskill/tsconfig.json
-      - run: node --test apps/siskill/worker.test.mjs
+      - run: pnpm exec vitest run --config apps/siskill/vitest.config.ts
       - run: pnpm exec vite build --config apps/siskill/vite.config.ts
       - run: node apps/siskill/verify-public.mjs
+      - run: pnpm exec wrangler deploy --dry-run --config apps/siskill/wrangler.jsonc

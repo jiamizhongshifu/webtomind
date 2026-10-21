@@ -1,21 +1,6 @@
-import test from 'node:test';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-// Node's JSON import attributes differ from Wrangler's bundler; load worker with an inline catalog.
-const source = readFileSync(
-  new URL('./worker.mjs', import.meta.url),
-  'utf8'
-).replace(
-  "import catalog from './catalog.json';",
-  `const catalog=${readFileSync(new URL('./catalog.json', import.meta.url), 'utf8')};`
-);
-const {
-  route,
-  metadata,
-  default: worker
-} = await import(
-  `data:text/javascript;base64,${Buffer.from(source).toString('base64')}`
-);
+import worker, { route, metadata } from './worker.mjs';
 test('new brand preserves acquisition parameters across root, locale and www redirects', () => {
   assert.equal(
     route('https://siskill.dev/?utm_source=webtomind').redirect,
@@ -86,5 +71,53 @@ test('sitemap owns the new domain and robots advertises it', async () => {
       await worker.fetch(new Request('https://siskill.dev/robots.txt'), {})
     ).text(),
     /Sitemap: https:\/\/siskill.dev\/sitemap.xml/
+  );
+});
+
+test('commerce namespace reaches the real handler and fails closed without configuration', async () => {
+  const env = {
+    ASSETS: {
+      fetch() {
+        throw Error('API must not fall through to assets');
+      }
+    }
+  };
+  const status = await worker.fetch(
+    new Request('https://siskill.dev/api/siskill/status'),
+    env
+  );
+  assert.equal(status.status, 200);
+  assert.deepEqual(await status.json(), {
+    product: 'siskill',
+    checkoutOpen: false,
+    membershipOpen: false
+  });
+  assert.equal(status.headers.get('Cache-Control'), 'no-store');
+  for (const [path, method] of [
+    ['checkout', 'POST'],
+    ['stripe-webhook', 'POST'],
+    ['me', 'GET']
+  ]) {
+    const response = await worker.fetch(
+      new Request(`https://siskill.dev/api/siskill/${path}`, { method }),
+      env
+    );
+    assert.equal(response.status, 503);
+    assert.deepEqual(await response.json(), {
+      error: 'COMMERCE_NOT_CONFIGURED'
+    });
+  }
+});
+test('API credentials are not redirected across origins', async () => {
+  assert.equal(
+    (
+      await worker.fetch(
+        new Request('https://www.siskill.dev/api/siskill/checkout', {
+          method: 'POST'
+        }),
+        {}
+      )
+    ).status,
+    403
   );
 });

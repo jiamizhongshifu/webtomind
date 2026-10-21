@@ -1,4 +1,5 @@
 import catalog from './catalog.json';
+import { handleCommerce } from './server/handler.ts';
 
 const ORIGIN = 'https://siskill.dev';
 const locales = ['en-US', 'zh-CN'];
@@ -90,6 +91,15 @@ function secure(response, html = false) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // Only the independent namespace can reach billing; legacy APIs stay closed.
+    if (url.pathname.startsWith('/api/siskill/')) {
+      const canonical = route(url);
+      if (canonical.redirect)
+        return new Response('Use the canonical SiSkill origin', {
+          status: 403
+        });
+      return secure(await handleCommerce(request, env));
+    }
     if (!['GET', 'HEAD'].includes(request.method))
       return new Response('Method not allowed', {
         status: 405,
