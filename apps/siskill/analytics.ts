@@ -107,7 +107,7 @@ function base(): Params {
     ...safePage(window.location.href),
     page_referrer: safeReferrer(document.referrer),
     product: 'siskill',
-    ...(qa ? { debug_mode: true, traffic_type: 'qa' } : {})
+    ...(qa ? { debug_mode: 1, traffic_type: 'qa' } : {})
   };
 }
 export function startAnalytics() {

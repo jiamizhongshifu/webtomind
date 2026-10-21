@@ -122,3 +122,10 @@ test('preview hosts cannot pollute production, unknown URLs and attribution are 
     )
   ).toEqual({});
 });
+
+test('QA uses a numeric debug flag compatible with the developer exclusion filter', () => {
+  sessionStorage.getItem = () => 'true';
+  analytics.setConsent('granted');
+  expect(events().every((e) => e[2].debug_mode === 1)).toBe(true);
+  expect(events().every((e) => e[2].traffic_type === 'qa')).toBe(true);
+});

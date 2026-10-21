@@ -41,11 +41,11 @@ cookie_prefix 为 siskill，期限 180 天；拒绝时删除该前缀 GA cookies
 GA4 创建 `SiSkill QA Developer Traffic` 开发者流量排除过滤器，ID `16172003071`，
 Active（filterMode 3）。条件为 debug_mode 或 debug_event = 1；不影响无调试标记的访客。
 正式站点验收前仅在测试浏览器 sessionStorage 设置 `siskill.analytics.qa=true`，
-事件附带 debug_mode 与 traffic_type=qa。结束时关闭测试会话。
+事件附带数值 debug_mode=1 与 traffic_type=qa。结束时关闭测试会话。
 过滤器传播和报表处理可能延迟；当日调试事件不能当作真实获客或转化。
 本地浏览器用独立站请求映射本地 Worker，并 stub Google 标签，避免污染正式报表。
 
-本地验证：88 项测试、类型检查、构建、公开包检查；桌面与手机验证未选择、允许、
+本地验证：89 项测试、类型检查、构建、公开包检查；桌面与手机验证未选择、允许、
 拒绝、重新打开、撤回和中英文说明，检查 URL 参数脱敏及 SPA 页面计数。
 生产验收另记录 manifest、Worker version、实际 collect 响应和脱敏字段；
 网络接受不等于已进入标准报表。未执行真实支付或退款。
