@@ -164,19 +164,19 @@ export function TopNav() {
   const ctaTarget = isAuthenticated ? '/create' : loginTarget;
   const promptLibraryHref =
     locale === 'en-US' ? '/en-US/prompts' : `${localePrefix}/prompts`;
-  const skillsHref = `${localePrefix}/skills`;
+  const skillsHref = `https://siskill.dev${localePrefix}/overview?utm_source=webtomind&utm_medium=referral&utm_campaign=siskill_launch&utm_content=header`;
   const pricingHref = `${localePrefix}/skills/pricing`;
   const navFallback =
     locale === 'en-US'
       ? {
           create: 'Creative Studio',
-          skills: 'Skills',
+          skills: 'SiSkill ↗',
           promptLibrary: 'AI Image Prompts',
           pricing: 'Pricing'
         }
       : {
           create: '创意工作台',
-          skills: 'Skill 目录',
+          skills: 'SiSkill ↗',
           promptLibrary: 'Prompt 案例',
           pricing: '价格'
         };
@@ -271,7 +271,17 @@ export function TopNav() {
               >
                 {navFallback.create}
               </NavigationLink>
-              <NavigationLink href={skillsHref} className="nav-link-item">
+              <NavigationLink
+                href={skillsHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="nav-link-item"
+                title={
+                  locale === 'en-US'
+                    ? 'SiSkill — Agent Skills (opens in a new tab)'
+                    : 'SiSkill — Agent Skills（新窗口打开）'
+                }
+              >
                 {navFallback.skills}
               </NavigationLink>
               <NavigationLink

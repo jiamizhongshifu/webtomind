@@ -32,6 +32,19 @@ export function MarketingFooter() {
             locale={locale}
             className="marketing-footer-link"
           />
+          <a
+            href={`https://siskill.dev/${locale}/overview?utm_source=webtomind&utm_medium=referral&utm_campaign=siskill_launch&utm_content=footer`}
+            className="marketing-footer-link"
+            target="_blank"
+            rel="noopener noreferrer"
+            title={
+              locale === 'en-US'
+                ? 'Explore SiSkill (opens in a new tab)'
+                : '探索 SiSkill（新窗口打开）'
+            }
+          >
+            SiSkill — Agent Skills ↗
+          </a>
           <Link to="/terms" className="marketing-footer-link">
             {t('footer.terms')}
           </Link>
@@ -41,10 +54,7 @@ export function MarketingFooter() {
           <Link to={promptLibraryTarget} className="marketing-footer-link">
             {locale === 'en-US' ? 'AI Image Prompts' : 'Prompt 案例库'}
           </Link>
-          <a
-            href="mailto:admin@example.com"
-            className="marketing-footer-link"
-          >
+          <a href="mailto:admin@example.com" className="marketing-footer-link">
             {t('footer.contact')}
           </a>
           <a
