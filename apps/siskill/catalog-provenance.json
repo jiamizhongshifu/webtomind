@@ -1,0 +1,162 @@
+[
+  {
+    "slug": "xhs-cover-note",
+    "metadataSha256": "4421186eb9c49cb91fa3fd8b3b030ab6e17fe38e7de001f2ca9658b4fbbfa900",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  },
+  {
+    "slug": "og-image",
+    "metadataSha256": "49ee49ce0e97a3aaf343bd0375c42b2014228e25827f83d78dfc58c784b304c2",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  },
+  {
+    "slug": "weekly-report-deck",
+    "metadataSha256": "8fb534027eee24bb407aaa248c0307059d1d0d7f68a68392ea95d5a0a04ac1ff",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  },
+  {
+    "slug": "waitlist-page",
+    "metadataSha256": "8a9751f0695beb5f213a6d6c172d4371505d8b025e3f5b3be2eca49d5432615e",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  },
+  {
+    "slug": "kinetic-typography-short",
+    "metadataSha256": "79fd0f7395de8afad52b08f4aefc28a2c314cde3432040c26bc6711d1f6051ea",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  },
+  {
+    "slug": "xhs-carousel",
+    "metadataSha256": "71cde66ac5e497caaa0c257e3e61cc676fbcb4b8a5f262d89e1842cbbb94027d",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  },
+  {
+    "slug": "case-study-deck",
+    "metadataSha256": "834f370461ccaeb1de6635eaf3db62b07695688bd7add95bb33e502d2061d01b",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  },
+  {
+    "slug": "product-launch-deck",
+    "metadataSha256": "cc8735cd9c58475b9453a41bce23b7ac34214e0a77415675d370c2b758dbbcca",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  },
+  {
+    "slug": "saas-landing-page",
+    "metadataSha256": "120da51829ad4520e20ae473a9c9bd559d8e1132f2ad52b180906a9134791ee9",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  },
+  {
+    "slug": "app-feature-demo-video",
+    "metadataSha256": "822a9571fc763b26e8d78f36f52a4b9256c2ef8b1766a4d9b2d200b493eb51ec",
+    "sourceStatus": "review",
+    "publicFields": [
+      "name",
+      "description",
+      "output_type",
+      "tier",
+      "agents",
+      "languages",
+      "formats",
+      "scenarios"
+    ],
+    "availability": "coming-soon"
+  }
+]

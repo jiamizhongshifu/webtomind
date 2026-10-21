@@ -1,0 +1,500 @@
+[
+  {
+    "slug": "xhs-cover-note",
+    "name": {
+      "en-US": "Xiaohongshu Note Cover",
+      "zh-CN": "小红书笔记封面"
+    },
+    "summary": {
+      "en-US": "Turn a topic into a 3:4 Xiaohongshu cover with a bold headline, highlight mark, tags and an optional photo; text is typeset, never hallucinated.",
+      "zh-CN": "一句话主题生成 3:4 小红书封面：大字标题、重点高亮、标签与可选实拍图，文字由排版引擎渲染，零错字。"
+    },
+    "description": {
+      "en-US": "Turn a topic into a 3:4 Xiaohongshu cover with a bold headline, highlight mark, tags and an optional photo; text is typeset, never hallucinated.",
+      "zh-CN": "一句话主题生成 3:4 小红书封面：大字标题、重点高亮、标签与可选实拍图，文字由排版引擎渲染，零错字。"
+    },
+    "outputTypes": [
+      "image"
+    ],
+    "tier": "free",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "zh-CN"
+    ],
+    "formats": [
+      "png"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/xhs-cover-note.jpg",
+    "previewVideoUrl": "/skill-previews/videos/xhs-cover-note.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "xiaohongshu",
+      "social-cover",
+      "creator"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  },
+  {
+    "slug": "og-image",
+    "name": {
+      "en-US": "Open Graph Image",
+      "zh-CN": "网站分享图 OG Image"
+    },
+    "summary": {
+      "en-US": "1200x630 share images for blog posts, product launches and docs pages in English or Chinese, readable in small link previews, delivered with og:image tags.",
+      "zh-CN": "为博客文章、产品发布和文档页生成 1200×630 链接分享图，中英文皆可，标题清晰、聊天预览也能看清，附 og:image 标签。"
+    },
+    "description": {
+      "en-US": "1200x630 share images for blog posts, product launches and docs pages in English or Chinese, readable in small link previews, delivered with og:image tags.",
+      "zh-CN": "为博客文章、产品发布和文档页生成 1200×630 链接分享图，中英文皆可，标题清晰、聊天预览也能看清，附 og:image 标签。"
+    },
+    "outputTypes": [
+      "image"
+    ],
+    "tier": "free",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "en",
+      "zh-CN"
+    ],
+    "formats": [
+      "png"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/og-image.jpg",
+    "previewVideoUrl": "/skill-previews/videos/og-image.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "og-image",
+      "social-share",
+      "blog",
+      "product-launch",
+      "documentation"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  },
+  {
+    "slug": "weekly-report-deck",
+    "name": {
+      "en-US": "Weekly Report Deck",
+      "zh-CN": "周报复盘幻灯片"
+    },
+    "summary": {
+      "en-US": "Turn messy weekly notes and metrics into a conclusion-first 16:9 deck with KPI cards, a bar chart, wins, issues and next steps, exported as PNG and PDF.",
+      "zh-CN": "把零散周报笔记和数据整理成结论先行的 16:9 汇报幻灯片：指标卡、渠道柱状图、成果、问题对策与下周计划，输出 PNG 与 PDF。"
+    },
+    "description": {
+      "en-US": "Turn messy weekly notes and metrics into a conclusion-first 16:9 deck with KPI cards, a bar chart, wins, issues and next steps, exported as PNG and PDF.",
+      "zh-CN": "把零散周报笔记和数据整理成结论先行的 16:9 汇报幻灯片：指标卡、渠道柱状图、成果、问题对策与下周计划，输出 PNG 与 PDF。"
+    },
+    "outputTypes": [
+      "slides"
+    ],
+    "tier": "free",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "zh-CN",
+      "en"
+    ],
+    "formats": [
+      "png",
+      "pdf"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/weekly-report-deck.jpg",
+    "previewVideoUrl": "/skill-previews/videos/weekly-report-deck.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "weekly-report",
+      "work-report",
+      "retro"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  },
+  {
+    "slug": "waitlist-page",
+    "name": {
+      "en-US": "Waitlist Landing Page",
+      "zh-CN": "候补预约落地页"
+    },
+    "summary": {
+      "en-US": "A self-contained responsive waitlist page with hero, email capture, product preview, features, FAQ and final CTA, plus desktop and mobile previews.",
+      "zh-CN": "一个自包含的响应式预约/内测落地页：首屏卖点、邮箱收集、产品预览、功能、FAQ 与底部转化，附桌面与手机预览图。"
+    },
+    "description": {
+      "en-US": "A self-contained responsive waitlist page with hero, email capture, product preview, features, FAQ and final CTA, plus desktop and mobile previews.",
+      "zh-CN": "一个自包含的响应式预约/内测落地页：首屏卖点、邮箱收集、产品预览、功能、FAQ 与底部转化，附桌面与手机预览图。"
+    },
+    "outputTypes": [
+      "web"
+    ],
+    "tier": "free",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "en",
+      "zh-CN"
+    ],
+    "formats": [
+      "html",
+      "png"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/waitlist-page.jpg",
+    "previewVideoUrl": "/skill-previews/videos/waitlist-page.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "waitlist",
+      "landing-page",
+      "product-launch"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  },
+  {
+    "slug": "kinetic-typography-short",
+    "name": {
+      "en-US": "Kinetic Typography Short",
+      "zh-CN": "文字动效短视频"
+    },
+    "summary": {
+      "en-US": "Turn a script or talking points into a 10–20 s vertical kinetic-typography MP4 with hook, line reveals, count-up stats, list and CTA.",
+      "zh-CN": "把口播稿或观点变成 10–20 秒竖版文字动效视频：大字钩子、逐行揭示、数字滚动、清单与关注引导，输出 MP4。"
+    },
+    "description": {
+      "en-US": "Turn a script or talking points into a 10–20 s vertical kinetic-typography MP4 with hook, line reveals, count-up stats, list and CTA.",
+      "zh-CN": "把口播稿或观点变成 10–20 秒竖版文字动效视频：大字钩子、逐行揭示、数字滚动、清单与关注引导，输出 MP4。"
+    },
+    "outputTypes": [
+      "video"
+    ],
+    "tier": "free",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "zh-CN",
+      "en"
+    ],
+    "formats": [
+      "mp4",
+      "jpg"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/kinetic-typography-short.jpg",
+    "previewVideoUrl": "/skill-previews/videos/kinetic-typography-short.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "short-video",
+      "douyin",
+      "reels",
+      "text-animation"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  },
+  {
+    "slug": "xhs-carousel",
+    "name": {
+      "en-US": "Xiaohongshu Carousel",
+      "zh-CN": "小红书图文轮播"
+    },
+    "summary": {
+      "en-US": "Turn notes or an article into a 6–9 page Xiaohongshu knowledge carousel: cover, points, do/don't, steps, quote, checklist and a follow page in one consistent design system.",
+      "zh-CN": "把文章或干货整理成 6–9 页小红书知识卡片：封面、要点、对比、步骤、金句、清单与结尾关注页，统一设计系统，文字由 HTML 排版，交付前逐页校对。"
+    },
+    "description": {
+      "en-US": "Turn notes or an article into a 6–9 page Xiaohongshu knowledge carousel: cover, points, do/don't, steps, quote, checklist and a follow page in one consistent design system.",
+      "zh-CN": "把文章或干货整理成 6–9 页小红书知识卡片：封面、要点、对比、步骤、金句、清单与结尾关注页，统一设计系统，文字由 HTML 排版，交付前逐页校对。"
+    },
+    "outputTypes": [
+      "image"
+    ],
+    "tier": "premium",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "zh-CN"
+    ],
+    "formats": [
+      "png"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/xhs-carousel.jpg",
+    "previewVideoUrl": "/skill-previews/videos/xhs-carousel.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "xiaohongshu",
+      "knowledge-card",
+      "carousel",
+      "creator"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  },
+  {
+    "slug": "case-study-deck",
+    "name": {
+      "en-US": "Customer Case Study Deck",
+      "zh-CN": "客户案例 Deck"
+    },
+    "summary": {
+      "en-US": "Turn a B2B customer win into an editorial 16:9 case study: customer snapshot, challenge, rollout timeline, solution flow, quantified results, before/after bars, a customer quote and next steps. PNG and PDF.",
+      "zh-CN": "把一个 B2B 客户成功故事做成英文案例 Deck：客户概况、挑战、实施路径、方案架构、量化成果、前后对比、客户证言与下一步，输出 PNG 与 PDF。"
+    },
+    "description": {
+      "en-US": "Turn a B2B customer win into an editorial 16:9 case study: customer snapshot, challenge, rollout timeline, solution flow, quantified results, before/after bars, a customer quote and next steps. PNG and PDF.",
+      "zh-CN": "把一个 B2B 客户成功故事做成英文案例 Deck：客户概况、挑战、实施路径、方案架构、量化成果、前后对比、客户证言与下一步，输出 PNG 与 PDF。"
+    },
+    "outputTypes": [
+      "slides"
+    ],
+    "tier": "premium",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "en"
+    ],
+    "formats": [
+      "png",
+      "pdf"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/case-study-deck.jpg",
+    "previewVideoUrl": "/skill-previews/videos/case-study-deck.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "b2b-sales",
+      "customer-success",
+      "case-study"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  },
+  {
+    "slug": "product-launch-deck",
+    "name": {
+      "en-US": "Product Launch Keynote",
+      "zh-CN": "发布会幻灯片"
+    },
+    "summary": {
+      "en-US": "Create a dark, cinematic launch keynote: opener, hero statements, product reveal, giant spec numbers, feature callouts, performance bars, colorways, price and availability, with CSS-drawn product stand-ins. PNG and PDF.",
+      "zh-CN": "做一套暗场电影感的新品发布会 Keynote：开场、一句话大字、产品揭幕、巨型参数、卖点标注、性能对比、配色、价格与上市时间，产品由 CSS 绘制，输出 PNG 与 PDF。"
+    },
+    "description": {
+      "en-US": "Create a dark, cinematic launch keynote: opener, hero statements, product reveal, giant spec numbers, feature callouts, performance bars, colorways, price and availability, with CSS-drawn product stand-ins. PNG and PDF.",
+      "zh-CN": "做一套暗场电影感的新品发布会 Keynote：开场、一句话大字、产品揭幕、巨型参数、卖点标注、性能对比、配色、价格与上市时间，产品由 CSS 绘制，输出 PNG 与 PDF。"
+    },
+    "outputTypes": [
+      "slides"
+    ],
+    "tier": "premium",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "en",
+      "zh-CN"
+    ],
+    "formats": [
+      "png",
+      "pdf"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/product-launch-deck.jpg",
+    "previewVideoUrl": "/skill-previews/videos/product-launch-deck.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "product-launch",
+      "keynote",
+      "launch-event"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  },
+  {
+    "slug": "saas-landing-page",
+    "name": {
+      "en-US": "SaaS Landing Page",
+      "zh-CN": "SaaS 产品落地页"
+    },
+    "summary": {
+      "en-US": "A full SaaS marketing page: nav, hero with a CSS product mock, logo-free proof, feature grid, how it works, use cases, placeholder testimonials, pricing teaser, FAQ, CTA and footer in one self-contained file.",
+      "zh-CN": "完整的 SaaS/AI 工具营销首页：导航、首屏与 CSS 产品界面、无 Logo 社会证明、功能网格、使用流程、场景、待替换的客户评价、定价预览、FAQ、转化区与页脚，自包含单文件。"
+    },
+    "description": {
+      "en-US": "A full SaaS marketing page: nav, hero with a CSS product mock, logo-free proof, feature grid, how it works, use cases, placeholder testimonials, pricing teaser, FAQ, CTA and footer in one self-contained file.",
+      "zh-CN": "完整的 SaaS/AI 工具营销首页：导航、首屏与 CSS 产品界面、无 Logo 社会证明、功能网格、使用流程、场景、待替换的客户评价、定价预览、FAQ、转化区与页脚，自包含单文件。"
+    },
+    "outputTypes": [
+      "web"
+    ],
+    "tier": "premium",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "en"
+    ],
+    "formats": [
+      "html",
+      "png"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/saas-landing-page.jpg",
+    "previewVideoUrl": "/skill-previews/videos/saas-landing-page.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "saas",
+      "landing-page",
+      "product-marketing"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  },
+  {
+    "slug": "app-feature-demo-video",
+    "name": {
+      "en-US": "App Feature Demo Video",
+      "zh-CN": "App 功能演示视频"
+    },
+    "summary": {
+      "en-US": "Show off app features in a short MP4 with a CSS phone mockup: tap ripples, list scrolling, toggles, a success state and a download CTA, in portrait or landscape.",
+      "zh-CN": "用 CSS 手机样机演示 App 功能的短视频：点击涟漪、列表滚动、开关切换、成功动画与下载引导，支持竖版与横版，输出 MP4。"
+    },
+    "description": {
+      "en-US": "Show off app features in a short MP4 with a CSS phone mockup: tap ripples, list scrolling, toggles, a success state and a download CTA, in portrait or landscape.",
+      "zh-CN": "用 CSS 手机样机演示 App 功能的短视频：点击涟漪、列表滚动、开关切换、成功动画与下载引导，支持竖版与横版，输出 MP4。"
+    },
+    "outputTypes": [
+      "video"
+    ],
+    "tier": "premium",
+    "compatibleAgents": [
+      "claude-code",
+      "codex",
+      "cursor",
+      "gemini-cli",
+      "trae",
+      "kimi-code"
+    ],
+    "languages": [
+      "en",
+      "zh-CN"
+    ],
+    "formats": [
+      "mp4",
+      "jpg"
+    ],
+    "availability": "coming-soon",
+    "coverUrl": "/skill-previews/videos/app-feature-demo-video.jpg",
+    "previewVideoUrl": "/skill-previews/videos/app-feature-demo-video.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "app-launch",
+      "feature-update",
+      "app-store-preview",
+      "product-demo"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": null,
+    "publishedAt": null
+  }
+]

@@ -1,0 +1,30 @@
+name: SiSkill
+on:
+  push:
+    branches: [main, 'codex/siskill-*']
+  pull_request:
+    paths:
+      - 'apps/siskill/**'
+      - 'src/web/pages/skill-catalog/**'
+      - 'src/web/styles/**'
+      - 'src/shared/skill-showcases.json'
+      - '.github/workflows/siskill.yml'
+permissions:
+  contents: read
+jobs:
+  public-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc --noEmit -p apps/siskill/tsconfig.json
+      - run: node --test apps/siskill/worker.test.mjs
+      - run: pnpm exec vite build --config apps/siskill/vite.config.ts
+      - run: node apps/siskill/verify-public.mjs

@@ -1,0 +1,125 @@
+{
+  "scope": "Public demonstration derivatives; original fictional outputs, no private Skill implementation or input data. Nine label adaptations; app-feature-demo-video has no WebToMind label and is reused.",
+  "runtime": "huashu-motion 3e927801e78b587878fb7dbb65d616326df00c21",
+  "media": [
+    {
+      "slug": "xhs-cover-note",
+      "brand": "SiSkill",
+      "videoSha256": "b11df27d8e9ab8fa4ff6b6af136ea2905e1bd329a7792195acb342edb53f22b8",
+      "posterSha256": "b7951714667ce66019332324b3f70c1dae6e4d1880a7202ee04c938c761cde50",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "duration": 24.0,
+      "audio": false,
+      "fullDecode": "passed"
+    },
+    {
+      "slug": "og-image",
+      "brand": "SiSkill",
+      "videoSha256": "efe387e637b311d514a18f7f60a20113a51540e6617504485235316c065ebab5",
+      "posterSha256": "1eb02b5f2f3e95e07a1ecb9d2481b49062871f5b4f994e38dc3ec0b8fbdcd1a4",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "duration": 24.0,
+      "audio": false,
+      "fullDecode": "passed"
+    },
+    {
+      "slug": "weekly-report-deck",
+      "brand": "SiSkill",
+      "videoSha256": "f9c09a1abee98f9d697f364d78c19b1d82ca5648e1b0d7d019a2b2ec88a8205f",
+      "posterSha256": "84734ca8abb96633fd5374c9c0eb1d996d4a5336ac54ba333d58c4b84c23f05d",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "duration": 24.0,
+      "audio": false,
+      "fullDecode": "passed"
+    },
+    {
+      "slug": "waitlist-page",
+      "brand": "SiSkill",
+      "videoSha256": "4a850187d354649b00eee39208cd10f4be688fcc8553ebfd3aedd3e921090d55",
+      "posterSha256": "3017d88090a68ac94fc53a75ce0f1516b2de2ee89a8eaa84aa826265cb1dfdbc",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "duration": 24.0,
+      "audio": false,
+      "fullDecode": "passed"
+    },
+    {
+      "slug": "kinetic-typography-short",
+      "brand": "SiSkill",
+      "videoSha256": "32799a92154905d0ef8d0d659927e9189a7ec31a16786efb96b3cf047fc6cc68",
+      "posterSha256": "acc5742ef3118eefbc59f838026ea5ade3309c2fbcb642be1faa6b8e42db889f",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "duration": 24.0,
+      "audio": false,
+      "fullDecode": "passed"
+    },
+    {
+      "slug": "xhs-carousel",
+      "brand": "SiSkill",
+      "videoSha256": "148828f635d0b833e403d8f810086af89886c9659738aa79c1dd82958a589526",
+      "posterSha256": "decaf72c2ae24506d2432993ae6ba74746780c5a1e930ecb3435635799217421",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "duration": 30.0,
+      "audio": false,
+      "fullDecode": "passed"
+    },
+    {
+      "slug": "case-study-deck",
+      "brand": "SiSkill",
+      "videoSha256": "23d96ceb2898a9168aa37f54089fe75df333fdb206768fe9fef45ac49140fa9f",
+      "posterSha256": "848ac2e45232d0376008fd8ad036100865dececbf6d17e34e27425014479ab21",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "duration": 24.0,
+      "audio": false,
+      "fullDecode": "passed"
+    },
+    {
+      "slug": "product-launch-deck",
+      "brand": "SiSkill",
+      "videoSha256": "109bbc978bfd80f40a293fe17c1adcc60d92878a7e6b3be92d94d81f2c433481",
+      "posterSha256": "df9832ecaa933bee629a900c79134f3c3438f93413052a8e4fbf2684da849731",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "duration": 24.0,
+      "audio": false,
+      "fullDecode": "passed"
+    },
+    {
+      "slug": "saas-landing-page",
+      "brand": "SiSkill",
+      "videoSha256": "8d28267d49b587107e48484fe0b32f4b80b0281b94447b5f64ecec6757d560b0",
+      "posterSha256": "64c930b8d31d81c940cbec0a609e8a20ff0ca2ae2cdf5bbfc40ee2d60393dc32",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "duration": 24.0,
+      "audio": false,
+      "fullDecode": "passed"
+    },
+    {
+      "slug": "app-feature-demo-video",
+      "brand": "Fictional app workflow, no producer brand displayed",
+      "videoSha256": "598571f04ee640b9d63cea3fce69a90b47148b2df23eab4cccf1064e4151784f",
+      "posterSha256": "fbc97166a15c6d87ef88633727c13b48067566f7b644b6118d5dbf46bfd532e7",
+      "width": 1280,
+      "height": 720,
+      "fps": 24,
+      "audio": false,
+      "duration": 17.875
+    }
+  ]
+}

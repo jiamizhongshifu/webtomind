@@ -1,0 +1,140 @@
+.siskill-root {
+  min-height: 100vh;
+}
+.siskill-desktop-nav {
+  display: flex;
+  gap: 30px;
+  margin-left: auto;
+  margin-right: 32px;
+}
+.siskill-desktop-nav a,
+.siskill-mobile-nav a {
+  color: var(--web-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.siskill-desktop-nav a:hover {
+  color: var(--skill-accent);
+}
+.siskill-language {
+  color: var(--skill-ink);
+  font-size: 14px;
+  text-decoration: none;
+  padding: 12px;
+  border: 1px solid var(--web-border-default);
+  border-radius: 10px;
+}
+.siskill-menu-button {
+  display: none;
+  min-width: 44px;
+  min-height: 44px;
+  border: 1px solid var(--web-border-default);
+  border-radius: 10px;
+  background: white;
+  color: #25221f;
+  font-size: 18px;
+}
+.siskill-mobile-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 28px 0 12px;
+}
+.siskill-page {
+  padding-top: 112px;
+  padding-bottom: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+.siskill-page .skill-hero-search {
+  width: 100%;
+  max-width: 720px;
+  margin: 0;
+}
+.siskill-page .skill-hero h1 {
+  font-size: clamp(36px, 5vw, 64px);
+  letter-spacing: -0.05em;
+}
+.siskill-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.siskill-filters a {
+  padding: 9px 16px;
+  border-radius: 24px;
+  border: 1px solid var(--web-border-default);
+  text-decoration: none;
+  color: var(--web-text-primary);
+  font-size: 14px;
+}
+.siskill-filters a[aria-current='page'] {
+  color: white;
+  background: #943c27;
+  border-color: #943c27;
+}
+.siskill-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 64px 24px;
+}
+.siskill-footer .nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: 650;
+}
+.siskill-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+}
+.siskill-footer nav a,
+.siskill-footer small a {
+  color: #d9cfc5;
+  text-decoration: none;
+}
+.siskill-footer p,
+.siskill-footer small {
+  color: #c9beb1;
+  margin: 0;
+  text-align: center;
+}
+.siskill-root .skill-breadcrumb {
+  margin-bottom: 24px;
+}
+.siskill-root .skill-product-sections {
+  margin: 48px 0;
+}
+.siskill-root .skill-product-sections li {
+  margin-bottom: 12px;
+  line-height: 1.65;
+}
+@media (max-width: 760px) {
+  .siskill-desktop-nav {
+    display: none;
+  }
+  .siskill-menu-button {
+    display: block;
+  }
+  .siskill-nav-cta {
+    display: none !important;
+  }
+  .siskill-page {
+    padding-top: 104px;
+  }
+  .siskill-footer {
+    padding: 44px 24px;
+  }
+  .siskill-footer nav {
+    gap: 18px;
+  }
+}
