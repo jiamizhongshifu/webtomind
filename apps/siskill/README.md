@@ -8,8 +8,8 @@ refer visitors to SiSkill. A shared source repository does not imply shared memb
 
 This app is a public preview: an English-first bilingual landing page, ten original
 workflow demonstrations, a searchable catalog, product detail pages and planned pricing.
-Cards play silent 16:9 demos on hover; touch and reduced-motion users have an explicit
-play control. Open Graph Image 1.0.4 is available free after sign-in, through a
+Cards automatically loop silent 16:9 demos when visible on desktop and mobile, without
+hover or a preview button. Offscreen cards and hidden tabs pause until visible again. Open Graph Image 1.0.4 is available free after sign-in, through a
 separate reviewed allowlist and private R2 bucket. Paid sales and paid archive distribution remain closed.
 The public assets never include installation archives. See `docs/SISKILL_FREE_RELEASE.md`. The account page uses the shared
 WebToMind user database with separate SiSkill sessions, orders and grants. Email/password
@@ -49,7 +49,7 @@ pnpm exec wrangler dev --config apps/siskill/wrangler.jsonc --port 8788 --local-
 ```
 
 Browser acceptance covers desktop and mobile: hero output selection, video playback,
-card hover/tap, filtering, search, detail gallery, language switching, navigation,
+automatic card playback, filtering, search, detail gallery, language switching, navigation,
 planned pricing, unknown routes and no horizontal overflow. Media provenance records
 original fictional demonstrations; no private template implementation is distributed.
 

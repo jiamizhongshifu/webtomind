@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { SkillVideoPreview } from './SkillVideoPreview';
 import { skillShowcases } from './skillShowcases';
 import { Link } from 'react-router-dom';
@@ -73,7 +72,6 @@ export function SkillCard({
   eager?: boolean;
   availabilityLabel?: string;
 }) {
-  const [hovered, setHovered] = useState(false);
   const name = pickLocalized(skill.name, locale) || skill.slug;
   const type = skill.outputTypes[0] || 'image';
   const cover =
@@ -82,21 +80,10 @@ export function SkillCard({
   const preview = skill.previewVideoUrl || showcase?.video;
   const poster = showcase?.poster || cover;
   return (
-    <article
-      className="skill-card"
-      onPointerEnter={(event) => {
-        if (
-          event.pointerType === 'mouse' &&
-          matchMedia('(hover: hover)').matches
-        )
-          setHovered(true);
-      }}
-      onPointerLeave={() => setHovered(false)}
-    >
+    <article className="skill-card">
       <div className="skill-card-cover">
         {preview ? (
           <SkillVideoPreview
-            hovered={hovered}
             src={preview}
             poster={poster}
             name={name}
