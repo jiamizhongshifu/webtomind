@@ -80,7 +80,7 @@
     "formats": [
       "png"
     ],
-    "availability": "coming-soon",
+    "availability": "available",
     "coverUrl": "/skill-previews/videos/og-image.jpg",
     "previewVideoUrl": "/skill-previews/videos/og-image.mp4",
     "isFeatured": true,
@@ -95,7 +95,7 @@
     "installs7d": 0,
     "ratingAvg": null,
     "ratingCount": 0,
-    "latestVersion": null,
+    "latestVersion": "1.0.3",
     "publishedAt": null
   },
   {

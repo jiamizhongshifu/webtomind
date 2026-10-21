@@ -9,6 +9,12 @@
     "SISKILL_COMMERCE_ENABLED": "false",
     "SISKILL_AUTH_REDIRECTS_READY": "true"
   },
+  "r2_buckets": [
+    {
+      "binding": "SISKILL_FREE_PACKAGES",
+      "bucket_name": "siskill-free-packages"
+    }
+  ],
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

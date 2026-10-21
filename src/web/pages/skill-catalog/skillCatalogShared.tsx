@@ -64,12 +64,14 @@ export function SkillCard({
   skill,
   locale,
   isZh,
-  eager = false
+  eager = false,
+  availabilityLabel
 }: {
   skill: SkillCatalogItem;
   locale: string;
   isZh: boolean;
   eager?: boolean;
+  availabilityLabel?: string;
 }) {
   const [hovered, setHovered] = useState(false);
   const name = pickLocalized(skill.name, locale) || skill.slug;
@@ -131,11 +133,12 @@ export function SkillCard({
         <h3>{name}</h3>
         <p>{pickLocalized(skill.summary, locale)}</p>
         <span className="skill-card-installs">
-          {skill.installCount > 0
-            ? formatInstalls(skill.installCount, isZh)
-            : isZh
-              ? '查看交付与使用方式 →'
-              : 'See outputs & requirements →'}
+          {availabilityLabel ||
+            (skill.installCount > 0
+              ? formatInstalls(skill.installCount, isZh)
+              : isZh
+                ? '查看交付与使用方式 →'
+                : 'See outputs & requirements →')}
         </span>
       </Link>
     </article>

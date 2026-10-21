@@ -281,3 +281,55 @@
     margin-top: 0;
   }
 }
+
+.siskill-free-download {
+  min-width: 0;
+}
+.siskill-free-download h3 {
+  margin: 24px 0 12px;
+  font-size: 18px;
+}
+.siskill-free-download label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.siskill-free-download select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px;
+  color: inherit;
+  background: var(--web-bg-primary, #fff);
+  border: 1px solid var(--web-border-default);
+  border-radius: 8px;
+  font: inherit;
+}
+.siskill-free-download ol {
+  list-style: decimal;
+  padding-left: 22px;
+}
+.siskill-free-download li {
+  margin: 12px 0;
+  line-height: 1.6;
+}
+.siskill-free-download code {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.siskill-free-download li code {
+  display: block;
+  margin-top: 6px;
+}
+.siskill-example-brief {
+  padding: 16px;
+  border-left: 3px solid var(--web-brand, #943e28);
+  background: var(--web-bg-secondary, #f4f1eb);
+}
+.siskill-free-download summary {
+  cursor: pointer;
+  padding-block: 10px;
+}
+.siskill-package-hash {
+  display: block;
+  word-break: break-all;
+}

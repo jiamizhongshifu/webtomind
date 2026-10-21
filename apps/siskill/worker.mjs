@@ -1,3 +1,4 @@
+import { freeDownload } from './server/free-download.ts';
 import catalog from './catalog.json';
 import { handleCommerce } from './server/handler.ts';
 
@@ -100,6 +101,8 @@ export default {
         return new Response('Use the canonical SiSkill origin', {
           status: 403
         });
+      if (url.pathname.startsWith('/api/siskill/free/'))
+        return secure(await freeDownload(request, env));
       return secure(await handleCommerce(request, env));
     }
     if (!['GET', 'HEAD'].includes(request.method))

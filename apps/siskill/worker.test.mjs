@@ -136,3 +136,94 @@ test('account is a valid private route and is omitted from the public sitemap', 
   ).text();
   assert.ok(!map.includes('/account'));
 });
+
+// Test the byte-integrity boundary, not just the happy-path response shape.
+import { freeDownload } from './server/free-download.ts';
+import { createHash } from 'node:crypto';
+const sample = new TextEncoder().encode('reviewed archive fixture');
+const release = {
+  slug: 'sample',
+  version: '1.0.0',
+  bytes: sample.length,
+  sha256: createHash('sha256').update(sample).digest('hex'),
+  objectKey: 'free/sample/1.0.0/archive.tar.gz',
+  license: 'fixture'
+};
+const request = (path = '/sample/1.0.0', method = 'GET') =>
+  new Request('https://siskill.dev/api/siskill/free' + path, { method });
+const bucket = (bytes = sample) => ({
+  SISKILL_FREE_PACKAGES: {
+    get: async () => ({
+      size: bytes.length,
+      arrayBuffer: async () => bytes.buffer
+    })
+  }
+});
+test('free download requires an exact reviewed release and never looks up arbitrary or paid keys', async () => {
+  const forbidden = {
+    SISKILL_FREE_PACKAGES: {
+      get() {
+        throw Error('Unexpected storage access');
+      }
+    }
+  };
+  for (const path of ['/paid/1.0.0', '/sample/latest', '/sample/1.0.0/extra'])
+    assert.equal(
+      (await freeDownload(request(path), forbidden, [release])).status,
+      404
+    );
+  assert.equal(
+    (await freeDownload(request('/sample/1.0.0', 'POST'), bucket(), [release]))
+      .status,
+    405
+  );
+  assert.equal((await freeDownload(request(), {}, [release])).status, 503);
+});
+test('free downloads verify actual bytes and fail closed for same-size corruption or storage errors', async () => {
+  const response = await freeDownload(request(), bucket(), [release]);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('X-Content-SHA256'), release.sha256);
+  assert.equal(await response.text(), 'reviewed archive fixture');
+  const tampered = new Uint8Array(sample);
+  tampered[0] ^= 1;
+  assert.equal(
+    (await freeDownload(request(), bucket(tampered), [release])).status,
+    503
+  );
+  assert.equal(
+    (await freeDownload(request(), bucket(new Uint8Array(1)), [release]))
+      .status,
+    503
+  );
+  assert.equal(
+    (
+      await freeDownload(
+        request(),
+        { SISKILL_FREE_PACKAGES: { get: async () => null } },
+        [release]
+      )
+    ).status,
+    503
+  );
+  assert.equal(
+    (
+      await freeDownload(
+        request(),
+        {
+          SISKILL_FREE_PACKAGES: {
+            get: async () => {
+              throw Error('offline');
+            }
+          }
+        },
+        [release]
+      )
+    ).status,
+    503
+  );
+  const head = await freeDownload(request('/sample/1.0.0', 'HEAD'), bucket(), [
+    release
+  ]);
+  assert.equal(head.status, 200);
+  assert.equal(await head.text(), '');
+});

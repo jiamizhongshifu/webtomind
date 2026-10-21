@@ -9,7 +9,9 @@ refer visitors to SiSkill. A shared source repository does not imply shared memb
 This app is a public preview: an English-first bilingual landing page, ten original
 workflow demonstrations, a searchable catalog, product detail pages and planned pricing.
 Cards play silent 16:9 demos on hover; touch and reduced-motion users have an explicit
-play control. All packages are marked coming soon. Sales and private archive distribution remain closed. The account page uses the shared
+play control. Open Graph Image 1.0.3 is available free, without sign-in, through a
+separate reviewed allowlist and private R2 bucket. Paid sales and paid archive distribution remain closed.
+The public assets never include installation archives. See `docs/SISKILL_FREE_RELEASE.md`. The account page uses the shared
 WebToMind user database with separate SiSkill sessions, orders and grants. Email/password
 sign-in is supported; Google/signup/recovery entry points use the verified SiSkill redirect allowlist.
 Google authorization handoff is verified; full Google login and email delivery remain separate acceptance items. An independent,

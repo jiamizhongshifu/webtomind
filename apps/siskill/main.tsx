@@ -36,6 +36,8 @@ import {
 } from '../../src/services/skill-catalog-api';
 import products from './catalog.json';
 import { SkillPurchaseLink } from './purchase';
+import { FreeSkillDownload } from './free-download';
+import freeReleases from './free-releases.json';
 const Account = lazy(() => import('./account'));
 
 const catalog = products as (SkillCatalogItem & {
@@ -61,6 +63,7 @@ function Site() {
       ? path.split('/')[2]
       : '';
   const skill = catalog.find((s) => s.slug === detailSlug);
+  const freeRelease = freeReleases.find((r) => r.slug === detailSlug);
   const params = new URLSearchParams(location.search);
   const filtered = catalog.filter(
     (s) =>
@@ -141,7 +144,17 @@ function Site() {
   const grid = (items: typeof catalog) => (
     <div className="skill-grid">
       {items.map((s) => (
-        <SkillCard key={s.slug} skill={s} locale={locale} isZh={zh} />
+        <SkillCard
+          key={s.slug}
+          skill={s}
+          locale={locale}
+          isZh={zh}
+          availabilityLabel={
+            s.availability === 'available'
+              ? t('Download free Skill →', '免费下载 Skill →')
+              : t('Coming soon · See demo →', '即将开放 · 查看演示 →')
+          }
+        />
       ))}
     </div>
   );
@@ -155,10 +168,15 @@ function Site() {
               : t('Free Skills', '免费 Skill')}
           </h2>
           <p>
-            {t(
-              'Explore the workflows and their actual outputs. Packages are coming soon.',
-              '探索工作流与真实产出，安装包即将开放。'
-            )}
+            {paid
+              ? t(
+                  'Explore premium workflows. Paid packages are coming soon.',
+                  '探索付费工作流，付费安装包即将开放。'
+                )
+              : t(
+                  'Explore real outputs. Open Graph Image is ready to download free.',
+                  '探索真实产出，Open Graph Image 已开放免费下载。'
+                )}
           </p>
         </div>
         <ButtonLink
@@ -339,8 +357,8 @@ function Site() {
                 [
                   t('Can I buy or install now?', '现在可以购买或安装吗？'),
                   t(
-                    'You can explore the demonstrations now. Downloads, subscriptions and checkout are not open yet.',
-                    '现在可以查看工作流与演示。下载、订阅和结账尚未开放。'
+                    'Open Graph Image is available as a free download. Other packages, subscriptions and checkout are coming soon.',
+                    'Open Graph Image 已开放免费下载，其他安装包、订阅和结账即将开放。'
                   )
                 ],
                 [
@@ -431,8 +449,8 @@ function Site() {
             </div>
             <p className="skill-muted">
               {t(
-                'Preview the collection. Packages are coming soon.',
-                '先看作品与演示，安装包即将开放。'
+                'Preview the collection. Open Graph Image is ready to download free.',
+                '先看作品与演示，Open Graph Image 已可免费下载。'
               )}
             </p>
             {filtered.length ? (
@@ -501,15 +519,20 @@ function Site() {
               <div className="skill-product-info">
                 <header className="skill-detail-header">
                   <p className="skill-muted">
-                    {skill.tier === 'free'
+                    {freeRelease
                       ? t(
-                          'Free workflow · Coming soon',
-                          '免费工作流 · 即将开放'
+                          'Free workflow · Available now',
+                          '免费工作流 · 现已开放'
                         )
-                      : t(
-                          'Paid workflow · Coming soon',
-                          '付费工作流 · 即将开放'
-                        )}
+                      : skill.tier === 'free'
+                        ? t(
+                            'Free workflow · Coming soon',
+                            '免费工作流 · 即将开放'
+                          )
+                        : t(
+                            'Paid workflow · Coming soon',
+                            '付费工作流 · 即将开放'
+                          )}
                   </p>
                   <h1>{pickLocalized(skill.name, locale)}</h1>
                   <p className="skill-detail-summary">
@@ -518,13 +541,23 @@ function Site() {
                 </header>
                 <div className="skill-upgrade">
                   <h2>{t('Get this workflow', '获取工作流')}</h2>
-                  <p>
-                    {t(
-                      'The demonstration is available now. Package downloads and purchases are not open yet.',
-                      '现在可查看演示。安装包下载和购买尚未开放。'
-                    )}
-                  </p>
-                  <SkillPurchaseLink slug={skill.slug} locale={locale} />
+                  {!freeRelease && (
+                    <p>
+                      {t(
+                        'The demonstration is available now. Package downloads and purchases are not open yet.',
+                        '现在可查看演示。安装包下载和购买尚未开放。'
+                      )}
+                    </p>
+                  )}
+                  {freeRelease ? (
+                    <FreeSkillDownload
+                      key={skill.slug}
+                      slug={skill.slug}
+                      locale={locale}
+                    />
+                  ) : (
+                    <SkillPurchaseLink slug={skill.slug} locale={locale} />
+                  )}
                   <p>
                     <Link to={`/${locale}/skills/pricing`}>
                       {t('Compare planned membership', '了解计划中的会员方案')}
@@ -547,7 +580,23 @@ function Site() {
                       }
                     </h2>
                     <ul>
-                      {skillShowcases[skill.slug][key].map((v) => (
+                      {(freeRelease && key === 'dependencies'
+                        ? [
+                            {
+                              'en-US':
+                                'Node.js 18+; verified here with Node 24 on macOS.',
+                              'zh-CN':
+                                'Node.js 18+，本次使用 macOS 与 Node 24 验证。'
+                            },
+                            {
+                              'en-US':
+                                'Playwright and Chromium / Chrome, installed separately. Dependency setup requires internet; rendering then runs offline.',
+                              'zh-CN':
+                                '需单独安装 Playwright 与 Chromium / Chrome；依赖安装需要联网，渲染可离线运行。'
+                            }
+                          ]
+                        : skillShowcases[skill.slug][key]
+                      ).map((v) => (
                         <li key={v['en-US']}>{pickLocalized(v, locale)}</li>
                       ))}
                     </ul>
@@ -633,8 +682,8 @@ function Pricing({ zh, locale }: { zh: boolean; locale: string }) {
       </div>
       <p className="skill-muted">
         {t(
-          'Planned launch pricing. Checkout and downloads are not open yet. Model and third-party costs are separate.',
-          '计划中的首发价格，结账与下载尚未开放。模型和第三方服务费用另计。'
+          'Paid plans are planned launch prices; checkout is not open yet. Open Graph Image is free to download. Model and third-party costs are separate.',
+          '付费方案为计划首发价，结账尚未开放。Open Graph Image 已可免费下载。模型和第三方服务费用另计。'
         )}
       </p>
       <div className="skill-pricing-grid">
