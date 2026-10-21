@@ -1,3 +1,4 @@
+import { SiSkillLink } from './SiSkillLink';
 import { AiRechargeLink } from './AiRechargeLink';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +29,11 @@ export function MarketingFooter() {
 
         <div className="marketing-footer-links">
           <AiRechargeLink
+            placement="footer"
+            locale={locale}
+            className="marketing-footer-link"
+          />
+          <SiSkillLink
             placement="footer"
             locale={locale}
             className="marketing-footer-link"

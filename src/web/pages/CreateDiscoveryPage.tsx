@@ -24,6 +24,7 @@ import { isCreateWorkspaceFeatureEnabled } from '../lib/create-workspace-flags';
 import { CREATE_WORKSPACE_FEATURE_FLAGS } from '@/shared/create-workspace-v2';
 import { withCreateWorkspaceDiscoveryFallback } from '../data/create-workspace-demo';
 import { ReactivationBanner } from '../components/ReactivationBanner';
+import { SiSkillLink } from '../components/SiSkillLink';
 import { AiRechargeLink } from '../components/AiRechargeLink';
 import {
   composeDiscoverySearchQuery,
@@ -697,6 +698,11 @@ export function CreateDiscoveryPage() {
       <ReactivationBanner />
       <div className="create-v2-page-container">
         <AiRechargeLink
+          placement="create_home"
+          locale={isEnglish ? 'en-US' : 'zh-CN'}
+          variant="banner"
+        />
+        <SiSkillLink
           placement="create_home"
           locale={isEnglish ? 'en-US' : 'zh-CN'}
           variant="banner"
