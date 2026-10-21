@@ -450,7 +450,7 @@ function Site() {
             <p className="skill-muted">
               {t(
                 'Preview the collection. Open Graph Image is ready to download free.',
-                '先看作品与演示，Open Graph Image 已可免费下载。'
+                '先看作品与演示，Open Graph Image 注册登录后可免费下载。'
               )}
             </p>
             {filtered.length ? (
@@ -682,8 +682,8 @@ function Pricing({ zh, locale }: { zh: boolean; locale: string }) {
       </div>
       <p className="skill-muted">
         {t(
-          'Paid plans are planned launch prices; checkout is not open yet. Open Graph Image is free to download. Model and third-party costs are separate.',
-          '付费方案为计划首发价，结账尚未开放。Open Graph Image 已可免费下载。模型和第三方服务费用另计。'
+          'Paid plans are planned launch prices; checkout is not open yet. Open Graph Image is free after sign-in. Model and third-party costs are separate.',
+          '付费方案为计划首发价，结账尚未开放。Open Graph Image 注册登录后可免费下载。模型和第三方服务费用另计。'
         )}
       </p>
       <div className="skill-pricing-grid">

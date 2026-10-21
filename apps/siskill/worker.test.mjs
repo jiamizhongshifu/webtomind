@@ -138,8 +138,15 @@ test('account is a valid private route and is omitted from the public sitemap', 
 });
 
 // Test the byte-integrity boundary, not just the happy-path response shape.
-import { freeDownload } from './server/free-download.ts';
+import { freeDownload as authenticatedFreeDownload } from './server/free-download.ts';
 import { createHash } from 'node:crypto';
+const freeDownload = (request, env, releases) =>
+  authenticatedFreeDownload(
+    request,
+    env,
+    releases,
+    async (token) => token === 'verified-test-user'
+  );
 const sample = new TextEncoder().encode('reviewed archive fixture');
 const release = {
   slug: 'sample',
@@ -150,7 +157,10 @@ const release = {
   license: 'fixture'
 };
 const request = (path = '/sample/1.0.0', method = 'GET') =>
-  new Request('https://siskill.dev/api/siskill/free' + path, { method });
+  new Request('https://siskill.dev/api/siskill/free' + path, {
+    method,
+    headers: { Authorization: 'Bearer verified-test-user' }
+  });
 const bucket = (bytes = sample) => ({
   SISKILL_FREE_PACKAGES: {
     get: async () => ({
@@ -226,4 +236,28 @@ test('free downloads verify actual bytes and fail closed for same-size corruptio
   ]);
   assert.equal(head.status, 200);
   assert.equal(await head.text(), '');
+});
+
+test('all free downloads, including HEAD, reject missing and invalid auth before storage', async () => {
+  const env = {
+    SISKILL_FREE_PACKAGES: {
+      get() {
+        throw Error('Unauthorized storage read');
+      }
+    }
+  };
+  for (const method of ['GET', 'HEAD']) {
+    const anonymous = new Request(
+      'https://siskill.dev/api/siskill/free/sample/1.0.0',
+      { method }
+    );
+    assert.equal((await freeDownload(anonymous, env, [release])).status, 401);
+    const invalid = new Request(anonymous, {
+      headers: { Authorization: 'Bearer invalid' }
+    });
+    assert.equal((await freeDownload(invalid, env, [release])).status, 401);
+  }
+  const valid = await freeDownload(request(), bucket(), [release]);
+  assert.equal(valid.headers.get('Cache-Control'), 'private, no-store');
+  assert.equal(valid.headers.get('Vary'), 'Authorization');
 });

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { client } from './auth-client';
 import { Button } from '../../src/shared/ui';
 import releases from './free-releases.json';
 export function FreeSkillDownload({
@@ -12,6 +14,26 @@ export function FreeSkillDownload({
   const [state, setState] = useState<'idle' | 'loading' | 'done' | 'error'>(
     'idle'
   );
+  const navigate = useNavigate();
+  const [signedIn, setSignedIn] = useState(false);
+  useEffect(() => {
+    let active = true;
+    let unsubscribe: (() => void) | undefined;
+    client()
+      .then(async (sdk) => {
+        if (!active) return;
+        unsubscribe = sdk.auth.onAuthStateChange((_event, session) => {
+          if (active) setSignedIn(Boolean(session));
+        }).data.subscription.unsubscribe;
+        const { data } = await sdk.auth.getSession();
+        if (active) setSignedIn(Boolean(data.session));
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+      unsubscribe?.();
+    };
+  }, []);
   const [agent, setAgent] = useState('codex');
   const zh = locale === 'zh-CN',
     t = (en: string, cn: string) => (zh ? cn : en);
@@ -22,9 +44,26 @@ export function FreeSkillDownload({
     if (!release || state === 'loading') return;
     setState('loading');
     try {
+      const sdk = await client();
+      const { data } = await sdk.auth.getSession();
+      if (!data.session) {
+        navigate(`/${locale}/account?download=${encodeURIComponent(slug)}`);
+        setState('idle');
+        return;
+      }
       const response = await fetch(
-        `/api/siskill/free/${release.slug}/${release.version}`
+        `/api/siskill/free/${release.slug}/${release.version}`,
+        {
+          cache: 'no-store',
+          headers: { Authorization: `Bearer ${data.session.access_token}` }
+        }
       );
+      if (response.status === 401) {
+        setSignedIn(false);
+        navigate(`/${locale}/account?download=${encodeURIComponent(slug)}`);
+        setState('idle');
+        return;
+      }
       if (!response.ok) throw Error('Unavailable');
       const bytes = await response.arrayBuffer();
       const hash = Array.from(
@@ -50,7 +89,7 @@ export function FreeSkillDownload({
     }
   }
   return (
-    <div className="siskill-free-download">
+    <div className="siskill-free-download" id="install">
       <Button
         variant="primary"
         onClick={download}
@@ -58,11 +97,16 @@ export function FreeSkillDownload({
       >
         {state === 'loading'
           ? t('Verifying download…', '正在校验下载…')
-          : t('Download free Skill', '免费下载 Skill')}
+          : signedIn
+            ? t('Download free Skill', '免费下载 Skill')
+            : t('Sign in to download', '登录后免费下载')}
       </Button>
       <p className="skill-muted">
         v{release.version} · {Math.ceil(release.bytes / 1024)} KB ·{' '}
-        {t('No account or card needed', '无需账号或信用卡')}
+        {t(
+          'Free with an account · No card needed',
+          '注册登录后免费 · 无需信用卡'
+        )}
       </p>
       {state === 'done' && (
         <p role="status">

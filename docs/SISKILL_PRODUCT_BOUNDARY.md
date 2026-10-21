@@ -20,7 +20,7 @@ The independent public preview supports home, catalog, detail pages, silent vide
 and planned pricing. Pricing is a proposal: $9.99/month or $79/year, individual Skills
 from $4.99. It is not an active offer or a charged subscription. Do not introduce a new
 lifetime plan before defining eligible catalog, update rights and sustainable costs.
-The reviewed `og-image@1.0.3` package is available free without an account through
+The reviewed `og-image@1.0.4` package is available free after registration and sign-in through
 a separate allowlist and R2 bucket; see `docs/SISKILL_FREE_RELEASE.md`. Paid downloads,
 checkout and membership remain closed while their fulfillment is prepared.
 

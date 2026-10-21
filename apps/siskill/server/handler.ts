@@ -75,7 +75,8 @@ async function userId(request: Request, db: SupabaseClient) {
     ?.match(/^Bearer (\S+)$/i)?.[1];
   if (!token) throw new CommerceError('AUTH_REQUIRED', 401);
   const { data, error } = await db.auth.getUser(token);
-  if (error || !data.user) throw new CommerceError('AUTH_REQUIRED', 401);
+  if (error || !data.user || data.user.is_anonymous)
+    throw new CommerceError('AUTH_REQUIRED', 401);
   return data.user.id;
 }
 async function apply(

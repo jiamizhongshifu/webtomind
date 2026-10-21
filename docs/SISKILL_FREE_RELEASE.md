@@ -1,6 +1,6 @@
 # SiSkill free package distribution
 
-The first free release is `og-image@1.0.3`. Downloads require neither account nor paid
+The first free release is `og-image@1.0.4`. Downloads require a registered, authenticated shared account but no paid
 membership, create no payment/order/grant rows, and do not call WebToMind billing.
 
 ## Package and review
@@ -23,7 +23,7 @@ version-specific commerce grants before any paid release. It does not limit free
 ## Distribution boundary
 
 `apps/siskill/free-releases.json` is the exact version/hash/size allowlist. The download
-route is `/api/siskill/free/og-image/1.0.3`. A separate private R2 bucket
+route is `/api/siskill/free/og-image/1.0.4`. A separate private R2 bucket
 `siskill-free-packages` is bound as `SISKILL_FREE_PACKAGES`; its r2.dev URL is disabled.
 There is no public bucket listing or arbitrary-key endpoint. Paid archives must never
 enter this bucket or allowlist. Public app assets still reject all archive extensions.
@@ -31,7 +31,8 @@ enter this bucket or allowlist. Public app assets still reject all archive exten
 The server checks actual downloaded bytes against the allowlist SHA-256 before returning
 them; the browser verifies again before saving. Missing binding/object, wrong size,
 corruption and storage errors fail closed. Only GET/HEAD are accepted. Error responses
-are not cached; success can be cached for one hour. Do not overwrite a published key or
+and authenticated successes are never cached. GET and HEAD both validate the bearer
+session against Supabase and reject anonymous accounts before reading R2. Do not overwrite a published key or
 change the bytes behind an existing version. Use a new version for corrections.
 
 ## Installation and acceptance

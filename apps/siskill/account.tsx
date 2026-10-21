@@ -1,10 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
-import {
-  createClient,
-  type SupabaseClient,
-  type Session
-} from '@supabase/supabase-js';
+import { Link, useNavigate } from 'react-router-dom';
+import { client, redirectsReady } from './auth-client';
+import freeReleases from './free-releases.json';
+import { type SupabaseClient, type Session } from '@supabase/supabase-js';
 import { Button, ButtonLink } from '../../src/shared/ui';
 
 type Mode = 'signin' | 'signup' | 'reset' | 'update';
@@ -28,36 +26,6 @@ export type Product = {
   contract_version: string;
   siskill_releases: { slug: string; version: string };
 };
-let auth: Promise<SupabaseClient> | undefined;
-let redirectsReady = false;
-function client() {
-  if (!auth)
-    auth = fetch('/api/siskill/auth-config', { cache: 'no-store' })
-      .then(async (r) => {
-        if (!r.ok) throw Error('AUTH_UNAVAILABLE');
-        const config = await r.json();
-        if (
-          !/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(config.url) ||
-          typeof config.anonKey !== 'string'
-        )
-          throw Error('AUTH_UNAVAILABLE');
-        redirectsReady = config.redirectsReady === true;
-        return createClient(config.url, config.anonKey, {
-          auth: {
-            storageKey: 'siskill.auth',
-            flowType: 'pkce',
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true
-          }
-        });
-      })
-      .catch((e) => {
-        auth = undefined;
-        throw e;
-      });
-  return auth;
-}
 async function api(path: string, token: string, body?: unknown) {
   const response = await fetch(`/api/siskill/${path}`, {
     method: body ? 'POST' : 'GET',
@@ -110,6 +78,34 @@ export default function Account({ locale }: { locale: string }) {
       }
     }
   }, [selected]);
+  const navigate = useNavigate();
+  const [pendingDownload] = useState(() => {
+    const query = new URLSearchParams(window.location.search).get('download');
+    try {
+      if (query && freeReleases.some((r) => r.slug === query))
+        sessionStorage.setItem('siskill.pending-download', query);
+      return query || sessionStorage.getItem('siskill.pending-download');
+    } catch {
+      return query;
+    }
+  });
+  useEffect(() => {
+    if (
+      loaded &&
+      session &&
+      mode !== 'update' &&
+      freeReleases.some((r) => r.slug === pendingDownload)
+    ) {
+      try {
+        sessionStorage.removeItem('siskill.pending-download');
+      } catch {
+        /* optional */
+      }
+      navigate(`/${locale}/skills/${pendingDownload}#install`, {
+        replace: true
+      });
+    }
+  }, [loaded, session, mode, pendingDownload, locale, navigate]);
   const accessToken = session?.access_token;
   const callback = `${window.location.origin}/${locale}/account`;
   useEffect(() => {
