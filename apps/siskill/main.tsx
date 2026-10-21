@@ -29,7 +29,11 @@ import {
   outputLabel
 } from '../../src/web/pages/skill-catalog/skillCatalogShared';
 import { SkillPreviewGallery } from '../../src/web/pages/skill-catalog/SkillPreviewGallery';
-import { skillShowcases } from '../../src/web/pages/skill-catalog/skillShowcases';
+import {
+  skillShowcases as sharedSkillShowcases,
+  type SkillShowcase
+} from '../../src/web/pages/skill-catalog/skillShowcases';
+import localShowcases from './showcases.json';
 import { applySeo } from '../../src/web/lib/seo';
 import {
   pickLocalized,
@@ -40,6 +44,11 @@ import { SkillPurchaseLink } from './purchase';
 import { FreeSkillDownload } from './free-download';
 import freeReleases from './free-releases.json';
 const Account = lazy(() => import('./account'));
+const skillShowcases: Record<string, SkillShowcase> = {
+  ...sharedSkillShowcases,
+  ...localShowcases
+};
+
 
 const catalog = products as (SkillCatalogItem & {
   availability: string;
@@ -392,8 +401,8 @@ function Site() {
                 [
                   t('Can I buy or install now?', '现在可以购买或安装吗？'),
                   t(
-                    'Open Graph Image is free after sign-in. Customer Case Study Deck is available when its purchase button is active, or through Pro. Other demos remain previews until their packages are released.',
-                    'Open Graph Image 登录后免费。客户案例 Deck 可在购买按钮开放时单独购买，或通过 Pro 获取。其他演示在安装包发布前仍属预览。'
+                    'Open Graph Image is free after sign-in. Customer Case Study Deck and NotebookLM Video are available when their purchase buttons are active, or through Pro. Other demos remain previews until their packages are released.',
+                    'Open Graph Image 登录后免费。客户案例 Deck 和 NotebookLM 视频生成可在购买按钮开放时单独购买，或通过 Pro 获取。其他演示在安装包发布前仍属预览。'
                   )
                 ],
                 [
@@ -735,10 +744,10 @@ function Pricing({
       <p className="skill-muted">
         {t(
           open
-            ? 'Pro currently includes 1 published Skill: Customer Case Study Deck. Other demos are not included until released. Model and third-party costs are separate.'
+            ? 'Pro currently includes 2 published Skills: Customer Case Study Deck and NotebookLM Video. Other demos are not included until released. Model and third-party costs are separate.'
             : 'Membership checkout is temporarily unavailable. Open Graph Image remains free after sign-in.',
           open
-            ? 'Pro 目前包含 1 个已发布 Skill：客户案例 Deck。其他演示在正式发布前不包含在内。模型和第三方服务费用另计。'
+            ? 'Pro 目前包含 2 个已发布 Skill：客户案例 Deck、NotebookLM 视频生成。其他演示在正式发布前不包含在内。模型和第三方服务费用另计。'
             : '会员结账暂未开放，Open Graph Image 仍可登录后免费下载。'
         )}
       </p>
@@ -780,7 +789,7 @@ function Pricing({
           {
             name: t('Individual Skills', '单独购买'),
             price: '$9.99',
-            unit: t('Customer Case Study Deck', '客户案例 Deck'),
+            unit: t('per published Skill', '每个已发布 Skill'),
             items: [
               t('One workflow, one payment', '一个工作流，一次付款'),
               t('Keep acquired versions locally', '已获得版本可持续本地使用'),

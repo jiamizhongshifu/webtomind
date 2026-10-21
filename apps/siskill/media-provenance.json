@@ -120,6 +120,26 @@
       "fps": 24,
       "audio": false,
       "duration": 17.875
+    },
+    {
+      "slug": "notebooklm-video",
+      "brand": "SiSkill",
+      "videoSha256": "df16e9f8c3394c38567ca7a73efed7c9339d3044540d2ec582a673891e31eb6a",
+      "posterSha256": "47f1728fc707365c68d3577b223c3f31330666d3bd40354c4a160593ccf0894f",
+      "width": 1280,
+      "height": 720,
+      "fps": 30,
+      "duration": 24,
+      "audio": false,
+      "fullDecode": "passed",
+      "source": "Original workflow animation and a frame of an actual Google-generated fictional example; reconstructed handoff labeled illustration.",
+      "actualExcerpt": {
+        "url": "/skill-previews/notebooklm-video-example.mp4",
+        "sha256": "b29e2a9e483ba7a0d8b7b1ea257c4ca8e1adf809307af138f27b572cc70b12d7",
+        "duration": 12,
+        "audio": false,
+        "sourceStartSeconds": 73
+      }
     }
   ]
 }

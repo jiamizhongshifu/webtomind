@@ -165,5 +165,13 @@
       "scenarios"
     ],
     "availability": "coming-soon"
+  },
+  {
+    "slug": "notebooklm-video",
+    "metadataSha256": "87e99397c347a2e6c326ca74ea2d684294639bfa9f7fceece16abdd0ca0cdbee",
+    "sourceStatus": "reviewed",
+    "availability": "available",
+    "profile": "external-service-browser-workflow",
+    "provenance": "Original SiSkill code, workflow and fictional input; real browser generation; sanitized silent excerpt. See docs/SISKILL_NOTEBOOKLM_VIDEO.md."
   }
 ]

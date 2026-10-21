@@ -26,7 +26,8 @@ for (const f of files) {
 const catalog = JSON.parse(
   readFileSync(new URL('./catalog.json', import.meta.url))
 );
-assert.equal(catalog.length, 10);
+assert.equal(catalog.length, 11);
+assert.equal(new Set(catalog.map((s) => s.slug)).size, catalog.length);
 const releases = JSON.parse(
   readFileSync(new URL('./free-releases.json', import.meta.url))
 );

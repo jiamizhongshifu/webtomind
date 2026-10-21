@@ -1,0 +1,59 @@
+{
+  "notebooklm-video": {
+    "video": "/skill-previews/videos/notebooklm-video.mp4",
+    "poster": "/skill-previews/videos/notebooklm-video.jpg",
+    "outputs": [
+      {
+        "en-US": "Editable source ledger, story beats, producer notes and a local review page.",
+        "zh-CN": "可编辑来源账本、故事节拍、制作说明与本地审阅页面。"
+      },
+      {
+        "en-US": "An MP4 generated and downloaded in your own Google notebook. Local scripts prepare and check files; they do not render the video.",
+        "zh-CN": "在自己的 Google 笔记本中生成并下载 MP4；本地脚本负责准备和检查文件，不负责渲染视频。"
+      }
+    ],
+    "inputs": [
+      {
+        "en-US": "Materials you are allowed to upload, a focus question and an audience.",
+        "zh-CN": "拥有上传权限的资料、视频核心问题与目标受众。"
+      },
+      {
+        "en-US": "Preferred language and visual direction. Every story beat links to a source extract.",
+        "zh-CN": "期望语言与视觉方向；每个故事节拍关联来源摘录。"
+      }
+    ],
+    "dependencies": [
+      {
+        "en-US": "Node.js 22+ for local preparation; ffprobe is optional for file checks.",
+        "zh-CN": "本地准备需要 Node.js 22+；文件检查可选用 ffprobe。"
+      },
+      {
+        "en-US": "A signed-in Google Gemini Notebook (NotebookLM) account, internet access and available Video Overview quota. Browser automation is optional; manual handoff works too.",
+        "zh-CN": "已登录的 Google Gemini Notebook（NotebookLM）账号、网络与可用视频概览额度；可使用浏览器自动化，也可手动交接。"
+      }
+    ],
+    "fit": {
+      "en-US": "For educators, researchers and creators who need a traceable path from source material to an explainer.",
+      "zh-CN": "适合希望从资料到说明视频都有来源可追溯的教育者、研究者与内容创作者。"
+    },
+    "limits": {
+      "en-US": "Independent SiSkill workflow, not a Google product. Google fees and quotas are separate. Format, language and advanced options depend on your account. Native videos may contain generated narration; review facts and audio. Exact duration, shots and resolution are not guaranteed. The store demo is silent and includes labeled workflow illustrations.",
+      "zh-CN": "SiSkill 独立工作流，非 Google 官方产品。Google 费用和额度另计；格式、语言及高级选项取决于账号。原生视频可能含生成配音，需核对事实与声音；不保证精确时长、镜头和分辨率。商店演示为静音，工作流示意会明确标注。"
+    },
+    "examples": [
+      {
+        "mediaType": "video",
+        "mediaUrl": "/skill-previews/notebooklm-video-example.mp4",
+        "posterUrl": "/skill-previews/notebooklm-video-example.jpg",
+        "title": {
+          "en-US": "Actual generated excerpt · muted",
+          "zh-CN": "真实生成片段 · 静音"
+        },
+        "description": {
+          "en-US": "12 seconds from a real 6:37 Google-generated explainer using our original fictional source. Narration removed. The service chose its own visual treatment.",
+          "zh-CN": "原创虚构资料在 Google 中真实生成的 6 分 37 秒说明视频，截取其中 12 秒并移除配音；画面风格由服务决定。"
+        }
+      }
+    ]
+  }
+}

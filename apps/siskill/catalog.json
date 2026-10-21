@@ -99,6 +99,55 @@
     "publishedAt": null
   },
   {
+    "slug": "notebooklm-video",
+    "name": {
+      "en-US": "NotebookLM Video",
+      "zh-CN": "NotebookLM 视频生成"
+    },
+    "summary": {
+      "en-US": "Turn your sources into a reviewed video brief, then generate an explainer in your own Google notebook.",
+      "zh-CN": "将资料整理成有据可查的视频制作说明，在自己的 Google 笔记本中生成说明视频。"
+    },
+    "description": {
+      "en-US": "Source ledger, story beats and producer notes, with a browser workflow for generating and downloading a source-grounded video.",
+      "zh-CN": "从来源账本、故事节拍到制作说明，配套浏览器生成和下载流程，让视频内容有据可查。"
+    },
+    "outputTypes": [
+      "video"
+    ],
+    "tier": "premium",
+    "compatibleAgents": [
+      "codex",
+      "claude-code"
+    ],
+    "languages": [
+      "en",
+      "zh-CN"
+    ],
+    "formats": [
+      "mp4",
+      "json",
+      "md",
+      "html"
+    ],
+    "availability": "available",
+    "coverUrl": "/skill-previews/videos/notebooklm-video.jpg",
+    "previewVideoUrl": "/skill-previews/videos/notebooklm-video.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "notebooklm",
+      "research",
+      "explainer",
+      "source-to-video"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": "1.0.0",
+    "publishedAt": null
+  },
+  {
     "slug": "weekly-report-deck",
     "name": {
       "en-US": "Weekly Report Deck",

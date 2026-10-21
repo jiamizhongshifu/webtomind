@@ -6,5 +6,13 @@
     "bytes": 987237,
     "license": "skills-2026-10-v2",
     "sku": "siskill_case_study_deck"
+  },
+  {
+    "slug": "notebooklm-video",
+    "version": "1.0.0",
+    "sha256": "fdcd6294c2898ca4283e791cee0d8a57cb8c17067702d2aa6741c90a361af59e",
+    "bytes": 261102,
+    "license": "skills-2026-10-v2",
+    "sku": "siskill_notebooklm_video"
   }
 ]
