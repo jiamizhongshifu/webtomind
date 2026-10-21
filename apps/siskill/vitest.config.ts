@@ -3,7 +3,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: [
-      'apps/siskill/worker.test.mjs',
+      'apps/siskill/*.test.mjs',
       'src/__tests__/siskill-commerce-*.test.ts'
     ],
     maxWorkers: 1

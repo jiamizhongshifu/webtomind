@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - 'apps/siskill/**'
+      - 'scripts/siskill-*.mjs'
       - 'src/web/pages/skill-catalog/**'
       - 'src/web/styles/**'
       - 'src/shared/skill-showcases.json'

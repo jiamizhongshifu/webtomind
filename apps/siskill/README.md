@@ -78,3 +78,9 @@ closed until configured and checkout also requires its explicit enable flag.
 Verify the live manifest commit, HTTPS, root/locale/www redirects, media range requests,
 and desktop/mobile interactions after release. Record the Worker version for rollback;
 rollback only this Worker, never the WebToMind deployment.
+
+## Search and business operations
+
+See [SiSkill operations](../../docs/SISKILL_OPERATIONS.md) for read-only public SEO checks,
+scoped Search Console submission/inspection and an aggregate business report that
+separates explicitly marked acceptance accounts and unavailable funnel data.
