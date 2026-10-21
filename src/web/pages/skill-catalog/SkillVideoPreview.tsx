@@ -43,9 +43,8 @@ export function SkillVideoPreview({
     }
   }, [src]);
   useEffect(() => {
-    if (hovered && !matchMedia('(prefers-reduced-motion: reduce)').matches)
-      void play();
-    else stop();
+    if (!hovered) stop();
+    else if (!matchMedia('(prefers-reduced-motion: reduce)').matches) void play();
   }, [hovered, play, stop]);
   useEffect(() => {
     const el = video.current;
