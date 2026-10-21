@@ -58,6 +58,37 @@ function Site() {
   const path = rawPath || '/overview';
   const [menu, setMenu] = useState(false);
   const [search, setSearch] = useState('');
+  const [sales, setSales] = useState({
+    slugs: [] as string[],
+    membershipOpen: false
+  });
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      fetch('/api/siskill/products', { cache: 'no-store' }).then((r) =>
+        r.ok ? r.json() : null
+      ),
+      fetch('/api/siskill/plans', { cache: 'no-store' }).then((r) =>
+        r.ok ? r.json() : null
+      )
+    ])
+      .then(([p, m]) => {
+        if (active)
+          setSales({
+            slugs: p?.checkoutOpen
+              ? p.products.map(
+                  (v: { siskill_releases: { slug: string } }) =>
+                    v.siskill_releases.slug
+                )
+              : [],
+            membershipOpen: Boolean(m?.membershipOpen && m.plans.length)
+          });
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
   const t = (en: string, cn: string) => (zh ? cn : en);
   const detailSlug =
     path.startsWith('/skills/') && path !== '/skills/pricing'
@@ -65,6 +96,7 @@ function Site() {
       : '';
   const skill = catalog.find((s) => s.slug === detailSlug);
   const freeRelease = freeReleases.find((r) => r.slug === detailSlug);
+  const paidAvailable = sales.slugs.includes(detailSlug);
   const params = new URLSearchParams(location.search);
   const filtered = catalog.filter(
     (s) =>
@@ -151,9 +183,11 @@ function Site() {
           locale={locale}
           isZh={zh}
           availabilityLabel={
-            s.availability === 'available'
+            freeReleases.some((r) => r.slug === s.slug)
               ? t('Download free Skill →', '免费下载 Skill →')
-              : t('Coming soon · See demo →', '即将开放 · 查看演示 →')
+              : sales.slugs.includes(s.slug)
+                ? t('Buy Skill →', '购买 Skill →')
+                : t('Coming soon · See demo →', '即将开放 · 查看演示 →')
           }
         />
       ))}
@@ -171,8 +205,8 @@ function Site() {
           <p>
             {paid
               ? t(
-                  'Explore premium workflows. Paid packages are coming soon.',
-                  '探索付费工作流，付费安装包即将开放。'
+                  'Explore reviewed workflows. Purchase available Skills or preview what is coming next.',
+                  '探索已审核的工作流，购买已开放的 Skill，或预览后续内容。'
                 )
               : t(
                   'Explore real outputs. Open Graph Image is ready to download free.',
@@ -344,7 +378,7 @@ function Site() {
                 ))}
               </ol>
             </section>
-            <Pricing zh={zh} locale={locale} />
+            <Pricing zh={zh} locale={locale} open={sales.membershipOpen} />
             <section className="skill-faq">
               <h2>FAQ</h2>
               {[
@@ -358,8 +392,8 @@ function Site() {
                 [
                   t('Can I buy or install now?', '现在可以购买或安装吗？'),
                   t(
-                    'Open Graph Image is available as a free download. Other packages, subscriptions and checkout are coming soon.',
-                    'Open Graph Image 已开放免费下载，其他安装包、订阅和结账即将开放。'
+                    'Open Graph Image is free after sign-in. Customer Case Study Deck is available when its purchase button is active, or through Pro. Other demos remain previews until their packages are released.',
+                    'Open Graph Image 登录后免费。客户案例 Deck 可在购买按钮开放时单独购买，或通过 Pro 获取。其他演示在安装包发布前仍属预览。'
                   )
                 ],
                 [
@@ -450,8 +484,8 @@ function Site() {
             </div>
             <p className="skill-muted">
               {t(
-                'Preview the collection. Open Graph Image is ready to download free.',
-                '先看作品与演示，Open Graph Image 注册登录后可免费下载。'
+                'Explore the collection. Open Graph Image is free; available paid Skills show a purchase link.',
+                '探索作品与演示。Open Graph Image 登录后免费，已开放的付费 Skill 将显示购买入口。'
               )}
             </p>
             {filtered.length ? (
@@ -476,7 +510,7 @@ function Site() {
                 )}
               </p>
             </header>
-            <Pricing zh={zh} locale={locale} />
+            <Pricing zh={zh} locale={locale} open={sales.membershipOpen} />
           </>
         ) : skill ? (
           <>
@@ -525,15 +559,20 @@ function Site() {
                           'Free workflow · Available now',
                           '免费工作流 · 现已开放'
                         )
-                      : skill.tier === 'free'
+                      : paidAvailable
                         ? t(
-                            'Free workflow · Coming soon',
-                            '免费工作流 · 即将开放'
+                            'Paid workflow · Available now',
+                            '付费工作流 · 现已开放'
                           )
-                        : t(
-                            'Paid workflow · Coming soon',
-                            '付费工作流 · 即将开放'
-                          )}
+                        : skill.tier === 'free'
+                          ? t(
+                              'Free workflow · Coming soon',
+                              '免费工作流 · 即将开放'
+                            )
+                          : t(
+                              'Paid workflow · Coming soon',
+                              '付费工作流 · 即将开放'
+                            )}
                   </p>
                   <h1>{pickLocalized(skill.name, locale)}</h1>
                   <p className="skill-detail-summary">
@@ -545,8 +584,12 @@ function Site() {
                   {!freeRelease && (
                     <p>
                       {t(
-                        'The demonstration is available now. Package downloads and purchases are not open yet.',
-                        '现在可查看演示。安装包下载和购买尚未开放。'
+                        paidAvailable
+                          ? 'Purchase once for this Skill and its updates, or join Pro for access during your paid membership.'
+                          : 'This workflow is a preview. Its package is not available yet.',
+                        paidAvailable
+                          ? '单次购买获得此 Skill 及更新，或开通 Pro 在有效期内访问。'
+                          : '此工作流仍为预览，安装包尚未开放。'
                       )}
                     </p>
                   )}
@@ -561,7 +604,7 @@ function Site() {
                   )}
                   <p>
                     <Link to={`/${locale}/skills/pricing`}>
-                      {t('Compare planned membership', '了解计划中的会员方案')}
+                      {t('Compare membership plans', '查看会员方案')}
                     </Link>
                   </p>
                 </div>
@@ -652,7 +695,15 @@ function Site() {
     </div>
   );
 }
-function Pricing({ zh, locale }: { zh: boolean; locale: string }) {
+function Pricing({
+  zh,
+  locale,
+  open
+}: {
+  zh: boolean;
+  locale: string;
+  open: boolean;
+}) {
   const [yearly, setYearly] = useState(true);
   const t = (en: string, cn: string) => (zh ? cn : en);
   return (
@@ -683,8 +734,12 @@ function Pricing({ zh, locale }: { zh: boolean; locale: string }) {
       </div>
       <p className="skill-muted">
         {t(
-          'Paid plans are planned launch prices; checkout is not open yet. Open Graph Image is free after sign-in. Model and third-party costs are separate.',
-          '付费方案为计划首发价，结账尚未开放。Open Graph Image 注册登录后可免费下载。模型和第三方服务费用另计。'
+          open
+            ? 'Pro currently includes 1 published Skill: Customer Case Study Deck. Other demos are not included until released. Model and third-party costs are separate.'
+            : 'Membership checkout is temporarily unavailable. Open Graph Image remains free after sign-in.',
+          open
+            ? 'Pro 目前包含 1 个已发布 Skill：客户案例 Deck。其他演示在正式发布前不包含在内。模型和第三方服务费用另计。'
+            : '会员结账暂未开放，Open Graph Image 仍可登录后免费下载。'
         )}
       </p>
       <div className="skill-pricing-grid">
@@ -708,7 +763,14 @@ function Pricing({ zh, locale }: { zh: boolean; locale: string }) {
                 'All studio Pro Skills during your paid period',
                 '有效期内的全部自营 Pro Skill'
               ),
-              t('New workflows and updates included', '包含新增工作流与更新'),
+              t(
+                'Published additions and updates included',
+                '包含后续正式发布的自营内容与更新'
+              ),
+              t(
+                'Renews automatically; cancel renewal in your account',
+                '自动续费，可在账户内取消续费'
+              ),
               t(
                 'Separate from WebToMind membership and credits',
                 '独立于 WebToMind 会员与积分'
@@ -717,8 +779,8 @@ function Pricing({ zh, locale }: { zh: boolean; locale: string }) {
           },
           {
             name: t('Individual Skills', '单独购买'),
-            price: '$4.99+',
-            unit: t('planned starting price', '计划起售价'),
+            price: '$9.99',
+            unit: t('Customer Case Study Deck', '客户案例 Deck'),
             items: [
               t('One workflow, one payment', '一个工作流，一次付款'),
               t('Keep acquired versions locally', '已获得版本可持续本地使用'),

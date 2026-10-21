@@ -69,6 +69,20 @@ function fixture() {
   };
   releaseQuery.select.mockReturnValue(releaseQuery);
   releaseQuery.eq.mockReturnValue(releaseQuery);
+  const grantQuery = new Query();
+  grantQuery.maybeSingle = vi.fn(async () => ({
+    data: row.data
+      ? {
+          ...(row.data as object),
+          siskill_orders: {
+            ...order,
+            status: 'paid',
+            provider_payment_id: 'pi_paid'
+          }
+        }
+      : null,
+    error: null
+  }));
   const db = {
     auth: {
       getUser: vi.fn(async () => ({
@@ -81,10 +95,45 @@ function fixture() {
       error: null
     })),
     from: vi.fn((table: string) =>
-      table === 'siskill_releases' ? releaseQuery : query
+      table === 'siskill_releases'
+        ? releaseQuery
+        : table === 'siskill_grants'
+          ? grantQuery
+          : query
     )
   };
+  const md = () => ({ product_scope: 'siskill', order_id: id, sku: order.sku });
   const stripe = {
+    paymentIntents: {
+      retrieve: vi.fn(async () => ({
+        id: 'pi_paid',
+        metadata: md(),
+        status: 'succeeded',
+        livemode: false,
+        amount: 999,
+        amount_received: 999,
+        currency: 'usd',
+        latest_charge: 'ch_paid'
+      }))
+    },
+    charges: {
+      retrieve: vi.fn(async () => ({
+        id: 'ch_paid',
+        metadata: md(),
+        status: 'succeeded',
+        livemode: false,
+        paid: true,
+        captured: true,
+        payment_intent: 'pi_paid',
+        amount: 999,
+        amount_captured: 999,
+        currency: 'usd',
+        refunded: false,
+        amount_refunded: 0,
+        disputed: false
+      }))
+    },
+    disputes: { list: vi.fn(async () => ({ data: [], has_more: false })) },
     checkout: {
       sessions: {
         create: vi.fn(async () => ({
@@ -97,6 +146,7 @@ function fixture() {
   };
   const env: CommerceEnv = {
     SISKILL_COMMERCE_ENABLED: 'true',
+    SISKILL_STRIPE_SECRET_KEY: 'sk_test_local_fixture',
     SUPABASE_URL: 'https://example.supabase.co',
     SUPABASE_SERVICE_ROLE_KEY: 'test-only',
     SISKILL_STRIPE_WEBHOOK_SECRET: 'whsec_local',
@@ -131,9 +181,33 @@ function fixture() {
       },
       body: JSON.stringify(body)
     });
-  return { order, db, stripe, env, deps, request, row, query, releaseQuery };
+  return {
+    order,
+    db,
+    stripe,
+    env,
+    deps,
+    request,
+    row,
+    query: grantQuery,
+    releaseQuery
+  };
 }
 describe('SiSkill checkout and provider boundary', () => {
+  it('blocks private bytes during a current dispute despite an active local grant', async () => {
+    const f = fixture();
+    const charge = await f.stripe.charges.retrieve();
+    f.stripe.charges.retrieve.mockResolvedValue({ ...charge, disputed: true });
+    const r = await handleCommerce(
+      new Request(`https://siskill.dev/api/siskill/downloads/${id}`, {
+        headers: { Authorization: 'Bearer user-token' }
+      }),
+      f.env,
+      f.deps
+    );
+    expect(r.status).toBe(403);
+    expect(f.env.SISKILL_PACKAGES!.get).not.toHaveBeenCalled();
+  });
   it('fails closed before production credentials/configuration exist', async () => {
     const r = await handleCommerce(
       new Request('https://siskill.dev/api/siskill/status'),

@@ -1,5 +1,7 @@
 # SiSkill membership and first paid package — 2026-10-21
 
+> Historical pre-launch record. The subsequent user authorization to open sales supersedes the closed-sale decision and live self-test gate below. See [sales launch](SISKILL_SALES_LAUNCH_2026-10-21.md) for the current release scope and verification boundaries.
+
 ## Released behavior and business boundary
 
 All free and paid downloads require a registered, authenticated account. The shared

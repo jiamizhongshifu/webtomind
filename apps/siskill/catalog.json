@@ -331,7 +331,7 @@
       "png",
       "pdf"
     ],
-    "availability": "coming-soon",
+    "availability": "available",
     "coverUrl": "/skill-previews/videos/case-study-deck.jpg",
     "previewVideoUrl": "/skill-previews/videos/case-study-deck.mp4",
     "isFeatured": true,
@@ -344,7 +344,7 @@
     "installs7d": 0,
     "ratingAvg": null,
     "ratingCount": 0,
-    "latestVersion": null,
+    "latestVersion": "1.0.2",
     "publishedAt": null
   },
   {

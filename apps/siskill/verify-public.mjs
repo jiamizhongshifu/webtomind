@@ -37,11 +37,22 @@ for (const r of releases) {
   assert.ok(r.bytes > 0 && r.bytes <= 8 * 1024 * 1024);
   assert.equal(r.objectKey, `free/${r.slug}/${r.version}/${r.sha256}.tar.gz`);
 }
+const paid = JSON.parse(
+  readFileSync(new URL('./paid-releases.json', import.meta.url))
+);
+for (const p of paid) {
+  assert.ok(catalog.some((s) => s.slug === p.slug && s.tier === 'premium'));
+  assert.match(p.sha256, /^[a-f0-9]{64}$/);
+  assert.ok(p.bytes > 0 && p.bytes <= 32 * 1024 * 1024);
+}
 for (const s of catalog) {
-  const release = releases.find((r) => r.slug === s.slug);
+  const release = [...releases, ...paid].find((r) => r.slug === s.slug);
   assert.equal(s.availability, release ? 'available' : 'coming-soon');
   if (release) {
-    assert.equal(s.tier, 'free');
+    assert.equal(
+      s.tier,
+      releases.some((r) => r.slug === s.slug) ? 'free' : 'premium'
+    );
     assert.equal(s.latestVersion, release.version);
   }
   for (const url of [s.coverUrl, s.previewVideoUrl])

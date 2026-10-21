@@ -17,7 +17,7 @@ writeFileSync(
   JSON.stringify(
     {
       product: 'siskill',
-      scope: 'public-preview',
+      scope: 'skill-commerce',
       commit,
       builtAt: new Date().toISOString(),
       catalogSha256: hash('./catalog.json'),

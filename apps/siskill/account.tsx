@@ -9,6 +9,7 @@ import { Button, ButtonLink } from '../../src/shared/ui';
 type Mode = 'signin' | 'signup' | 'reset' | 'update';
 type Grant = {
   release_id: string;
+  downloadable?: boolean;
   siskill_releases: { slug: string; version: string };
 };
 type Purchase = {
@@ -581,6 +582,18 @@ export default function Account({ locale }: { locale: string }) {
                   '包含此 Skill 及服务运营期间的更新，不含 WebToMind 积分或 SiSkill 订阅。'
                 )}
               </p>
+              <p>
+                {t(
+                  'Commercial finished outputs are allowed; reselling the Skill package is not. For billing or refund requests, contact support. A full refund removes download access.',
+                  '可创作商业成品，禁止转售 Skill 原包。账单或退款问题请联系客服，全额退款后将取消下载权限。'
+                )}
+              </p>
+              <p>
+                {t(
+                  'Stripe payments use the shared WebToMind merchant; your order and access belong to SiSkill.',
+                  'Stripe 支付复用 WebToMind 商户，订单和访问权限归属 SiSkill。'
+                )}
+              </p>
               <div className="siskill-account-actions">
                 {providers.includes('stripe') && (
                   <Button
@@ -662,9 +675,20 @@ export default function Account({ locale }: { locale: string }) {
                     <article key={g.release_id}>
                       <h3>{g.siskill_releases.slug}</h3>
                       <p>v{g.siskill_releases.version}</p>
-                      <Button disabled={busy} onClick={() => download(g)}>
+                      <Button
+                        disabled={busy || g.downloadable === false}
+                        onClick={() => download(g)}
+                      >
                         {t('Download package', '下载安装包')}
                       </Button>
+                      {g.downloadable === false && (
+                        <p>
+                          {t(
+                            'Download access is paused while payment is refunded or under dispute. Contact support for help.',
+                            '退款或支付争议期间，下载权限已暂停。如需协助，请联系客服。'
+                          )}
+                        </p>
+                      )}
                     </article>
                   ))}
                 </div>

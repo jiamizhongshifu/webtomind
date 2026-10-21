@@ -6,8 +6,8 @@
   "workers_dev": false,
   "preview_urls": false,
   "vars": {
-    "SISKILL_COMMERCE_ENABLED": "false",
-    "SISKILL_MEMBERSHIP_ENABLED": "false",
+    "SISKILL_COMMERCE_ENABLED": "true",
+    "SISKILL_MEMBERSHIP_ENABLED": "true",
     "SISKILL_AUTH_REDIRECTS_READY": "true"
   },
   "r2_buckets": [

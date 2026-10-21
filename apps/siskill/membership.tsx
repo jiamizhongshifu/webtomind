@@ -263,8 +263,8 @@ export function MembershipPanel({
               </p>
               <p>
                 {t(
-                  'Renews automatically. Cancel before renewal in this account. Includes published studio Pro Skills and updates during your paid period. Model costs, third-party Skills and WebToMind benefits are separate.',
-                  '自动续费，可在本账号中于续费前取消。有效期内包含已发布的自营 Pro Skill 与更新；模型费用、第三方 Skill 与 WebToMind 权益另计。'
+                  'Currently includes 1 published Pro Skill: Customer Case Study Deck. Renews automatically. Cancel before renewal in this account. Includes published studio Pro Skills and updates during your paid period. Model costs, third-party Skills and WebToMind benefits are separate.',
+                  '目前包含 1 个已发布 Pro Skill：客户案例 Deck。自动续费，可在本账号中于续费前取消。有效期内包含已发布的自营 Pro Skill 与更新；模型费用、第三方 Skill 与 WebToMind 权益另计。'
                 )}
               </p>
               <Button

@@ -33,7 +33,8 @@ export function SkillPurchaseLink({
       variant="primary"
       to={`/${locale}/account?skill=${encodeURIComponent(slug)}`}
     >
-      {locale === 'zh-CN' ? '购买此 Skill' : 'Buy this Skill'}
+      {locale === 'zh-CN' ? '购买此 Skill' : 'Buy this Skill'} · $
+      {(product.usd_cents / 100).toFixed(2)}
     </ButtonLink>
   ) : (
     <Button variant="primary" disabled>

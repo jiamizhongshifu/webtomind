@@ -6,18 +6,18 @@ refer visitors to SiSkill. A shared source repository does not imply shared memb
 
 ## Current release
 
-Release scope, evidence and remaining gates: [closeout](../../docs/SISKILL_CLOSEOUT_2026-10-21.md).
+Release scope, evidence and remaining gates: [sales launch](../../docs/SISKILL_SALES_LAUNCH_2026-10-21.md).
 
-This app is a public preview: an English-first bilingual landing page, ten original
-workflow demonstrations, a searchable catalog, product detail pages and planned pricing.
+This app is an independent Skill storefront: an English-first bilingual landing page, ten original
+workflow demonstrations, a searchable catalog, product detail pages and purchasing.
 Cards automatically loop silent 16:9 demos when visible on desktop and mobile, without
 hover or a preview button. Offscreen cards and hidden tabs pause until visible again. Open Graph Image 1.0.4 is available free after sign-in, through a
-separate reviewed allowlist and private R2 bucket. Paid sales and paid archive distribution remain closed.
+separate reviewed allowlist and private R2 bucket. Customer Case Study Deck 1.0.2 is offered at US$9.99. Pro is US$9.99/month or US$79/year and currently includes only that published paid Skill. Eight other demos remain previews.
 The public assets never include installation archives. See `docs/SISKILL_FREE_RELEASE.md`. The account page uses the shared
 WebToMind user database with separate SiSkill sessions, orders and grants. Email/password
 sign-in is supported; Google/signup/recovery entry points use the verified SiSkill redirect allowlist.
 Google authorization handoff is verified; full Google login and email delivery remain separate acceptance items. An independent,
-default-closed `/api/siskill/*` commerce handler is now included in the Worker source.
+explicitly gated `/api/siskill/*` commerce handler is now included in the Worker source.
 The listed compatibility comes from package metadata, not a claim of testing every agent.
 
 The app builds independently of WebToMind and deploys as the `siskill` Cloudflare Worker.
@@ -31,11 +31,11 @@ components are source reuse; changes here do not deploy the WebToMind Worker.
 The approved product boundary is recorded in `docs/SISKILL_PRODUCT_BOUNDARY.md`.
 Stripe and the existing Alipay integration may share merchant infrastructure with
 WebToMind. SiSkill must have distinct product identifiers, orders and entitlements.
-The current WebToMind checkout/webhook must not be called by this preview: they fulfill
+The current WebToMind checkout/webhook must not be called by this app: they fulfill
 WebToMind subscriptions and credits. The one-time purchase backend is implemented with its own tables, signed callbacks and
 private-download authorization. The isolated migration has been applied to the approved shared database;
 see `docs/SISKILL_COMMERCE_RELEASE.md` for activation requirements. Monthly/yearly membership,
-paid-period authorization and cancellation are implemented behind a separate closed flag;
+paid-period authorization and cancellation are implemented behind a separate enable flag;
 see `docs/SISKILL_MEMBERSHIP_RELEASE.md` for validation and remaining real-sale acceptance.
 
 ## Development and verification
@@ -52,7 +52,7 @@ pnpm exec wrangler dev --config apps/siskill/wrangler.jsonc --port 8788 --local-
 
 Browser acceptance covers desktop and mobile: hero output selection, video playback,
 automatic card playback, filtering, search, detail gallery, language switching, navigation,
-planned pricing, unknown routes and no horizontal overflow. Media provenance records
+pricing, unknown routes and no horizontal overflow. Media provenance records
 original fictional demonstrations; no private template implementation is distributed.
 
 ## Release

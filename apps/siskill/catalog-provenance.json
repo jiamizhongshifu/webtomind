@@ -109,7 +109,14 @@
       "formats",
       "scenarios"
     ],
-    "availability": "coming-soon"
+    "availability": "available",
+    "distributionReview": {
+      "version": "1.0.2",
+      "manifest": "paid-releases.json",
+      "originalExamples": true,
+      "privacyReview": "passed",
+      "packageExecution": "Codex and Claude project layouts verified; not independent Agent discovery"
+    }
   },
   {
     "slug": "product-launch-deck",

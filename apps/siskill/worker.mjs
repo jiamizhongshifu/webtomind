@@ -136,8 +136,8 @@ export default {
     const head = `<meta name="robots" content="${page.status === 404 || page.path === '/account' ? 'noindex,follow' : 'index,follow'}"><meta property="og:site_name" content="SiSkill"><meta property="og:type" content="website"><meta property="og:title" content="${esc(meta.title)}"><meta property="og:description" content="${esc(meta.description)}"><meta property="og:url" content="${esc(meta.canonical)}"><meta property="og:image" content="${esc(meta.image)}"><meta name="twitter:card" content="summary_large_image">${page.status === 200 ? locales.map((l) => `<link rel="alternate" hreflang="${l}" href="${ORIGIN}/${l}${page.path}">`).join('') : ''}`;
     const fallbackMessage =
       page.locale === 'zh-CN'
-        ? '浏览 Skill 功能演示。启用 JavaScript 并登录后，可免费下载 Open Graph Image。付费结账尚未开放。'
-        : 'Explore Skill demos. Enable JavaScript and sign in to download Open Graph Image for free. Paid checkout is not open yet.';
+        ? '浏览 Skill 功能演示。启用 JavaScript 并登录后，可免费下载 Open Graph Image，或查看客户案例 Deck 和 Pro 的购买选项。'
+        : 'Explore Skill demos. Enable JavaScript and sign in for free Open Graph Image downloads, Customer Case Study Deck purchases and Pro options.';
     const fallback = `<noscript><main><h1>${esc(meta.title)}</h1><p>${esc(meta.description)}</p><p>${fallbackMessage}</p><ul>${catalog.map((s) => `<li><a href="/${page.locale}/skills/${s.slug}">${esc(s.name[page.locale])}</a></li>`).join('')}</ul></main></noscript>`;
     const rewritten = new HTMLRewriter()
       .on('html', { element: (e) => e.setAttribute('lang', page.locale) })

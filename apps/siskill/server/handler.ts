@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 import { verifiedArchive } from './archive';
+import { purchaseAccess } from './purchase-access';
 import {
   memberStatus,
   membershipCheckout,
@@ -607,7 +608,9 @@ export async function handleCommerce(
           .limit(100),
         deps.db
           .from('siskill_grants')
-          .select('order_id,release_id,status,siskill_releases(slug,version)')
+          .select(
+            'order_id,release_id,status,siskill_releases(slug,version),siskill_orders!inner(*)'
+          )
           .eq('user_id', owner)
           .eq('status', 'active')
       ]);
@@ -616,7 +619,21 @@ export async function handleCommerce(
       const ownedSlugs = (grants.data || [])
         .map((g: any) => g.siskill_releases?.slug)
         .filter(Boolean);
-      let available = grants.data || [];
+      let available = await Promise.all(
+        (grants.data || []).map(async (g: any) => {
+          const { siskill_orders: order, ...grant } = g;
+          return {
+            ...grant,
+            downloadable:
+              order?.user_id === owner &&
+              (await purchaseAccess(
+                order,
+                deps.stripe,
+                env.SISKILL_STRIPE_SECRET_KEY
+              ))
+          };
+        })
+      );
       if (ownedSlugs.length) {
         const updates = await deps.db
           .from('siskill_releases')
@@ -658,17 +675,29 @@ export async function handleCommerce(
       if (!target.data) throw new CommerceError('DOWNLOAD_NOT_OWNED', 403);
       const owned = await deps.db
         .from('siskill_grants')
-        .select('release_id,siskill_releases!inner(slug)')
+        .select(
+          'release_id,siskill_releases!inner(slug),siskill_orders!inner(*)'
+        )
         .eq('user_id', owner)
         .eq('status', 'active')
         .eq('siskill_releases.slug', target.data.slug)
         .limit(1)
         .maybeSingle();
       fail(owned.error);
+      const purchase = owned.data?.siskill_orders as unknown as
+        | Order
+        | undefined;
+      const purchased =
+        purchase?.user_id === owner &&
+        (await purchaseAccess(
+          purchase,
+          deps.stripe,
+          env.SISKILL_STRIPE_SECRET_KEY
+        ));
       // A single-Skill license includes later published versions of the same Skill.
       // Membership unlocks only explicitly reviewed, eligible studio releases.
       if (
-        !owned.data &&
+        !purchased &&
         !(
           target.data.member_eligible &&
           (await memberStatus(owner, deps)).active
