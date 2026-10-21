@@ -47,7 +47,8 @@ jobs:
   # job to cut billed runner minutes. The old layout (verify + 6 test shards)
   # billed ~18 min/run; this layout bills ~9.
   check:
-    runs-on: ubuntu-latest
+    # Playwright 1.58 supports Ubuntu 24.04; keep browser checks reproducible.
+    runs-on: ubuntu-24.04
     # Success path runs ~10.5 min; the cap only bounds worst-case hang billing.
     timeout-minutes: 20
     env:
