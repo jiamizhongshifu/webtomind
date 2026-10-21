@@ -173,5 +173,13 @@
     "availability": "available",
     "profile": "external-service-browser-workflow",
     "provenance": "Original SiSkill code, workflow and fictional input; real browser generation; sanitized silent excerpt. See docs/SISKILL_NOTEBOOKLM_VIDEO.md."
+  },
+  {
+    "slug": "creator-content-workflow",
+    "metadataSha256": "bfa16b821968c6155b8bd935891065a0be4e801c941f687f848e2afefa3016f9",
+    "sourceStatus": "reviewed",
+    "availability": "available",
+    "profile": "editorial-workflow",
+    "provenance": "Original SiSkill instructions, offline helper and fictional Agent-authored example. No third-party Skill code or private creator data bundled. See docs/SISKILL_CREATOR_CONTENT_WORKFLOW.md."
   }
 ]

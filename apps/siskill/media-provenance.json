@@ -140,6 +140,20 @@
         "audio": false,
         "sourceStartSeconds": 73
       }
+    },
+    {
+      "slug": "creator-content-workflow",
+      "brand": "SiSkill",
+      "videoSha256": "72670ae05ca1d5064cafcfbad440a5a3bf4f2a3a1f5fce659ec08889646ba88e",
+      "posterSha256": "30c8df51dc75820e062837e547ddc287d00d5b804c5224aa8ecd1172331b6354",
+      "exampleSha256": "ece827c00300042cdf82ba163eb72ba834a5f23cec103ab7c365f5de82b0b430",
+      "width": 1280,
+      "height": 720,
+      "fps": 30,
+      "duration": 24.0,
+      "audio": false,
+      "fullDecode": "passed",
+      "source": "Original fictional Agent-authored editorial example; real local review output. Scenes 1–3 are content visualizations. No private creator assets."
     }
   ]
 }

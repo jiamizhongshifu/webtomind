@@ -576,6 +576,14 @@ export default function Account({ locale }: { locale: string }) {
                 {t('One-time purchase', '单次购买')} · v
                 {offer.siskill_releases.version}
               </p>
+              {offer.siskill_releases.slug === 'creator-content-workflow' && (
+                <p>
+                  {t(
+                    'Requires your own Codex or Claude Code model access and Node.js 22+. Includes editorial workflows and an offline handoff helper. Image/video rendering and publishing tools are separate; no automatic publishing or growth guarantees. Model and service fees are not included.',
+                    '需要自己的 Codex 或 Claude Code 模型服务及 Node.js 22+。包含编辑工作流和离线交接工具；图片／视频渲染与发布工具另配，不含自动发布或涨粉保证。模型和服务费用另计。'
+                  )}
+                </p>
+              )}
               {offer.siskill_releases.slug === 'notebooklm-video' && (
                 <p>
                   {t(

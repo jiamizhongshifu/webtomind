@@ -49,7 +49,6 @@ const skillShowcases: Record<string, SkillShowcase> = {
   ...localShowcases
 };
 
-
 const catalog = products as (SkillCatalogItem & {
   availability: string;
   formats: string[];
@@ -401,8 +400,8 @@ function Site() {
                 [
                   t('Can I buy or install now?', '现在可以购买或安装吗？'),
                   t(
-                    'Open Graph Image is free after sign-in. Customer Case Study Deck and NotebookLM Video are available when their purchase buttons are active, or through Pro. Other demos remain previews until their packages are released.',
-                    'Open Graph Image 登录后免费。客户案例 Deck 和 NotebookLM 视频生成可在购买按钮开放时单独购买，或通过 Pro 获取。其他演示在安装包发布前仍属预览。'
+                    'Open Graph Image is free after sign-in. Customer Case Study Deck, NotebookLM Video and Creator Content Workflow are available when their purchase buttons are active, or through Pro. Other demos remain previews until their packages are released.',
+                    'Open Graph Image 登录后免费。客户案例 Deck、NotebookLM 视频生成和自媒体内容工作流可在购买按钮开放时单独购买，或通过 Pro 获取。其他演示在安装包发布前仍属预览。'
                   )
                 ],
                 [
@@ -479,17 +478,21 @@ function Site() {
                       : t('All Skills', '全部')}
                 </Link>
               ))}
-              {['', 'image', 'slides', 'web', 'video'].map((type) => (
-                <Link
-                  key={type}
-                  aria-current={
-                    (params.get('type') || '') === type ? 'page' : undefined
-                  }
-                  to={`?${new URLSearchParams({ ...Object.fromEntries(params), type })}`}
-                >
-                  {type ? outputLabel(type, zh) : t('All formats', '全部格式')}
-                </Link>
-              ))}
+              {['', 'image', 'slides', 'web', 'video', 'writing'].map(
+                (type) => (
+                  <Link
+                    key={type}
+                    aria-current={
+                      (params.get('type') || '') === type ? 'page' : undefined
+                    }
+                    to={`?${new URLSearchParams({ ...Object.fromEntries(params), type })}`}
+                  >
+                    {type
+                      ? outputLabel(type, zh)
+                      : t('All formats', '全部格式')}
+                  </Link>
+                )
+              )}
             </div>
             <p className="skill-muted">
               {t(
@@ -744,10 +747,10 @@ function Pricing({
       <p className="skill-muted">
         {t(
           open
-            ? 'Pro currently includes 2 published Skills: Customer Case Study Deck and NotebookLM Video. Other demos are not included until released. Model and third-party costs are separate.'
+            ? 'Pro currently includes 3 published Skills: Customer Case Study Deck, NotebookLM Video and Creator Content Workflow. Other demos are not included until released. Model and third-party costs are separate.'
             : 'Membership checkout is temporarily unavailable. Open Graph Image remains free after sign-in.',
           open
-            ? 'Pro 目前包含 2 个已发布 Skill：客户案例 Deck、NotebookLM 视频生成。其他演示在正式发布前不包含在内。模型和第三方服务费用另计。'
+            ? 'Pro 目前包含 3 个已发布 Skill：客户案例 Deck、NotebookLM 视频生成、自媒体内容工作流。其他演示在正式发布前不包含在内。模型和第三方服务费用另计。'
             : '会员结账暂未开放，Open Graph Image 仍可登录后免费下载。'
         )}
       </p>

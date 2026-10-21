@@ -12,7 +12,7 @@ This app is an independent Skill storefront: an English-first bilingual landing 
 workflow demonstrations, a searchable catalog, product detail pages and purchasing.
 Cards automatically loop silent 16:9 demos when visible on desktop and mobile, without
 hover or a preview button. Offscreen cards and hidden tabs pause until visible again. Open Graph Image 1.0.4 is available free after sign-in, through a
-separate reviewed allowlist and private R2 bucket. Customer Case Study Deck 1.0.2 and NotebookLM Video 1.0.0 are each US$9.99. Pro is US$9.99/month or US$79/year and includes these two published paid Skills. NotebookLM Video needs the buyer’s own Google account and quota; see [release scope](../../docs/SISKILL_NOTEBOOKLM_VIDEO.md). Eight other demos remain previews.
+separate reviewed allowlist and private R2 bucket. Customer Case Study Deck 1.0.2, NotebookLM Video 1.0.0 and Creator Content Workflow 1.0.0 are each US$9.99. Pro is US$9.99/month or US$79/year and includes these three published paid Skills. NotebookLM Video needs the buyer’s own Google account and quota; see [release scope](../../docs/SISKILL_NOTEBOOKLM_VIDEO.md). Eight other demos remain previews.
 The public assets never include installation archives. See `docs/SISKILL_FREE_RELEASE.md`. The account page uses the shared
 WebToMind user database with separate SiSkill sessions, orders and grants. Email/password
 sign-in is supported; Google/signup/recovery entry points use the verified SiSkill redirect allowlist.

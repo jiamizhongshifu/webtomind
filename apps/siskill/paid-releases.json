@@ -14,5 +14,13 @@
     "bytes": 261102,
     "license": "skills-2026-10-v2",
     "sku": "siskill_notebooklm_video"
+  },
+  {
+    "slug": "creator-content-workflow",
+    "version": "1.0.0",
+    "sha256": "9f8cdd526aea00b5dc728a93c4ce1eab5951ecba3648db85e3eaf475c80a9d71",
+    "bytes": 17569,
+    "license": "skills-2026-10-v2",
+    "sku": "siskill_creator_content_workflow"
   }
 ]

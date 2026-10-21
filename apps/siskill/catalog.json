@@ -99,6 +99,56 @@
     "publishedAt": null
   },
   {
+    "slug": "creator-content-workflow",
+    "name": {
+      "en-US": "Creator Content Workflow",
+      "zh-CN": "自媒体内容工作流"
+    },
+    "summary": {
+      "en-US": "Turn research notes into evidence-linked articles, reviewed social drafts and an organized publishing handoff.",
+      "zh-CN": "把选题与资料变成有来源的母稿、独立审阅的平台文案和清晰的发布交接包。"
+    },
+    "description": {
+      "en-US": "A complete editorial workflow: topic framing, source ledger, master draft, fact review, 115-point editorial rubric, selected platform adaptations, visual briefs and a local review page.",
+      "zh-CN": "覆盖选题定位、来源账本、母稿写作、事实核对、115 分编辑评分、按需平台改写、视觉制作说明与本地审阅页。"
+    },
+    "outputTypes": [
+      "writing"
+    ],
+    "tier": "premium",
+    "compatibleAgents": [
+      "codex",
+      "claude-code"
+    ],
+    "languages": [
+      "en",
+      "zh-CN"
+    ],
+    "formats": [
+      "md",
+      "json",
+      "html"
+    ],
+    "availability": "available",
+    "coverUrl": "/skill-previews/videos/creator-content-workflow.jpg",
+    "previewVideoUrl": "/skill-previews/videos/creator-content-workflow.mp4",
+    "isFeatured": true,
+    "sceneTags": [
+      "creator",
+      "content-workflow",
+      "writing",
+      "wechat",
+      "xiaohongshu",
+      "editorial"
+    ],
+    "installCount": 0,
+    "installs7d": 0,
+    "ratingAvg": null,
+    "ratingCount": 0,
+    "latestVersion": "1.0.0",
+    "publishedAt": null
+  },
+  {
     "slug": "notebooklm-video",
     "name": {
       "en-US": "NotebookLM Video",

@@ -64,7 +64,7 @@ test('sitemap owns the new domain and robots advertises it', async () => {
   const map = await (
     await worker.fetch(new Request('https://siskill.dev/sitemap.xml'), {})
   ).text();
-  assert.equal((map.match(/<loc>/g) || []).length, 28);
+  assert.equal((map.match(/<loc>/g) || []).length, 30);
   assert.ok(!map.includes('webtomind.com'));
   assert.match(
     await (

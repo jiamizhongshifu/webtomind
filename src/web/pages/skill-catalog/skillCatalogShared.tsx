@@ -16,11 +16,15 @@ export const OUTPUT_TYPES: SkillOutputType[] = [
   'video'
 ];
 
-const OUTPUT_LABELS: Record<SkillOutputType, { zh: string; en: string }> = {
+const OUTPUT_LABELS: Record<
+  SkillOutputType | 'writing',
+  { zh: string; en: string }
+> = {
   image: { zh: '图片', en: 'Images' },
   slides: { zh: '幻灯片', en: 'Slides' },
   web: { zh: '网页', en: 'Web pages' },
-  video: { zh: '视频', en: 'Video' }
+  video: { zh: '视频', en: 'Video' },
+  writing: { zh: '写作', en: 'Writing' }
 };
 
 const AGENT_LABELS: Record<string, string> = {
@@ -36,7 +40,7 @@ const AGENT_LABELS: Record<string, string> = {
 export const SUPPORTED_AGENTS = Object.keys(AGENT_LABELS);
 
 export function outputLabel(type: string, isZh: boolean): string {
-  const label = OUTPUT_LABELS[type as SkillOutputType];
+  const label = OUTPUT_LABELS[type as keyof typeof OUTPUT_LABELS];
   return label ? (isZh ? label.zh : label.en) : type;
 }
 
