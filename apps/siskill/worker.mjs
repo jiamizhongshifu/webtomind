@@ -65,7 +65,7 @@ function secure(response, html = false) {
     headers.set('Cache-Control', 'no-cache');
     headers.set(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://slixamjkvpoijrnbwzxi.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://zpayz.cn"
+      "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://region1.google-analytics.com https://www.googletagmanager.com https://cloudflareinsights.com https://slixamjkvpoijrnbwzxi.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://zpayz.cn"
     );
   }
   return new Response(response.body, { status: response.status, headers });

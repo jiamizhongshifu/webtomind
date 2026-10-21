@@ -1,3 +1,4 @@
+import { track } from './analytics';
 import { useEffect, useState } from 'react';
 import { Button, ButtonLink } from '../../src/shared/ui';
 import { client } from './auth-client';
@@ -140,6 +141,11 @@ export function MembershipPanel({
           url.password
         )
           throw Error('INVALID_CHECKOUT');
+        track(
+          'begin_checkout',
+          { plan: checkoutPlan, provider: 'stripe' },
+          url.href
+        );
         window.location.assign(url.href);
       } else {
         await request('membership/renewal', { cancelAtPeriodEnd: cancel });

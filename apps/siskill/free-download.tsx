@@ -1,3 +1,4 @@
+import { track } from './analytics';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { client } from './auth-client';
@@ -81,6 +82,7 @@ export function FreeSkillDownload({
       link.click();
       link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      track('skill_download_verified', { slug: release.slug });
       setState('done');
     } catch {
       setState('error');

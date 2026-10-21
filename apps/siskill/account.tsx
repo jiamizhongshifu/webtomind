@@ -1,3 +1,4 @@
+import { track } from './analytics';
 import { catalog, text, guidePath } from './discovery';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -145,6 +146,24 @@ export default function Account({ locale }: { locale: string }) {
         )
           setError('AUTH_CALLBACK_FAILED');
         setLoaded(true);
+        // Only count an intentional OAuth login after the server verifies the session.
+        try {
+          const started = Number(sessionStorage.getItem('siskill.oauth-start'));
+          if (
+            result.data.session &&
+            !result.error &&
+            !new URLSearchParams(window.location.search).has('error') &&
+            started > Date.now() - 600000 &&
+            started <= Date.now()
+          ) {
+            sessionStorage.removeItem('siskill.oauth-start');
+            const verified = await c.auth.getUser();
+            if (!verified.error && verified.data.user)
+              track('login', { method: 'google' });
+          }
+        } catch {
+          /* telemetry is optional */
+        }
       })
       .catch(() => {
         if (active) {
@@ -218,8 +237,14 @@ export default function Account({ locale }: { locale: string }) {
     setNotice('');
     try {
       if (mode === 'signin') {
+        try {
+          sessionStorage.removeItem('siskill.oauth-start');
+        } catch {
+          /* optional */
+        }
         const result = await sdk.auth.signInWithPassword({ email, password });
         if (result.error) throw Error('SIGNIN_FAILED');
+        if (result.data.session) track('login', { method: 'email' });
       } else if (mode === 'signup') {
         const result = await sdk.auth.signUp({
           email,
@@ -268,12 +293,22 @@ export default function Account({ locale }: { locale: string }) {
     setBusy(true);
     setError('');
     try {
+      try {
+        sessionStorage.setItem('siskill.oauth-start', String(Date.now()));
+      } catch {
+        /* optional */
+      }
       const result = await sdk.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: callback }
       });
       if (result.error) throw result.error;
     } catch {
+      try {
+        sessionStorage.removeItem('siskill.oauth-start');
+      } catch {
+        /* optional */
+      }
       setError('OAUTH_FAILED');
       setBusy(false);
     }
@@ -315,6 +350,11 @@ export default function Account({ locale }: { locale: string }) {
         !url.username &&
         !url.password
       ) {
+        track(
+          'begin_checkout',
+          { slug: offer.siskill_releases.slug, provider },
+          data.orderId
+        );
         window.location.assign(url.href);
         return;
       }
@@ -335,6 +375,11 @@ export default function Account({ locale }: { locale: string }) {
           form.append(input);
         }
         document.body.append(form);
+        track(
+          'begin_checkout',
+          { slug: offer.siskill_releases.slug, provider },
+          data.orderId
+        );
         form.submit();
         form.remove();
         return;
@@ -369,6 +414,7 @@ export default function Account({ locale }: { locale: string }) {
       a.href = url;
       a.download = `${grant.siskill_releases.slug}-${grant.siskill_releases.version}.tar.gz`;
       a.click();
+      track('skill_download_verified', { slug: grant.siskill_releases.slug });
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch {
       setError('DOWNLOAD_FAILED');

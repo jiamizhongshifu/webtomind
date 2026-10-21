@@ -1,3 +1,4 @@
+import { AnalyticsPreferences } from './analytics-preferences';
 import { MemberPlanButton } from './membership';
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
@@ -750,6 +751,7 @@ function Site() {
             WebToMind ↗
           </a>
         </small>
+        <AnalyticsPreferences locale={locale} />
       </footer>
     </div>
   );

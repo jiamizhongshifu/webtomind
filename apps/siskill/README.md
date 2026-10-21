@@ -84,3 +84,6 @@ rollback only this Worker, never the WebToMind deployment.
 See [SiSkill operations](../../docs/SISKILL_OPERATIONS.md) for read-only public SEO checks,
 scoped Search Console submission/inspection and an aggregate business report that
 separates explicitly marked acceptance accounts and unavailable funnel data.
+
+See [SiSkill analytics](../../docs/SISKILL_ANALYTICS.md) for the independent GA4 stream,
+optional consent, event boundaries, data minimization and QA traffic isolation.
