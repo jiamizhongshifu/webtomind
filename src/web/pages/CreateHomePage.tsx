@@ -37,6 +37,7 @@ import {
   Textarea,
   useOverlayBehavior
 } from '@/shared/ui';
+import { SiSkillLink } from '../components/SiSkillLink';
 import { AiRechargeLink } from '../components/AiRechargeLink';
 import { CreateWorkspaceFrame } from '../components/image-create/CreateWorkspaceFrame';
 import { useAuthModal } from '../components/AuthModal';
@@ -1193,6 +1194,11 @@ export function CreateHomePage() {
         </ul>
       </Dialog>
       <AiRechargeLink
+        placement="create_home"
+        locale={isEnglishCreate ? 'en-US' : 'zh-CN'}
+        variant="banner"
+      />
+      <SiSkillLink
         placement="create_home"
         locale={isEnglishCreate ? 'en-US' : 'zh-CN'}
         variant="banner"

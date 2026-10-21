@@ -1,0 +1,63 @@
+.siskill-link {
+  text-decoration: none;
+}
+
+.siskill-link--inline,
+.siskill-link__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.siskill-link--banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 16px 0;
+  padding: 14px 18px;
+  border: 1px solid var(--web-border-default);
+  border-radius: 14px;
+  background: var(--web-bg-card);
+  color: var(--web-text-primary);
+  text-align: left;
+}
+
+.siskill-link__copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.siskill-link__copy strong {
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.siskill-link__copy > span {
+  color: var(--web-text-secondary);
+}
+
+.siskill-link__action {
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.siskill-link--banner:hover {
+  border-color: var(--web-text-secondary);
+}
+
+.siskill-link:focus-visible {
+  outline: 2px solid var(--web-text-primary);
+  outline-offset: 4px;
+}
+
+@media (max-width: 480px) {
+  .siskill-link--banner {
+    gap: 10px;
+    padding: 12px;
+  }
+}

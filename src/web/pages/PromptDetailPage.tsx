@@ -77,6 +77,7 @@ import {
   getPromptCaseCardAspectRatio,
   getPromptCasePromptForLocale
 } from './prompt-library/promptLibraryDisplay';
+import { SiSkillLink } from '../components/SiSkillLink';
 import { AiRechargeLink } from '../components/AiRechargeLink';
 import { CreateWorkspaceFrame } from '../components/image-create/CreateWorkspaceFrame';
 import { readPromptDetailBootstrap } from './prompt-detail/promptDetailBootstrap';
@@ -771,6 +772,11 @@ export function PromptDetailPage() {
               <span>{title}</span>
             </nav>
             <AiRechargeLink
+              placement="prompt_detail"
+              locale={locale}
+              variant="banner"
+            />
+            <SiSkillLink
               placement="prompt_detail"
               locale={locale}
               variant="banner"

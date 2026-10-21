@@ -88,6 +88,7 @@ import {
 } from '../lib/masonry';
 import { applySeo } from '../lib/seo';
 import { useMarketingLocale } from '../lib/marketing-locale';
+import { SiSkillLink } from '../components/SiSkillLink';
 import { AiRechargeLink } from '../components/AiRechargeLink';
 import { PromptLibraryShellNav } from './prompt-library/PromptLibraryShellNav';
 import {
@@ -3334,6 +3335,11 @@ export function PromptSeoLandingPage({
     return (
       <>
         <AiRechargeLink
+          placement="prompt_library"
+          locale={locale}
+          variant="banner"
+        />
+        <SiSkillLink
           placement="prompt_library"
           locale={locale}
           variant="banner"

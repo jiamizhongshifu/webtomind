@@ -12,6 +12,7 @@ import {
 } from '../../shared/ui';
 import '../styles/top-nav.css';
 import '../styles/language-switch-banner.css';
+import { SiSkillLink } from './SiSkillLink';
 import { AiRechargeLink } from './AiRechargeLink';
 import { LanguageSwitchBanner } from './LanguageSwitchBanner';
 const ENGLISH_SEO_PATHS = new Set([
@@ -278,6 +279,11 @@ export function TopNav() {
                 {navFallback.pricing}
               </NavigationLink>
               <AiRechargeLink
+                placement="top_nav"
+                locale={locale}
+                className="nav-link-item"
+              />
+              <SiSkillLink
                 placement="top_nav"
                 locale={locale}
                 className="nav-link-item"
