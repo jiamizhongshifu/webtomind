@@ -1,3 +1,4 @@
+import { MemberPlanButton } from './membership';
 import React, { useEffect, useState, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
@@ -743,9 +744,7 @@ function Pricing({ zh, locale }: { zh: boolean; locale: string }) {
               ))}
             </ul>
             {i === 1 ? (
-              <Button variant="primary" disabled>
-                {t('Coming soon', '即将开放')}
-              </Button>
+              <MemberPlanButton yearly={yearly} locale={locale} />
             ) : (
               <ButtonLink
                 variant="secondary"

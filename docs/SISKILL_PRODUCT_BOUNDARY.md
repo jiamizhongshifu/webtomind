@@ -30,7 +30,8 @@ The existing source uses Stripe and ZPay-backed Alipay (`api/membership/checkout
 `api/membership/webhook.ts`). Existing `payment_orders.product_type` and product metadata
 control fulfillment. Blind reuse would grant WebToMind subscriptions/credits.
 
-The first implemented slice supports **one-time paid Skills** only. Its reviewed
+The original slice supports **one-time paid Skills**; monthly/yearly subscriptions are now
+implemented separately as documented in `docs/SISKILL_MEMBERSHIP_RELEASE.md`. Its reviewed
 migration is `supabase/migrations/20261021090000_siskill_commerce.sql`; deployment and
 activation are separate actions. It creates five prefixed tables without changing or
 backfilling legacy WebToMind tables:
@@ -38,7 +39,7 @@ backfilling legacy WebToMind tables:
 - `siskill_releases`: reviewed, immutable archive identity and checksum.
 - `siskill_products`: server-owned SKU, prices, release and license-contract version.
 - `siskill_orders`: user, provider, immutable quote and purchase status.
-- `siskill_grants`: access to the purchased release, revoked after a full refund.
+- `siskill_grants`: access to the purchased Skill and its published updates, revoked after a full refund.
 - `siskill_payment_events`: idempotent provider event ledger.
 
 Authenticated users can read only their own orders/grants. Catalog writes and
@@ -69,9 +70,9 @@ sign-in or email delivery. Those end-to-end outcomes require separate acceptance
 Password updates affect the shared account and are described that way in the UI.
 A return URL/query parameter is never proof of payment.
 
-Monthly/yearly plans, renewal/cancellation, automatic dispute handling and automatic
-Alipay refund reconciliation are **not implemented** in this slice. Membership stays
-closed. One-time sales also remain closed until the activation criteria in
+Monthly/yearly plans and renewal/cancellation are implemented with Stripe test-mode
+acceptance. Membership stays closed pending hosted Checkout and real-purchase acceptance.
+One-time dispute handling and Alipay refund reconciliation still need operations coverage. One-time sales also remain closed until the activation criteria in
 `docs/SISKILL_COMMERCE_RELEASE.md` are met. Provider test-mode and real payment acceptance
 must be recorded separately from unit/database tests.
 

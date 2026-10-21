@@ -333,3 +333,23 @@
   display: block;
   word-break: break-all;
 }
+
+.siskill-member-panel {
+  padding: 24px;
+  margin-block: 24px;
+  border: 1px solid var(--web-border-default);
+  border-radius: 16px;
+}
+.siskill-member-panel h2 {
+  margin-bottom: 16px;
+}
+.siskill-member-panel p {
+  margin-block: 12px;
+}
+.siskill-member-panel .ui-button {
+  margin: 4px 8px 4px 0;
+}
+.siskill-library-item {
+  padding-top: 16px;
+  border-top: 1px solid var(--web-border-default);
+}

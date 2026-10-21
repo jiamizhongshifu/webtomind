@@ -1,5 +1,12 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+import { verifiedArchive } from './archive';
+import {
+  memberStatus,
+  membershipCheckout,
+  changeRenewal,
+  processMemberEvent
+} from './membership';
 import {
   buildZpayCheckoutFields,
   buildZpayOutTradeNo,
@@ -21,6 +28,7 @@ import {
 
 export interface CommerceEnv {
   SISKILL_COMMERCE_ENABLED?: string;
+  SISKILL_MEMBERSHIP_ENABLED?: string;
   SUPABASE_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
   SUPABASE_ANON_KEY?: string;
@@ -160,9 +168,15 @@ export async function createCheckout(
   if (
     !archive ||
     archive.size !== order.snapshot.bytes ||
-    archive.customMetadata?.sha256 !== order.snapshot.sha256
+    (archive.customMetadata?.sha256 &&
+      archive.customMetadata.sha256 !== order.snapshot.sha256)
   )
     throw new CommerceError('DOWNLOAD_UNAVAILABLE', 503);
+  await verifiedArchive(env, {
+    object_key: release.data.object_key,
+    sha256: order.snapshot.sha256,
+    bytes: order.snapshot.bytes
+  });
   const urls = returnUrls(order.id, order.snapshot.locale);
   if (provider === 'stripe') {
     if (order.checkout_id) {
@@ -316,7 +330,11 @@ export async function processStripeEvent(
     );
   } else if (event.type === 'charge.refunded') {
     const charge = event.data.object as Stripe.Charge;
-    if (charge.metadata?.product_scope !== PRODUCT_SCOPE) return;
+    if (
+      charge.metadata?.product_scope !== PRODUCT_SCOPE ||
+      charge.metadata.purchase_kind === 'membership'
+    )
+      return;
     // Partial refunds do not silently revoke the entire purchased license.
     if (!charge.refunded || charge.amount_refunded !== charge.amount) return;
     const order = await orderById(db, charge.metadata.order_id);
@@ -364,7 +382,22 @@ async function stripeWebhook(
   if (!mode) throw new CommerceError('WEBHOOK_UNAVAILABLE', 503);
   if (event.livemode !== (mode[1] === 'live'))
     throw new CommerceError('PAYMENT_MODE_MISMATCH', 400);
-  await processStripeEvent(event, deps);
+  // The shared merchant already uses three webhook schema versions. Rehydrate
+  // signed SiSkill objects with our pinned SDK version before fulfillment.
+  const object = event.data.object as unknown as {
+    id: string;
+    metadata?: Record<string, string>;
+  };
+  if (object.metadata?.product_scope === PRODUCT_SCOPE) {
+    if (event.type.startsWith('checkout.session.'))
+      (event.data as { object: unknown }).object =
+        await deps.stripe.checkout.sessions.retrieve(object.id);
+    else if (event.type === 'charge.refunded')
+      (event.data as { object: unknown }).object =
+        await deps.stripe.charges.retrieve(object.id);
+  }
+  if (!(await processMemberEvent(event, deps)))
+    await processStripeEvent(event, deps);
   return json({ received: true });
 }
 async function zpayNotify(
@@ -457,7 +490,14 @@ export async function handleCommerce(
       return json({
         product: 'siskill',
         checkoutOpen: checkoutOpen,
-        membershipOpen: false
+        membershipOpen:
+          ready &&
+          env.SISKILL_MEMBERSHIP_ENABLED === 'true' &&
+          Boolean(
+            env.SISKILL_PACKAGES &&
+            env.SISKILL_STRIPE_SECRET_KEY &&
+            env.SISKILL_STRIPE_WEBHOOK_SECRET
+          )
       });
     }
     if (!ready && !injected)
@@ -480,6 +520,60 @@ export async function handleCommerce(
     const origin = request.headers.get('Origin');
     if (origin && origin !== SITE_ORIGIN)
       throw new CommerceError('ORIGIN_NOT_ALLOWED', 403);
+    if (path === '/api/siskill/plans' && request.method === 'GET') {
+      const plans = await deps.db
+        .from('siskill_plans')
+        .select('id,name,amount,currency,interval,contract_version')
+        .eq('active', true);
+      fail(plans.error);
+      return json({
+        plans: plans.data || [],
+        membershipOpen:
+          env.SISKILL_MEMBERSHIP_ENABLED === 'true' &&
+          Boolean(
+            deps.stripe &&
+            env.SISKILL_STRIPE_WEBHOOK_SECRET &&
+            env.SISKILL_PACKAGES
+          )
+      });
+    }
+    if (path === '/api/siskill/membership' && request.method === 'GET') {
+      const status = await memberStatus(await userId(request, deps.db), deps);
+      const releases = status.active
+        ? await deps.db
+            .from('siskill_releases')
+            .select('id,slug,version,created_at')
+            .eq('member_eligible', true)
+            .eq('status', 'published')
+            .order('created_at', { ascending: false })
+        : { data: [], error: null };
+      fail(releases.error);
+      const latest = new Map();
+      for (const r of releases.data || [])
+        if (!latest.has(r.slug)) latest.set(r.slug, r);
+      return json({ ...status, releases: Array.from(latest.values()) });
+    }
+    if (
+      [
+        '/api/siskill/membership/checkout',
+        '/api/siskill/membership/renewal'
+      ].includes(path) &&
+      request.method === 'POST'
+    ) {
+      const owner = await userId(request, deps.db),
+        text = await request.text();
+      if (text.length > 1024)
+        throw new CommerceError('INVALID_MEMBERSHIP', 413);
+      let input: unknown;
+      try {
+        input = JSON.parse(text);
+      } catch {
+        throw new CommerceError('INVALID_MEMBERSHIP');
+      }
+      return path.endsWith('/checkout')
+        ? await membershipCheckout(owner, input, env, deps)
+        : await changeRenewal(owner, input, deps);
+    }
     if (path === '/api/siskill/checkout' && request.method === 'POST')
       return await createCheckout(request, env, deps);
     if (path === '/api/siskill/products' && request.method === 'GET') {
@@ -493,6 +587,12 @@ export async function handleCommerce(
       fail(error);
       return json({
         products: data || [],
+        providers: [
+          ...(env.SISKILL_STRIPE_SECRET_KEY && env.SISKILL_STRIPE_WEBHOOK_SECRET
+            ? ['stripe']
+            : []),
+          ...(env.SISKILL_ZPAY_KEY && env.SISKILL_ZPAY_PID ? ['alipay'] : [])
+        ],
         checkoutOpen
       });
     }
@@ -513,54 +613,83 @@ export async function handleCommerce(
       ]);
       fail(orders.error);
       fail(grants.error);
+      const ownedSlugs = (grants.data || [])
+        .map((g: any) => g.siskill_releases?.slug)
+        .filter(Boolean);
+      let available = grants.data || [];
+      if (ownedSlugs.length) {
+        const updates = await deps.db
+          .from('siskill_releases')
+          .select('id,slug,version,created_at')
+          .in('slug', ownedSlugs)
+          .eq('status', 'published')
+          .order('created_at', { ascending: false });
+        fail(updates.error);
+        const latest = new Map<string, any>();
+        for (const r of updates.data || [])
+          if (!latest.has(r.slug)) latest.set(r.slug, r);
+        available = available.map((g: any) => {
+          const r = latest.get(g.siskill_releases?.slug);
+          return r
+            ? {
+                ...g,
+                release_id: r.id,
+                siskill_releases: { slug: r.slug, version: r.version }
+              }
+            : g;
+        });
+      }
       return json({
         product: 'siskill',
         orders: orders.data,
-        grants: grants.data
+        grants: available
       });
     }
     const match = path.match(/^\/api\/siskill\/downloads\/([a-f0-9-]{36})$/);
     if (match && request.method === 'GET') {
       const owner = await userId(request, deps.db);
-      const { data, error } = await deps.db
+      const target = await deps.db
+        .from('siskill_releases')
+        .select('id,slug,version,object_key,sha256,bytes,member_eligible')
+        .eq('id', match[1])
+        .eq('status', 'published')
+        .maybeSingle();
+      fail(target.error);
+      if (!target.data) throw new CommerceError('DOWNLOAD_NOT_OWNED', 403);
+      const owned = await deps.db
         .from('siskill_grants')
-        .select(
-          'release_id,siskill_releases!inner(slug,version,object_key,sha256,bytes,status)'
-        )
+        .select('release_id,siskill_releases!inner(slug)')
         .eq('user_id', owner)
-        .eq('release_id', match[1])
         .eq('status', 'active')
-        .eq('siskill_releases.status', 'published')
+        .eq('siskill_releases.slug', target.data.slug)
         .limit(1)
         .maybeSingle();
-      fail(error);
-      if (!data) throw new CommerceError('DOWNLOAD_NOT_OWNED', 403);
-      const release = data.siskill_releases as unknown as {
-        slug: string;
-        version: string;
-        object_key: string;
-        sha256: string;
-        bytes: number;
-      };
+      fail(owned.error);
+      // A single-Skill license includes later published versions of the same Skill.
+      // Membership unlocks only explicitly reviewed, eligible studio releases.
+      if (
+        !owned.data &&
+        !(
+          target.data.member_eligible &&
+          (await memberStatus(owner, deps)).active
+        )
+      )
+        throw new CommerceError('DOWNLOAD_NOT_OWNED', 403);
+      const release = target.data;
       if (
         !/^siskill\/[a-z0-9/_.-]+$/.test(release.object_key) ||
         release.object_key.includes('..') ||
         !env.SISKILL_PACKAGES
       )
         throw new CommerceError('DOWNLOAD_UNAVAILABLE', 503);
-      const object = await env.SISKILL_PACKAGES.get(release.object_key);
-      if (
-        !object ||
-        object.size !== release.bytes ||
-        object.customMetadata?.sha256 !== release.sha256
-      )
-        throw new CommerceError('DOWNLOAD_UNAVAILABLE', 503);
-      return new Response(object.body, {
+      const bytes = await verifiedArchive(env, release);
+      return new Response(bytes, {
         headers: {
           'Content-Type': 'application/gzip',
-          'Content-Length': String(object.size),
+          'Content-Length': String(bytes.byteLength),
           'Content-Disposition': `attachment; filename="${encodeURIComponent(release.slug + '-' + release.version)}.tar.gz"`,
           'Cache-Control': 'private, no-store',
+          Vary: 'Authorization',
           'X-Content-Type-Options': 'nosniff',
           'X-Content-SHA256': release.sha256
         }

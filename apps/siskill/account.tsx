@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { client, redirectsReady } from './auth-client';
 import freeReleases from './free-releases.json';
+import { MembershipPanel } from './membership';
 import { type SupabaseClient, type Session } from '@supabase/supabase-js';
 import { Button, ButtonLink } from '../../src/shared/ui';
 
@@ -59,6 +60,16 @@ export default function Account({ locale }: { locale: string }) {
     [libraryError, setLibraryError] = useState(false),
     [refresh, setRefresh] = useState(0);
   const [offer, setOffer] = useState<Product | null>(null);
+  const [providers, setProviders] = useState<string[]>([]);
+  useEffect(() => {
+    const plan = new URLSearchParams(window.location.search).get('plan');
+    if (plan && ['pro_monthly', 'pro_yearly'].includes(plan))
+      try {
+        sessionStorage.setItem('siskill.pending-plan', plan);
+      } catch {
+        /* optional */
+      }
+  }, []);
   const requested = new URLSearchParams(window.location.search).get('order');
   const querySkill = new URLSearchParams(window.location.search).get('skill');
   const [savedSkill] = useState(() => {
@@ -168,12 +179,14 @@ export default function Account({ locale }: { locale: string }) {
       fetch('/api/siskill/products', { cache: 'no-store' })
         .then((r) => (r.ok ? r.json() : null))
         .then((data) => {
-          if (active && data?.checkoutOpen)
+          if (active && data?.checkoutOpen) {
+            setProviders(data.providers || []);
             setOffer(
               data.products.find(
                 (p: Product) => p.siskill_releases.slug === selected
               ) || null
             );
+          }
         })
         .catch(() => {});
     return () => {
@@ -554,6 +567,7 @@ export default function Account({ locale }: { locale: string }) {
               {t('Sign out of SiSkill', '退出 SiSkill')}
             </Button>
           </div>
+          <MembershipPanel locale={locale} onDownload={download} />
           {offer && !owned && (
             <article className="siskill-auth-card">
               <h2>{offer.name}</h2>
@@ -563,25 +577,29 @@ export default function Account({ locale }: { locale: string }) {
               </p>
               <p>
                 {t(
-                  'Includes the purchased version. No WebToMind credits or SiSkill subscription.',
-                  '包含所购版本，不含 WebToMind 积分或 SiSkill 订阅。'
+                  'Includes this Skill and its updates while the service operates. No WebToMind credits or SiSkill subscription.',
+                  '包含此 Skill 及服务运营期间的更新，不含 WebToMind 积分或 SiSkill 订阅。'
                 )}
               </p>
               <div className="siskill-account-actions">
-                <Button
-                  disabled={busy || !library}
-                  onClick={() => checkout('stripe')}
-                >
-                  ${(offer.usd_cents / 100).toFixed(2)} ·{' '}
-                  {t('Pay by card', '银行卡支付')}
-                </Button>
-                <Button
-                  disabled={busy || !library}
-                  onClick={() => checkout('alipay')}
-                >
-                  ¥{(offer.cny_cents / 100).toFixed(2)} ·{' '}
-                  {t('Alipay', '支付宝')}
-                </Button>
+                {providers.includes('stripe') && (
+                  <Button
+                    disabled={busy || !library}
+                    onClick={() => checkout('stripe')}
+                  >
+                    ${(offer.usd_cents / 100).toFixed(2)} ·{' '}
+                    {t('Pay by card', '银行卡支付')}
+                  </Button>
+                )}
+                {providers.includes('alipay') && (
+                  <Button
+                    disabled={busy || !library}
+                    onClick={() => checkout('alipay')}
+                  >
+                    ¥{(offer.cny_cents / 100).toFixed(2)} ·{' '}
+                    {t('Alipay', '支付宝')}
+                  </Button>
+                )}
               </div>
             </article>
           )}

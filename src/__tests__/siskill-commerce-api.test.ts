@@ -1,6 +1,10 @@
 // @vitest-environment node
 import { describe, it, expect, vi } from 'vitest';
 import Stripe from 'stripe';
+import { createHash } from 'node:crypto';
+const archiveHash = createHash('sha256')
+  .update(new Uint8Array(1000))
+  .digest('hex');
 import {
   handleCommerce,
   processStripeEvent,
@@ -31,7 +35,7 @@ function fixture() {
       name: 'Carousel',
       slug: 'carousel',
       version: '1.0.0',
-      sha256: 'a'.repeat(64),
+      sha256: archiveHash,
       bytes: 1000,
       contract_version: 'siskill-v1'
     }
@@ -52,6 +56,12 @@ function fixture() {
     maybeSingle: vi.fn(async () => ({
       data: {
         object_key: 'siskill/carousel/1.0.0.tar.gz',
+        id,
+        slug: 'carousel',
+        version: '1.0.0',
+        sha256: archiveHash,
+        bytes: 1000,
+        member_eligible: false,
         status: 'published'
       },
       error: null
@@ -95,11 +105,11 @@ function fixture() {
     SISKILL_PACKAGES: {
       head: vi.fn(async () => ({
         size: 1000,
-        customMetadata: { sha256: 'a'.repeat(64) }
+        customMetadata: { sha256: archiveHash }
       })),
       get: vi.fn(async () => ({
         size: 1000,
-        customMetadata: { sha256: 'a'.repeat(64) },
+        customMetadata: { sha256: archiveHash },
         body: new ReadableStream({
           start(c) {
             c.enqueue(new Uint8Array(1000));
@@ -394,6 +404,74 @@ describe('SiSkill checkout and provider boundary', () => {
       (await handleCommerce(bad, f.env, { ...f.deps, stripe })).status
     ).toBe(400);
   });
+  it('rehydrates an older signed checkout payload before fulfillment', async () => {
+    const f = fixture();
+    f.env.SISKILL_STRIPE_SECRET_KEY = 'sk_test_local_only';
+    f.order.checkout_id = 'cs_test';
+    const stripe = new Stripe('sk_test_local_only');
+    const metadata = {
+      product_scope: 'siskill',
+      order_id: id,
+      sku: f.order.sku
+    };
+    const payload = JSON.stringify({
+      id: 'evt_schema',
+      type: 'checkout.session.completed',
+      livemode: false,
+      data: { object: { id: 'cs_test', metadata, payment_status: 'unpaid' } }
+    });
+    vi.spyOn(stripe.checkout.sessions, 'retrieve').mockResolvedValue({
+      id: 'cs_test',
+      metadata,
+      mode: 'payment',
+      client_reference_id: user,
+      amount_total: 999,
+      currency: 'usd',
+      payment_status: 'paid',
+      payment_intent: 'pi_verified'
+    } as any);
+    const signature = stripe.webhooks.generateTestHeaderString({
+      payload,
+      secret: 'whsec_local'
+    });
+    const response = await handleCommerce(
+      new Request('https://siskill.dev/api/siskill/stripe-webhook', {
+        method: 'POST',
+        headers: { 'stripe-signature': signature },
+        body: payload
+      }),
+      f.env,
+      { ...f.deps, stripe }
+    );
+    expect(response.status).toBe(200);
+    expect(stripe.checkout.sessions.retrieve).toHaveBeenCalledWith('cs_test');
+    expect(f.db.rpc).toHaveBeenCalledWith(
+      'siskill_apply_payment',
+      expect.objectContaining({ p_payment: 'pi_verified' })
+    );
+  });
+  it('rejects corrupt paid bytes even when size and metadata look correct', async () => {
+    const f = fixture();
+    f.env.SISKILL_PACKAGES!.get = vi.fn(async () => ({
+      size: 1000,
+      customMetadata: { sha256: archiveHash },
+      body: new ReadableStream({
+        start(c) {
+          c.enqueue(new Uint8Array(1000).fill(1));
+          c.close();
+        }
+      })
+    }));
+    const r = await handleCommerce(
+      new Request(`https://siskill.dev/api/siskill/downloads/${id}`, {
+        headers: { Authorization: 'Bearer user-token' }
+      }),
+      f.env,
+      f.deps
+    );
+    expect(r.status).toBe(503);
+    expect(await r.json()).toEqual({ error: 'PACKAGE_INTEGRITY_FAILED' });
+  });
   it('accepts restricted live Stripe keys but rejects test/live event crossover', async () => {
     const f = fixture();
     f.env.SISKILL_STRIPE_SECRET_KEY = 'rk_live_local_fixture';
@@ -483,7 +561,7 @@ describe('SiSkill checkout and provider boundary', () => {
         slug: 'carousel',
         version: '1.0.0',
         object_key: 'siskill/carousel/1.0.0.tar.gz',
-        sha256: 'a'.repeat(64),
+        sha256: archiveHash,
         bytes: 1000,
         status: 'published'
       }
@@ -502,5 +580,10 @@ describe('SiSkill checkout and provider boundary', () => {
     );
     expect((await r.arrayBuffer()).byteLength).toBe(1000);
     expect(f.query.eq).toHaveBeenCalledWith('user_id', user);
+    expect(f.query.eq).toHaveBeenCalledWith(
+      'siskill_releases.slug',
+      'carousel'
+    );
+    expect(f.query.eq).not.toHaveBeenCalledWith('release_id', id);
   });
 });

@@ -17,8 +17,8 @@ discovery or customer cases. The original dirty content checkout was not edited.
 The archive includes SKILL.md, skill.json, template, renderer, LICENSE.md,
 DEPENDENCIES.md, INSTALL.md and the reviewed examples. Commercial finished outputs
 are permitted by the retained license; generic package redistribution is restricted.
-The paid-license promise about future updates must be reconciled with the current
-version-specific commerce grants before any paid release. It does not limit free access.
+Single-Skill purchase authorization now covers the same Skill's later published versions,
+matching the paid-license update promise. Free access does not grant paid catalog rights.
 
 ## Distribution boundary
 

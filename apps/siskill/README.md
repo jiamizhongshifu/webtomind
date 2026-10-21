@@ -32,7 +32,9 @@ WebToMind. SiSkill must have distinct product identifiers, orders and entitlemen
 The current WebToMind checkout/webhook must not be called by this preview: they fulfill
 WebToMind subscriptions and credits. The one-time purchase backend is implemented with its own tables, signed callbacks and
 private-download authorization. The isolated migration has been applied to the approved shared database;
-see `docs/SISKILL_COMMERCE_RELEASE.md` for activation requirements.
+see `docs/SISKILL_COMMERCE_RELEASE.md` for activation requirements. Monthly/yearly membership,
+paid-period authorization and cancellation are implemented behind a separate closed flag;
+see `docs/SISKILL_MEMBERSHIP_RELEASE.md` for validation and remaining real-sale acceptance.
 
 ## Development and verification
 

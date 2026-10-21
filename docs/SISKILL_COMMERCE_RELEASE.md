@@ -1,11 +1,13 @@
 # SiSkill one-time commerce — activation record
 
-## Prepared source (2026-10-21)
+## Current preparation (2026-10-21)
+
+Membership and first-package continuation: see [membership release](SISKILL_MEMBERSHIP_RELEASE.md).
 
 This is a default-closed backend, not an announcement that purchasing is available.
 The public app offers a reviewed free OG Image download outside commerce (see
-`docs/SISKILL_FREE_RELEASE.md`); paid products remain in preview. No active SKU, paid archive, provider
-secret, subscription plan, customer purchase or grant is seeded by this change. Shared email/password sign-in
+`docs/SISKILL_FREE_RELEASE.md`); paid products remain in preview. One reviewed paid package, inactive SKU, inactive monthly/yearly plans and independent
+Stripe configuration are prepared. No real customer purchase or grant has been created. Shared email/password sign-in
 and an independent account/library UI are included. The verified redirect allowlist
 enables Google/signup/recovery entry points; completed Google sign-in and real email
 delivery are not covered by the authorization handoff check.
@@ -13,13 +15,13 @@ delivery are not covered by the authorization handoff check.
 | Endpoint                                | Purpose                                                   | Gate                                                                                  |
 | --------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | `GET /api/siskill/auth-config`          | Shared public Supabase config; never service key          | Public key role validation                                                            |
-| `GET /api/siskill/status`               | Checkout configuration readiness; membership always false | Public, no-store                                                                      |
+| `GET /api/siskill/status`               | Checkout configuration readiness; separate membership readiness | Public, no-store                                                                      |
 | `GET /api/siskill/products`             | Active, published catalog and server prices               | Configured database                                                                   |
 | `POST /api/siskill/checkout`            | One-time Stripe or Alipay checkout                        | Enable flag, valid bearer user, reviewed SKU, intact private package, provider config |
 | `POST /api/siskill/stripe-webhook`      | Payment, expiry and full refund                           | Raw-body Stripe signature, mode and stored purchase contract                          |
 | `GET /api/siskill/zpay-notify`          | Alipay settlement                                         | Unique parameters, MD5 signature, merchant and stored purchase contract               |
-| `GET /api/siskill/me`                   | Own orders and active purchased releases                  | Valid bearer user                                                                     |
-| `GET /api/siskill/downloads/:releaseId` | Private purchased archive stream                          | Own active grant, published release, size and SHA-256 metadata match                  |
+| `GET /api/siskill/me`                   | Own orders and latest published purchased Skills                  | Valid bearer user                                                                     |
+| `GET /api/siskill/downloads/:releaseId` | Private purchased archive stream                          | Own active grant, published release, actual archive byte length and SHA-256 match                  |
 
 The readiness endpoint reports configuration only; it does not prove provider health,
 existence of a sellable catalog, login completion or successful payment acceptance.
@@ -56,7 +58,7 @@ Worker secrets/bindings, never as `VITE_*` variables or public catalog metadata:
 - `SISKILL_ZPAY_PID`, `SISKILL_ZPAY_KEY`: the approved existing merchant account.
 - `SISKILL_PACKAGES`: private R2 binding, public access disabled. Keys start `siskill/`.
   Upload reviewed bytes to immutable, versioned keys with verified `sha256` custom
-  metadata and actual byte length. Metadata alone is not a publishing review.
+  metadata and actual byte length. Download verification hashes the actual bytes; custom metadata is optional.
 
 Register Stripe endpoint events: `checkout.session.completed`,
 `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `charge.refunded`.
@@ -78,8 +80,8 @@ separate. WebToMind's deployed credentials, callback URLs and fulfillment are un
    attribution, personal paths/credentials/customer data removed, reproducible agent
    example and actual install/output test. Record archive hash, size and version.
    The current preview catalog's `review` status does not satisfy this requirement.
-3. Define one-time rights accurately. This implementation grants the purchased release;
-   it does not grant every future version, all Premium Skills or membership renewals.
+3. Define one-time rights accurately. A single-Skill purchase now includes subsequent published versions of the same Skill,
+   while Pro access remains a separate paid-period entitlement.
 4. Add the inactive server SKU with separately approved USD/CNY prices and immutable
    contract version. Do not derive payment amounts from browser or display-price text.
 5. Complete provider test-mode acceptance: successful and failed payment, pending return,
@@ -93,8 +95,8 @@ separate. WebToMind's deployed credentials, callback URLs and fulfillment are un
    only reviewed SKUs, then the sales flag. Real payment acceptance requires its own
    recorded transaction/consent; never infer it from test-mode success.
 
-Monthly/yearly membership remains unavailable until its own subscription lifecycle,
-provider setup, cancellation and renewal/refund tests are implemented and accepted.
+Monthly/yearly membership lifecycle is implemented and test-mode verified. Hosted Checkout
+and real payment acceptance remain; see the membership release record.
 
 ## Recovery and operations
 
