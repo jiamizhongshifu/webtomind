@@ -53,7 +53,7 @@ currency and transaction ID. Stripe metadata also matches SKU and authenticated 
 A full refund revokes the order's grant, including out-of-order refund/payment callbacks.
 WebToMind subscriptions, credits and lifetime access are never consulted or granted.
 Paid private downloads require an active SiSkill grant and a published archive with matching
-size/checksum metadata. The public site build never contains private archives.
+actual byte length and SHA-256. The public site build never contains private archives.
 
 Identity decision (confirmed 2026-10-21): **reuse existing WebToMind accounts** in
 Supabase project `slixamjkvpoijrnbwzxi`. SiSkill owns its `siskill.auth` browser storage;
@@ -71,7 +71,8 @@ Password updates affect the shared account and are described that way in the UI.
 A return URL/query parameter is never proof of payment.
 
 Monthly/yearly plans and renewal/cancellation are implemented with Stripe test-mode
-acceptance. Membership stays closed pending hosted Checkout and real-purchase acceptance.
+acceptance. Hosted Checkout has also passed in test mode. Membership stays closed pending signed
+production callback and real-purchase acceptance, deferred at the user's request.
 One-time dispute handling and Alipay refund reconciliation still need operations coverage. One-time sales also remain closed until the activation criteria in
 `docs/SISKILL_COMMERCE_RELEASE.md` are met. Provider test-mode and real payment acceptance
 must be recorded separately from unit/database tests.

@@ -6,6 +6,8 @@ refer visitors to SiSkill. A shared source repository does not imply shared memb
 
 ## Current release
 
+Release scope, evidence and remaining gates: [closeout](../../docs/SISKILL_CLOSEOUT_2026-10-21.md).
+
 This app is a public preview: an English-first bilingual landing page, ten original
 workflow demonstrations, a searchable catalog, product detail pages and planned pricing.
 Cards automatically loop silent 16:9 demos when visible on desktop and mobile, without

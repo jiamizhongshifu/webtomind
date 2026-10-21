@@ -57,8 +57,9 @@ Worker secrets/bindings, never as `VITE_*` variables or public catalog metadata:
   mode; the webhook secret belongs to SiSkill's endpoint, not WebToMind's endpoint.
 - `SISKILL_ZPAY_PID`, `SISKILL_ZPAY_KEY`: the approved existing merchant account.
 - `SISKILL_PACKAGES`: private R2 binding, public access disabled. Keys start `siskill/`.
-  Upload reviewed bytes to immutable, versioned keys with verified `sha256` custom
-  metadata and actual byte length. Download verification hashes the actual bytes; custom metadata is optional.
+  Upload reviewed bytes to immutable, versioned keys with the reviewed SHA-256 and
+  byte length recorded in the release row. Download verification hashes the actual
+  bytes; custom object metadata is optional and is not an integrity proof.
 
 Register Stripe endpoint events: `checkout.session.completed`,
 `checkout.session.async_payment_succeeded`, `checkout.session.expired`, `charge.refunded`.
@@ -95,8 +96,9 @@ separate. WebToMind's deployed credentials, callback URLs and fulfillment are un
    only reviewed SKUs, then the sales flag. Real payment acceptance requires its own
    recorded transaction/consent; never infer it from test-mode success.
 
-Monthly/yearly membership lifecycle is implemented and test-mode verified. Hosted Checkout
-and real payment acceptance remain; see the membership release record.
+Monthly/yearly membership lifecycle and Stripe hosted Checkout are test-mode verified.
+Signed production callback delivery and real payment acceptance remain deferred at the
+user's request; see the membership release record.
 
 ## Recovery and operations
 
