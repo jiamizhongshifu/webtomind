@@ -5,9 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  '@modelcontextprotocol/sdk': 1.31.0
-  '@modelcontextprotocol/client': 2.2.0
-  '@modelcontextprotocol/core': 2.2.0
+  '@modelcontextprotocol/sdk': 1.32.0
+  '@modelcontextprotocol/client': 2.3.0
+  '@modelcontextprotocol/core': 2.3.0
   '@hono/node-server': 2.0.11
   fast-uri: 3.1.8
   ip-address: 10.7.1
@@ -175,8 +175,8 @@ importers:
         specifier: ^1.11.22
         version: 1.11.22
       dompurify:
-        specifier: ^3.4.13
-        version: 3.4.13
+        specifier: ^3.4.16
+        version: 3.4.17
       embla-carousel-react:
         specifier: ^8.6.0
         version: 8.6.0(react@18.3.1)
@@ -187,8 +187,8 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
       hono:
-        specifier: ^4.13.7
-        version: 4.13.7
+        specifier: ^4.13.11
+        version: 4.13.13
       html2canvas:
         specifier: ^1.4.1
         version: 1.4.1
@@ -407,8 +407,8 @@ importers:
         specifier: ^2.110.0
         version: 2.110.0
       hono:
-        specifier: ^4.13.7
-        version: 4.13.7
+        specifier: ^4.13.11
+        version: 4.13.13
       pptxgenjs:
         specifier: ^4.0.1
         version: 4.0.1
@@ -523,7 +523,7 @@ importers:
         version: 0.21.0
       '@hono/node-server':
         specifier: 2.0.11
-        version: 2.0.11(hono@4.13.7)
+        version: 2.0.11(hono@4.13.13)
       '@mozilla/readability':
         specifier: ^0.6.0
         version: 0.6.0
@@ -540,8 +540,8 @@ importers:
         specifier: ^17.2.3
         version: 17.2.3
       hono:
-        specifier: ^4.13.7
-        version: 4.13.7
+        specifier: ^4.13.11
+        version: 4.13.13
       https-proxy-agent:
         specifier: ^7.0.6
         version: 7.0.6
@@ -1265,7 +1265,7 @@ packages:
     engines: {node: '>=18.0.0'}
     dependencies:
       '@anthropic-ai/sdk': 0.52.0
-      '@modelcontextprotocol/sdk': 1.31.0(zod@3.25.76)
+      '@modelcontextprotocol/sdk': 1.32.0(zod@3.25.76)
       zod: 3.25.76
       zod-to-json-schema: 3.25.2(zod@3.25.76)
     transitivePeerDependencies:
@@ -2065,13 +2065,13 @@ packages:
       yargs: 17.7.3
     dev: true
 
-  /@hono/node-server@2.0.11(hono@4.13.7):
+  /@hono/node-server@2.0.11(hono@4.13.13):
     resolution: {integrity: sha512-bjD221KPLoJTWUwso1J6fGKiTXEUFedG/s0visavY4zakFPkeGURMRNly+FhBHs7T8Dz4qHaZIMX9ZoJHSJtKA==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4
     dependencies:
-      hono: 4.13.7
+      hono: 4.13.13
     dev: false
 
   /@hookform/resolvers@5.9.0(react-hook-form@7.85.0)(zod@4.4.3):
@@ -2709,12 +2709,12 @@ packages:
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
     dev: true
 
-  /@modelcontextprotocol/client@2.2.0:
-    resolution: {integrity: sha512-LxCou/CSYQ6dwEnjhLZY0KnEuc8V4UJ3IEQCl/uR2yHobSQIEdJKUlKLRYRF5i5FqRGHy1eK7une3aAWDHLtig==}
+  /@modelcontextprotocol/client@2.3.0:
+    resolution: {integrity: sha512-pbHtGj6EeFCHngFE8gtNPaKrsj8Mb1IMw45BLcaPML/m2WTxI7pyYmeNQvaux88Lw8BSO5r7nyRbUyIkICmGrg==}
     engines: {node: '>=20'}
     requiresBuild: true
     dependencies:
-      '@modelcontextprotocol/core': 2.2.0
+      '@modelcontextprotocol/core': 2.3.0
       cross-spawn: 7.0.6
       eventsource: 3.0.7
       eventsource-parser: 3.1.0
@@ -2724,8 +2724,8 @@ packages:
     dev: false
     optional: true
 
-  /@modelcontextprotocol/core@2.2.0:
-    resolution: {integrity: sha512-iLhmprRmWI8EcosOA3wVvww22z02NkgqhV4fBH6f/odQBsi7xnJc0HGmi21yWO+/iKw2yzqVE127Zhna5/+JXw==}
+  /@modelcontextprotocol/core@2.3.0:
+    resolution: {integrity: sha512-09BHFaNVBe5pB2AhzCfLj0cqmsKLERvZQ4FblzP90UMGLaXVqdZPByFjURwsUYCmxonUW2yAwgTTvle+8O2/8w==}
     engines: {node: '>=20'}
     requiresBuild: true
     dependencies:
@@ -2733,8 +2733,8 @@ packages:
     dev: false
     optional: true
 
-  /@modelcontextprotocol/sdk@1.31.0(zod@3.25.76):
-    resolution: {integrity: sha512-UvTMgnNlnIBO/22ob2RcVGDlcvOslQs8T59+FTGdA0L27a39fdGF/EDETNtDVK4DZGpwomlsYpRdA8UXcVL/pw==}
+  /@modelcontextprotocol/sdk@1.32.0(zod@3.25.76):
+    resolution: {integrity: sha512-8BviX/hK4Gd2eL1KdTwm0gfl4d3wdoErW0Jd00h6nomUAtk6IJk5vwQJc6kfWtJTzN5OEV/lgIiJKI8fiDGAlA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
@@ -2743,7 +2743,7 @@ packages:
       '@cfworker/json-schema':
         optional: true
     dependencies:
-      '@hono/node-server': 2.0.11(hono@4.13.7)
+      '@hono/node-server': 2.0.11(hono@4.13.13)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -2753,7 +2753,7 @@ packages:
       eventsource-parser: 3.1.0
       express: 5.2.1
       express-rate-limit: 8.5.2(express@5.2.1)
-      hono: 4.13.7
+      hono: 4.13.13
       jose: 6.2.3
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -2873,7 +2873,7 @@ packages:
       openai: 7.4.0(zod@4.4.3)
       zod: 4.4.3
     optionalDependencies:
-      '@modelcontextprotocol/client': 2.2.0
+      '@modelcontextprotocol/client': 2.3.0
     transitivePeerDependencies:
       - '@aws-sdk/credential-provider-node'
       - '@smithy/hash-node'
@@ -7965,8 +7965,8 @@ packages:
     resolution: {integrity: sha512-7ZgogeTnjuHbo+ct10G9Ffp0mif17idi0IyWNVA/wcwcm7NPOD/WEHVP3n7n3MhXqxoIYm8d6MuZohYWIZ4T3w==}
     dev: true
 
-  /dompurify@3.4.13:
-    resolution: {integrity: sha512-2vmYIoqjze2d+kakP8S/nS5shfsl587kzwEjcGlTdiksUVgFHnFCsLYDVj/JNqJVOQZGSYBTmuycv0PodwmnMQ==}
+  /dompurify@3.4.17:
+    resolution: {integrity: sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w==}
     optionalDependencies:
       '@types/trusted-types': 2.0.7
     dev: false
@@ -9082,8 +9082,8 @@ packages:
     resolution: {integrity: sha512-NnQpT6Z//+2IB2qovSUbKbrlXY1MOpi0JynZ9L2NNOuTJiNCyMSQj9k2laEj1v7CxU/Hb8oTWR98eT3mVpPQVQ==}
     dev: false
 
-  /hono@4.13.7:
-    resolution: {integrity: sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ==}
+  /hono@4.13.13:
+    resolution: {integrity: sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA==}
     engines: {node: '>=16.9.0'}
     dev: false
 
@@ -9693,7 +9693,7 @@ packages:
     optionalDependencies:
       canvg: 3.0.11
       core-js: 3.50.0
-      dompurify: 3.4.13
+      dompurify: 3.4.17
       html2canvas: 1.4.1
     dev: false
 

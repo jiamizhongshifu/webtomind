@@ -630,6 +630,14 @@
   }
 }
 
+@media (max-width: 760px) {
+  .image-create-page-with-side-nav.prompt-detail-route .create-workspace-page {
+    width: 100%;
+    max-width: 100%;
+    margin-inline: 0;
+  }
+}
+
 @media (max-width: 560px) {
   .prompt-detail-shell {
     width: min(100% - 24px, 1260px);

@@ -9,7 +9,7 @@
     "@alicloud/tea-util": "^1.4.11",
     "@anthropic-ai/sdk": "^0.109.1",
     "@supabase/supabase-js": "^2.110.0",
-    "hono": "^4.13.7",
+    "hono": "^4.13.11",
     "pptxgenjs": "^4.0.1"
   }
 }
