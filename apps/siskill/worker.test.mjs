@@ -121,3 +121,18 @@ test('API credentials are not redirected across origins', async () => {
     403
   );
 });
+
+test('account is a valid private route and is omitted from the public sitemap', async () => {
+  assert.equal(
+    route('https://siskill.dev/en-US/account?order=spoofed').status,
+    200
+  );
+  assert.equal(
+    metadata(route('https://siskill.dev/en-US/account')).title,
+    'Your library | SiSkill'
+  );
+  const map = await (
+    await worker.fetch(new Request('https://siskill.dev/sitemap.xml'), {})
+  ).text();
+  assert.ok(!map.includes('/account'));
+});

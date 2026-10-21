@@ -4,10 +4,12 @@
 
 This is a default-closed backend, not an announcement that purchasing is available.
 The public app remains the preview storefront. No active SKU, paid archive, provider
-secret, subscription plan, auth session or customer record is seeded by this change.
+secret, subscription plan, customer purchase or grant is seeded by this change. Shared email/password sign-in
+and an independent account/library UI are included; other auth methods remain gated.
 
 | Endpoint                                | Purpose                                                   | Gate                                                                                  |
 | --------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `GET /api/siskill/auth-config`          | Shared public Supabase config; never service key          | Public key role validation                                                            |
 | `GET /api/siskill/status`               | Checkout configuration readiness; membership always false | Public, no-store                                                                      |
 | `GET /api/siskill/products`             | Active, published catalog and server prices               | Configured database                                                                   |
 | `POST /api/siskill/checkout`            | One-time Stripe or Alipay checkout                        | Enable flag, valid bearer user, reviewed SKU, intact private package, provider config |
@@ -26,20 +28,26 @@ three service-only RPCs, two immutability trigger functions and two own-row read
 It does not alter legacy `payment_orders`, subscriptions, credits or auth user records.
 All product rows default inactive. No products or grants are inserted.
 
-The target identity database is still awaiting the product decision. Use the selected
-Supabase project only; do not run the repository's complete migration history against
-it. This migration expects standard Supabase `auth.users`, `auth.uid()`, `anon`,
-`authenticated` and `service_role`. Apply this exact file transactionally and retain
-the platform migration receipt. Verify RLS and function ACLs before binding the Worker.
-The local PGlite tests exercise the actual SQL including roles, transactions and RLS;
-they do not establish hosted Supabase acceptance.
+The user selected shared WebToMind identity. This exact migration was applied to
+project `slixamjkvpoijrnbwzxi` via the Supabase migration API on 2026-10-21, using name
+`siskill_isolated_one_time_commerce`. Hosted verification confirmed all five tables have
+RLS enabled, authenticated users cannot execute settlement RPCs, service role can, and
+active SKU/order/grant counts are zero. Existing customer records were not queried.
+
+Do not run the repository's complete experimental Skill migration history against
+production. The local PGlite tests exercise this exact SQL with roles, transactions and
+RLS. Hosted checks confirm schema/permissions, not real payment acceptance.
 
 ## Private runtime configuration
 
 Keep `SISKILL_COMMERCE_ENABLED=false` during preparation. Supply the following only as
 Worker secrets/bindings, never as `VITE_*` variables or public catalog metadata:
 
-- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`: selected SiSkill identity/data project.
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`: approved shared project.
+- `SUPABASE_ANON_KEY`: public auth key; `/auth-config` rejects a service-role key.
+- `SISKILL_AUTH_REDIRECTS_READY=false`: enable only after saving and verifying
+  `https://siskill.dev/en-US/account` and `https://siskill.dev/zh-CN/account` in
+  the existing auth redirect allowlist. Preserve all WebToMind entries and Site URL.
 - `SISKILL_STRIPE_SECRET_KEY`, `SISKILL_STRIPE_WEBHOOK_SECRET`: matching test or live
   mode; the webhook secret belongs to SiSkill's endpoint, not WebToMind's endpoint.
 - `SISKILL_ZPAY_PID`, `SISKILL_ZPAY_KEY`: the approved existing merchant account.
@@ -58,8 +66,9 @@ separate. WebToMind's deployed credentials, callback URLs and fulfillment are un
 
 ## Requirements before enabling the first sale
 
-1. Resolve the account model; finish own-brand signup/login/recovery, authenticated
-   account/library and verified post-checkout status. Do not make the success query
+1. Shared account model is confirmed and the account/library UI is implemented.
+   Finish dashboard login/captcha, save the two redirect URLs, and verify Google OAuth,
+   signup and password recovery before opening those methods. Verify post-checkout status. Do not make the success query
    string or a cancelled browser tab authorize a download.
 2. Review the exact first package and license contract: original/licensed source,
    attribution, personal paths/credentials/customer data removed, reproducible agent

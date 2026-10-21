@@ -23,6 +23,8 @@ export interface CommerceEnv {
   SISKILL_COMMERCE_ENABLED?: string;
   SUPABASE_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
+  SUPABASE_ANON_KEY?: string;
+  SISKILL_AUTH_REDIRECTS_READY?: string;
   SISKILL_STRIPE_SECRET_KEY?: string;
   SISKILL_STRIPE_WEBHOOK_SECRET?: string;
   SISKILL_ZPAY_PID?: string;
@@ -413,6 +415,32 @@ export async function handleCommerce(
 ): Promise<Response> {
   const path = new URL(request.url).pathname;
   try {
+    if (path === '/api/siskill/auth-config') {
+      if (request.method !== 'GET')
+        return json({ error: 'METHOD_NOT_ALLOWED' }, 405);
+      const key = env.SUPABASE_ANON_KEY || '';
+      let publicKey = /^sb_publishable_[a-zA-Z0-9_-]+$/.test(key);
+      if (!publicKey) {
+        try {
+          publicKey =
+            JSON.parse(
+              atob(key.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+            ).role === 'anon';
+        } catch {
+          /* fail closed */
+        }
+      }
+      if (
+        !publicKey ||
+        !/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(env.SUPABASE_URL || '')
+      )
+        throw new CommerceError('AUTH_NOT_CONFIGURED', 503);
+      return json({
+        url: env.SUPABASE_URL,
+        anonKey: key,
+        redirectsReady: env.SISKILL_AUTH_REDIRECTS_READY === 'true'
+      });
+    }
     const ready = Boolean(env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE_KEY);
     const checkoutOpen =
       ready &&

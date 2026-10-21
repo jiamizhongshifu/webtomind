@@ -52,11 +52,19 @@ WebToMind subscriptions, credits and lifetime access are never consulted or gran
 Private downloads require an active SiSkill grant and a published archive with matching
 size/checksum metadata. The public site build never contains private archives.
 
-Identity storage is a pending product decision: separate SiSkill user database versus
-shared identity with separate product entitlements. The migration can target either
-Supabase project's `auth.users`; do not choose or populate production until resolved.
-Login, post-payment account/library UI and branded auth email configuration remain to
-be connected after that decision. Returning to an account URL is never payment proof.
+Identity decision (confirmed 2026-10-21): **reuse existing WebToMind accounts** in
+Supabase project `slixamjkvpoijrnbwzxi`. SiSkill owns its `siskill.auth` browser storage;
+logout uses `scope: local` and must not revoke another product's session. The additive
+migration has been applied, RLS/function ACLs verified, with zero active SKUs/orders/grants.
+No legacy WebToMind data was migrated or modified.
+
+The account/library page supports shared email/password sign-in, own orders and downloads.
+Google OAuth, signup and password recovery are implemented but gated by
+`SISKILL_AUTH_REDIRECTS_READY`. Keep this false until the two exact SiSkill account URLs
+are saved and verified in Supabase's redirect allowlist. The dashboard currently requires
+human sign-in/captcha; no configuration was changed through that blocked session.
+Password updates affect the shared account and are described that way in the UI.
+A return URL/query parameter is never proof of payment.
 
 Monthly/yearly plans, renewal/cancellation, automatic dispute handling and automatic
 Alipay refund reconciliation are **not implemented** in this slice. Membership stays

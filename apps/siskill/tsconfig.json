@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": { "noUnusedLocals": true, "noUnusedParameters": true },
   "include": [
-    "main.tsx",
+    "*.tsx",
     "vite.config.ts",
     "server/**/*.ts",
     "../../src/__tests__/siskill-commerce-*.test.ts"

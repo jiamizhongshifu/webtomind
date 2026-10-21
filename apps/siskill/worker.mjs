@@ -21,13 +21,13 @@ export function route(input) {
       redirect: `${local ? url.origin : ORIGIN}/${locale}/overview${url.search}`
     };
   }
-  if (paths.includes(url.pathname))
+  if ([...paths, '/account'].includes(url.pathname))
     return {
       redirect: `${local ? url.origin : ORIGIN}/en-US${url.pathname}${url.search}`
     };
   const match = url.pathname.match(/^\/(en-US|zh-CN)(\/.*)$/);
   const path = match?.[2].replace(/\/$/, '');
-  if (match && paths.includes(path)) {
+  if (match && [...paths, '/account'].includes(path)) {
     if (url.pathname.endsWith('/'))
       return {
         redirect: `${local ? url.origin : ORIGIN}/${match[1]}${path}${url.search}`
@@ -44,15 +44,17 @@ export function route(input) {
 export function metadata(page) {
   const zh = page.locale === 'zh-CN';
   const title =
-    page.status === 404
-      ? 'Page not found | SiSkill'
-      : page.skill
-        ? `${page.skill.name[page.locale]} | SiSkill`
-        : page.path === '/skills/pricing'
-          ? 'SiSkill — Membership & pricing'
-          : page.path === '/skills'
-            ? 'SiSkill — Explore creative Skills'
-            : 'SiSkill — Your agent. A creative studio.';
+    page.path === '/account'
+      ? 'Your library | SiSkill'
+      : page.status === 404
+        ? 'Page not found | SiSkill'
+        : page.skill
+          ? `${page.skill.name[page.locale]} | SiSkill`
+          : page.path === '/skills/pricing'
+            ? 'SiSkill — Membership & pricing'
+            : page.path === '/skills'
+              ? 'SiSkill — Explore creative Skills'
+              : 'SiSkill — Your agent. A creative studio.';
   const description =
     page.skill?.summary[page.locale] ||
     (zh
@@ -83,7 +85,7 @@ function secure(response, html = false) {
     headers.set('Cache-Control', 'no-cache');
     headers.set(
       'Content-Security-Policy',
-      "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+      "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self' blob:; font-src 'self'; connect-src 'self' https://cloudflareinsights.com https://slixamjkvpoijrnbwzxi.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://zpayz.cn"
     );
   }
   return new Response(response.body, { status: response.status, headers });
@@ -128,7 +130,7 @@ export default {
     const source = await env.ASSETS.fetch(new Request(index));
     if (!source.ok) return new Response('Service unavailable', { status: 503 });
     const meta = metadata(page);
-    const head = `<meta name="robots" content="${page.status === 404 ? 'noindex,follow' : 'index,follow'}"><meta property="og:site_name" content="SiSkill"><meta property="og:type" content="website"><meta property="og:title" content="${esc(meta.title)}"><meta property="og:description" content="${esc(meta.description)}"><meta property="og:url" content="${esc(meta.canonical)}"><meta property="og:image" content="${esc(meta.image)}"><meta name="twitter:card" content="summary_large_image">${page.status === 200 ? locales.map((l) => `<link rel="alternate" hreflang="${l}" href="${ORIGIN}/${l}${page.path}">`).join('') : ''}`;
+    const head = `<meta name="robots" content="${page.status === 404 || page.path === '/account' ? 'noindex,follow' : 'index,follow'}"><meta property="og:site_name" content="SiSkill"><meta property="og:type" content="website"><meta property="og:title" content="${esc(meta.title)}"><meta property="og:description" content="${esc(meta.description)}"><meta property="og:url" content="${esc(meta.canonical)}"><meta property="og:image" content="${esc(meta.image)}"><meta name="twitter:card" content="summary_large_image">${page.status === 200 ? locales.map((l) => `<link rel="alternate" hreflang="${l}" href="${ORIGIN}/${l}${page.path}">`).join('') : ''}`;
     const fallback = `<noscript><main><h1>${esc(meta.title)}</h1><p>${esc(meta.description)}</p><p>Preview the collection. Skill packages and checkout are coming soon.</p><ul>${catalog.map((s) => `<li><a href="/${page.locale}/skills/${s.slug}">${esc(s.name[page.locale])}</a></li>`).join('')}</ul></main></noscript>`;
     const rewritten = new HTMLRewriter()
       .on('html', { element: (e) => e.setAttribute('lang', page.locale) })

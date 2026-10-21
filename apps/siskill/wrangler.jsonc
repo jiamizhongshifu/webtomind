@@ -5,7 +5,10 @@
   "compatibility_date": "2026-07-17",
   "workers_dev": false,
   "preview_urls": false,
-  "vars": { "SISKILL_COMMERCE_ENABLED": "false" },
+  "vars": {
+    "SISKILL_COMMERCE_ENABLED": "false",
+    "SISKILL_AUTH_REDIRECTS_READY": "false"
+  },
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",

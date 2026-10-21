@@ -9,14 +9,16 @@ refer visitors to SiSkill. A shared source repository does not imply shared memb
 This app is a public preview: an English-first bilingual landing page, ten original
 workflow demonstrations, a searchable catalog, product detail pages and planned pricing.
 Cards play silent 16:9 demos on hover; touch and reduced-motion users have an explicit
-play control. All packages are marked coming soon. There is no enabled checkout or login,
-private archive distribution, configured customer database or credit balance in this deployment. An independent,
+play control. All packages are marked coming soon. Sales and private archive distribution remain closed. The account page uses the shared
+WebToMind user database with separate SiSkill sessions, orders and grants. Email/password
+sign-in is supported; Google/signup/recovery stay gated until redirect configuration is verified. An independent,
 default-closed `/api/siskill/*` commerce handler is now included in the Worker source.
 The listed compatibility comes from package metadata, not a claim of testing every agent.
 
 The app builds independently of WebToMind and deploys as the `siskill` Cloudflare Worker.
-It has only an `ASSETS` binding. It does not load the hosted WebToMind content overlay,
-production environment, authentication, analytics or billing credentials. Shared UI
+It has its own `ASSETS` and explicitly provisioned shared Supabase bindings. It does not
+load the hosted WebToMind content overlay or automatically inherit its environment.
+Merchant configuration is separate even when merchant accounts are reused. Shared UI
 components are source reuse; changes here do not deploy the WebToMind Worker.
 
 ## Business and shared payments
@@ -26,7 +28,7 @@ Stripe and the existing Alipay integration may share merchant infrastructure wit
 WebToMind. SiSkill must have distinct product identifiers, orders and entitlements.
 The current WebToMind checkout/webhook must not be called by this preview: they fulfill
 WebToMind subscriptions and credits. The one-time purchase backend is implemented with its own tables, signed callbacks and
-private-download authorization. The migration is prepared but not yet applied to production;
+private-download authorization. The isolated migration has been applied to the approved shared database;
 see `docs/SISKILL_COMMERCE_RELEASE.md` for activation requirements.
 
 ## Development and verification

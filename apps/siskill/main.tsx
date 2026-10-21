@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import {
   BrowserRouter,
@@ -35,6 +35,8 @@ import {
   type SkillCatalogItem
 } from '../../src/services/skill-catalog-api';
 import products from './catalog.json';
+import { SkillPurchaseLink } from './purchase';
+const Account = lazy(() => import('./account'));
 
 const catalog = products as (SkillCatalogItem & {
   availability: string;
@@ -72,6 +74,7 @@ function Site() {
   const isHome = path === '/overview';
   const known =
     isHome ||
+    path === '/account' ||
     path === '/skills' ||
     path === '/skills/pricing' ||
     Boolean(skill);
@@ -96,13 +99,16 @@ function Site() {
   useEffect(
     () =>
       applySeo({
-        title: skill
-          ? `${pickLocalized(skill.name, locale)} | SiSkill`
-          : path === '/skills/pricing'
-            ? 'SiSkill — Membership & pricing'
-            : path === '/skills'
-              ? 'SiSkill — Explore creative Skills'
-              : 'SiSkill — Your agent. A creative studio.',
+        title:
+          path === '/account'
+            ? 'Your library | SiSkill'
+            : skill
+              ? `${pickLocalized(skill.name, locale)} | SiSkill`
+              : path === '/skills/pricing'
+                ? 'SiSkill — Membership & pricing'
+                : path === '/skills'
+                  ? 'SiSkill — Explore creative Skills'
+                  : 'SiSkill — Your agent. A creative studio.',
         description: skill
           ? pickLocalized(skill.summary, locale)
           : t(
@@ -111,7 +117,8 @@ function Site() {
             ),
         canonical: `${origin}/${locale}${path}`,
         htmlLang: locale,
-        robots: known ? 'index,follow' : 'noindex,follow',
+        robots:
+          known && path !== '/account' ? 'index,follow' : 'noindex,follow',
         ogImage: `${origin}${skill ? skillShowcases[skill.slug].poster : '/skill-previews/og-image.png'}`,
         alternates: [
           { hreflang: 'en-US', href: `${origin}/en-US${path}` },
@@ -128,6 +135,7 @@ function Site() {
         {t('Free Skills', '免费 Skill')}
       </Link>
       <Link to={`/${locale}/skills/pricing`}>{t('Pricing', '会员与价格')}</Link>
+      <Link to={`/${locale}/account`}>{t('My Skills', '我的 Skill')}</Link>
     </>
   );
   const grid = (items: typeof catalog) => (
@@ -222,7 +230,15 @@ function Site() {
       <main
         className={`marketing-page-main ${isHome ? 'skill-home' : skill ? 'skill-detail' : 'siskill-page'}`}
       >
-        {isHome ? (
+        {path === '/account' ? (
+          <Suspense
+            fallback={
+              <p role="status">{t('Loading your account…', '正在加载账号…')}</p>
+            }
+          >
+            <Account locale={locale} />
+          </Suspense>
+        ) : isHome ? (
           <>
             <SkillBrandHero
               locale={locale}
@@ -508,9 +524,7 @@ function Site() {
                       '现在可查看演示。安装包下载和购买尚未开放。'
                     )}
                   </p>
-                  <Button variant="primary" disabled>
-                    {t('Coming soon', '即将开放')}
-                  </Button>
+                  <SkillPurchaseLink slug={skill.slug} locale={locale} />
                   <p>
                     <Link to={`/${locale}/skills/pricing`}>
                       {t('Compare planned membership', '了解计划中的会员方案')}

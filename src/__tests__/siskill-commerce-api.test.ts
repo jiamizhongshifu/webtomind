@@ -143,6 +143,32 @@ describe('SiSkill checkout and provider boundary', () => {
       ).status
     ).toBe(503);
   });
+  it('exposes only a public auth key and gates unverified redirect methods', async () => {
+    const env = {
+      SUPABASE_URL: 'https://example.supabase.co',
+      SUPABASE_ANON_KEY: 'sb_publishable_fixture',
+      SUPABASE_SERVICE_ROLE_KEY: 'must-not-leak'
+    };
+    const req = () =>
+      new Request('https://siskill.dev/api/siskill/auth-config');
+    const r = await handleCommerce(req(), env);
+    expect(await r.json()).toEqual({
+      url: env.SUPABASE_URL,
+      anonKey: env.SUPABASE_ANON_KEY,
+      redirectsReady: false
+    });
+    for (const key of [
+      'sb_secret_fixture',
+      `e30.${btoa(JSON.stringify({ role: 'service_role' }))}.sig`
+    ]) {
+      const denied = await handleCommerce(req(), {
+        ...env,
+        SUPABASE_ANON_KEY: key
+      });
+      expect(denied.status).toBe(503);
+      expect(await denied.text()).not.toContain(key);
+    }
+  });
   it.each([
     'amount',
     'currency',
