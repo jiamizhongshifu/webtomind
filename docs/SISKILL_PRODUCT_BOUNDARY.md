@@ -20,7 +20,9 @@ The independent public preview supports home, catalog, detail pages, silent vide
 and planned pricing. Pricing is a proposal: $9.99/month or $79/year, individual Skills
 from $4.99. It is not an active offer or a charged subscription. Do not introduce a new
 lifetime plan before defining eligible catalog, update rights and sustainable costs.
-Downloads and checkout remain closed while packages and fulfillment are prepared.
+The reviewed `og-image@1.0.3` package is available free without an account through
+a separate allowlist and R2 bucket; see `docs/SISKILL_FREE_RELEASE.md`. Paid downloads,
+checkout and membership remain closed while their fulfillment is prepared.
 
 ## Payment integration contract to implement before sales
 
@@ -49,7 +51,7 @@ endpoints and fulfillment**. Verified callbacks match order, scope, provider, am
 currency and transaction ID. Stripe metadata also matches SKU and authenticated owner.
 A full refund revokes the order's grant, including out-of-order refund/payment callbacks.
 WebToMind subscriptions, credits and lifetime access are never consulted or granted.
-Private downloads require an active SiSkill grant and a published archive with matching
+Paid private downloads require an active SiSkill grant and a published archive with matching
 size/checksum metadata. The public site build never contains private archives.
 
 Identity decision (confirmed 2026-10-21): **reuse existing WebToMind accounts** in

@@ -3,7 +3,8 @@
 ## Prepared source (2026-10-21)
 
 This is a default-closed backend, not an announcement that purchasing is available.
-The public app remains the preview storefront. No active SKU, paid archive, provider
+The public app offers a reviewed free OG Image download outside commerce (see
+`docs/SISKILL_FREE_RELEASE.md`); paid products remain in preview. No active SKU, paid archive, provider
 secret, subscription plan, customer purchase or grant is seeded by this change. Shared email/password sign-in
 and an independent account/library UI are included. The verified redirect allowlist
 enables Google/signup/recovery entry points; completed Google sign-in and real email
