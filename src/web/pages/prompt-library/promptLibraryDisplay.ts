@@ -51,10 +51,25 @@ function firstPromptCandidate(
   return '';
 }
 
+/** A shared source text is an original, not two different translations. */
+export function getPromptCaseOriginalPrompt(caseItem: PromptCase): string {
+  const zh = normalizePromptText(
+    caseItem.promptZh || (caseItem.locale !== 'en-US' ? caseItem.prompt : '')
+  );
+  const en = normalizePromptText(
+    caseItem.promptEn || (caseItem.locale === 'en-US' ? caseItem.prompt : '')
+  );
+  return zh && en && zh.replace(/\s+/g, ' ') === en.replace(/\s+/g, ' ')
+    ? zh
+    : '';
+}
+
 export function getPromptCasePromptForLocale(
   caseItem: PromptCase,
   locale: 'zh-CN' | 'en-US'
 ): string {
+  const original = getPromptCaseOriginalPrompt(caseItem);
+  if (original) return original;
   if (locale === 'en-US') {
     return firstPromptCandidate(
       [
@@ -78,6 +93,8 @@ export function getPromptCaseFullPromptForLocale(
   caseItem: PromptCase,
   locale: 'zh-CN' | 'en-US'
 ): string {
+  const original = getPromptCaseOriginalPrompt(caseItem);
+  if (original) return original;
   if (locale === 'en-US') {
     return firstPromptCandidate(
       [caseItem.promptEn, caseItem.locale === 'en-US' ? caseItem.prompt : ''],

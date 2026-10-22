@@ -187,6 +187,43 @@ describe('PromptCasePreviewDialog', () => {
     expect(screen.getByText('英文 Prompt 暂未翻译')).toBeInTheDocument();
   });
 
+  it.each([
+    ['zh-CN', true, '原文 Prompt'],
+    ['en-US', false, 'Original prompt']
+  ] as const)(
+    'shows one original without misleading language tabs in %s',
+    (locale, isZh, label) => {
+      const original =
+        'アップロードした写真の特徴を保持する。\n' +
+        '完全な原文を省略しない。'.repeat(50);
+      const item = {
+        ...previewCase,
+        prompt: original,
+        promptZh: original,
+        promptEn: original
+      };
+      const { handleCopyPreviewPrompt } = renderDialog({
+        previewCase: item,
+        locale,
+        isZh
+      });
+      expect(screen.getByText(label)).toBeInTheDocument();
+      expect(screen.queryByRole('tablist')).not.toBeInTheDocument();
+      expect(
+        document.querySelectorAll('.creator-preview-prompt-stack pre')
+      ).toHaveLength(1);
+      expect(
+        document.querySelector('.creator-preview-prompt-stack pre')?.textContent
+      ).toBe(original);
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: isZh ? '复制 Prompt' : 'Copy prompt'
+        })
+      );
+      expect(handleCopyPreviewPrompt).toHaveBeenCalledWith(item, locale);
+    }
+  );
+
   it('opens the PhotoSwipe fullscreen viewer when requested', () => {
     renderDialog({ previewLightboxOpen: true });
     expect(

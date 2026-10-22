@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { StrictMode, type ReactNode } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -91,6 +91,57 @@ describe('PromptDetailPage loading', () => {
     ).not.toHaveLength(0);
     expect(getPublicPromptCaseMock).toHaveBeenCalledTimes(1);
     expect(trackPromptCaseEventMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('shows and copies the entire shared original once without language claims', async () => {
+    authState.isAuthenticated = true;
+    authState.isLoading = false;
+    const original =
+      'アップロードした写真の特徴を保持する。\n' +
+      '完全な原文を省略しない。'.repeat(50);
+    const writeText = vi.fn(async () => undefined);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText },
+      configurable: true
+    });
+    getPublicPromptCaseMock.mockResolvedValue({
+      ...publicCase,
+      prompt: original,
+      promptZh: original,
+      promptEn: original,
+      promptPreview: 'A shortened preview'
+    });
+    await renderDetail();
+    expect(await screen.findByText('原文 Prompt')).toBeInTheDocument();
+    expect(screen.queryByText('中文 Prompt')).not.toBeInTheDocument();
+    expect(screen.queryByText('英文 Prompt')).not.toBeInTheDocument();
+    expect(
+      document.querySelectorAll('.prompt-detail-prompt-stack pre')
+    ).toHaveLength(1);
+    expect(
+      document.querySelector('.prompt-detail-prompt-stack pre')?.textContent
+    ).toBe(original);
+    const section = document.querySelector(
+      '.prompt-detail-prompt-stack'
+    )?.parentElement;
+    fireEvent.click(section!.querySelector('button')!);
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(original));
+  });
+
+  it('keeps both sections for distinct translations', async () => {
+    authState.isAuthenticated = true;
+    authState.isLoading = false;
+    getPublicPromptCaseMock.mockResolvedValue({
+      ...publicCase,
+      promptZh: '绘制房间',
+      promptEn: 'Draw a room'
+    });
+    await renderDetail();
+    expect(await screen.findByText('中文 Prompt')).toBeInTheDocument();
+    expect(screen.getByText('英文 Prompt')).toBeInTheDocument();
+    expect(screen.getByText('绘制房间')).toBeInTheDocument();
+    expect(screen.getByText('Draw a room')).toBeInTheDocument();
+    expect(screen.queryByText('原文 Prompt')).not.toBeInTheDocument();
   });
 
   it('finishes loading when StrictMode replays mount effects', async () => {
