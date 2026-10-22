@@ -69,7 +69,7 @@ export function loadSupport(
       const frame = document.getElementById(
         'chatwoot_live_chat_widget'
       ) as HTMLIFrameElement | null;
-      if (frame) frame.src = frame.src;
+      if (frame) frame.setAttribute('src', frame.src);
       else fail();
     } else if (window.chatwootSDK) run();
     else {
