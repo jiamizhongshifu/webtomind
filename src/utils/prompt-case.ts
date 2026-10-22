@@ -1,5 +1,6 @@
 import type { PromptCase } from '@/services/agent-api';
 export {
+  getPromptCaseImageReferrerPolicy,
   getOptimizedPromptCaseImageUrl,
   getPromptCaseResponsiveImageSet,
   PROMPT_LIBRARY_CARD_IMAGE_SIZES,

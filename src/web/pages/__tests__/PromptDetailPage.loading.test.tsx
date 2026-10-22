@@ -93,6 +93,30 @@ describe('PromptDetailPage loading', () => {
     expect(trackPromptCaseEventMock).toHaveBeenCalledTimes(1);
   });
 
+  it('falls back from optimized media only once when the original also fails', async () => {
+    authState.isLoading = false;
+    const imageUrl =
+      'https://example.supabase.co/storage/v1/object/public/cases/test.jpg';
+    getPublicPromptCaseMock.mockResolvedValue({
+      ...publicCase,
+      imageUrl,
+      imageUrls: [imageUrl]
+    });
+    const { container } = await renderDetail();
+    await screen.findAllByText('Editorial portrait');
+    const image = container.querySelector<HTMLImageElement>(
+      '.prompt-detail-gallery img'
+    )!;
+    expect(image.src).toContain('/render/image/');
+    const setSrc = vi.spyOn(image, 'src', 'set');
+    fireEvent.error(image);
+    fireEvent.error(image);
+    expect(image.src).toBe(imageUrl);
+    expect(image).not.toHaveAttribute('srcset');
+    expect(setSrc).toHaveBeenCalledTimes(1);
+    setSrc.mockRestore();
+  });
+
   it('shows and copies the entire shared original once without language claims', async () => {
     authState.isAuthenticated = true;
     authState.isLoading = false;

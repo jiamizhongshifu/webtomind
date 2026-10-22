@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   getOptimizedPromptCaseImageUrl,
+  getPromptCaseImageReferrerPolicy,
   getPromptCaseResponsiveImageSet,
   inferPromptCaseTitle,
   isValidPromptCaseSlug,
@@ -130,5 +131,24 @@ describe('prompt case normalization', () => {
         'https://pbs.twimg.com/media/HNq0KCta4AAuhsk.jpg?format=jpg&name=large 1600w'
       ].join(', ')
     );
+  });
+});
+
+describe('prompt image source referrer compatibility', () => {
+  it('omits Referer only for the verified HTTPS YouMind image host', () => {
+    expect(
+      getPromptCaseImageReferrerPolicy(
+        'https://cms-assets.youmind.com/media/case.jpg'
+      )
+    ).toBe('no-referrer');
+    for (const url of [
+      'https://cdn.example.com/image.jpg',
+      'https://cms-assets.youmind.com.example.com/image.jpg',
+      'https://youmind.com/image.jpg',
+      'http://cms-assets.youmind.com/media/case.jpg',
+      '/prompt-cases/image.jpg',
+      'not a URL'
+    ])
+      expect(getPromptCaseImageReferrerPolicy(url)).toBeUndefined();
   });
 });

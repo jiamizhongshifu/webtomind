@@ -15,6 +15,7 @@ import {
 import type { PromptCase } from '@/services/agent-api';
 import {
   getOptimizedPromptCaseImageUrl,
+  getPromptCaseImageReferrerPolicy,
   getPromptCaseCreateSettings
 } from '@/utils/prompt-case';
 import type { ResolvedVisualRecipeAsset } from '@/web/components/image-create/assetLibraryResolver';
@@ -311,6 +312,10 @@ export function PromptCasePreviewDialog({
                   onClick={() => setPreviewLightboxOpen(true)}
                 >
                   <img
+                    key={activePreviewImage}
+                    referrerPolicy={getPromptCaseImageReferrerPolicy(
+                      activePreviewImage
+                    )}
                     src={getOptimizedPromptCaseImageUrl(activePreviewImage, {
                       width: 1280,
                       quality: 82
@@ -351,6 +356,9 @@ export function PromptCasePreviewDialog({
                       }}
                     >
                       <img
+                        referrerPolicy={getPromptCaseImageReferrerPolicy(
+                          imageUrl
+                        )}
                         src={getOptimizedPromptCaseImageUrl(imageUrl, {
                           width: 160,
                           quality: 70
@@ -469,6 +477,9 @@ export function PromptCasePreviewDialog({
                             >
                               <span>
                                 <img
+                                  referrerPolicy={getPromptCaseImageReferrerPolicy(
+                                    getPromptCaseCover(caseItem)
+                                  )}
                                   src={getOptimizedPromptCaseImageUrl(
                                     getPromptCaseCover(caseItem),
                                     {
@@ -601,6 +612,9 @@ export function PromptCasePreviewDialog({
                       >
                         <span>
                           <img
+                            referrerPolicy={getPromptCaseImageReferrerPolicy(
+                              getPromptCaseCover(caseItem)
+                            )}
                             src={getOptimizedPromptCaseImageUrl(
                               getPromptCaseCover(caseItem),
                               {
@@ -627,6 +641,7 @@ export function PromptCasePreviewDialog({
       </div>
       {previewLightboxOpen && activePreviewImage && !isActivePreviewVideo && (
         <PhotoSwipeViewer
+          resolveImageDimensions
           items={previewCaseImages.map((imageUrl) => ({ src: imageUrl }))}
           index={activePreviewImageIndex}
           onClose={() => setPreviewLightboxOpen(false)}

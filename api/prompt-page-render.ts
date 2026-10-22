@@ -3,6 +3,7 @@ import { PROMPT_OG_CTA } from './prompt-og-worker-compat.js';
 import { replaceSeoTag } from './seo-render-utils.js';
 import {
   getOptimizedPromptCaseImageUrl,
+  getPromptCaseImageReferrerPolicy,
   getPromptCaseResponsiveImageSet
 } from '../src/shared/prompt-case-image.js';
 import { getPromptSeoPublicCaseBySlug } from '../src/shared/prompt-seo-match.js';
@@ -664,7 +665,7 @@ function renderPromptSeoBody(
         imageUrl,
         PROMPT_DETAIL_IMAGE_WIDTHS
       );
-      return `<figure><img src="${escapeHtml(optimizedUrl)}" srcset="${escapeHtml(
+      return `<figure><img${getPromptCaseImageReferrerPolicy(imageUrl) ? ' referrerpolicy="no-referrer"' : ''} src="${escapeHtml(optimizedUrl)}" srcset="${escapeHtml(
         srcSet
       )}" sizes="${PROMPT_DETAIL_IMAGE_SIZES}" alt="${escapeHtml(
         index === 0 ? caseItem.title : `${caseItem.title} ${index + 1}`
@@ -704,7 +705,7 @@ function renderPromptSeoBody(
         { width: 480, quality: 72 }
       );
       return `<a href="${escapeHtml(getPromptCasePath(locale, item))}">
-        <img src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" width="480" height="360" />
+        <img${getPromptCaseImageReferrerPolicy(cover) ? ' referrerpolicy="no-referrer"' : ''} src="${escapeHtml(cover)}" alt="" loading="lazy" decoding="async" width="480" height="360" />
         <span>${escapeHtml(item.title)}</span>
       </a>`;
     })
@@ -841,7 +842,7 @@ function renderPromptImagePreload(caseItem: PromptCaseSeo | null): string {
     imageUrl,
     PROMPT_DETAIL_IMAGE_WIDTHS
   );
-  return `<link rel="preload" as="image" href="${escapeHtml(
+  return `<link rel="preload" as="image"${getPromptCaseImageReferrerPolicy(imageUrl) ? ' referrerpolicy="no-referrer"' : ''} href="${escapeHtml(
     href
   )}" imagesrcset="${escapeHtml(srcSet)}" imagesizes="${PROMPT_DETAIL_IMAGE_SIZES}" fetchpriority="high" data-webtomind-prompt-image-preload="1" />`;
 }

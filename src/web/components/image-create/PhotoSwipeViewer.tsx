@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import PhotoSwipe from 'photoswipe';
 import 'photoswipe/style.css';
+import { getPromptCaseImageReferrerPolicy } from '@/shared/prompt-case-image';
 
 export interface PhotoSwipeViewerItem {
   src: string;
@@ -17,6 +18,7 @@ interface PhotoSwipeViewerProps {
   onIndexChange?: (index: number) => void;
   onDownload?: (index: number) => void;
   onEdit?: (index: number) => void;
+  resolveImageDimensions?: boolean;
 }
 
 const DOWNLOAD_ICON =
@@ -35,7 +37,8 @@ export function PhotoSwipeViewer({
   onClose,
   onIndexChange,
   onDownload,
-  onEdit
+  onEdit,
+  resolveImageDimensions = false
 }: PhotoSwipeViewerProps) {
   const callbacksRef = useRef({ onClose, onIndexChange, onDownload, onEdit });
   callbacksRef.current = { onClose, onIndexChange, onDownload, onEdit };
@@ -70,6 +73,33 @@ export function PhotoSwipeViewer({
       bgOpacity: 0.92,
       showHideAnimationType: 'fade',
       preload: [1, 1]
+    });
+
+    // PhotoSwipe dispatches this before assigning src/srcset, including preloads.
+    lightbox.on('contentLoadImage', ({ content }) => {
+      const policy = getPromptCaseImageReferrerPolicy(content.data.src || '');
+      if (!(content.element instanceof HTMLImageElement)) return;
+      const image = content.element;
+      if (policy) image.referrerPolicy = policy;
+      if (resolveImageDimensions && (!content.width || !content.height)) {
+        image.addEventListener(
+          'load',
+          () => {
+            if (!image.naturalWidth || !image.naturalHeight) return;
+            content.width = content.data.width = image.naturalWidth;
+            content.height = content.data.height = image.naturalHeight;
+            const slide = content.slide;
+            if (!slide || !lightbox.pswp || lightbox.pswp.isDestroying) return;
+            slide.width = content.width;
+            slide.height = content.height;
+            slide.calculateSize();
+            slide.zoomAndPanToInitial();
+            slide.updateContentSize(true);
+            slide.applyCurrentZoomPan();
+          },
+          { once: true }
+        );
+      }
     });
 
     lightbox.on('close', () => callbacksRef.current.onClose());
@@ -122,7 +152,7 @@ export function PhotoSwipeViewer({
     };
     // 仅在图片集合（src 序列）变化时重建；index 变化由父级传入并同步
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [itemsKey]);
+  }, [itemsKey, resolveImageDimensions]);
 
   return null;
 }

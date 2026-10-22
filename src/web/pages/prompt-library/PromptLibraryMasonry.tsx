@@ -15,6 +15,7 @@ import type { PromptCase } from '@/services/agent-api';
 import { getPromptCaseModelLabel } from '@/shared/prompt-case-model-labels';
 import {
   getOptimizedPromptCaseImageUrl,
+  getPromptCaseImageReferrerPolicy,
   getPromptCasePrimaryVideoUrl,
   getPromptCaseResponsiveImageSet,
   isPromptCaseVideo,
@@ -249,6 +250,8 @@ function PromptLibraryCaseImage({
   const mediaImage = cover ? (
     mounted || isEagerImage ? (
       <img
+        key={cover}
+        referrerPolicy={getPromptCaseImageReferrerPolicy(cover)}
         src={imageSrc}
         srcSet={imageSrcSet}
         sizes={PROMPT_LIBRARY_CARD_IMAGE_SIZES}
