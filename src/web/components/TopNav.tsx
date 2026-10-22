@@ -165,16 +165,19 @@ export function TopNav() {
   const ctaTarget = isAuthenticated ? '/create' : loginTarget;
   const promptLibraryHref =
     locale === 'en-US' ? '/en-US/prompts' : `${localePrefix}/prompts`;
-  const pricingHref = `${localePrefix}/pricing?source=marketing_top_nav`;
+  const skillsHref = `${localePrefix}/skills`;
+  const pricingHref = `${localePrefix}/skills/pricing`;
   const navFallback =
     locale === 'en-US'
       ? {
           create: 'Creative Studio',
+          skills: 'Skills',
           promptLibrary: 'AI Image Prompts',
           pricing: 'Pricing'
         }
       : {
           create: '创意工作台',
+          skills: 'Skill 目录',
           promptLibrary: 'Prompt 案例',
           pricing: '价格'
         };
@@ -268,6 +271,9 @@ export function TopNav() {
                 className="nav-link-item nav-link-cta"
               >
                 {navFallback.create}
+              </NavigationLink>
+              <NavigationLink href={skillsHref} className="nav-link-item">
+                {navFallback.skills}
               </NavigationLink>
               <NavigationLink
                 href={promptLibraryHref}
