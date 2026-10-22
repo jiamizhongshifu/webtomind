@@ -31,6 +31,9 @@ on:
       - 'docs/DESIGN_SYSTEM.md'
   workflow_dispatch:
 
+env:
+  VITE_CHATWOOT_WEBSITE_TOKEN: ${{ vars.VITE_CHATWOOT_WEBSITE_TOKEN }}
+
 permissions:
   contents: read
   actions: read
