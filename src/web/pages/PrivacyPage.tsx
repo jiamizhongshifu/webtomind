@@ -101,6 +101,18 @@ export function PrivacyPage() {
 
             <h2>{t('privacy.section6.title', '6. Cookie 政策')}</h2>
             <p>
+              {isEnglish
+                ? 'When you open live support, Chatwoot Cloud processes the messages and attachments you choose to send, a conversation identifier, the page URL and connection information. It uses browser storage to restore the conversation. We do not automatically send account, order or creative content to chat. Support messages are used to answer your questions; the current free plan retains chat history for 30 days.'
+                : '主动打开在线客服后，Chatwoot Cloud 处理你选择发送的消息和附件、会话标识、页面网址及连接信息，并使用浏览器存储恢复对话。我们不会自动向客服传送账号、订单或创作内容。客服消息用于回复咨询；当前免费方案的聊天记录保留 30 天。'}{' '}
+              <a
+                href="https://www.chatwoot.com/privacy-policy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Chatwoot Privacy Policy
+              </a>
+            </p>
+            <p>
               {t(
                 'privacy.section6.content',
                 '我们使用 Cookie 和类似技术来记住您的偏好设置、保持登录状态、分析使用情况。您可以在浏览器设置中管理 Cookie。'

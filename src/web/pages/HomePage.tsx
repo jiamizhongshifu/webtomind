@@ -1,3 +1,4 @@
+import { SupportChat } from '../components/SupportChat';
 import {
   type FormEvent,
   type SyntheticEvent,
@@ -1368,9 +1369,7 @@ export function HomePage() {
                 ? 'AI Image Prompts'
                 : 'Prompt 案例库'}
             </a>
-            <a href="mailto:admin@example.com" className="footer-link">
-              {t('footer.contact')}
-            </a>
+            <SupportChat locale={localeFromPath} />
             <a
               href="https://x.com/webtomind"
               target="_blank"

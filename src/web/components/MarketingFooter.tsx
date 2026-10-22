@@ -1,3 +1,4 @@
+import { SupportChat } from './SupportChat';
 import { SiSkillLink } from './SiSkillLink';
 import { AiRechargeLink } from './AiRechargeLink';
 import { Link } from 'react-router-dom';
@@ -47,12 +48,7 @@ export function MarketingFooter() {
           <Link to={promptLibraryTarget} className="marketing-footer-link">
             {locale === 'en-US' ? 'AI Image Prompts' : 'Prompt 案例库'}
           </Link>
-          <a
-            href="mailto:admin@example.com"
-            className="marketing-footer-link"
-          >
-            {t('footer.contact')}
-          </a>
+          <SupportChat locale={locale} />
           <a
             href="https://x.com/webtomind"
             target="_blank"
