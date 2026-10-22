@@ -340,3 +340,22 @@ describe('prompt page SEO injection', () => {
     expect(html).not.toContain('prompt-detail-ssr-style');
   });
 });
+
+it('uses the host-specific image policy for SSR images and their preload', () => {
+  const imageUrl = 'https://cms-assets.youmind.com/media/case.jpg';
+  const html = injectPromptSeo(
+    baseHtml,
+    { ...promptCase, imageUrls: [imageUrl] },
+    'zh-CN',
+    promptCase.slug,
+    'slug',
+    [],
+    [promptCase]
+  );
+  expect(html).toContain(
+    `<link rel="preload" as="image" referrerpolicy="no-referrer" href="${imageUrl}"`
+  );
+  expect(html).toContain(`<img referrerpolicy="no-referrer" src="${imageUrl}"`);
+  expect(html).toContain('<img src="https://cdn.example.com/case-cover.webp"');
+  expect(html.match(/referrerpolicy="no-referrer"/g)).toHaveLength(2);
+});

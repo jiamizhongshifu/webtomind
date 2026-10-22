@@ -42,6 +42,7 @@ import {
   getPromptCaseCreateSettings,
   getPromptCasePrimaryVideoUrl,
   getOptimizedPromptCaseImageUrl,
+  getPromptCaseImageReferrerPolicy,
   getPromptCaseResponsiveImageSet,
   isFeaturedPromptCase,
   isPromptCaseVideo,
@@ -1775,6 +1776,8 @@ export function PromptSeoLandingPage({
       const link = document.createElement('link');
       link.rel = 'preload';
       link.as = 'image';
+      const policy = getPromptCaseImageReferrerPolicy(item.href);
+      if (policy) link.referrerPolicy = policy;
       link.href = item.href;
       link.setAttribute('imagesrcset', item.srcSet);
       link.setAttribute('imagesizes', PROMPT_BROWSER_CASE_IMAGE_SIZES);

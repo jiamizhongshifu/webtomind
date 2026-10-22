@@ -1437,7 +1437,10 @@ describe('PromptSeoLandingPage', () => {
     fireEvent.click(within(modal).getByLabelText('下一张图片'));
 
     await waitFor(() => {
-      expect(activeImage.src).toContain('case-1-b.webp');
+      const currentImage = within(modal).getByAltText(
+        '案例一'
+      ) as HTMLImageElement;
+      expect(currentImage.src).toContain('case-1-b.webp');
     });
   });
 

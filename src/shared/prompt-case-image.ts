@@ -1,5 +1,20 @@
 const SUPABASE_PUBLIC_OBJECT_PATH = '/storage/v1/object/public/';
 
+/** This source rejects image requests carrying a cross-site Referer. */
+export function getPromptCaseImageReferrerPolicy(
+  imageUrl: string
+): 'no-referrer' | undefined {
+  try {
+    const url = new URL(imageUrl);
+    return url.protocol === 'https:' &&
+      url.hostname === 'cms-assets.youmind.com'
+      ? 'no-referrer'
+      : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export const PROMPT_LIBRARY_CARD_IMAGE_SIZES =
   '(max-width: 520px) calc((100vw - 40px) / 2), (max-width: 820px) calc((100vw - 60px) / 2), (max-width: 1120px) calc((100vw - 260px) / 2), 260px';
 export const PROMPT_LIBRARY_CARD_IMAGE_WIDTHS = [320, 480, 640];

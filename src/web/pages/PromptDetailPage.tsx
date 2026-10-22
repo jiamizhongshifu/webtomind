@@ -61,6 +61,7 @@ import {
   getPromptCaseCreateSettings,
   getPromptCasePrimaryVideoUrl,
   getOptimizedPromptCaseImageUrl,
+  getPromptCaseImageReferrerPolicy,
   getPromptCaseResponsiveImageSet,
   isPromptCaseVideo
 } from '@/utils/prompt-case';
@@ -823,6 +824,9 @@ export function PromptDetailPage() {
                       }
                     >
                       <img
+                        referrerPolicy={getPromptCaseImageReferrerPolicy(
+                          imageUrl
+                        )}
                         src={getOptimizedPromptCaseImageUrl(imageUrl, {
                           width: 960,
                           quality: 78
@@ -837,8 +841,13 @@ export function PromptDetailPage() {
                         decoding="async"
                         {...imageFetchPriority(index === 0 ? 'high' : 'auto')}
                         onError={(event) => {
-                          event.currentTarget.removeAttribute('srcset');
-                          event.currentTarget.src = imageUrl;
+                          const image = event.currentTarget;
+                          if (image.dataset.originalFallbackAttempted) return;
+                          image.dataset.originalFallbackAttempted = 'true';
+                          image.removeAttribute('srcset');
+                          if (image.getAttribute('src') !== imageUrl) {
+                            image.src = imageUrl;
+                          }
                         }}
                       />
                     </figure>
@@ -1161,6 +1170,9 @@ export function PromptDetailPage() {
                       }
                     >
                       <img
+                        referrerPolicy={getPromptCaseImageReferrerPolicy(
+                          getPromptImages(item)[0]
+                        )}
                         src={getPromptImages(item)[0]}
                         alt=""
                         loading="lazy"
