@@ -92,7 +92,13 @@ jobs:
       - run: pnpm test:security-audit
       - run: pnpm security:audit-production
       - run: pnpm build:web:prod-parity
-      - run: pnpm exec playwright install --with-deps chromium
+      - name: Install browser test dependencies
+        run: |
+          # The Azure mirror can stall font downloads on hosted runners.
+          # Use the same signed Ubuntu packages from its official archive.
+          sudo sed -i 's|http://azure.archive.ubuntu.com/ubuntu|http://archive.ubuntu.com/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+          printf 'Acquire::Retries "2";\nAcquire::http::Timeout "30";\nAcquire::https::Timeout "30";\n' | sudo tee /etc/apt/apt.conf.d/80-network-timeouts > /dev/null
+          pnpm exec playwright install --with-deps chromium
       - name: Verify design-system browser contracts
         env:
           DESIGN_SYSTEM_BASE_URL: http://127.0.0.1:4197
