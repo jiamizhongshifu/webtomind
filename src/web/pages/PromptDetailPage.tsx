@@ -75,7 +75,8 @@ import { Button } from '@/shared/ui/radix/button';
 import { usePromptCaseFavorites } from '../lib/prompt-case-favorites';
 import {
   getPromptCaseCardAspectRatio,
-  getPromptCasePromptForLocale
+  getPromptCasePromptForLocale,
+  getPromptCaseOriginalPrompt
 } from './prompt-library/promptLibraryDisplay';
 import { SiSkillLink } from '../components/SiSkillLink';
 import { AiRechargeLink } from '../components/AiRechargeLink';
@@ -283,6 +284,7 @@ export function PromptDetailPage() {
   const title =
     caseItem?.title ||
     t('promptDetail.fallbackTitle', { defaultValue: 'Visual prompt case' });
+  const originalPrompt = caseItem ? getPromptCaseOriginalPrompt(caseItem) : '';
   const canViewPrompt =
     isAuthenticated &&
     Boolean(caseItem?.prompt?.trim()) &&
@@ -1042,25 +1044,42 @@ export function PromptDetailPage() {
                     </Button>
                   </div>
                   <div className="prompt-detail-prompt-stack">
-                    <section>
-                      <small>
-                        {locale === 'zh-CN' ? '中文 Prompt' : 'Chinese prompt'}
-                      </small>
-                      <pre>
-                        {getPromptCasePromptForLocale(caseItem, 'zh-CN')}
-                      </pre>
-                    </section>
-                    <section>
-                      <small>
-                        {locale === 'zh-CN' ? '英文 Prompt' : 'English prompt'}
-                      </small>
-                      <pre>
-                        {getPromptCasePromptForLocale(caseItem, 'en-US') ||
-                          (locale === 'zh-CN'
-                            ? '英文 Prompt 暂未翻译'
-                            : 'English prompt is not translated yet.')}
-                      </pre>
-                    </section>
+                    {originalPrompt ? (
+                      <section>
+                        <small>
+                          {locale === 'zh-CN'
+                            ? '原文 Prompt'
+                            : 'Original prompt'}
+                        </small>
+                        <pre>{originalPrompt}</pre>
+                      </section>
+                    ) : (
+                      <>
+                        <section>
+                          <small>
+                            {locale === 'zh-CN'
+                              ? '中文 Prompt'
+                              : 'Chinese prompt'}
+                          </small>
+                          <pre>
+                            {getPromptCasePromptForLocale(caseItem, 'zh-CN')}
+                          </pre>
+                        </section>
+                        <section>
+                          <small>
+                            {locale === 'zh-CN'
+                              ? '英文 Prompt'
+                              : 'English prompt'}
+                          </small>
+                          <pre>
+                            {getPromptCasePromptForLocale(caseItem, 'en-US') ||
+                              (locale === 'zh-CN'
+                                ? '英文 Prompt 暂未翻译'
+                                : 'English prompt is not translated yet.')}
+                          </pre>
+                        </section>
+                      </>
+                    )}
                   </div>
                 </>
               ) : (

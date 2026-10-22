@@ -30,6 +30,7 @@ import { BeamCta } from '@/web/components/BeamCta';
 import {
   getPromptCaseCover,
   getPromptCaseFullPromptForLocale,
+  getPromptCaseOriginalPrompt,
   getPromptCasePromptForLocale
 } from './promptLibraryDisplay';
 import '../../styles/image-create.css';
@@ -135,6 +136,7 @@ export function PromptCasePreviewDialog({
 
   if (!previewCase) return null;
 
+  const originalPrompt = getPromptCaseOriginalPrompt(previewCase);
   const createPath = getPromptCaseCreatePath(previewCase, locationSearch);
   const fullCreatePrompt = getPromptCaseFullPromptForLocale(
     previewCase,
@@ -156,8 +158,11 @@ export function PromptCasePreviewDialog({
     previewCase,
     promptLanguage
   );
-  const activePromptLabel =
-    promptLanguage === 'zh-CN'
+  const activePromptLabel = originalPrompt
+    ? isZh
+      ? '原文 Prompt'
+      : 'Original prompt'
+    : promptLanguage === 'zh-CN'
       ? isZh
         ? '中文 Prompt'
         : 'Chinese prompt'
@@ -513,33 +518,35 @@ export function PromptCasePreviewDialog({
                     {copyToastText || (isZh ? '复制 Prompt' : 'Copy prompt')}
                   </Button>
                 </div>
-                <Tabs
-                  value={promptLanguage}
-                  onValueChange={(value) =>
-                    setPromptLanguage(value as 'zh-CN' | 'en-US')
-                  }
-                  className="creator-preview-prompt-language-tabs"
-                  aria-label={
-                    isZh ? '选择 Prompt 语言' : 'Choose prompt language'
-                  }
-                >
-                  <TabsList>
-                    <TabsTrigger
-                      value="zh-CN"
-                      className={promptLanguage === 'zh-CN' ? 'active' : ''}
-                      onClick={() => setPromptLanguage('zh-CN')}
-                    >
-                      中文
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="en-US"
-                      className={promptLanguage === 'en-US' ? 'active' : ''}
-                      onClick={() => setPromptLanguage('en-US')}
-                    >
-                      English
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
+                {!originalPrompt && (
+                  <Tabs
+                    value={promptLanguage}
+                    onValueChange={(value) =>
+                      setPromptLanguage(value as 'zh-CN' | 'en-US')
+                    }
+                    className="creator-preview-prompt-language-tabs"
+                    aria-label={
+                      isZh ? '选择 Prompt 语言' : 'Choose prompt language'
+                    }
+                  >
+                    <TabsList>
+                      <TabsTrigger
+                        value="zh-CN"
+                        className={promptLanguage === 'zh-CN' ? 'active' : ''}
+                        onClick={() => setPromptLanguage('zh-CN')}
+                      >
+                        中文
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="en-US"
+                        className={promptLanguage === 'en-US' ? 'active' : ''}
+                        onClick={() => setPromptLanguage('en-US')}
+                      >
+                        English
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                )}
                 <div className="creator-preview-prompt-stack">
                   <section>
                     <small>{activePromptLabel}</small>
