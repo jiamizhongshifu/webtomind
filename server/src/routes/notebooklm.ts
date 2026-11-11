@@ -13,8 +13,8 @@
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 import { v4 as uuidv4 } from 'uuid';
-import { getNotebookLMService } from '../services/notebooklm';
-import { SourceType, OutputType, ProcessOptions } from '../services/notebooklm/types';
+import { getNotebookLMService } from '../services/notebooklm/index.js';
+import { SourceType, OutputType, ProcessOptions } from '../services/notebooklm/types.js';
 
 // Types
 interface ProcessRequestBody {

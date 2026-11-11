@@ -1,6 +1,6 @@
 /**
  * 速率限制器
- * 基于滑动窗口算法的 API 请求限制
+ * 基于固定窗口算法的 API 请求限制
  * 
  * 使用内存存储（适用于单实例部署）
  * 生产环境建议使用 Redis 或 Upstash
@@ -24,7 +24,7 @@ function cleanupExpiredEntries(): void {
   
   lastCleanup = now;
   for (const [key, entry] of rateLimitStore.entries()) {
-    if (entry.resetAt < now) {
+    if (entry.resetAt <= now) {
       rateLimitStore.delete(key);
     }
   }
@@ -108,7 +108,7 @@ export function checkRateLimit(
   const entry = rateLimitStore.get(key);
   
   // 新用户或窗口已过期
-  if (!entry || entry.resetAt < now) {
+  if (!entry || entry.resetAt <= now) {
     const resetAt = now + config.windowMs;
     rateLimitStore.set(key, { count: 1, resetAt });
     return {

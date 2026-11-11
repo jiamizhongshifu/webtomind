@@ -1,7 +1,7 @@
 import { fetchModelWithTimeout } from './model-fetch';
 
 export function isBlockedRemoteHostname(hostname: string): boolean {
-  const host = hostname.toLowerCase().replace(/^\[|\]$/g, '');
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
   if (
     host === 'localhost' ||
     host.endsWith('.localhost') ||
@@ -12,9 +12,19 @@ export function isBlockedRemoteHostname(hostname: string): boolean {
   if (/^172\.(1[6-9]|2\d|3[01])\./.test(host)) return true;
   const carrierGradeNat = host.match(/^100\.(\d{1,3})\./);
   if (carrierGradeNat && Number(carrierGradeNat[1]) >= 64 && Number(carrierGradeNat[1]) <= 127) return true;
-  if (host.startsWith('::ffff:')) return isBlockedRemoteHostname(host.slice(7));
+  if (host.startsWith('::ffff:')) {
+    const mapped = host.slice(7);
+    // URL serializes IPv4-mapped IPv6 as two hexadecimal words.
+    const words = /^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(mapped);
+    if (words) {
+      const high = parseInt(words[1], 16);
+      const low = parseInt(words[2], 16);
+      return isBlockedRemoteHostname(`${high >> 8}.${high & 255}.${low >> 8}.${low & 255}`);
+    }
+    return isBlockedRemoteHostname(mapped);
+  }
   if (host.includes(':')) {
-    return host === '::' || host === '::1' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe80:');
+    return host === '::' || host === '::1' || host.startsWith('fc') || host.startsWith('fd') || /^fe[89ab][0-9a-f]:/.test(host);
   }
   const ipLike = /^[0-9.]+$/.test(host) || /^0x[0-9a-f.]+$/i.test(host);
   if (!ipLike) return false;

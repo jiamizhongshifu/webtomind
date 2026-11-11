@@ -8,7 +8,7 @@
  * - 10.5: Clear core instructions
  */
 
-import { AgentSkillDefinition, SkillCategory } from './types';
+import { AgentSkillDefinition, SkillCategory } from './types.js';
 
 /**
  * NotebookLM Learning Skill

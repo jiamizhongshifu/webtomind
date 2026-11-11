@@ -3,13 +3,13 @@
  * 将 base64 图片/视频上传到 Supabase Storage，返回公开 URL
  */
 
-import { getSupabase } from './supabase';
+import { getSupabase } from './supabase.js';
 import {
   BUCKET_NAME,
   generateStoragePath,
   parseDataUrl as parseDataUrlUtil,
   getDefaultUploadOptions
-} from '../utils/storage-utils';
+} from '../utils/storage-utils.js';
 
 const MAX_MEDIA_ITEMS = 10;
 const MAX_MEDIA_BYTES = 5 * 1024 * 1024; // 5MB per media

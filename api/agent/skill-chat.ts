@@ -1,3 +1,5 @@
+import { isLocalHttpOrigin } from '../../server/src/utils/cors-origin';
+
 /**
  * DeepSeek Agent Skill Chat API
  * 使用 DeepSeek + Skills 系统处理用户请求
@@ -33,7 +35,7 @@ function getCorsOrigin(origin: string | undefined): string {
   if (ALLOWED_ORIGINS.includes(origin)) return origin;
   if (
     process.env.NODE_ENV !== 'production' &&
-    (origin.includes('localhost') || origin.includes('127.0.0.1'))
+    isLocalHttpOrigin(origin)
   ) {
     return origin;
   }

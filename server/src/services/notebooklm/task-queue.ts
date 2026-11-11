@@ -20,7 +20,7 @@ import {
   ProcessOptions,
   NotebookLMOutput,
   QueueStats,
-} from './types';
+} from './types.js';
 
 interface TaskRecord {
   task: NotebookLMTask;

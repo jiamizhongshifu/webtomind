@@ -1,11 +1,33 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { mkdtempSync, mkdirSync, writeFileSync, renameSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { execFileSync } from 'node:child_process';
 import {
   evaluateAuditReport,
   findImageSizeSignalsInFiles,
   findRscSignalsInFiles,
+  readAuditSources,
   shouldInspectAuditSource
 } from './audit-production-dependencies.mjs';
+
+test('audits new workspace code and tolerates deleted tracked files', () => {
+  const root = mkdtempSync(join(tmpdir(), 'dependency-audit-'));
+  execFileSync('git', ['init', '--quiet', root]);
+  mkdirSync(join(root, 'src'));
+  writeFileSync(join(root, 'src/deleted.ts'), 'export {};');
+  execFileSync('git', ['add', 'src/deleted.ts'], { cwd: root });
+  renameSync(join(root, 'src/deleted.ts'), join(root, 'removed-fixture.txt'));
+  mkdirSync(join(root, 'packages/cli'), { recursive: true });
+  writeFileSync(join(root, 'packages/cli/index.mjs'), 'import size from "image-size";');
+  mkdirSync(join(root, 'apps/example'), { recursive: true });
+  writeFileSync(join(root, 'apps/example/main.ts'), 'import "@vitejs/plugin-rsc";');
+  const sources = readAuditSources(root);
+  assert.equal(sources['src/deleted.ts'], undefined);
+  assert.equal(findImageSizeSignalsInFiles(sources).length, 1);
+  assert.equal(findRscSignalsInFiles(sources).length, 1);
+});
 
 const reactRouterRscAdvisory = {
   github_advisory_id: 'GHSA-qwww-vcr4-c8h2',

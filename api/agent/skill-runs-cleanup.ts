@@ -1,3 +1,5 @@
+import { isLocalHttpOrigin } from '../../server/src/utils/cors-origin';
+
 // 技能运行时功能暂缓：本端点已下线。
 // 原实现为未鉴权的全局运行态清理（可被任意人触发清库 / DoS，见安全审计 P1），已整体移除。
 
@@ -13,7 +15,7 @@ function getCorsOrigin(origin: string | undefined): string {
   if (ALLOWED_ORIGINS.includes(origin)) return origin;
   if (
     process.env.NODE_ENV !== 'production' &&
-    (origin.includes('localhost') || origin.includes('127.0.0.1'))
+    isLocalHttpOrigin(origin)
   ) {
     return origin;
   }

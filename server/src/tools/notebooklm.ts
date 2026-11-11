@@ -8,9 +8,9 @@
  * - 10.5: notebooklm_health tool (new)
  */
 
-import { getNotebookLMService } from '../services/notebooklm';
-import { getWorkerClient } from '../services/notebooklm/worker-client';
-import { SourceType, OutputType, ProcessOptions } from '../services/notebooklm/types';
+import { getNotebookLMService } from '../services/notebooklm/index.js';
+import { getWorkerClient } from '../services/notebooklm/worker-client.js';
+import { SourceType, OutputType, ProcessOptions } from '../services/notebooklm/types.js';
 
 // Tool parameter types
 interface NotebookLMProcessParams {

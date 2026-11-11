@@ -1,3 +1,5 @@
+import { isLocalHttpOrigin } from '../../server/src/utils/cors-origin';
+
 /**
  * Debug Agent Endpoint
  * 诊断 Agent 配置和连接状态
@@ -24,7 +26,7 @@ function getCorsOrigin(origin: string | undefined): string {
   if (allowedOrigins.includes(origin)) return origin;
   if (
     process.env.NODE_ENV !== 'production' &&
-    (origin.includes('localhost') || origin.includes('127.0.0.1'))
+    isLocalHttpOrigin(origin)
   ) {
     return origin;
   }

@@ -18,8 +18,8 @@ import {
   WorkerProcessResponse,
   WorkerHealthResponse,
   NotebookLMError,
-} from './types';
-import { getNotebookLMConfig } from './config';
+} from './types.js';
+import { getNotebookLMConfig } from './config.js';
 
 interface WorkerClientConfig {
   baseUrl?: string;

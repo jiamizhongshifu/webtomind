@@ -3,14 +3,14 @@
  * Main entry point for NotebookLM integration
  */
 
-export * from './types';
-export * from './task-queue';
-export * from './worker-client';
-export * from './config';
+export * from './types.js';
+export * from './task-queue.js';
+export * from './worker-client.js';
+export * from './config.js';
 
-import { TaskQueue, getTaskQueue } from './task-queue';
-import { WorkerClient, getWorkerClient } from './worker-client';
-import { NotebookLMTask, NotebookLMOutput, SourceInput, OutputType, ProcessOptions } from './types';
+import { TaskQueue, getTaskQueue } from './task-queue.js';
+import { WorkerClient, getWorkerClient } from './worker-client.js';
+import { NotebookLMTask, NotebookLMOutput, SourceInput, OutputType, ProcessOptions } from './types.js';
 
 /**
  * NotebookLM Service

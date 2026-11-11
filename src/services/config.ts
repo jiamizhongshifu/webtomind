@@ -236,5 +236,6 @@ export class ConfigManager {
     ) {
       await chrome.storage.sync.remove(this.STORAGE_KEY);
     }
+    this.invalidateCache();
   }
 }
