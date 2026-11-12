@@ -468,7 +468,6 @@ export function useAssetLibrary({
   }, [activeSlot, browsableAssets]);
 
   const handleDeleteUserAsset = async (id: string) => {
-    if (!window.confirm(t('mine.deleteConfirm') as string)) return;
     try {
       await deleteUserPromptAsset(id);
       setUserAssets((prev) => prev.filter((item) => item.id !== id));
@@ -477,6 +476,7 @@ export function useAssetLibrary({
       setError(
         caught instanceof Error ? caught.message : t('mine.deleteFailed')
       );
+      throw caught;
     }
   };
 

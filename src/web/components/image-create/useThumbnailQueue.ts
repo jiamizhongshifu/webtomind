@@ -462,17 +462,8 @@ export function useThumbnailQueue({
 
   const handleBatchRegenerate = useCallback(() => {
     if (pendingThumbAssets.length === 0) return;
-    if (
-      !window.confirm(
-        t('mine.batchRegenerateConfirm', {
-          count: pendingThumbAssets.length
-        }) as string
-      )
-    ) {
-      return;
-    }
     enqueueRegenerate(pendingThumbAssets.map((a) => a.id));
-  }, [enqueueRegenerate, pendingThumbAssets, t]);
+  }, [enqueueRegenerate, pendingThumbAssets]);
 
   const handleRetryFailed = useCallback(() => {
     const failedIds = Object.entries(batchStatusRef.current)

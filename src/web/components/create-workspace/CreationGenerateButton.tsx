@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import type { ReactNode } from 'react';
 import { LoaderCircle } from 'lucide-react';
 import './CreationGenerateButton.css';
@@ -45,35 +46,39 @@ export function CreationGenerateButton({
   onClick
 }: CreationGenerateButtonProps) {
   return (
-    <button
-      type="button"
-      className={`creation-generate-button${
-        showLabel ? ' is-labeled' : ''
-      }${creditEstimate ? ' has-estimate' : ''} ${className}`.trim()}
-      disabled={disabled}
-      aria-busy={busy}
-      aria-label={ariaLabel}
-      title={label}
-      onClick={onClick}
-    >
-      {creditEstimate ? (
-        <span className="creation-generate-button-estimate" aria-hidden="true">
-          {creditEstimate}
-        </span>
-      ) : null}
-      <span
-        className={`creation-generate-button-surface ${surfaceClassName}`.trim()}
-        aria-hidden="true"
+    <TextTooltip text={label}>
+      <button
+        type="button"
+        className={`creation-generate-button${
+          showLabel ? ' is-labeled' : ''
+        }${creditEstimate ? ' has-estimate' : ''} ${className}`.trim()}
+        disabled={disabled}
+        aria-busy={busy}
+        aria-label={ariaLabel}
+        onClick={onClick}
       >
-        {busy ? (
-          <LoaderCircle className="creator-spin-icon" />
-        ) : (
-          <GenerateSparkleIcon />
-        )}
-      </span>
-      {showLabel ? (
-        <span className="creation-generate-button-label">{label}</span>
-      ) : null}
-    </button>
+        {creditEstimate ? (
+          <span
+            className="creation-generate-button-estimate"
+            aria-hidden="true"
+          >
+            {creditEstimate}
+          </span>
+        ) : null}
+        <span
+          className={`creation-generate-button-surface ${surfaceClassName}`.trim()}
+          aria-hidden="true"
+        >
+          {busy ? (
+            <LoaderCircle className="creator-spin-icon" />
+          ) : (
+            <GenerateSparkleIcon />
+          )}
+        </span>
+        {showLabel ? (
+          <span className="creation-generate-button-label">{label}</span>
+        ) : null}
+      </button>
+    </TextTooltip>
   );
 }

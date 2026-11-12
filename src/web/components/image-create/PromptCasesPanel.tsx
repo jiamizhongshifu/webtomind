@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import {
   useCallback,
   useDeferredValue,
@@ -3954,17 +3955,21 @@ export function PromptCasesPanel({
                           }
                         >
                           {recipeAssets.map(({ slot, asset }) => (
-                            <button
+                            <TextTooltip
+                              text={asset.title}
                               key={`${slot}:${asset.id}`}
-                              type="button"
-                              title={asset.title}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleRecreate(caseItem, slot);
-                              }}
                             >
-                              <em>{asset.title}</em>
-                            </button>
+                              <button
+                                key={`${slot}:${asset.id}`}
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleRecreate(caseItem, slot);
+                                }}
+                              >
+                                <em>{asset.title}</em>
+                              </button>
+                            </TextTooltip>
                           ))}
                         </span>
                       )}
@@ -5544,19 +5549,20 @@ export function PromptCasesPanel({
               <div className="creator-preview-head-actions">
                 {buildShareUrl &&
                   !isRecentGenerationPromptCase(selectedCase) && (
-                    <button
-                      type="button"
-                      className="creator-preview-share-button"
-                      aria-label={t('promptCases.share') as string}
-                      title={t('promptCases.share') as string}
-                      onClick={handleCopyShareUrl}
-                    >
-                      {copiedShareUrl ? (
-                        <Check size={18} />
-                      ) : (
-                        <Share2 size={18} />
-                      )}
-                    </button>
+                    <TextTooltip text={t('promptCases.share') as string}>
+                      <button
+                        type="button"
+                        className="creator-preview-share-button"
+                        aria-label={t('promptCases.share') as string}
+                        onClick={handleCopyShareUrl}
+                      >
+                        {copiedShareUrl ? (
+                          <Check size={18} />
+                        ) : (
+                          <Share2 size={18} />
+                        )}
+                      </button>
+                    </TextTooltip>
                   )}
                 <button
                   type="button"

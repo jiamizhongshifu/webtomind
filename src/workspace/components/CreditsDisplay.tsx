@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createLogger } from '@/utils/logger';
@@ -166,24 +167,25 @@ export const CreditsDisplay: React.FC<CreditsDisplayProps> = ({
   if (compact) {
     return (
       <div className={`relative credits-display--compact ${className}`}>
-        <button
-          type="button"
-          onClick={handleClick}
-          className="credits-display-compact-button group"
-          aria-label={compactLabel}
-          title={`${compactLabel} · ${t('membership.buyCredits')}`}
-        >
-          <Coins aria-hidden="true" />
-          {floatingChange !== null && (
-            <span
-              className={`credits-display-compact-change ${
-                floatingChange > 0 ? 'is-positive' : 'is-negative'
-              }`}
-            >
-              {floatingChange > 0 ? `+${floatingChange}` : floatingChange}
-            </span>
-          )}
-        </button>
+        <TextTooltip text={`${compactLabel} · ${t('membership.buyCredits')}`}>
+          <button
+            type="button"
+            onClick={handleClick}
+            className="credits-display-compact-button group"
+            aria-label={compactLabel}
+          >
+            <Coins aria-hidden="true" />
+            {floatingChange !== null && (
+              <span
+                className={`credits-display-compact-change ${
+                  floatingChange > 0 ? 'is-positive' : 'is-negative'
+                }`}
+              >
+                {floatingChange > 0 ? `+${floatingChange}` : floatingChange}
+              </span>
+            )}
+          </button>
+        </TextTooltip>
       </div>
     );
   }
@@ -191,33 +193,34 @@ export const CreditsDisplay: React.FC<CreditsDisplayProps> = ({
   return (
     <div className={`relative ${className}`}>
       {/* 积分按钮 - 点击直接跳转到充值页 */}
-      <button
-        onClick={handleClick}
-        className="flex items-center gap-2.5 px-3.5 py-2 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md rounded-full transition-all group active:scale-95"
-        title={t('membership.buyCredits')}
-      >
-        <div className="flex items-center justify-center w-6 h-6 bg-amber-50 dark:bg-amber-900/30 rounded-full shadow-inner ring-1 ring-amber-100 dark:ring-amber-800">
-          <Coins className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 group-hover:scale-110 transition-transform" />
-        </div>
-        <span className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight">
-          {formattedCredits}
-          {labelSuffix && (
-            <span className="credits-display-suffix"> {labelSuffix}</span>
-          )}
-        </span>
-        {trailingLabel && (
-          <span className="credits-display-trailing">{trailingLabel}</span>
-        )}
-        {floatingChange !== null && (
-          <span
-            className={`absolute -top-7 left-1/2 -translate-x-1/2 font-extrabold text-sm animate-out fade-out slide-out-to-top-6 duration-1000 fill-mode-forwards drop-shadow-sm ${
-              floatingChange > 0 ? 'text-green-500' : 'text-red-500'
-            }`}
-          >
-            {floatingChange > 0 ? `+${floatingChange}` : floatingChange}
+      <TextTooltip text={t('membership.buyCredits')}>
+        <button
+          onClick={handleClick}
+          className="flex items-center gap-2.5 px-3.5 py-2 bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md rounded-full transition-all group active:scale-95"
+        >
+          <div className="flex items-center justify-center w-6 h-6 bg-amber-50 dark:bg-amber-900/30 rounded-full shadow-inner ring-1 ring-amber-100 dark:ring-amber-800">
+            <Coins className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400 group-hover:scale-110 transition-transform" />
+          </div>
+          <span className="text-sm font-bold text-slate-800 dark:text-slate-200 tracking-tight">
+            {formattedCredits}
+            {labelSuffix && (
+              <span className="credits-display-suffix"> {labelSuffix}</span>
+            )}
           </span>
-        )}
-      </button>
+          {trailingLabel && (
+            <span className="credits-display-trailing">{trailingLabel}</span>
+          )}
+          {floatingChange !== null && (
+            <span
+              className={`absolute -top-7 left-1/2 -translate-x-1/2 font-extrabold text-sm animate-out fade-out slide-out-to-top-6 duration-1000 fill-mode-forwards drop-shadow-sm ${
+                floatingChange > 0 ? 'text-green-500' : 'text-red-500'
+              }`}
+            >
+              {floatingChange > 0 ? `+${floatingChange}` : floatingChange}
+            </span>
+          )}
+        </button>
+      </TextTooltip>
     </div>
   );
 };

@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import React from 'react';
 import { ArrowLeft, Trash2, MessageSquare } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -79,13 +80,14 @@ export function ConversationHistory({
     <div className="flex flex-col h-full bg-white dark:bg-slate-900">
       {/* 头部：返回按钮 + 标题 */}
       <header className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-        <button
-          onClick={onBack}
-          className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-          title={t('conversationHistory.back')}
-        >
-          <ArrowLeft className="w-5 h-5 text-slate-600" />
-        </button>
+        <TextTooltip text={t('conversationHistory.back')}>
+          <button
+            onClick={onBack}
+            className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-slate-600" />
+          </button>
+        </TextTooltip>
         <h2 className="text-base font-medium text-slate-800 dark:text-slate-200">
           {t('conversationHistory.title')}
         </h2>
@@ -132,13 +134,14 @@ export function ConversationHistory({
                 </div>
 
                 {/* 删除按钮 */}
-                <button
-                  onClick={(e) => handleDelete(e, conv.id)}
-                  className="flex-shrink-0 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
-                  title={t('conversationHistory.delete')}
-                >
-                  <Trash2 className="w-4 h-4 text-red-400 hover:text-red-500" />
-                </button>
+                <TextTooltip text={t('conversationHistory.delete')}>
+                  <button
+                    onClick={(e) => handleDelete(e, conv.id)}
+                    className="flex-shrink-0 p-1.5 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/30 transition-all"
+                  >
+                    <Trash2 className="w-4 h-4 text-red-400 hover:text-red-500" />
+                  </button>
+                </TextTooltip>
               </div>
             ))}
           </div>

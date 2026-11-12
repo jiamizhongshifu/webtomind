@@ -1,3 +1,4 @@
+import { ConfirmDialog } from './ConfirmDialog';
 import {
   useState,
   useEffect,
@@ -28,10 +29,7 @@ import {
 } from '@/shared/ui/radix/popover';
 import { Separator } from '@/shared/ui/radix/separator';
 import { Skeleton } from '@/shared/ui/radix/skeleton';
-import {
-  ToggleGroup,
-  ToggleGroupItem
-} from '@/shared/ui/radix/toggle-group';
+import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/radix/toggle-group';
 
 const log = createLogger('BoardsOverview');
 import {
@@ -321,7 +319,7 @@ export function BoardsOverview({
   onFavoriteProject,
   onUpdateProject
 }: BoardsOverviewProps) {
-  const { t } = useTranslation('boards');
+  const { t, i18n } = useTranslation('boards');
   const [creating, setCreating] = useState(false);
 
   const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
@@ -716,15 +714,33 @@ export function BoardsOverview({
     }
   };
 
-  const handleDeleteProject = async (id: string, isDefault: boolean) => {
-    if (isDefault) return;
-    if (!confirm('确定要删除这个项目吗？项目内的内容将不再属于该项目。'))
-      return;
+  const deleteProjectTrigger = useRef<HTMLElement | null>(null);
+  const [deleteProjectId, setDeleteProjectId] = useState<string | null>(null);
+  const [deleteProjectBusy, setDeleteProjectBusy] = useState(false);
+  const [deleteProjectError, setDeleteProjectError] = useState('');
 
+  const handleDeleteProject = async (
+    id: string,
+    isDefault: boolean,
+    trigger?: HTMLElement | null
+  ) => {
+    if (isDefault) return;
+    deleteProjectTrigger.current = trigger ?? null;
+    setDeleteProjectError('');
+    setDeleteProjectId(id);
+  };
+  const confirmDeleteProject = async () => {
+    if (!deleteProjectId || deleteProjectBusy) return;
+    setDeleteProjectBusy(true);
     try {
-      await onDeleteProject(id);
+      await onDeleteProject(deleteProjectId);
+      setDeleteProjectId(null);
     } catch (error) {
-      log.error('[BoardsOverview] Delete project failed:', error);
+      setDeleteProjectError(
+        error instanceof Error ? error.message : '删除失败'
+      );
+    } finally {
+      setDeleteProjectBusy(false);
     }
   };
 
@@ -1069,8 +1085,12 @@ export function BoardsOverview({
                     onClick={() => onSelectProject(project.id)}
                     summaryCount={project.summaryCount || 0}
                     conversationCount={project.conversationCount || 0}
-                    onDelete={() =>
-                      handleDeleteProject(project.id, project.isDefault)
+                    onDelete={(trigger) =>
+                      handleDeleteProject(
+                        project.id,
+                        project.isDefault,
+                        trigger
+                      )
                     }
                     onArchive={() =>
                       handleArchiveProject(project.id, !project.archivedAt)
@@ -1155,8 +1175,12 @@ export function BoardsOverview({
                     icon={listIcon}
                     isSelected={currentProjectId === project.id}
                     onClick={() => onSelectProject(project.id)}
-                    onDelete={() =>
-                      handleDeleteProject(project.id, project.isDefault)
+                    onDelete={(trigger) =>
+                      handleDeleteProject(
+                        project.id,
+                        project.isDefault,
+                        trigger
+                      )
                     }
                     onArchive={() =>
                       handleArchiveProject(project.id, !project.archivedAt)
@@ -1192,6 +1216,18 @@ export function BoardsOverview({
       )}
 
       {/* 全局搜索弹窗 */}
+      <ConfirmDialog
+        returnFocusRef={deleteProjectTrigger}
+        isOpen={Boolean(deleteProjectId)}
+        title={t('boards.deleteProject')}
+        description={`${i18n.language.startsWith('en') ? 'Materials and conversations will move to the default project. The project itself cannot be restored.' : '删除项目后，其中的资料和会话会移到默认项目；项目本身无法恢复。'}${deleteProjectError ? ` ${deleteProjectError}` : ''}`}
+        confirmText={t('boards.deleteProject')}
+        cancelText={t('boards.cancel')}
+        danger
+        loading={deleteProjectBusy}
+        onConfirm={() => void confirmDeleteProject()}
+        onCancel={() => setDeleteProjectId(null)}
+      />
       <GlobalSearchModal
         isOpen={showGlobalSearch}
         onClose={() => setShowGlobalSearch(false)}
@@ -1214,7 +1250,7 @@ interface ProjectCardProps {
   color?: string;
   isSelected?: boolean;
   onClick: () => void;
-  onDelete: () => void;
+  onDelete: (trigger?: HTMLElement | null) => void;
   onArchive?: () => void;
   onFavorite?: () => void;
   onEdit?: () => void;
@@ -1467,7 +1503,7 @@ interface ProjectActionsPopoverProps {
   isDefault?: boolean;
   isFavorited?: boolean;
   onArchive?: () => void;
-  onDelete?: () => void;
+  onDelete?: (trigger?: HTMLElement | null) => void;
   onEdit?: () => void;
   onFavorite?: () => void;
   triggerSize?: 'default' | 'compact';
@@ -1487,6 +1523,7 @@ function ProjectActionsPopover({
 }: ProjectActionsPopoverProps) {
   const { t } = useTranslation('boards');
   const [open, setOpen] = useState(false);
+  const actionTrigger = useRef<HTMLButtonElement>(null);
 
   const runAction =
     (action?: () => void) => (event: MouseEvent<HTMLButtonElement>) => {
@@ -1499,6 +1536,7 @@ function ProjectActionsPopover({
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
+          ref={actionTrigger}
           aria-label={t('boards.actions.more', '更多操作')}
           className={cn(
             'text-muted-foreground',
@@ -1569,7 +1607,7 @@ function ProjectActionsPopover({
               <Button
                 className="w-full justify-start text-destructive hover:text-destructive"
                 disabled={!onDelete}
-                onClick={runAction(onDelete)}
+                onClick={runAction(() => onDelete?.(actionTrigger.current))}
                 size="sm"
                 type="button"
                 variant="ghost"
@@ -1600,7 +1638,7 @@ function ProjectListItem({
   icon: ReactNode;
   isSelected: boolean;
   onClick: () => void;
-  onDelete: () => void;
+  onDelete: (trigger?: HTMLElement | null) => void;
   onArchive: () => void;
   onFavorite: () => void;
   onEdit: () => void;
@@ -1646,10 +1684,7 @@ function ProjectListItem({
                   ? t('boards.actions.unfavorite', '取消收藏')
                   : t('boards.actions.favorite')
               }
-              className={cn(
-                'size-7',
-                project.favoritedAt && 'text-amber-500'
-              )}
+              className={cn('size-7', project.favoritedAt && 'text-amber-500')}
               onClick={(e) => {
                 e.stopPropagation();
                 onFavorite();

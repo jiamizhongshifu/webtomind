@@ -1,3 +1,4 @@
+import { TooltipProvider } from '@/shared/ui/TooltipPrimitives';
 import React, { lazy, Suspense, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
 import '@fontsource/geist-sans/latin-400.css';
@@ -209,8 +210,7 @@ const CreateHomePage = lazy(() =>
 // /zh-CN/prompts 与 /en-US/prompts 渲染这个包装页；首屏直接预取它的 chunk，
 // 不等 React 首次渲染后才发现。
 const CreatePromptLibraryPage = lazyRouteWithInitialPreload(
-  (pathname) =>
-    /^\/(zh-CN|en-US)\/prompts$/.test(pathname.replace(/\/+$/, '')),
+  (pathname) => /^\/(zh-CN|en-US)\/prompts$/.test(pathname.replace(/\/+$/, '')),
   () =>
     import('./pages/CreatePromptLibraryPage').then((mod) => ({
       default: mod.CreatePromptLibraryPage
@@ -971,7 +971,10 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/zh-CN/models" element={<ApiServiceRetiredPage />} />
+                  <Route
+                    path="/zh-CN/models"
+                    element={<ApiServiceRetiredPage />}
+                  />
                   <Route
                     path="/zh-CN/api-console"
                     element={<ApiServiceRetiredPage />}
@@ -1149,7 +1152,10 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/en-US/models" element={<ApiServiceRetiredPage />} />
+                  <Route
+                    path="/en-US/models"
+                    element={<ApiServiceRetiredPage />}
+                  />
                   <Route
                     path="/en-US/api-console"
                     element={<ApiServiceRetiredPage />}
@@ -1422,7 +1428,9 @@ if (rootElement) {
     ReactDOM.createRoot(rootElement).render(
       <React.StrictMode>
         <AppErrorBoundary>
-          <App />
+          <TooltipProvider>
+            <App />
+          </TooltipProvider>
         </AppErrorBoundary>
       </React.StrictMode>
     );

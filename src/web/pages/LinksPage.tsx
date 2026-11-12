@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { useEffect } from 'react';
 import { applySeo } from '../lib/seo';
 import { MarketingPageShell, useMarketingLocale } from './MarketingPageShell';
@@ -85,13 +86,11 @@ export function LinksPage() {
           >
             <h3>{item.name}</h3>
             <p>{isZh ? item.description.zh : item.description.en}</p>
-            <a
-              href={item.href}
-              title={item.title}
-              className="marketing-text-link"
-            >
-              {item.href}
-            </a>
+            <TextTooltip text={item.title}>
+              <a href={item.href} className="marketing-text-link">
+                {item.href}
+              </a>
+            </TextTooltip>
           </article>
         ))}
       </section>

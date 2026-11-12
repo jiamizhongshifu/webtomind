@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { Plus, Trash2 } from 'lucide-react';
 import type { StudioDocument } from '@/services/workspace-api';
 
@@ -78,15 +79,16 @@ export function StudioDocumentsList({
                   </div>
                 </button>
                 <div className="px-2.5 pb-2">
-                  <button
-                    type="button"
-                    onClick={() => onDelete(doc.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1 text-[11px] text-red-500 hover:text-red-600"
-                    title="删除文档"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    删除
-                  </button>
+                  <TextTooltip text={'删除文档'}>
+                    <button
+                      type="button"
+                      onClick={() => onDelete(doc.id)}
+                      className="opacity-0 group-hover:opacity-100 transition-opacity inline-flex items-center gap-1 text-[11px] text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      删除
+                    </button>
+                  </TextTooltip>
                 </div>
               </div>
             );

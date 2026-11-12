@@ -1,3 +1,5 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
+import { useOverlayBehavior } from '@/shared/ui/useOverlayBehavior';
 import {
   useEffect,
   useLayoutEffect,
@@ -258,7 +260,17 @@ export function ImageStudioComposer({
   const [skillPickStep, setSkillPickStep] = useState<'pick' | 'modes'>('pick');
   const [submitFeedbackActive, setSubmitFeedbackActive] = useState(false);
   const [anchor, setAnchor] = useState({ left: 24, bottom: 120 });
-  const panelRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const panelRef = useOverlayBehavior<HTMLDivElement>({
+    open: Boolean(openTool),
+    activationKey: openTool,
+    modal: false,
+    returnFocusRef: triggerRef,
+    onClose: () => {
+      setOpenTool(null);
+      setPinnedTool(null);
+    }
+  });
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -266,7 +278,6 @@ export function ImageStudioComposer({
     if (selectedReferenceCount > 0 || prompt.trim()) return;
     textareaRef.current?.focus({ preventScroll: true });
   }, [conditioningMode, firstCreationMode, prompt, selectedReferenceCount]);
-  const closeTimerRef = useRef<number | null>(null);
   const submitFeedbackTimerRef = useRef<number | null>(null);
   const currentModel =
     models.find((model) => model.value === settings.model) || models[0];
@@ -377,17 +388,8 @@ export function ImageStudioComposer({
     void onGenerate();
   };
 
-  const cancelClose = () => {
-    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = null;
-  };
-  const scheduleClose = () => {
-    cancelClose();
-    if (pinnedTool) return;
-    closeTimerRef.current = window.setTimeout(() => setOpenTool(null), 150);
-  };
   const openFromTrigger = (tool: StudioTool, element: HTMLElement) => {
-    cancelClose();
+    triggerRef.current = element;
     if (tool === 'recipe') {
       const requestedSlot = activeSlot?.id || recipeSlots[0]?.id;
       if (requestedSlot) onRequestRecipeAssets?.(requestedSlot);
@@ -431,19 +433,12 @@ export function ImageStudioComposer({
       setOpenTool(null);
       setPinnedTool(null);
     };
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      setOpenTool(null);
-      setPinnedTool(null);
-    };
     document.addEventListener('pointerdown', handlePointerDown);
-    document.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.removeEventListener('pointerdown', handlePointerDown);
-      document.removeEventListener('keydown', handleKeyDown);
-      cancelClose();
     };
-  }, [openTool]);
+  }, [openTool, panelRef]);
 
   const toolButton = (
     tool: StudioTool,
@@ -453,38 +448,31 @@ export function ImageStudioComposer({
     badge?: ReactNode,
     disabled = false
   ) => (
-    <button
-      key={tool}
-      type="button"
-      className="image-studio-tool-trigger"
-      data-studio-tool={tool}
-      data-active={active ? 'true' : 'false'}
-      aria-label={TOOL_LABELS[tool]}
-      aria-expanded={!disabled && openTool === tool}
-      aria-disabled={disabled || undefined}
-      title={TOOL_LABELS[tool]}
-      disabled={disabled}
-      onMouseEnter={(event) => {
-        if (disabled) return;
-        openFromTrigger(tool, event.currentTarget);
-      }}
-      onMouseLeave={scheduleClose}
-      onFocus={(event) => {
-        if (disabled) return;
-        openFromTrigger(tool, event.currentTarget);
-      }}
-      onClick={(event) => {
-        if (disabled) return;
-        const nextPinned = pinnedTool === tool ? null : tool;
-        setPinnedTool(nextPinned);
-        if (nextPinned) openFromTrigger(tool, event.currentTarget);
-        else setOpenTool(null);
-      }}
-    >
-      {icon}
-      <span>{value || TOOL_LABELS[tool]}</span>
-      {badge}
-    </button>
+    <TextTooltip text={TOOL_LABELS[tool]} key={tool}>
+      <button
+        key={tool}
+        type="button"
+        className="image-studio-tool-trigger"
+        data-studio-tool={tool}
+        data-active={active ? 'true' : 'false'}
+        aria-label={TOOL_LABELS[tool]}
+        aria-haspopup="dialog"
+        aria-expanded={!disabled && openTool === tool}
+        aria-disabled={disabled || undefined}
+        disabled={disabled}
+        onClick={(event) => {
+          if (disabled) return;
+          const nextPinned = pinnedTool === tool ? null : tool;
+          setPinnedTool(nextPinned);
+          if (nextPinned) openFromTrigger(tool, event.currentTarget);
+          else setOpenTool(null);
+        }}
+      >
+        {icon}
+        <span>{value || TOOL_LABELS[tool]}</span>
+        {badge}
+      </button>
+    </TextTooltip>
   );
 
   const activeSkillMode = PORTRAIT_SKILL_MODES.find(
@@ -504,12 +492,11 @@ export function ImageStudioComposer({
       <motion.div
         key={openTool}
         ref={panelRef}
+        tabIndex={-1}
         className={`image-studio-tool-popover is-${openTool}`}
         style={style}
         role="dialog"
         aria-label={`${TOOL_LABELS[openTool]}设置`}
-        onMouseEnter={cancelClose}
-        onMouseLeave={scheduleClose}
         initial={
           prefersReducedMotion
             ? { opacity: 0 }

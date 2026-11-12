@@ -1,3 +1,8 @@
+import {
+  PopoverRoot,
+  PopoverAnchor,
+  PopoverContent
+} from '@/shared/ui/PopoverPrimitives';
 import type {
   Shortcut,
   SavedSummary,
@@ -7,16 +12,7 @@ import type { Reference } from '@/types';
 import { Settings2, Trash2, Plus, X } from 'lucide-react';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle
-} from '@/shared/ui/radix/alert-dialog';
+
 import { Badge } from '@/shared/ui/radix/badge';
 import { Button } from '@/shared/ui/radix/button';
 import {
@@ -55,6 +51,9 @@ export function ShortcutEditor({
     shortcut.references || []
   );
   const [showRefSelector, setShowRefSelector] = useState(false);
+  const deleteAnchor = useRef<HTMLElement | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const [confirmError, setConfirmError] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // 防抖定时器
@@ -140,9 +139,18 @@ export function ShortcutEditor({
   };
 
   // 确认删除
-  const handleConfirmDelete = () => {
-    onDelete();
-    setShowDeleteConfirm(false);
+  const handleConfirmDelete = async () => {
+    if (confirmBusy) return;
+    setConfirmBusy(true);
+    setConfirmError('');
+    try {
+      await onDelete();
+      setShowDeleteConfirm(false);
+    } catch (error) {
+      setConfirmError(error instanceof Error ? error.message : '删除失败');
+    } finally {
+      setConfirmBusy(false);
+    }
   };
 
   // 已有引用的 summaryId 列表
@@ -162,7 +170,11 @@ export function ShortcutEditor({
           type="button"
           variant="ghost"
           size="icon"
-          onClick={() => setShowDeleteConfirm(true)}
+          onClick={(event) => {
+            deleteAnchor.current = event.currentTarget;
+            setConfirmError('');
+            setShowDeleteConfirm(true);
+          }}
           title={t('shortcutEditor.deleteShortcut')}
           aria-label={t('shortcutEditor.deleteShortcut')}
         >
@@ -283,31 +295,46 @@ export function ShortcutEditor({
         />
       )}
 
-      {/* 删除确认对话框 */}
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent
-          className="w-[calc(100%-2rem)] max-w-sm rounded-xl"
-          overlayClassName="bg-black/50"
+      <PopoverRoot
+        open={Boolean(showDeleteConfirm)}
+        onOpenChange={(open) => {
+          if (!confirmBusy && !open) setShowDeleteConfirm(false);
+        }}
+      >
+        <PopoverAnchor virtualRef={deleteAnchor} />
+        <PopoverContent
+          className="grid w-[calc(100vw-2rem)] max-w-sm gap-4 rounded-xl border bg-background p-6 shadow-lg"
+          data-floating-confirm="true"
+          align="end"
+          collisionPadding={12}
+          aria-label={t('shortcutEditor.delete')}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            deleteAnchor.current?.focus();
+          }}
         >
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t('shortcutEditor.confirmDelete')}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('shortcutEditor.confirmDeleteMessage', { name })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('shortcutEditor.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
+          <p className="text-sm text-muted-foreground">
+            {t('shortcutEditor.confirmDeleteMessage', { name })}
+          </p>
+          {confirmError && <p role="alert">{confirmError}</p>}
+          <div className="mt-4 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              disabled={confirmBusy}
+              onClick={() => setShowDeleteConfirm(false)}
+            >
+              {t('shortcutEditor.cancel')}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={confirmBusy}
               onClick={handleConfirmDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {t('shortcutEditor.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </Button>
+          </div>
+        </PopoverContent>
+      </PopoverRoot>
     </div>
   );
 }

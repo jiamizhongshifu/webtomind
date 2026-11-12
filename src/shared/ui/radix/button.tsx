@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -71,7 +72,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       onKeyDown,
       onPointerDown
     });
-    return (
+    const button = (
       <Comp
         className={cn(
           buttonVariants({ variant, size, className }),
@@ -100,7 +101,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         }}
         {...rippleHandlers}
         {...props}
+        title={undefined}
       />
+    );
+    return !props.title ? (
+      button
+    ) : (
+      <TextTooltip text={props.title}>{button}</TextTooltip>
     );
   }
 );

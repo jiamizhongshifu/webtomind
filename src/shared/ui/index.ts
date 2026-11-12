@@ -26,4 +26,5 @@ export * from './SupportErrorNotice';
 export * from './Surface';
 export * from './Textarea';
 export * from './ToolcraftAdapter';
+export * from './TooltipPrimitives';
 export * from './useOverlayBehavior';

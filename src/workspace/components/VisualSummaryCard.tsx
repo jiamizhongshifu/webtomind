@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { createLogger } from '@/utils/logger';
 import type { SavedSummary } from '@/services/database';
 import { useVisualImageCache } from '@/shared/useVisualImageCache';
@@ -317,18 +318,19 @@ export const VisualSummaryCard = memo(function VisualSummaryCard({
         )}
 
         {onDeleteSummary && (
-          <button
-            type="button"
-            className="absolute left-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-white/95 text-slate-500 opacity-0 shadow-sm transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-300"
-            title="删除"
-            aria-label="删除卡片"
-            onClick={(event) => {
-              event.stopPropagation();
-              onDeleteSummary(summary.id);
-            }}
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-          </button>
+          <TextTooltip text={'删除'}>
+            <button
+              type="button"
+              className="absolute left-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-white/95 text-slate-500 opacity-0 shadow-sm transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-300"
+              aria-label="删除卡片"
+              onClick={(event) => {
+                event.stopPropagation();
+                onDeleteSummary(summary.id);
+              }}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </TextTooltip>
         )}
 
         <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground dark:text-slate-500 bg-slate-50 dark:bg-slate-800">
@@ -379,18 +381,19 @@ export const VisualSummaryCard = memo(function VisualSummaryCard({
       )}
 
       {onDeleteSummary && (
-        <button
-          type="button"
-          className="absolute left-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-white/95 text-slate-500 opacity-0 shadow-sm transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-300"
-          title="删除"
-          aria-label="删除卡片"
-          onClick={(event) => {
-            event.stopPropagation();
-            onDeleteSummary(summary.id);
-          }}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
+        <TextTooltip text={'删除'}>
+          <button
+            type="button"
+            className="absolute left-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-white/95 text-slate-500 opacity-0 shadow-sm transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:bg-slate-800/95 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-300"
+            aria-label="删除卡片"
+            onClick={(event) => {
+              event.stopPropagation();
+              onDeleteSummary(summary.id);
+            }}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </TextTooltip>
       )}
 
       {(!imageLoaded || !displayThumbnailSrc) && (

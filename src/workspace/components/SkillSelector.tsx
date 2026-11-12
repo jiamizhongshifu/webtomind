@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 /**
  * Skill 选择器组件
  * 显示匹配的 Skills 供用户确认使用
@@ -68,14 +69,15 @@ export function SkillSelector({
           <Sparkles className="w-4 h-4" />
           <span>{t('skillSelector.detected', '检测到可用 Skill')}</span>
         </div>
-        <button
-          type="button"
-          onClick={onDismiss}
-          className="p-1 rounded hover:bg-purple-200 text-purple-400 hover:text-purple-600 transition-colors"
-          title={t('skillSelector.dismiss', '忽略')}
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <TextTooltip text={t('skillSelector.dismiss', '忽略')}>
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="p-1 rounded hover:bg-purple-200 text-purple-400 hover:text-purple-600 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </TextTooltip>
       </div>
 
       <div className="p-3">
@@ -128,28 +130,30 @@ export function SkillSelector({
               {t('skillSelector.otherMatches', '其他匹配的 Skills:')}
             </p>
             <div className="flex flex-wrap gap-2">
-              {matchedSkills.slice(1, 4).map(({ skill, score, matchedTriggers }) => (
-                <button
-                  key={skill.id}
-                  type="button"
-                  onClick={() =>
-                    onConfirm({
-                      skill,
-                      source: skill.source,
-                      score,
-                      matchedTriggers,
-                      explicit: false
-                    })
-                  }
-                  className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm text-slate-600 transition-colors"
-                >
-                  <span>{skill.icon || '🔧'}</span>
-                  <span>{skill.displayName || skill.name}</span>
-                  <span className="px-1 py-0.5 bg-white rounded text-[10px] text-slate-500 uppercase">
-                    {getSkillSourceLabel(skill.source)}
-                  </span>
-                </button>
-              ))}
+              {matchedSkills
+                .slice(1, 4)
+                .map(({ skill, score, matchedTriggers }) => (
+                  <button
+                    key={skill.id}
+                    type="button"
+                    onClick={() =>
+                      onConfirm({
+                        skill,
+                        source: skill.source,
+                        score,
+                        matchedTriggers,
+                        explicit: false
+                      })
+                    }
+                    className="inline-flex items-center gap-1.5 px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg text-sm text-slate-600 transition-colors"
+                  >
+                    <span>{skill.icon || '🔧'}</span>
+                    <span>{skill.displayName || skill.name}</span>
+                    <span className="px-1 py-0.5 bg-white rounded text-[10px] text-slate-500 uppercase">
+                      {getSkillSourceLabel(skill.source)}
+                    </span>
+                  </button>
+                ))}
             </div>
           </div>
         )}
@@ -166,7 +170,10 @@ interface SelectedSkillTagProps {
   onRemove: () => void;
 }
 
-export function SelectedSkillTag({ candidate, onRemove }: SelectedSkillTagProps) {
+export function SelectedSkillTag({
+  candidate,
+  onRemove
+}: SelectedSkillTagProps) {
   const { t } = useTranslation('workspace');
   const skill = candidate.skill;
 
@@ -178,14 +185,15 @@ export function SelectedSkillTag({ candidate, onRemove }: SelectedSkillTagProps)
       <span className="px-1.5 py-0.5 bg-white/70 rounded text-[10px] uppercase text-purple-600">
         {getSkillSourceLabel(candidate.source || skill.source)}
       </span>
-      <button
-        type="button"
-        onClick={onRemove}
-        className="p-0.5 rounded hover:bg-purple-200 transition-colors ml-1"
-        title={t('skillSelector.remove', '移除')}
-      >
-        <X className="w-3 h-3" />
-      </button>
+      <TextTooltip text={t('skillSelector.remove', '移除')}>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="p-0.5 rounded hover:bg-purple-200 transition-colors ml-1"
+        >
+          <X className="w-3 h-3" />
+        </button>
+      </TextTooltip>
     </div>
   );
 }
