@@ -119,7 +119,9 @@ function formatOneTimeProduct(
             currency: 'CNY' as const,
             price:
               positiveCents(plan.price_cny_one_time) ??
-              (priceUsd ? usdCentsToCnyCents(priceUsd, alipayUsdToCnyRate) : null)
+              (priceUsd
+                ? usdCentsToCnyCents(priceUsd, alipayUsdToCnyRate)
+                : null)
           }
         }
       : undefined
@@ -133,8 +135,7 @@ function buildFallbackPlans(
   return CLIENT_FALLBACK_SUBSCRIPTION_PLANS.map((plan) => ({
     ...plan,
     checkoutEnabled: plan.name === 'free' || checkoutProviders.length > 0,
-    checkoutProviders:
-      plan.name === 'free' ? [] : checkoutProviders,
+    checkoutProviders: plan.name === 'free' ? [] : checkoutProviders,
     checkoutPrices:
       plan.name !== 'free' && alipayUsdToCnyRate
         ? {
@@ -191,10 +192,7 @@ export default async function handler(request: Request) {
 
   if (!supabaseUrl || !supabaseKey) {
     return jsonResponse({
-      plans: buildFallbackPlans(
-        checkoutProviders,
-        zpayConfig?.usdToCnyRate
-      )
+      plans: buildFallbackPlans(checkoutProviders, zpayConfig?.usdToCnyRate)
     });
   }
 
@@ -210,54 +208,43 @@ export default async function handler(request: Request) {
     if (error) {
       console.error('[Plans] Fetch error:', error);
       return jsonResponse({
-        plans: buildFallbackPlans(
-          checkoutProviders,
-          zpayConfig?.usdToCnyRate
-        )
+        plans: buildFallbackPlans(checkoutProviders, zpayConfig?.usdToCnyRate)
       });
     }
 
     if (!plans || plans.length === 0) {
       return jsonResponse({
-        plans: buildFallbackPlans(
-          checkoutProviders,
-          zpayConfig?.usdToCnyRate
-        )
+        plans: buildFallbackPlans(checkoutProviders, zpayConfig?.usdToCnyRate)
       });
     }
 
     const oneTimeProducts = plans
       .filter((plan) => plan.billing_kind === 'one_time')
-      .map((plan) =>
-        formatOneTimeProduct(plan, checkoutProviders, zpayConfig?.usdToCnyRate)
-      );
+      .map((plan) => formatOneTimeProduct(plan, [], zpayConfig?.usdToCnyRate));
     const formattedPlans = plans
-      .filter((plan) => plan.billing_kind !== 'one_time')
+      .filter(
+        (plan) => plan.billing_kind !== 'one_time' && plan.name !== 'skill_pro'
+      )
       .map((plan) =>
-      formatPlan(plan, {
-        checkoutEnabled:
-          plan.name === 'free'
-            ? true
-            : checkoutProviders.length > 0 &&
-              Number(plan.price_monthly || 0) > 0 &&
-              Number(plan.price_yearly || 0) > 0,
-        checkoutProviders:
-          plan.name === 'free' ? [] : checkoutProviders,
-        alipayUsdToCnyRate: zpayConfig?.usdToCnyRate,
-        checkoutUnavailableReason: checkoutProviders.length > 0
-          ? undefined
-          : 'payment_not_configured'
-      })
-    );
+        formatPlan(plan, {
+          checkoutEnabled:
+            plan.name === 'free'
+              ? true
+              : checkoutProviders.length > 0 &&
+                Number(plan.price_monthly || 0) > 0 &&
+                Number(plan.price_yearly || 0) > 0,
+          checkoutProviders: plan.name === 'free' ? [] : checkoutProviders,
+          alipayUsdToCnyRate: zpayConfig?.usdToCnyRate,
+          checkoutUnavailableReason:
+            checkoutProviders.length > 0 ? undefined : 'payment_not_configured'
+        })
+      );
 
     return jsonResponse({ plans: formattedPlans, oneTimeProducts });
   } catch (error) {
     console.error('[Plans] Error:', error);
     return jsonResponse({
-      plans: buildFallbackPlans(
-        checkoutProviders,
-        zpayConfig?.usdToCnyRate
-      )
+      plans: buildFallbackPlans(checkoutProviders, zpayConfig?.usdToCnyRate)
     });
   }
 }

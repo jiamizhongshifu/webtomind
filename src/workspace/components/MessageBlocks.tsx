@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import { createLogger } from '@/utils/logger';
 import type {
   ContentBlock,
@@ -188,7 +189,8 @@ function formatDuration(durationMs: number): string {
   if (durationMs < 1000) return `${durationMs}ms`;
   const seconds = Math.floor(durationMs / 1000);
   const ms = durationMs % 1000;
-  if (seconds < 60) return ms > 0 ? `${seconds}.${Math.floor(ms / 100)}s` : `${seconds}s`;
+  if (seconds < 60)
+    return ms > 0 ? `${seconds}.${Math.floor(ms / 100)}s` : `${seconds}s`;
   const minutes = Math.floor(seconds / 60);
   const remainSeconds = seconds % 60;
   return `${minutes}m ${remainSeconds}s`;
@@ -233,7 +235,9 @@ function StatusBlockItem({ block }: { block: AnyStatusBlock }) {
       case 'done':
         return <CheckCircle2 className="w-4 h-4 text-green-500" />;
       default:
-        return <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />;
+        return (
+          <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+        );
     }
   };
 
@@ -529,7 +533,9 @@ function SearchResultBatchBlockItem({
               {item.sourceLabel && (
                 <span className="text-[10px] text-slate-400 mt-0.5 inline-block">
                   {item.sourceLabel}
-                  {item.score !== undefined ? ` · ${Math.round(item.score * 100)}%` : ''}
+                  {item.score !== undefined
+                    ? ` · ${Math.round(item.score * 100)}%`
+                    : ''}
                 </span>
               )}
             </div>
@@ -547,7 +553,10 @@ function SearchResultBatchBlockItem({
           />
           {expanded
             ? t('searchBatch.collapse', '收起')
-            : t('searchBatch.showMore', `还有 ${block.items.length - 3} 条结果`)}
+            : t(
+                'searchBatch.showMore',
+                `还有 ${block.items.length - 3} 条结果`
+              )}
         </button>
       )}
 
@@ -599,13 +608,14 @@ function renderInlineMarkdown(
         if (!safeUrl) {
           // 不安全的 URL，只显示文本，不创建链接
           return (
-            <span
+            <TextTooltip
+              text={i18n.t('workspace:messageBlocks.linkBlocked')}
               key={keyIndex++}
-              className="text-slate-600"
-              title={i18n.t('workspace:messageBlocks.linkBlocked')}
             >
-              {content}
-            </span>
+              <span key={keyIndex++} className="text-slate-600">
+                {content}
+              </span>
+            </TextTooltip>
           );
         }
         return (
@@ -1281,14 +1291,20 @@ function parseDataTable(content: string): {
 type ParsedTextContent =
   | { kind: 'plain' }
   | { kind: 'structured'; data: ReturnType<typeof parseStructuredContent> }
-  | { kind: 'flashcards'; data: NonNullable<ReturnType<typeof parseFlashcards>> }
+  | {
+      kind: 'flashcards';
+      data: NonNullable<ReturnType<typeof parseFlashcards>>;
+    }
   | { kind: 'quiz'; data: NonNullable<ReturnType<typeof parseQuiz>> }
   | { kind: 'mindmap'; data: NonNullable<ReturnType<typeof parseMindmap>> }
   | { kind: 'report'; data: NonNullable<ReturnType<typeof parseReport>> }
   | { kind: 'summary'; data: NonNullable<ReturnType<typeof parseSummary>> }
   | { kind: 'audio'; data: NonNullable<ReturnType<typeof parseAudio>> }
   | { kind: 'video'; data: NonNullable<ReturnType<typeof parseVideo>> }
-  | { kind: 'infographic'; data: NonNullable<ReturnType<typeof parseInfographic>> }
+  | {
+      kind: 'infographic';
+      data: NonNullable<ReturnType<typeof parseInfographic>>;
+    }
   | { kind: 'slideDeck'; data: NonNullable<ReturnType<typeof parseSlideDeck>> }
   | { kind: 'dataTable'; data: NonNullable<ReturnType<typeof parseDataTable>> };
 
@@ -1694,36 +1710,41 @@ function ImageBlockItem({
             )}
             {/* 右上角快捷操作按钮 */}
             <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                type="button"
-                onClick={handleCopy}
-                className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
-                title={
+              <TextTooltip
+                text={
                   copySuccess
                     ? t('messageBlocks.copied')
                     : t('messageBlocks.copyImage')
                 }
               >
-                <Copy
-                  className={`w-4 h-4 ${copySuccess ? 'text-green-400' : ''}`}
-                />
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
-                title={t('messageBlocks.saveToWorkspace')}
-              >
-                <Save className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleDownload}
-                className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
-                title={t('messageBlocks.downloadImage')}
-              >
-                <Download className="w-4 h-4" />
-              </button>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
+                >
+                  <Copy
+                    className={`w-4 h-4 ${copySuccess ? 'text-green-400' : ''}`}
+                  />
+                </button>
+              </TextTooltip>
+              <TextTooltip text={t('messageBlocks.saveToWorkspace')}>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
+                >
+                  <Save className="w-4 h-4" />
+                </button>
+              </TextTooltip>
+              <TextTooltip text={t('messageBlocks.downloadImage')}>
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              </TextTooltip>
             </div>
           </div>
         </div>
@@ -1927,12 +1948,11 @@ function BatchImageBlockItem({
                   {task.status === 'error' && t('messageBlocks.statusError')}
                 </span>
               </div>
-              <p
-                className="text-sm opacity-80 truncate mt-0.5"
-                title={task.title}
-              >
-                {task.title}
-              </p>
+              <TextTooltip text={task.title}>
+                <p className="text-sm opacity-80 truncate mt-0.5">
+                  {task.title}
+                </p>
+              </TextTooltip>
               {/* 错误信息 */}
               {task.status === 'error' && task.errorMessage && (
                 <div className="mt-1">
@@ -1968,39 +1988,42 @@ function BatchImageBlockItem({
                   />
                   {/* 悬停操作按钮 */}
                   <div className="absolute inset-0 flex items-center justify-center gap-1 bg-black/50 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onCopy(task.imageUrl!);
-                      }}
-                      className="p-1 bg-white/20 hover:bg-white/30 rounded text-white"
-                      title={t('messageBlocks.copy')}
-                    >
-                      <Copy className="w-3 h-3" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSave(task.imageUrl!);
-                      }}
-                      className="p-1 bg-white/20 hover:bg-white/30 rounded text-white"
-                      title={t('messageBlocks.save')}
-                    >
-                      <Save className="w-3 h-3" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onDownload(task.imageUrl!);
-                      }}
-                      className="p-1 bg-white/20 hover:bg-white/30 rounded text-white"
-                      title={t('messageBlocks.download')}
-                    >
-                      <Download className="w-3 h-3" />
-                    </button>
+                    <TextTooltip text={t('messageBlocks.copy')}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onCopy(task.imageUrl!);
+                        }}
+                        className="p-1 bg-white/20 hover:bg-white/30 rounded text-white"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    </TextTooltip>
+                    <TextTooltip text={t('messageBlocks.save')}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSave(task.imageUrl!);
+                        }}
+                        className="p-1 bg-white/20 hover:bg-white/30 rounded text-white"
+                      >
+                        <Save className="w-3 h-3" />
+                      </button>
+                    </TextTooltip>
+                    <TextTooltip text={t('messageBlocks.download')}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDownload(task.imageUrl!);
+                        }}
+                        className="p-1 bg-white/20 hover:bg-white/30 rounded text-white"
+                      >
+                        <Download className="w-3 h-3" />
+                      </button>
+                    </TextTooltip>
                   </div>
                 </div>
               </div>
@@ -2046,11 +2069,12 @@ export const MessageBlocks = React.memo(function MessageBlocks({
   const [copySuccess, setCopySuccess] = useState(false);
   const [showCopyMenu, setShowCopyMenu] = useState(false); // 复制下拉菜单状态
   const [timelineCollapsed, setTimelineCollapsed] = useState(false);
-  const [retryTargetStepId, setRetryTargetStepId] = useState<number | undefined>(
-    undefined
-  );
+  const [retryTargetStepId, setRetryTargetStepId] = useState<
+    number | undefined
+  >(undefined);
   const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const copyMenuRef = useRef<HTMLDivElement>(null); // 复制菜单 ref
+  const copyTriggerRef = useRef<HTMLButtonElement>(null); // 复制菜单触发按钮
 
   // 清理定时器
   useEffect(() => {
@@ -2061,31 +2085,27 @@ export const MessageBlocks = React.memo(function MessageBlocks({
     };
   }, []);
 
-  // 悬停离开时关闭复制菜单（延迟关闭，防止鼠标移动时闪烁）
-  const closeMenuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const handleMouseEnterMenu = useCallback(() => {
-    if (closeMenuTimeoutRef.current) {
-      clearTimeout(closeMenuTimeoutRef.current);
-      closeMenuTimeoutRef.current = null;
-    }
-    setShowCopyMenu(true);
-  }, []);
-
-  const handleMouseLeaveMenu = useCallback(() => {
-    closeMenuTimeoutRef.current = setTimeout(() => {
-      setShowCopyMenu(false);
-    }, 150); // 延迟 150ms 关闭，给用户移动鼠标的时间
-  }, []);
-
-  // 清理关闭菜单的定时器
+  // 菜单由点击打开：悬停打开会让带操作的菜单难以用键盘和触摸使用。
   useEffect(() => {
-    return () => {
-      if (closeMenuTimeoutRef.current) {
-        clearTimeout(closeMenuTimeoutRef.current);
+    if (!showCopyMenu) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (!copyMenuRef.current?.contains(event.target as Node)) {
+        setShowCopyMenu(false);
       }
     };
-  }, []);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowCopyMenu(false);
+        copyTriggerRef.current?.focus({ preventScroll: true });
+      }
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showCopyMenu]);
 
   // 获取消息的 Markdown 内容
   const getMarkdownContent = useCallback((): string => {
@@ -2336,7 +2356,9 @@ export const MessageBlocks = React.memo(function MessageBlocks({
         });
       } else if (block.type === 'tool_call') {
         const toolBlock = block as AnyToolCallBlock;
-        const toolName = ('tool' in toolBlock ? toolBlock.tool : toolBlock.name) as string;
+        const toolName = (
+          'tool' in toolBlock ? toolBlock.tool : toolBlock.name
+        ) as string;
         events.push({
           key: `${block.type}:${toolBlock.id}:${stepId ?? 'na'}:${timestamp ?? 'na'}`,
           type: 'tool_call',
@@ -2400,120 +2422,124 @@ export const MessageBlocks = React.memo(function MessageBlocks({
                 <Sparkles className="w-4 h-4 text-blue-500 animate-pulse" />
               </div>
             )}
-            {!isAskMode && executionEvents.length > 0 && !executionEvents.every((e) => e.label === 'generate_image') && (
-              <div className="mb-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/60">
-                <button
-                  type="button"
-                  onClick={() => setTimelineCollapsed((prev) => !prev)}
-                  className="w-full px-3 py-2.5 flex items-center justify-between text-left"
-                >
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-slate-500" />
-                    <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                      Agent 执行轨迹
-                    </span>
-                    <span className="text-xs text-slate-500">
-                      {executionEvents.length} steps
-                      {executionDuration ? ` · ${executionDuration}` : ''}
-                      {retryFromStepId !== undefined
-                        ? ` · from Step ${retryFromStepId}`
-                        : ''}
-                    </span>
-                  </div>
-                  <ChevronDown
-                    className={`w-4 h-4 text-slate-500 transition-transform ${timelineCollapsed ? '-rotate-90' : 'rotate-0'}`}
-                  />
-                </button>
-                {!timelineCollapsed && (
-                  <div className="px-3 pb-3 space-y-1.5">
-                    {executionEvents.map((event, index) => {
-                      const prevEvent = executionEvents[index - 1];
-                      const deltaMs =
-                        prevEvent &&
-                        typeof prevEvent.timestamp === 'number' &&
-                        typeof event.timestamp === 'number'
-                          ? Math.max(0, event.timestamp - prevEvent.timestamp)
-                          : undefined;
-                      const isError = event.status === 'error';
-                      const isRetryTarget =
-                        retryTargetStepId !== undefined &&
-                        event.stepId === retryTargetStepId;
-                      return (
-                        <div
-                          key={event.key}
-                          className={`flex items-center gap-2 text-xs rounded-md px-1.5 py-1 ${
-                            isRetryTarget
-                              ? 'bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200 dark:ring-amber-700'
-                              : ''
-                          } ${
-                            isError
-                              ? 'text-red-600 dark:text-red-400'
-                              : 'text-slate-600 dark:text-slate-300'
-                          }`}
-                        >
-                          <span
-                            className={`inline-flex items-center justify-center min-w-10 h-5 px-1.5 rounded-md font-medium ${
+            {!isAskMode &&
+              executionEvents.length > 0 &&
+              !executionEvents.every((e) => e.label === 'generate_image') && (
+                <div className="mb-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/60">
+                  <button
+                    type="button"
+                    onClick={() => setTimelineCollapsed((prev) => !prev)}
+                    className="w-full px-3 py-2.5 flex items-center justify-between text-left"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-4 h-4 text-slate-500" />
+                      <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                        Agent 执行轨迹
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {executionEvents.length} steps
+                        {executionDuration ? ` · ${executionDuration}` : ''}
+                        {retryFromStepId !== undefined
+                          ? ` · from Step ${retryFromStepId}`
+                          : ''}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-500 transition-transform ${timelineCollapsed ? '-rotate-90' : 'rotate-0'}`}
+                    />
+                  </button>
+                  {!timelineCollapsed && (
+                    <div className="px-3 pb-3 space-y-1.5">
+                      {executionEvents.map((event, index) => {
+                        const prevEvent = executionEvents[index - 1];
+                        const deltaMs =
+                          prevEvent &&
+                          typeof prevEvent.timestamp === 'number' &&
+                          typeof event.timestamp === 'number'
+                            ? Math.max(0, event.timestamp - prevEvent.timestamp)
+                            : undefined;
+                        const isError = event.status === 'error';
+                        const isRetryTarget =
+                          retryTargetStepId !== undefined &&
+                          event.stepId === retryTargetStepId;
+                        return (
+                          <div
+                            key={event.key}
+                            className={`flex items-center gap-2 text-xs rounded-md px-1.5 py-1 ${
+                              isRetryTarget
+                                ? 'bg-amber-50 dark:bg-amber-900/20 ring-1 ring-amber-200 dark:ring-amber-700'
+                                : ''
+                            } ${
                               isError
-                                ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
-                                : 'bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200'
+                                ? 'text-red-600 dark:text-red-400'
+                                : 'text-slate-600 dark:text-slate-300'
                             }`}
                           >
-                            {event.stepId !== undefined ? `S${event.stepId}` : 'S?'}
-                          </span>
-                          <span className="text-slate-500">
-                            {formatExecutionTime(event.timestamp) || '--:--:--'}
-                          </span>
-                          <span className="font-medium">{event.label}</span>
-                          {deltaMs !== undefined && (
-                            <span className="text-[10px] text-slate-500">
-                              {`+${formatDuration(deltaMs)}`}
-                            </span>
-                          )}
-                          {event.detail && (
                             <span
-                              className="truncate text-slate-500"
-                              title={event.detail}
-                            >
-                              {`· ${event.detail}`}
-                            </span>
-                          )}
-                          {event.status && (
-                            <span
-                              className={`ml-auto text-[10px] uppercase tracking-wide ${
+                              className={`inline-flex items-center justify-center min-w-10 h-5 px-1.5 rounded-md font-medium ${
                                 isError
-                                  ? 'text-red-500 dark:text-red-400'
-                                  : 'text-slate-500'
+                                  ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300'
+                                  : 'bg-slate-200/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-200'
                               }`}
                             >
-                              {event.status}
-                            </span>
-                          )}
-                          {isError && onRetry && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setRetryTargetStepId(event.stepId);
-                                onRetry(event.stepId);
-                              }}
-                              className="ml-1 px-2 py-0.5 rounded-md text-[10px] font-medium border border-red-200 dark:border-red-700 text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                            >
                               {event.stepId !== undefined
-                                ? `重试 Step ${event.stepId}`
-                                : '重试'}
-                            </button>
-                          )}
-                          {isRetryTarget && (
-                            <span className="ml-1 text-[10px] text-amber-600 dark:text-amber-300">
-                              重试中
+                                ? `S${event.stepId}`
+                                : 'S?'}
                             </span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            )}
+                            <span className="text-slate-500">
+                              {formatExecutionTime(event.timestamp) ||
+                                '--:--:--'}
+                            </span>
+                            <span className="font-medium">{event.label}</span>
+                            {deltaMs !== undefined && (
+                              <span className="text-[10px] text-slate-500">
+                                {`+${formatDuration(deltaMs)}`}
+                              </span>
+                            )}
+                            {event.detail && (
+                              <TextTooltip text={event.detail}>
+                                <span className="truncate text-slate-500">
+                                  {`· ${event.detail}`}
+                                </span>
+                              </TextTooltip>
+                            )}
+                            {event.status && (
+                              <span
+                                className={`ml-auto text-[10px] uppercase tracking-wide ${
+                                  isError
+                                    ? 'text-red-500 dark:text-red-400'
+                                    : 'text-slate-500'
+                                }`}
+                              >
+                                {event.status}
+                              </span>
+                            )}
+                            {isError && onRetry && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setRetryTargetStepId(event.stepId);
+                                  onRetry(event.stepId);
+                                }}
+                                className="ml-1 px-2 py-0.5 rounded-md text-[10px] font-medium border border-red-200 dark:border-red-700 text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                              >
+                                {event.stepId !== undefined
+                                  ? `重试 Step ${event.stepId}`
+                                  : '重试'}
+                              </button>
+                            )}
+                            {isRetryTarget && (
+                              <span className="ml-1 text-[10px] text-amber-600 dark:text-amber-300">
+                                重试中
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
             {blocks.map((block, idx) => {
               const blockKey = getBlockKey(block, idx);
               switch (block.type) {
@@ -2544,7 +2570,9 @@ export const MessageBlocks = React.memo(function MessageBlocks({
                       isLoading={isLoading}
                       typewriter={typewriter && idx === lastTextBlockIndex}
                       onTypewriterComplete={
-                        idx === lastTextBlockIndex ? onTypewriterComplete : undefined
+                        idx === lastTextBlockIndex
+                          ? onTypewriterComplete
+                          : undefined
                       }
                     />
                   );
@@ -2657,54 +2685,59 @@ export const MessageBlocks = React.memo(function MessageBlocks({
                 />
                 {/* 右上角快捷操作按钮 */}
                 <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCopyImage(imageUrl);
-                      setCopySuccess(true);
-                      // 使用 ref 跟踪定时器以便清理
-                      if (copyTimeoutRef.current) {
-                        clearTimeout(copyTimeoutRef.current);
-                      }
-                      copyTimeoutRef.current = setTimeout(
-                        () => setCopySuccess(false),
-                        2000
-                      );
-                    }}
-                    className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
-                    title={
+                  <TextTooltip
+                    text={
                       copySuccess
                         ? t('messageBlocks.copied')
                         : t('messageBlocks.copyImage')
                     }
                   >
-                    <Copy
-                      className={`w-4 h-4 ${copySuccess ? 'text-green-400' : ''}`}
-                    />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleSaveImage(imageUrl);
-                    }}
-                    className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
-                    title={t('messageBlocks.saveToWorkspace')}
-                  >
-                    <Save className="w-4 h-4" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDownloadImage(imageUrl);
-                    }}
-                    className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
-                    title={t('messageBlocks.downloadImage')}
-                  >
-                    <Download className="w-4 h-4" />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyImage(imageUrl);
+                        setCopySuccess(true);
+                        // 使用 ref 跟踪定时器以便清理
+                        if (copyTimeoutRef.current) {
+                          clearTimeout(copyTimeoutRef.current);
+                        }
+                        copyTimeoutRef.current = setTimeout(
+                          () => setCopySuccess(false),
+                          2000
+                        );
+                      }}
+                      className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
+                    >
+                      <Copy
+                        className={`w-4 h-4 ${copySuccess ? 'text-green-400' : ''}`}
+                      />
+                    </button>
+                  </TextTooltip>
+                  <TextTooltip text={t('messageBlocks.saveToWorkspace')}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveImage(imageUrl);
+                      }}
+                      className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
+                    >
+                      <Save className="w-4 h-4" />
+                    </button>
+                  </TextTooltip>
+                  <TextTooltip text={t('messageBlocks.downloadImage')}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownloadImage(imageUrl);
+                      }}
+                      className="p-2 bg-black/60 hover:bg-black/80 rounded-lg text-white transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                    </button>
+                  </TextTooltip>
                 </div>
               </div>
             )}
@@ -2720,33 +2753,38 @@ export const MessageBlocks = React.memo(function MessageBlocks({
           {!isLoading ? (
             <div className="flex items-center gap-1">
               {/* 复制按钮（带悬停下拉菜单） */}
-              <div
-                className="relative"
-                ref={copyMenuRef}
-                onMouseEnter={handleMouseEnterMenu}
-                onMouseLeave={handleMouseLeaveMenu}
-              >
-                <button
-                  type="button"
-                  className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${
-                    copySuccess
-                      ? 'bg-green-100 text-green-600'
-                      : 'text-muted-foreground hover:text-slate-600 hover:bg-slate-200'
-                  }`}
-                  title={t('messageBlocks.copy')}
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  {copySuccess
-                    ? t('messageBlocks.copied')
-                    : t('messageBlocks.copy')}
-                  <ChevronDown className="w-3 h-3" />
-                </button>
+              <div className="relative" ref={copyMenuRef}>
+                <TextTooltip text={t('messageBlocks.copy')}>
+                  <button
+                    ref={copyTriggerRef}
+                    type="button"
+                    aria-haspopup="menu"
+                    aria-expanded={showCopyMenu}
+                    onClick={() => setShowCopyMenu((current) => !current)}
+                    className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${
+                      copySuccess
+                        ? 'bg-green-100 text-green-600'
+                        : 'text-muted-foreground hover:text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    {copySuccess
+                      ? t('messageBlocks.copied')
+                      : t('messageBlocks.copy')}
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+                </TextTooltip>
 
                 {/* 复制下拉菜单（悬停显示） */}
                 {showCopyMenu && (
-                  <div className="absolute bottom-full left-0 mb-1 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[160px] z-10">
+                  <div
+                    className="absolute bottom-full left-0 mb-1 bg-white rounded-lg shadow-lg border border-slate-200 py-1 min-w-[160px] z-10"
+                    role="menu"
+                    aria-label={t('messageBlocks.copy')}
+                  >
                     <button
                       type="button"
+                      role="menuitem"
                       onClick={handleCopyMarkdown}
                       className="w-full px-3 py-1.5 flex items-center gap-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap"
                     >
@@ -2755,6 +2793,7 @@ export const MessageBlocks = React.memo(function MessageBlocks({
                     </button>
                     <button
                       type="button"
+                      role="menuitem"
                       onClick={handleCopyText}
                       className="w-full px-3 py-1.5 flex items-center gap-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap"
                     >
@@ -2767,27 +2806,29 @@ export const MessageBlocks = React.memo(function MessageBlocks({
 
               {/* 重试按钮 */}
               {onRetry && (
-                <button
-                  type="button"
-                  onClick={() => onRetry()}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-slate-600 hover:bg-slate-200 transition-colors"
-                  title={t('messageBlocks.regenerate')}
-                >
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  {t('messageBlocks.retry')}
-                </button>
+                <TextTooltip text={t('messageBlocks.regenerate')}>
+                  <button
+                    type="button"
+                    onClick={() => onRetry()}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-slate-600 hover:bg-slate-200 transition-colors"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    {t('messageBlocks.retry')}
+                  </button>
+                </TextTooltip>
               )}
 
               {onSaveNote && (
-                <button
-                  type="button"
-                  onClick={onSaveNote}
-                  className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-slate-600 hover:bg-slate-200 transition-colors"
-                  title={t('messageBlocks.saveToNotes')}
-                >
-                  <FileText className="w-3.5 h-3.5" />
-                  {t('messageBlocks.saveToNotes')}
-                </button>
+                <TextTooltip text={t('messageBlocks.saveToNotes')}>
+                  <button
+                    type="button"
+                    onClick={onSaveNote}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-slate-600 hover:bg-slate-200 transition-colors"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    {t('messageBlocks.saveToNotes')}
+                  </button>
+                </TextTooltip>
               )}
             </div>
           ) : (

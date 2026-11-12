@@ -37,6 +37,9 @@ try {
         baseUrl,
         seedAuthSession: false
       });
+      await context.route('**/api/membership/skill-products', (route) =>
+        route.fulfill({ json: { products: [], access: null } })
+      );
       await context.route('**/api/auth/me', (route) =>
         route.fulfill({ status: 401, json: { error: 'Unauthenticated' } })
       );
@@ -67,11 +70,11 @@ try {
         await page.goto(`${baseUrl}/zh-CN/overview`, {
           waitUntil: 'domcontentloaded'
         });
-        const labels = page.locator('.hero-actions .ui-button__label');
+        const labels = page.locator('.skill-brand-actions > a');
         await labels.first().waitFor();
         await page.evaluate(() => document.fonts.ready);
         await page.waitForFunction(() => {
-          const element = document.querySelector('.hero-content');
+          const element = document.querySelector('.skill-brand-message');
           return element && Number(getComputedStyle(element).opacity) >= 0.99;
         });
         const labelSizes = await labels.evaluateAll((items) =>

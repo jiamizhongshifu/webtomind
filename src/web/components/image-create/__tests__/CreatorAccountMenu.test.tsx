@@ -110,28 +110,24 @@ describe('CreatorAccountMenu', () => {
     expect(container.querySelector('.create-side-nav-avatar')).not.toBeNull();
   });
 
-  it('opens on mouse hover and closes after the shared intent delay', async () => {
-    vi.useFakeTimers();
-    const { container } = renderMenu();
-    const wrapper = container.querySelector('.create-side-nav-profile-wrap');
+  it('opens on click only, not on mouse hover', async () => {
+    renderMenu();
     const trigger = screen.getByRole('button', {
       name: /Creator\s*·\s*1,280 积分/i
     });
-    expect(wrapper).not.toBeNull();
 
     act(() => trigger.focus());
     act(() => {
-      fireEvent.pointerEnter(wrapper as Element, { pointerType: 'mouse' });
+      fireEvent.pointerEnter(trigger, { pointerType: 'mouse' });
     });
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    fireEvent.click(trigger);
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.queryByText('个人空间')).toBeNull();
-    expect(trigger).toHaveFocus();
 
-    fireEvent.pointerLeave(wrapper as Element, { pointerType: 'mouse' });
-    act(() => vi.advanceTimersByTime(119));
+    fireEvent.pointerLeave(trigger, { pointerType: 'mouse' });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    act(() => vi.advanceTimersByTime(1));
-    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('keeps focus passive, opens with Enter and returns focus after Escape', async () => {
@@ -178,9 +174,10 @@ describe('CreatorAccountMenu', () => {
   });
 
   it('restores language and theme controls in the shared menu', async () => {
-    const { container } = renderMenu('sidebar');
-    const wrapper = container.querySelector('.create-side-nav-profile-wrap');
-    fireEvent.pointerEnter(wrapper as Element, { pointerType: 'mouse' });
+    renderMenu('sidebar');
+    fireEvent.click(
+      screen.getByRole('button', { name: /Creator\s*·\s*1,280 积分/i })
+    );
 
     const languageSelect = await screen.findByRole('combobox', {
       name: '语言'
@@ -208,9 +205,10 @@ describe('CreatorAccountMenu', () => {
   });
 
   it('keeps credits compact and links directly to recharge', async () => {
-    const { container } = renderMenu('sidebar');
-    const wrapper = container.querySelector('.create-side-nav-profile-wrap');
-    fireEvent.pointerEnter(wrapper as Element, { pointerType: 'mouse' });
+    renderMenu('sidebar');
+    fireEvent.click(
+      screen.getByRole('button', { name: /Creator\s*·\s*1,280 积分/i })
+    );
 
     const dialog = await screen.findByRole('dialog', {
       name: 'Creator · 1,280 积分'
@@ -229,9 +227,10 @@ describe('CreatorAccountMenu', () => {
   });
 
   it('keeps the upgrade entry visible for member accounts', async () => {
-    const { container } = renderMenu('sidebar');
-    const wrapper = container.querySelector('.create-side-nav-profile-wrap');
-    fireEvent.pointerEnter(wrapper as Element, { pointerType: 'mouse' });
+    renderMenu('sidebar');
+    fireEvent.click(
+      screen.getByRole('button', { name: /Creator\s*·\s*1,280 积分/i })
+    );
 
     const dialog = await screen.findByRole('dialog', {
       name: 'Creator · 1,280 积分'

@@ -33,6 +33,9 @@ import {
 } from 'lucide-react';
 import type { SavedSummary } from '@/services/database';
 import {
+  Button,
+  Dialog,
+  Textarea,
   ToolcraftActionButton,
   ToolcraftFloatingToolbar,
   ToolcraftSliderControl
@@ -807,29 +810,26 @@ export function InfiniteCanvasBoard({
     [updateCustomNode]
   );
 
-  const addCustomNode = useCallback(
+  const [annotationTarget, setAnnotationTarget] = useState<{
+    type: CanvasCustomNode['type'];
+    annotationKind: CanvasAnnotationKind;
+    targetNodeId?: string;
+  } | null>(null);
+  const [annotationText, setAnnotationText] = useState('');
+  const [holderPromptTarget, setHolderPromptTarget] =
+    useState<CanvasCustomNode | null>(null);
+  const [holderPromptText, setHolderPromptText] = useState('');
+
+  const commitCustomNode = useCallback(
     (
       type: CanvasCustomNode['type'],
-      annotationKind: CanvasAnnotationKind = 'note'
+      annotationKind: CanvasAnnotationKind,
+      targetNodeId: string | undefined,
+      promptText: string
     ) => {
       const isHolder = type === 'ai_image_holder';
       const id = createCustomNodeId(type);
-      const targetNodeId =
-        !isHolder && activeNodeId && allNodeIdSet.has(activeNodeId)
-          ? activeNodeId
-          : undefined;
-      const prompt = isHolder
-        ? ''
-        : typeof window !== 'undefined'
-          ? window.prompt(
-              targetNodeId
-                ? '写下针对当前选中节点的修改标注：'
-                : '写下这条画布批注或修改意图：',
-              ''
-            )
-          : '';
-      if (!isHolder && prompt === null) return;
-
+      const prompt: string | null = promptText;
       const width = isHolder ? AI_HOLDER_WIDTH : ANNOTATION_WIDTH;
       const height = isHolder ? AI_HOLDER_HEIGHT : ANNOTATION_HEIGHT;
       const targetPosition = targetNodeId ? positions[targetNodeId] : undefined;
@@ -903,8 +903,6 @@ export function InfiniteCanvasBoard({
     },
     [
       activeNodeIds,
-      activeNodeId,
-      allNodeIdSet,
       allNodeIds,
       canvasState.customNodes,
       connections,
@@ -916,17 +914,39 @@ export function InfiniteCanvasBoard({
     ]
   );
 
+  const addCustomNode = useCallback(
+    (
+      type: CanvasCustomNode['type'],
+      annotationKind: CanvasAnnotationKind = 'note'
+    ) => {
+      const isHolder = type === 'ai_image_holder';
+      const targetNodeId =
+        !isHolder && activeNodeId && allNodeIdSet.has(activeNodeId)
+          ? activeNodeId
+          : undefined;
+      if (!isHolder) {
+        setAnnotationTarget({ type, annotationKind, targetNodeId });
+        setAnnotationText('');
+        return;
+      }
+      commitCustomNode(type, annotationKind, targetNodeId, '');
+    },
+    [activeNodeId, allNodeIdSet, commitCustomNode]
+  );
+
   const requestImageForHolder = useCallback(
     (node: CanvasCustomNode) => {
       if (node.type !== 'ai_image_holder') return;
-      const prompt =
-        typeof window !== 'undefined'
-          ? window.prompt('输入这个图片槽的生成提示词：', node.prompt || '')
-          : node.prompt || '';
-      if (prompt === null) return;
-      const trimmedPrompt = prompt.trim();
-      if (!trimmedPrompt) return;
+      setHolderPromptTarget(node);
+      setHolderPromptText(node.prompt || '');
+    },
+    []
+  );
 
+  const applyHolderPrompt = useCallback(
+    (node: CanvasCustomNode, promptText: string) => {
+      const trimmedPrompt = promptText.trim();
+      if (!trimmedPrompt) return;
       const nextNode: CanvasCustomNode = {
         ...node,
         prompt: trimmedPrompt,
@@ -2074,6 +2094,86 @@ export function InfiniteCanvasBoard({
           />
         </ToolcraftFloatingToolbar>
       </div>
+
+      <Dialog
+        open={Boolean(annotationTarget)}
+        title={
+          annotationTarget?.targetNodeId
+            ? '写下针对当前选中节点的修改标注：'
+            : '写下这条画布批注或修改意图：'
+        }
+        closeLabel="取消"
+        onClose={() => setAnnotationTarget(null)}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setAnnotationTarget(null)}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (!annotationTarget) return;
+                commitCustomNode(
+                  annotationTarget.type,
+                  annotationTarget.annotationKind,
+                  annotationTarget.targetNodeId,
+                  annotationText
+                );
+                setAnnotationTarget(null);
+              }}
+            >
+              创建批注
+            </Button>
+          </>
+        }
+      >
+        <Textarea
+          value={annotationText}
+          onChange={(event) => setAnnotationText(event.target.value)}
+          rows={3}
+          aria-label="画布批注"
+        />
+      </Dialog>
+
+      <Dialog
+        open={Boolean(holderPromptTarget)}
+        title="输入这个图片槽的生成提示词："
+        closeLabel="取消"
+        onClose={() => setHolderPromptTarget(null)}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setHolderPromptTarget(null)}
+            >
+              取消
+            </Button>
+            <Button
+              type="button"
+              disabled={!holderPromptText.trim()}
+              onClick={() => {
+                if (!holderPromptTarget) return;
+                applyHolderPrompt(holderPromptTarget, holderPromptText);
+                setHolderPromptTarget(null);
+              }}
+            >
+              开始生成
+            </Button>
+          </>
+        }
+      >
+        <Textarea
+          value={holderPromptText}
+          onChange={(event) => setHolderPromptText(event.target.value)}
+          rows={3}
+          aria-label="图片槽提示词"
+        />
+      </Dialog>
     </div>
   );
 }

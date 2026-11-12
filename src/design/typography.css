@@ -1,0 +1,111 @@
+/*
+ * Typography switches: wrapping, spacing, alignment and truncation only.
+ * Every rule is progressive enhancement — browsers that do not know a
+ * property simply ignore it. Chinese rules are scoped with :lang(zh); the
+ * document language is set on <html> by the SEO layer.
+ */
+
+/* 1. Headings balance into even lines. Short copy only (Chrome ≤ 6 lines). */
+:where(h1, h2, h3, .ui-dialog__title, .ui-card__title, .type-balance) {
+  text-wrap: balance;
+}
+
+/* 2. Paragraph copy avoids a lone last word. */
+:where(p, li, dd, figcaption, blockquote, .type-pretty) {
+  text-wrap: pretty;
+}
+
+/* 3. Numbers that update in place keep their width. Running text keeps
+      proportional figures because it is not covered by these selectors. */
+:where(table, time, [role='timer'], [data-numeric], .type-tabular) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 4. Button and navigation labels stay on one line inside flex rows. */
+:where(
+    button,
+    [role='button'],
+    summary,
+    .ui-button,
+    .ui-navigation-link,
+    .type-nowrap
+  ) {
+  white-space: nowrap;
+}
+
+/* 5. Truncation. A flex item must be allowed to shrink before its text can
+      ellipsize; both switches are opt-in per element. */
+:where(.type-truncate) {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+:where(.type-min-0) {
+  min-width: 0;
+}
+
+/* 6-8. Chinese copy. text-autospace inserts the CJK/Latin gap; do not type
+      spaces into copy. text-spacing-trim drops the half-width gap before an
+      opening bracket at line start (Chrome only). */
+:lang(zh)
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    li,
+    dd,
+    dt,
+    figcaption,
+    blockquote,
+    button,
+    label,
+    td,
+    th,
+    a
+  ) {
+  text-autospace: normal;
+  text-spacing-trim: trim-start;
+}
+
+:lang(zh)
+  :where(
+    code,
+    pre,
+    kbd,
+    samp,
+    input,
+    textarea,
+    [contenteditable='true'],
+    .type-mono
+  ) {
+  text-autospace: no-autospace;
+  text-spacing-trim: space-all;
+}
+
+/* Long-form Chinese only: justify to a whole-character measure so lines
+   stretch just enough to absorb Latin letters and squeezed punctuation. */
+:lang(zh) :where(.type-zh-body) {
+  max-width: 26em;
+  text-align: justify;
+  text-spacing-trim: space-first;
+}
+
+/* 9. Headings whose word boundaries were marked with <wbr> by BudouX.
+      Never apply keep-all to Chinese without those break opportunities. */
+.type-cjk-phrase {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+
+/* 10. Overflow fallback that keeps kinsoku line-breaking rules alive.
+       line-break: anywhere is intentionally absent from this repository. */
+:where(.type-wrap-anywhere) {
+  overflow-wrap: anywhere;
+}

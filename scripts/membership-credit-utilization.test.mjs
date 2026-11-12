@@ -93,6 +93,7 @@ test('aggregateUtilization computes rates, distribution and buckets', () => {
     subscriptions,
     plans,
     windowStart: '2026-06-01T00:00:00Z',
+    now: new Date('2026-08-10T00:00:00Z'),
     userLookup: {}
   });
 
@@ -137,6 +138,7 @@ test('aggregateUtilization excludes internal users when requested', () => {
     subscriptions,
     plans,
     windowStart: '2026-06-01T00:00:00Z',
+    now: new Date('2026-08-10T00:00:00Z'),
     excludeInternal: true,
     userLookup
   });

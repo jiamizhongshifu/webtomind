@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 /**
  * 大图素材选择弹窗。按 slot + tag + 搜索过滤,点击卡片选中/取消选中。
  *
@@ -174,9 +175,9 @@ export function AssetPicker({
             </Tabs>
             <div className="creator-library-status creator-picker-status">
               {librarySource === 'public' ? (
-                <small title={assetLoadError || undefined}>
-                  {t(`library.${assetSource}`)}
-                </small>
+                <TextTooltip text={assetLoadError || undefined}>
+                  <small>{t(`library.${assetSource}`)}</small>
+                </TextTooltip>
               ) : (
                 <small>{t('library.tabs.mine')}</small>
               )}

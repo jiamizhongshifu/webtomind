@@ -1,10 +1,17 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 /**
  * 虚拟滚动消息列表组件
  * 使用 @tanstack/react-virtual 实现高性能消息渲染
  * 只渲染可见区域内的消息，大幅减少 DOM 节点数量
  */
 
-import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
+import React, {
+  useRef,
+  useEffect,
+  useCallback,
+  useState,
+  useMemo
+} from 'react';
 import { createLogger } from '@/utils/logger';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { predictMessageHeights } from '@/utils/text-measure';
@@ -13,7 +20,14 @@ const log = createLogger('VirtualMessageList');
 import type { UnifiedMessage, TextBlock } from '@/types/unified-chat';
 import type { SearchResultBatchItem } from '@/types/content-blocks';
 import { useTranslation } from 'react-i18next';
-import { Zap, Copy, RefreshCw, FileText, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  Zap,
+  Copy,
+  RefreshCw,
+  FileText,
+  ChevronDown,
+  ChevronRight
+} from 'lucide-react';
 import { MessageBlocks } from './MessageBlocks';
 import { focusSkillRun } from '../utils/skill-run-events';
 
@@ -95,47 +109,49 @@ const UserMessageItem = React.memo(function UserMessageItem({
           )}
           {/* 引用标签 */}
           {message.references?.map((ref) => (
-            <button
-              type="button"
-              key={ref.id}
-              onClick={() => onReferenceClick?.(ref.summaryId)}
-              className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 hover:bg-blue-200 rounded-full text-xs text-blue-700 transition-colors cursor-pointer"
-              title={t('chat.viewOriginal')}
-            >
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+            <TextTooltip text={t('chat.viewOriginal')} key={ref.id}>
+              <button
+                type="button"
+                key={ref.id}
+                onClick={() => onReferenceClick?.(ref.summaryId)}
+                className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 hover:bg-blue-200 rounded-full text-xs text-blue-700 transition-colors cursor-pointer"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
-                />
-              </svg>
-              <span className="max-w-[100px] truncate">
-                {ref.summaryTitle || ref.preview}
-              </span>
-            </button>
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+                <span className="max-w-[100px] truncate">
+                  {ref.summaryTitle || ref.preview}
+                </span>
+              </button>
+            </TextTooltip>
           ))}
           {/* 图片引用标签 */}
           {message.imageReferences?.map((imgRef) => (
-            <span
-              key={imgRef.id}
-              className="inline-flex items-center gap-1.5 px-1.5 py-0.5 bg-purple-100 rounded-full text-xs text-purple-700"
-              title={t('chat.referenceImage')}
-            >
-              {imgRef.thumbnailUrl ? (
-                <img
-                  src={imgRef.thumbnailUrl}
-                  alt={imgRef.preview}
-                  className="w-4 h-4 flex-shrink-0 rounded object-cover"
-                />
-              ) : null}
-              <span>{imgRef.preview}</span>
-            </span>
+            <TextTooltip text={t('chat.referenceImage')} key={imgRef.id}>
+              <span
+                key={imgRef.id}
+                className="inline-flex items-center gap-1.5 px-1.5 py-0.5 bg-purple-100 rounded-full text-xs text-purple-700"
+              >
+                {imgRef.thumbnailUrl ? (
+                  <img
+                    src={imgRef.thumbnailUrl}
+                    alt={imgRef.preview}
+                    className="w-4 h-4 flex-shrink-0 rounded object-cover"
+                  />
+                ) : null}
+                <span>{imgRef.preview}</span>
+              </span>
+            </TextTooltip>
           ))}
         </div>
       )}
@@ -146,40 +162,47 @@ const UserMessageItem = React.memo(function UserMessageItem({
         </p>
       </div>
       <div className="flex items-center gap-1">
-        <button
-          type="button"
-          onClick={() => void handleCopy()}
-          className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${
-            copySuccess
-              ? 'bg-green-100 text-green-600'
-              : 'text-muted-foreground hover:text-slate-600 hover:bg-slate-200'
-          }`}
-          title={copySuccess ? t('messageBlocks.copied') : t('messageBlocks.copy')}
+        <TextTooltip
+          text={
+            copySuccess ? t('messageBlocks.copied') : t('messageBlocks.copy')
+          }
         >
-          <Copy className="w-3.5 h-3.5" />
-          {copySuccess ? t('messageBlocks.copied') : t('messageBlocks.copy')}
-        </button>
-        {retryAssistantMessageId && onRetryMessage && (
           <button
             type="button"
-            onClick={handleRetry}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-slate-600 hover:bg-slate-200 transition-colors"
-            title={t('messageBlocks.regenerate')}
+            onClick={() => void handleCopy()}
+            className={`flex items-center gap-1 px-2 py-1 rounded-lg text-xs transition-colors ${
+              copySuccess
+                ? 'bg-green-100 text-green-600'
+                : 'text-muted-foreground hover:text-slate-600 hover:bg-slate-200'
+            }`}
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            {t('messageBlocks.retry')}
+            <Copy className="w-3.5 h-3.5" />
+            {copySuccess ? t('messageBlocks.copied') : t('messageBlocks.copy')}
           </button>
+        </TextTooltip>
+        {retryAssistantMessageId && onRetryMessage && (
+          <TextTooltip text={t('messageBlocks.regenerate')}>
+            <button
+              type="button"
+              onClick={handleRetry}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-slate-600 hover:bg-slate-200 transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              {t('messageBlocks.retry')}
+            </button>
+          </TextTooltip>
         )}
         {onSaveMessage && (
-          <button
-            type="button"
-            onClick={handleSaveNote}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-slate-600 hover:bg-slate-200 transition-colors"
-            title={t('messageBlocks.saveToNotes')}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            {t('messageBlocks.saveToNotes')}
-          </button>
+          <TextTooltip text={t('messageBlocks.saveToNotes')}>
+            <button
+              type="button"
+              onClick={handleSaveNote}
+              className="flex items-center gap-1 px-2 py-1 rounded-lg text-xs text-muted-foreground hover:text-slate-600 hover:bg-slate-200 transition-colors"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              {t('messageBlocks.saveToNotes')}
+            </button>
+          </TextTooltip>
         )}
       </div>
     </div>
@@ -307,15 +330,17 @@ const AssistantMessageItem = React.memo(function AssistantMessageItem({
                     Local candidates
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {message.agentRun.localCandidates.map((candidate, index) => (
-                      <span
-                        key={`${candidate.name}-${index}`}
-                        className="rounded bg-white px-2 py-0.5 text-[11px] text-slate-600"
-                      >
-                        {candidate.name}
-                        {candidate.source ? ` (${candidate.source})` : ''}
-                      </span>
-                    ))}
+                    {message.agentRun.localCandidates.map(
+                      (candidate, index) => (
+                        <span
+                          key={`${candidate.name}-${index}`}
+                          className="rounded bg-white px-2 py-0.5 text-[11px] text-slate-600"
+                        >
+                          {candidate.name}
+                          {candidate.source ? ` (${candidate.source})` : ''}
+                        </span>
+                      )
+                    )}
                   </div>
                 </div>
               ) : null}
@@ -352,7 +377,9 @@ const AssistantMessageItem = React.memo(function AssistantMessageItem({
                     />
                     <span className="truncate">{step.title}</span>
                     {step.errorMessage ? (
-                      <span className="truncate text-red-600">{step.errorMessage}</span>
+                      <span className="truncate text-red-600">
+                        {step.errorMessage}
+                      </span>
                     ) : null}
                   </div>
                 ))}
@@ -506,12 +533,12 @@ export const VirtualMessageList = React.memo(function VirtualMessageList({
         content: getMessageText(msg),
         blocks: msg.blocks?.map((b) => ({
           type: b.type,
-          content: (b as TextBlock).content,
+          content: (b as TextBlock).content
         })),
         references: msg.references,
         imageReferences: msg.imageReferences,
         shortcut: msg.shortcut,
-        agentRun: msg.agentRun,
+        agentRun: msg.agentRun
       })),
       { maxWidth: containerWidthRef.current }
     );
@@ -643,7 +670,8 @@ export const VirtualMessageList = React.memo(function VirtualMessageList({
 
           const isStreaming = message.id === streamingMessageId;
           const retryAssistantMessageId =
-            message.role === 'user' && messages[virtualItem.index + 1]?.role === 'assistant'
+            message.role === 'user' &&
+            messages[virtualItem.index + 1]?.role === 'assistant'
               ? messages[virtualItem.index + 1]?.id
               : undefined;
 

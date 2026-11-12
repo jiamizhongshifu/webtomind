@@ -1,4 +1,10 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within
+} from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { AssetEditModal } from '../AssetEditModal';
@@ -64,6 +70,22 @@ function renderAssetEditModal(
 }
 
 describe('AssetEditModal', () => {
+  it('asks before discarding edited fields', async () => {
+    const { props } = renderAssetEditModal();
+
+    fireEvent.change(screen.getByDisplayValue('Original title'), {
+      target: { value: 'Changed title' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(props.onClose).not.toHaveBeenCalled();
+
+    const confirm = await screen.findByRole('alertdialog');
+    fireEvent.click(
+      within(confirm).getByRole('button', { name: '放弃更改' })
+    );
+    expect(props.onClose).toHaveBeenCalled();
+  });
+
   it('renders the edit form and saves normalized input', async () => {
     const { props } = renderAssetEditModal();
 

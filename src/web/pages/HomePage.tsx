@@ -7,6 +7,7 @@ import {
   useState
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { CjkText } from '@/shared/typography/cjk';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { applySeo } from '../lib/seo';
@@ -980,12 +981,14 @@ export function HomePage() {
               <span className="hero-badge-dot" />
               <span>{t('hero.badge')}</span>
             </div>
-            <h1 className="hero-title">
+            <h1 className="hero-title type-cjk-phrase">
               {localeFromPath === 'zh-CN' ? (
                 <>
-                  <span className="hero-title-line">{heroTitle}</span>
+                  <span className="hero-title-line">
+                    <CjkText text={heroTitle} />
+                  </span>
                   <span className="hero-title-line hero-title-highlight">
-                    {zhHeroTitleRest}
+                    <CjkText text={zhHeroTitleRest} />
                   </span>
                 </>
               ) : (

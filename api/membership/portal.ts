@@ -112,6 +112,7 @@ export default async function handler(request: Request) {
 
   const body = (await request.json().catch(() => ({}))) as {
     returnUrl?: string;
+    scope?: string;
   };
 
   const authClient = createClient(supabaseUrl, anonKey, {
@@ -125,9 +126,13 @@ export default async function handler(request: Request) {
     return jsonResponse({ error: 'Invalid token' }, corsHeaders, 401);
   }
 
+  if (body.scope && body.scope !== 'skills')
+    return jsonResponse({ error: 'INVALID_SCOPE' }, corsHeaders, 400);
+  const subscriptionTable =
+    body.scope === 'skills' ? 'skill_subscriptions' : 'user_subscriptions';
   const admin = createClient(supabaseUrl, serviceKey);
   const { data: subscriptionCandidates, error: subscriptionError } = await admin
-    .from('user_subscriptions')
+    .from(subscriptionTable)
     .select(
       'id,status,current_period_end,stripe_customer_id,stripe_subscription_id,payment_provider'
     )
@@ -175,7 +180,7 @@ export default async function handler(request: Request) {
     customerId = getStripeCustomerId(stripeSubscription.customer);
     if (customerId) {
       await admin
-        .from('user_subscriptions')
+        .from(subscriptionTable)
         .update({
           stripe_customer_id: customerId,
           updated_at: new Date().toISOString()

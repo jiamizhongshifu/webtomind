@@ -1,6 +1,16 @@
 # WebToMind
 
-> WebToMind is a free AI image creation workflow site for content creators and small teams: image-to-prompt reverse engineering, visual slot composition, multi-model image generation, and reproducible workflows. Key free tools include the bead pattern maker, image compressor, image upscaler, image splitter and watermark remover.
+> WebToMind provides commercial visual Agent Skills for creators, marketers and small teams. Discover workflows for images, presentations, websites and short videos, inspect their examples and dependencies, and install them into a compatible local agent. The existing image creation workspace and free browser tools remain available.
+
+## Agent Skills
+
+- [Skill catalog (中文)](https://webtomind.com/zh-CN/skills): Search by task, output type and free or Premium access.
+- [Skill catalog (English)](https://webtomind.com/en-US/skills): Browse published Skills and their real output examples.
+- [Installation guide](https://webtomind.com/install/agent.md): Official CLI setup, browser device authorization and installation instructions.
+- [Skill pricing (中文)](https://webtomind.com/zh-CN/skills/pricing): Current Skill access plans.
+- [Skill pricing (English)](https://webtomind.com/en-US/skills/pricing): Current Skill access plans.
+
+Each Skill detail page lists its supported agents, version, examples and installation command. Its machine-readable guide is available at `/install/skills/<slug>.md`. Free Skills require sign-in; Premium downloads require an eligible entitlement. Model and external service costs are separate from Skill access. Local Skill installation does not imply that the same workflow can run in the web workspace.
 
 ## Free tools
 

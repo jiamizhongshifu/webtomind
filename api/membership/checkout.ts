@@ -1,3 +1,4 @@
+import { quoteSkillProduct, SkillCommerceError } from './skill-commerce';
 import {
   resolvePendingSubscriptionCheckout,
   isDefiniteCheckoutRejection
@@ -102,7 +103,13 @@ function getConversionEventClient(fallback: SupabaseClient): SupabaseClient {
 }
 
 interface CheckoutRequest {
-  type: 'subscription' | 'credit_package' | 'api_credit_package' | 'skill_lifetime';
+  type:
+    | 'subscription'
+    | 'credit_package'
+    | 'api_credit_package'
+    | 'skill_lifetime'
+    | 'skill_purchase'
+    | 'skill_subscription';
   id: string;
   paymentProvider?: 'stripe' | 'alipay';
   customAmountUsdCents?: number;
@@ -135,7 +142,9 @@ export function getCheckoutRequestValidationError(
     request.type !== 'subscription' &&
     request.type !== 'credit_package' &&
     request.type !== 'api_credit_package' &&
-    request.type !== 'skill_lifetime'
+    request.type !== 'skill_lifetime' &&
+    request.type !== 'skill_purchase' &&
+    request.type !== 'skill_subscription'
   ) {
     return 'Invalid checkout type';
   }
@@ -143,7 +152,8 @@ export function getCheckoutRequestValidationError(
     return 'Invalid product id';
   }
   if (
-    request.type === 'subscription' &&
+    (request.type === 'subscription' ||
+      request.type === 'skill_subscription') &&
     request.billingCycle !== undefined &&
     request.billingCycle !== 'monthly' &&
     request.billingCycle !== 'yearly'
@@ -323,6 +333,7 @@ function getZpayProductName(input: {
   if (input.type === 'skill_lifetime') {
     return 'WebToMind Skill 买断';
   }
+  if (input.type === 'skill_purchase') return `WebToMind ${input.productName}`;
   const cycleName = input.billingCycle === 'yearly' ? '年度' : '月度';
   return `WebToMind ${input.productName} ${cycleName}会员`;
 }
@@ -618,10 +629,13 @@ export default async function handler(request: Request) {
       400
     );
   }
-  if (type === 'skill_lifetime' && promoCode) {
+  if (
+    ['skill_lifetime', 'skill_purchase', 'skill_subscription'].includes(type) &&
+    promoCode
+  ) {
     return jsonResponse(
       {
-        error: 'Promo codes are not available for lifetime access',
+        error: 'Promo codes are not available for Skill products',
         errorCode: 'SKILL_PROMO_UNAVAILABLE'
       },
       400
@@ -687,6 +701,7 @@ export default async function handler(request: Request) {
       userId
     );
 
+    let skillSnapshot: Record<string, unknown> | undefined;
     let amount = 0;
     let productName = '';
     let stripePriceId: string | undefined;
@@ -704,7 +719,36 @@ export default async function handler(request: Request) {
     // 与折后年付价（price_yearly）无关，禁止折上折。
     let promoOriginalAnnualAmountUsdCents: number | null = null;
 
-    if (type === 'subscription') {
+    if (type === 'skill_purchase' || type === 'skill_subscription') {
+      try {
+        const quote = await quoteSkillProduct(
+          orderDb,
+          userId,
+          id,
+          type,
+          billingCycle
+        );
+        amount = quote.usd;
+        fixedCnyAmount = quote.cny;
+        productName = quote.name;
+        skillSnapshot = quote.snapshot;
+      } catch (error) {
+        if (error instanceof SkillCommerceError)
+          return jsonResponse(
+            { error: error.message, errorCode: error.code },
+            error.status
+          );
+        throw error;
+      }
+    } else if (type === 'subscription') {
+      if (id === 'skill_pro')
+        return jsonResponse(
+          {
+            error: 'Use the content membership for new purchases',
+            errorCode: 'LEGACY_SKILL_PLAN'
+          },
+          409
+        );
       const { data: plan } = await supabase
         .from('subscription_plans')
         .select('*')
@@ -820,45 +864,13 @@ export default async function handler(request: Request) {
         }
       }
     } else if (type === 'skill_lifetime') {
-      const { data: product } = await supabase
-        .from('subscription_plans')
-        .select('*')
-        .eq('id', id)
-        .eq('is_active', true)
-        .eq('billing_kind', 'one_time')
-        .maybeSingle();
-      if (!product) return jsonResponse({ error: 'Product not found' }, 404);
-
-      const { data: ownedLifetime, error: ownedLifetimeError } = await orderDb
-        .from('skill_entitlements')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('source', 'lifetime')
-        .eq('status', 'active')
-        .limit(1);
-      if (ownedLifetimeError) {
-        return jsonResponse(
-          {
-            error: 'Unable to verify current Skill access',
-            errorCode: 'SKILL_ENTITLEMENT_LOOKUP_FAILED'
-          },
-          503
-        );
-      }
-      if (ownedLifetime && ownedLifetime.length > 0) {
-        return jsonResponse(
-          {
-            error: 'Lifetime Skill access is already active',
-            errorCode: 'SKILL_LIFETIME_ALREADY_OWNED'
-          },
-          409
-        );
-      }
-
-      amount = Number(product.price_one_time || 0);
-      productName = product.display_name?.['en-US'] || product.name;
-      stripePriceId = undefined;
-      fixedCnyAmount = getFixedCnyAmount(product.price_cny_one_time);
+      return jsonResponse(
+        {
+          error: 'Founding Lifetime is not open for sale',
+          errorCode: 'SKILL_LIFETIME_NOT_OPEN'
+        },
+        409
+      );
     } else {
       if (type === 'api_credit_package' && !apiUsdToCnyRate) {
         return jsonResponse(
@@ -960,7 +972,7 @@ export default async function handler(request: Request) {
       const expectedStripeAmountCents =
         type === 'api_credit_package' ? apiCreditCents : amount;
       const expectedInterval =
-        type === 'subscription'
+        type === 'subscription' || type === 'skill_subscription'
           ? billingCycle === 'yearly'
             ? 'year'
             : 'month'
@@ -970,7 +982,7 @@ export default async function handler(request: Request) {
         stripePrice.currency === 'usd' &&
         stripePrice.unit_amount ===
           Math.round(expectedStripeAmountCents || 0) &&
-        (type !== 'subscription' ||
+        (!['subscription', 'skill_subscription'].includes(type) ||
           stripePrice.recurring?.interval === expectedInterval);
       if (!priceMatches) {
         console.error('[Checkout] Stripe price configuration mismatch', {
@@ -1073,6 +1085,7 @@ export default async function handler(request: Request) {
           billingCycle,
           productName,
           paymentProvider,
+          ...(skillSnapshot ? { skillSnapshot } : {}),
           ...(type === 'api_credit_package'
             ? {
                 catalogAmountCnyCents: fullAmountCnyCents,
@@ -1106,6 +1119,44 @@ export default async function handler(request: Request) {
       .single();
 
     if (orderError) {
+      if (
+        orderError.code === '23505' &&
+        orderError.message.includes('SKILL_CHECKOUT_CONFLICT')
+      ) {
+        if (type === 'skill_subscription' || type === 'skill_purchase') {
+          const pending = await resolvePendingSubscriptionCheckout(
+            orderDb,
+            stripe,
+            userId,
+            id,
+            billingCycle,
+            {
+              paymentProvider,
+              ...(zpay
+                ? {
+                    zpay: {
+                      config: zpay,
+                      notifyUrl: new URL(
+                        '/api/membership/zpay-notify',
+                        process.env.APP_URL || 'https://webtomind.com'
+                      ).toString(),
+                      returnUrl: getZpayReturnUrl(successUrl)
+                    }
+                  }
+                : {})
+            },
+            type
+          );
+          return jsonResponse(pending, pending.url ? 200 : 409);
+        }
+        return jsonResponse(
+          {
+            error: 'Existing Skill access must be reviewed',
+            errorCode: 'SKILL_CHECKOUT_CONFLICT'
+          },
+          409
+        );
+      }
       if (
         type === 'subscription' &&
         orderError.code === '23505' &&
@@ -1300,7 +1351,7 @@ export default async function handler(request: Request) {
                     chargedAmountUsdCents,
                     promoApplied: Boolean(promo)
                   }),
-                  ...(type === 'subscription'
+                  ...(type === 'subscription' || type === 'skill_subscription'
                     ? {
                         recurring: {
                           interval: billingCycle === 'yearly' ? 'year' : 'month'
@@ -1311,7 +1362,10 @@ export default async function handler(request: Request) {
                 quantity: 1
               }
             ],
-        mode: type === 'subscription' ? 'subscription' : 'payment',
+        mode:
+          type === 'subscription' || type === 'skill_subscription'
+            ? 'subscription'
+            : 'payment',
         ...(checkoutDiscounts.length > 0
           ? { discounts: checkoutDiscounts }
           : {}),
@@ -1320,13 +1374,14 @@ export default async function handler(request: Request) {
         integration_identifier: createStripeIntegrationIdentifier(),
         client_reference_id: userId,
         customer_email: userEmail,
-        ...(type === 'subscription'
+        ...(type === 'subscription' || type === 'skill_subscription'
           ? {
               subscription_data: {
                 metadata: {
                   order_id: order.id,
                   user_id: userId,
                   plan_id: id,
+                  product_type: type,
                   billing_cycle: billingCycle,
                   ...(promo ? { promo_code: promo.code } : {}),
                   ...stripeAttributionMetadata

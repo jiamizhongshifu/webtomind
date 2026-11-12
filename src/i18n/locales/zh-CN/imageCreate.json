@@ -214,7 +214,7 @@
       "label": "张数",
       "option": "生成 {{count}} 张",
       "memberOnly": "会员",
-      "memberHint": "4 张及以上为会员批量生图。",
+      "memberHint": "4 张及以上为会员批量生图。",
       "memberUnlocked": "已解锁批量生图。"
     },
     "generate": "生成图片",
@@ -387,7 +387,7 @@
       "entry": "上传",
       "label": "上传参考图",
       "previewLabel": "已上传参考图",
-      "previewLimit": "最多 4 张",
+      "previewLimit": "最多 4 张",
       "previewSummary": "已完成 {{uploaded}} · 上传中 {{uploading}} · 失败 {{failed}}",
       "remove": "移除这张参考图",
       "invalidType": "请选择图片文件",
@@ -412,11 +412,13 @@
     "renameDialog": "输入新的提示词标题",
     "copy": "复制提示词",
     "delete": "删除提示词",
+    "applyDialogTitle": "应用提示词",
     "applyConfirm": "这会覆盖当前自定义提示词输入框，是否继续？",
     "savedToast": "提示词已保存到提示词库",
     "appliedToast": "已填充到自定义提示词",
     "renamedToast": "提示词标题已重命名",
     "copiedToast": "提示词已复制",
+    "deleteConfirm": "删除后无法恢复，确定删除这条提示词？",
     "deletedToast": "提示词已删除"
   },
   "result": {
@@ -747,7 +749,7 @@
     "large2kCost": "2K 大图",
     "fourKCost": "4K 图",
     "related": "相关 Prompt",
-    "freeFirstImageHint": "免费用户每天可免费生成 1 张，无需付费先体验"
+    "freeFirstImageHint": "免费用户每天可免费生成 1 张，无需付费先体验"
   },
   "upload": {
     "button": "照片复刻",
@@ -809,7 +811,7 @@
     "batchPending": "{{count}} 张缩略图未 AI 生成",
     "batchAllGenerated": "所有缩略图都已 AI 生成",
     "batchRegenerate": "一键 AI 生成 ({{count}})",
-    "batchRegenerateConfirm": "将串行生成 {{count}} 张缩略图，每张约 30-60 秒，会按张消耗生图积分。是否开始？",
+    "batchRegenerateConfirm": "将串行生成 {{count}} 张缩略图，每张约 30-60 秒，会按张消耗生图积分。是否开始？",
     "batchProgress": "进度 {{current}}/{{total}} · 成功 {{done}} · 失败 {{failed}}",
     "batchCancel": "停止队列",
     "batchCancelled": "队列已停止",
@@ -848,7 +850,7 @@
         "title": "先选素材，快速拼出画面方向。",
         "body": "不用从空白 Prompt 开始。先从人设、姿态、服装、场景和画风里选素材，系统会把这些选择同步成可复现的生成指令。",
         "bullets": {
-          "0": "16 个视觉槽位覆盖角色、构图、镜头和风格",
+          "0": "16 个视觉槽位覆盖角色、构图、镜头和风格",
           "1": "素材可来自官方案例，也可以上传图片反推成个人库",
           "2": "每次选择都会即时更新当前配方"
         }
@@ -866,7 +868,7 @@
         "title": "上传参考图，保持角色一致。",
         "body": "当你需要同一个角色反复出图时，先上传参考图，再进入角色一致性工作流管理角色卡和 A/B 分组。",
         "bullets": {
-          "0": "单角色建议 1-3 张参考图，双角色最多 4 张",
+          "0": "单角色建议 1-3 张参考图，双角色最多 4 张",
           "1": "生成后可以检查身份、服装和分组是否漂移",
           "2": "历史生成也能导入为新的参考图"
         }
@@ -887,7 +889,7 @@
     "queued": "已加入生成队列，将按提交顺序生成。",
     "queueCancelled": "已取消未开始的生图任务。",
     "taskCancelled": "已中止生图任务。",
-    "submitting": "正在排队并等待多模型图片生成返回，最长约 4 分钟...",
+    "submitting": "正在排队并等待多模型图片生成返回，最长约 4 分钟...",
     "doneWithFallback": "生成完成，已自动切换到 {{model}}{{credits}}",
     "done": "生成完成 · {{model}}{{credits}}",
     "creditsConsumed": " · 已扣 {{n}} 积分"

@@ -1,4 +1,23 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
+
+const layers: HTMLElement[] = [];
+const handledKeys = new WeakSet<KeyboardEvent>();
+let scrollLocks = 0;
+let savedOverflow = '';
+let savedGutter = '';
+
+function isTopLayer(container: HTMLElement | null) {
+  if (!container || layers.at(-1) !== container) return false;
+  // Portalled Radix dialogs/popovers may sit above a custom modal.
+  const active = document.activeElement;
+  return !(
+    active instanceof Element &&
+    !container.contains(active) &&
+    active.closest(
+      '[data-radix-popper-content-wrapper], [role="dialog"], [role="alertdialog"]'
+    )
+  );
+}
 
 const focusableSelector = [
   'a[href]',
@@ -30,12 +49,18 @@ export interface OverlayBehaviorOptions {
   open: boolean;
   closeDisabled?: boolean;
   onClose: () => void;
+  modal?: boolean;
+  activationKey?: string | null;
+  returnFocusRef?: RefObject<HTMLElement | null>;
 }
 
 export function useOverlayBehavior<T extends HTMLElement>({
   open,
   closeDisabled = false,
-  onClose
+  onClose,
+  modal = true,
+  activationKey,
+  returnFocusRef
 }: OverlayBehaviorOptions) {
   const containerRef = useRef<T | null>(null);
   const previouslyFocusedRef = useRef<HTMLElement | null>(null);
@@ -46,14 +71,18 @@ export function useOverlayBehavior<T extends HTMLElement>({
     }
 
     previouslyFocusedRef.current =
-      document.activeElement instanceof HTMLElement
+      returnFocusRef?.current ??
+      (document.activeElement instanceof HTMLElement
         ? document.activeElement
-        : null;
-    const previousOverflow = document.body.style.overflow;
-    const previousScrollbarGutter =
-      document.documentElement.style.scrollbarGutter;
-    document.documentElement.style.scrollbarGutter = 'stable';
-    document.body.style.overflow = 'hidden';
+        : null);
+    const container = containerRef.current;
+    if (container) layers.push(container);
+    if (modal && scrollLocks++ === 0) {
+      savedOverflow = document.body.style.overflow;
+      savedGutter = document.documentElement.style.scrollbarGutter;
+      document.documentElement.style.scrollbarGutter = 'stable';
+      document.body.style.overflow = 'hidden';
+    }
 
     // Suspense may mount the shell before its input. Keep the shell focused
     // until a focusable child arrives, without stealing subsequent user focus.
@@ -82,12 +111,19 @@ export function useOverlayBehavior<T extends HTMLElement>({
     return () => {
       window.cancelAnimationFrame(frame);
       observer.disconnect();
-      document.body.style.overflow = previousOverflow;
-      document.documentElement.style.scrollbarGutter = previousScrollbarGutter;
-      previouslyFocusedRef.current?.focus({ preventScroll: true });
+      const index = container ? layers.indexOf(container) : -1;
+      const wasTop = index === layers.length - 1;
+      if (index >= 0) layers.splice(index, 1);
+      if (modal && --scrollLocks === 0) {
+        document.body.style.overflow = savedOverflow;
+        document.documentElement.style.scrollbarGutter = savedGutter;
+      }
+      if (wasTop && previouslyFocusedRef.current?.isConnected) {
+        previouslyFocusedRef.current.focus({ preventScroll: true });
+      }
       previouslyFocusedRef.current = null;
     };
-  }, [open]);
+  }, [open, modal, returnFocusRef, activationKey]);
 
   useEffect(() => {
     if (!open || typeof document === 'undefined') {
@@ -95,15 +131,18 @@ export function useOverlayBehavior<T extends HTMLElement>({
     }
 
     function handleKeyDown(event: KeyboardEvent) {
+      if (handledKeys.has(event) || !isTopLayer(containerRef.current)) return;
+      if (event.defaultPrevented && event.key !== 'Escape') return;
       if (event.key === 'Escape') {
         if (!closeDisabled) {
+          handledKeys.add(event);
           event.preventDefault();
           onClose();
         }
         return;
       }
 
-      if (event.key !== 'Tab') {
+      if (!modal || event.key !== 'Tab') {
         return;
       }
 
@@ -133,9 +172,9 @@ export function useOverlayBehavior<T extends HTMLElement>({
       }
     }
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [closeDisabled, onClose, open]);
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
+  }, [closeDisabled, onClose, open, modal]);
 
   return containerRef;
 }

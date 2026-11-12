@@ -377,6 +377,8 @@ export async function getSkillDetail(store: SkillCatalogStore, slug: string) {
   };
 }
 
+export type SkillDetail = Awaited<ReturnType<typeof getSkillDetail>>;
+
 // ---------------------------------------------------------------------------
 // Device authorization
 // ---------------------------------------------------------------------------

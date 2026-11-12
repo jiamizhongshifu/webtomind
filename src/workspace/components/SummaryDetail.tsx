@@ -1,3 +1,5 @@
+import { useUnsavedChanges } from '@/shared/ui/Dialog';
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import { createLogger } from '@/utils/logger';
 import type { SavedSummary } from '@/services/database';
 import type { Reference } from '@/types';
@@ -683,11 +685,7 @@ export function SummaryDetail({
         loadAbortRef.current.abort();
       }
     };
-  }, [
-    isImageContent,
-    persistVisualSummaryMetadata,
-    summary
-  ]);
+  }, [isImageContent, persistVisualSummaryMetadata, summary]);
 
   // 清理标题中的 markdown 图片语法
   const cleanTitle = (title: string): string => {
@@ -989,6 +987,15 @@ export function SummaryDetail({
     summary.title,
     t
   ]);
+
+  const {
+    requestClose: requestRenameClose,
+    discardConfirmation: renameDiscardConfirmation
+  } = useUnsavedChanges(
+    showRenameModal && renameValue !== getCurrentTitle(),
+    () => setShowRenameModal(false),
+    renaming
+  );
 
   const renderMarkdown = renderDetailMarkdown;
 
@@ -2248,34 +2255,36 @@ export function SummaryDetail({
 
               {/* 加载完成：显示原图 */}
               {originalImageUrl && imageLoaded && (
-                <button
-                  type="button"
-                  className="block w-full cursor-zoom-in rounded-xl text-left focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/30"
-                  title={t('imagePreview.hint') as string}
-                  onClick={() => setLightboxImageUrl(originalImageUrl)}
-                >
-                  <img
-                    src={originalImageUrl}
-                    alt={cleanTitle(summary.title) || t('detail.image')}
-                    className="w-full h-auto rounded-xl animate-fadeIn"
-                  />
-                </button>
+                <TextTooltip text={t('imagePreview.hint') as string}>
+                  <button
+                    type="button"
+                    className="block w-full cursor-zoom-in rounded-xl text-left focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/30"
+                    onClick={() => setLightboxImageUrl(originalImageUrl)}
+                  >
+                    <img
+                      src={originalImageUrl}
+                      alt={cleanTitle(summary.title) || t('detail.image')}
+                      className="w-full h-auto rounded-xl animate-fadeIn"
+                    />
+                  </button>
+                </TextTooltip>
               )}
 
               {/* 加载失败或不需要加载（非 base64 图片）：显示缩略图 */}
               {!isLoadingOriginal && !imageLoaded && displayImageUrl && (
-                <button
-                  type="button"
-                  className="block w-full cursor-zoom-in rounded-xl text-left focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/30"
-                  title={t('imagePreview.hint') as string}
-                  onClick={() => setLightboxImageUrl(displayImageUrl)}
-                >
-                  <img
-                    src={displayImageUrl}
-                    alt={cleanTitle(summary.title) || t('detail.image')}
-                    className="w-full h-auto rounded-xl"
-                  />
-                </button>
+                <TextTooltip text={t('imagePreview.hint') as string}>
+                  <button
+                    type="button"
+                    className="block w-full cursor-zoom-in rounded-xl text-left focus:outline-none focus:ring-2 focus:ring-slate-900/20 dark:focus:ring-white/30"
+                    onClick={() => setLightboxImageUrl(displayImageUrl)}
+                  >
+                    <img
+                      src={displayImageUrl}
+                      alt={cleanTitle(summary.title) || t('detail.image')}
+                      className="w-full h-auto rounded-xl"
+                    />
+                  </button>
+                </TextTooltip>
               )}
             </div>
           )}
@@ -2375,16 +2384,24 @@ export function SummaryDetail({
       {/* 底部信息：来源URL、日期 */}
       <footer className="px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <span className="truncate" title={summary.url}>
-            {t('detail.source')}: {getHostname(summary.url)}
-          </span>
+          <TextTooltip text={summary.url}>
+            <span className="truncate">
+              {t('detail.source')}: {getHostname(summary.url)}
+            </span>
+          </TextTooltip>
           <span className="flex-shrink-0 ml-2">
             {new Date(summary.createdAt).toLocaleDateString()}
           </span>
         </div>
       </footer>
 
-      <Dialog open={showRenameModal} onOpenChange={setShowRenameModal}>
+      {renameDiscardConfirmation}
+      <Dialog
+        open={showRenameModal}
+        onOpenChange={(open) => {
+          if (!open) requestRenameClose();
+        }}
+      >
         <DialogContent
           className="w-[320px] max-w-[calc(100vw-2rem)] gap-0 overflow-hidden rounded-xl border-slate-200 p-0 shadow-xl dark:border-slate-700"
           overlayClassName="bg-black/30"
@@ -2410,11 +2427,7 @@ export function SummaryDetail({
             />
           </div>
           <DialogFooter className="border-t border-slate-200 px-4 py-3 dark:border-slate-700">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setShowRenameModal(false)}
-            >
+            <Button type="button" variant="ghost" onClick={requestRenameClose}>
               {t('detail.cancel')}
             </Button>
             <Button

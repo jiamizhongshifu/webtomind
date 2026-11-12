@@ -10,10 +10,12 @@ export function SkillPricingPage() {
   useEffect(() => {
     const origin = window.location.origin;
     return applySeo({
-      title: isZh ? 'Skill Pro 价格 | WebToMind' : 'Skill Pro pricing | WebToMind',
+      title: isZh
+        ? 'Skill Pro 价格 | WebToMind'
+        : 'Skill Pro pricing | WebToMind',
       description: isZh
-        ? '免费 Skill 随便装；Skill Pro 月付、年付或一次买断，解锁全部 Pro Skill。'
-        : 'Free Skills for everyone. Skill Pro monthly, yearly or lifetime unlocks every Pro Skill.',
+        ? '免费体验完整工作流；单独购买指定 Skill，或按月、按年订阅自营 Pro 库。模型费用另计。'
+        : 'Try complete free workflows, buy an individual Skill, or subscribe monthly or yearly to the studio Pro library. Model fees are separate.',
       canonical: `${origin}/${locale}/skills/pricing`,
       alternates: [
         { hreflang: 'zh-CN', href: `${origin}/zh-CN/skills/pricing` },
@@ -29,8 +31,8 @@ export function SkillPricingPage() {
       title={isZh ? 'Skill 价格' : 'Skill pricing'}
       subtitle={
         isZh
-          ? '免费 Skill 永久免费；Pro Skill 订阅或买断后全部可用。'
-          : 'Free Skills stay free. Subscribe or buy once to unlock every Pro Skill.'
+          ? '先用免费 Skill 完成一次交付，再选择单品或自营全库会员。'
+          : 'Start with a free workflow. Choose an individual Skill or studio library access.'
       }
     >
       <SkillPricingSection locale={locale} isZh={isZh} />

@@ -18,6 +18,7 @@ import {
   Select
 } from '@/shared/ui';
 import { PhotoSwipeViewer } from '../components/image-create/PhotoSwipeViewer';
+import { ConfirmDialog } from '@/workspace/components/ConfirmDialog';
 import {
   addMoodboardItems,
   analyzeMoodboard,
@@ -82,6 +83,7 @@ export function CreateMoodboardDetailPage() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [sourcePickerOpen, setSourcePickerOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [sourceQuery, setSourceQuery] = useState('');
   const [sourceImages, setSourceImages] = useState<DiscoveryImage[]>([]);
   const [sourceLoading, setSourceLoading] = useState(false);
@@ -375,18 +377,11 @@ export function CreateMoodboardDetailPage() {
   };
 
   const removeBoard = async () => {
-    if (
-      !board ||
-      !window.confirm(
-        isEnglish
-          ? 'Delete this moodboard permanently?'
-          : '确定永久删除这个情绪板？'
-      )
-    )
-      return;
+    if (!board) return;
     setBusy('deleting-board');
     try {
       await deleteMoodboard(board.id);
+      setDeleteOpen(false);
       navigate(`${prefix}/moodboards`, { replace: true });
     } catch (deleteError) {
       setError(deleteError instanceof Error ? deleteError.message : '删除失败');
@@ -626,7 +621,7 @@ export function CreateMoodboardDetailPage() {
                   variant="ghost"
                   size="sm"
                   leadingIcon={<Trash2 />}
-                  onClick={() => void removeBoard()}
+                  onClick={() => setDeleteOpen(true)}
                   disabled={busy === 'deleting-board'}
                 >
                   {isEnglish ? 'Delete' : '删除'}
@@ -738,6 +733,29 @@ export function CreateMoodboardDetailPage() {
           }}
         />
       ) : null}
+      <ConfirmDialog
+        isOpen={deleteOpen}
+        title={isEnglish ? 'Delete moodboard?' : '删除这个情绪板？'}
+        description={
+          isEnglish
+            ? `“${board?.name || ''}” and its saved references will be permanently deleted. This cannot be undone.`
+            : `“${board?.name || ''}”及其中保存的参考图将被永久删除，此操作无法撤销。`
+        }
+        confirmText={
+          busy === 'deleting-board'
+            ? isEnglish
+              ? 'Deleting…'
+              : '正在删除…'
+            : isEnglish
+              ? 'Delete'
+              : '确认删除'
+        }
+        cancelText={isEnglish ? 'Cancel' : '取消'}
+        danger
+        loading={busy === 'deleting-board'}
+        onConfirm={() => void removeBoard()}
+        onCancel={() => setDeleteOpen(false)}
+      />
       <MoodboardSourcePicker
         open={sourcePickerOpen}
         images={availableSourceImages}

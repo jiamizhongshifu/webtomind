@@ -1,3 +1,4 @@
+import { TooltipProvider } from '@/shared/ui/radix/tooltip';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createLogger } from '@/utils/logger';
@@ -9,6 +10,7 @@ import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import '../design/shared-tokens.css';
 import '../design/app-shell.css';
+import '../design/typography.css';
 import { initTheme } from '../utils/theme';
 
 const log = createLogger('Workspace');
@@ -21,7 +23,9 @@ initTheme();
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <TooltipProvider>
+        <App />
+      </TooltipProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

@@ -1,6 +1,12 @@
+import { SkillBrandHero } from './skill-catalog/SkillBrandHero';
+import { motion, useReducedMotion } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button, ButtonLink } from '@/shared/ui';
-import { listSkillCatalog, type SkillCatalogItem } from '@/services/skill-catalog-api';
+import {
+  listSkillCatalog,
+  type SkillCatalogItem
+} from '@/services/skill-catalog-api';
 import { applySeo } from '../lib/seo';
 import { TopNav } from '../components/TopNav';
 import { MarketingFooter } from '../components/MarketingFooter';
@@ -16,7 +22,10 @@ import { SkillPricingSection } from './skill-catalog/SkillPricingSection';
 import '../styles/marketing-pages.css';
 import '../styles/skill-catalog.css';
 
-type Shelf = { status: 'loading' | 'ready' | 'error'; items: SkillCatalogItem[] };
+type Shelf = {
+  status: 'loading' | 'ready' | 'error';
+  items: SkillCatalogItem[];
+};
 
 function useShelf(query: Parameters<typeof listSkillCatalog>[0]): Shelf {
   const [shelf, setShelf] = useState<Shelf>({ status: 'loading', items: [] });
@@ -26,7 +35,8 @@ function useShelf(query: Parameters<typeof listSkillCatalog>[0]): Shelf {
     listSkillCatalog(query, controller.signal)
       .then((result) => setShelf({ status: 'ready', items: result.items }))
       .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
+        if (error instanceof DOMException && error.name === 'AbortError')
+          return;
         setShelf({ status: 'error', items: [] });
       });
     return () => controller.abort();
@@ -50,10 +60,15 @@ function ShelfSection({
   locale: string;
   isZh: boolean;
 }) {
-  if (shelf.status === 'ready' && shelf.items.length === 0) return null;
-  if (shelf.status === 'error') return null;
+  const reduced = useReducedMotion();
   return (
-    <section className="skill-shelf">
+    <motion.section
+      className="skill-shelf"
+      initial={false}
+      whileInView={reduced ? {} : { y: [14, 0] }}
+      viewport={{ once: true, amount: 0.12 }}
+      transition={{ duration: 0.4 }}
+    >
       <div className="skill-section-head">
         <div>
           <h2>{title}</h2>
@@ -65,21 +80,42 @@ function ShelfSection({
       </div>
       {shelf.status === 'loading' ? (
         <SkillGridSkeleton count={4} />
+      ) : shelf.status === 'error' || !shelf.items.length ? (
+        <div className="skill-shelf-empty">
+          <p>
+            {shelf.status === 'error'
+              ? isZh
+                ? '商品目录暂时无法加载。请进入目录重试。'
+                : 'The catalog is temporarily unavailable. Open the library to retry.'
+              : isZh
+                ? '这一组 Skill 正在准备中，可先浏览其他工作流。'
+                : 'This collection is being prepared. Explore the other workflows.'}
+          </p>
+          <Link to={href}>{isZh ? '打开目录' : 'Open library'} →</Link>
+        </div>
       ) : (
         <div className="skill-grid">
           {shelf.items.map((skill, index) => (
-            <SkillCard key={skill.slug} skill={skill} locale={locale} isZh={isZh} eager={index < 4} />
+            <SkillCard
+              key={skill.slug}
+              skill={skill}
+              locale={locale}
+              isZh={isZh}
+              eager={index < 4}
+            />
           ))}
         </div>
       )}
-    </section>
+    </motion.section>
   );
 }
 
 export function SkillHomePage() {
   const { locale, isZh } = useMarketingLocale();
-  const featured = useShelf({ sort: 'featured', limit: 8 });
-  const free = useShelf({ tier: 'free', sort: 'trending', limit: 8 });
+  const navigate = useNavigate();
+  const [search, setSearch] = useState('');
+  const featured = useShelf({ tier: 'premium', sort: 'featured', limit: 4 });
+  const free = useShelf({ tier: 'free', sort: 'featured', limit: 4 });
   const [copied, setCopied] = useState(false);
   const prompt = cliConnectPrompt(isZh);
 
@@ -87,104 +123,149 @@ export function SkillHomePage() {
     const origin = window.location.origin;
     return applySeo({
       title: isZh
-        ? 'WebToMind：给你的 Agent 装上商业视觉 Skill'
-        : 'WebToMind: commercial visual Skills for your AI agent',
+        ? 'WebToMind：发现、购买与使用创作 Skill'
+        : 'WebToMind: discover creative Skills for your AI agent',
       description: isZh
-        ? '小红书封面、电商主图、发布会幻灯片、落地页和短视频 Skill，装进 Claude Code、Codex、Cursor、Trae，一句话产出可交付的成品。'
-        : 'Skills for OG images, posters, decks, landing pages and short videos. Install into Claude Code, Codex, Cursor or Trae and get finished results from one request.',
+        ? '探索内容创作、品牌营销、演示文稿、网页和视频工作流。先看案例与交付内容，免费体验或单独购买，再安装到你的 Agent。'
+        : 'Explore Skills for content, campaigns, presentations, websites and videos. Review outputs and dependencies, start free or buy a workflow for your agent.',
       canonical: `${origin}/${locale}/overview`,
       alternates: [
         { hreflang: 'zh-CN', href: `${origin}/zh-CN/overview` },
         { hreflang: 'en-US', href: `${origin}/en-US/overview` },
-        { hreflang: 'x-default', href: `${origin}/` }
+        { hreflang: 'x-default', href: `${origin}/en-US/overview` }
       ]
     });
   }, [isZh, locale]);
 
   const steps = isZh
     ? [
-        ['挑一个 Skill', '按你要做的东西搜索，或让 Agent 帮你推荐。'],
+        ['先看成品', '按任务找到工作流，查看示例、输入、依赖与许可。'],
         ['浏览器授权一次', 'CLI 打开浏览器让你登录确认，不需要 API Key。'],
-        ['一句话出成品', 'Skill 装进 Agent 后，描述需求就能拿到 PNG、PDF、MP4 或网页。']
+        ['完成自己的项目', '用你的资料运行、修改与检查，再导出成品。']
       ]
     : [
-        ['Pick a Skill', 'Search by what you want to make, or let your agent recommend one.'],
-        ['Approve once in the browser', 'The CLI opens your browser to sign in. No API key.'],
-        ['Ask, and get the file', 'Describe what you need and receive a PNG, PDF, MP4 or web page.']
+        [
+          'See the output',
+          'Review examples, required inputs, dependencies and the package license.'
+        ],
+        [
+          'Approve once in the browser',
+          'The CLI opens your browser to sign in. No API key.'
+        ],
+        [
+          'Make it yours',
+          'Run with your own material, edit, check and export the result.'
+        ]
       ];
   const faqs = isZh
     ? [
-        ['什么是 Agent Skill？', 'Skill 是一组说明、模板和脚本，让 AI Agent 稳定地完成某类工作。WebToMind 的 Skill 用排版引擎渲染文字，不会出现错字。'],
-        ['支持哪些 Agent？', 'Claude Code、Codex、Cursor、Gemini CLI、Kimi Code、Antigravity 和 Trae，以及任何能读取 Skills 目录的 Agent。'],
-        ['需要 API Key 吗？', '不需要。CLI 通过浏览器授权登录，凭证保存在系统钥匙串里。'],
+        [
+          '什么是 Agent Skill？',
+          'Skill 是一组说明、模板和脚本，让 AI Agent 稳定地完成某类工作。文字排版可以编辑，成品仍需核对内容与布局。'
+        ],
+        [
+          '支持哪些 Agent？',
+          'Claude Code、Codex、Cursor、Gemini CLI、Kimi Code、Antigravity 和 Trae，以及任何能读取 Skills 目录的 Agent。'
+        ],
+        [
+          '需要 API Key 吗？',
+          '安装 Skill 不需要 API Key。CLI 使用浏览器授权；运行时所需的模型或第三方服务由具体 Skill 说明。'
+        ],
         ['可以随时取消吗？', '订阅可随时取消，当期结束前权益保持有效。']
       ]
     : [
-        ['What is an Agent Skill?', 'A Skill is a set of instructions, templates and scripts that lets an AI agent do one kind of work reliably. WebToMind Skills typeset text with a layout engine, so there are no garbled letters.'],
-        ['Which agents are supported?', 'Claude Code, Codex, Cursor, Gemini CLI, Kimi Code, Antigravity and Trae, plus any agent that reads a Skills folder.'],
-        ['Do I need an API key?', 'No. The CLI signs in through your browser and keeps its credential in your system keychain.'],
-        ['Can I cancel?', 'Cancel your subscription anytime; access stays active until the end of the paid period.']
+        [
+          'What is an Agent Skill?',
+          'A Skill is a set of instructions, templates and scripts that lets an AI agent do one kind of work reliably. Editable layouts help control typography; you still review the content and final output.'
+        ],
+        [
+          'Which agents are supported?',
+          'Claude Code, Codex, Cursor, Gemini CLI, Kimi Code, Antigravity and Trae, plus any agent that reads a Skills folder.'
+        ],
+        [
+          'Do I need an API key?',
+          'Installing a Skill needs no API key: the CLI uses browser authorization. Each Skill lists any model or third-party service needed to run it.'
+        ],
+        [
+          'Can I cancel?',
+          'Cancel your subscription anytime; access stays active until the end of the paid period.'
+        ]
       ];
 
   return (
     <div className="marketing-page-root skill-catalog-root">
       <TopNav />
       <main className="marketing-page-main skill-home">
-        <section className="skill-hero">
-          <p className="skill-eyebrow">{isZh ? '商业视觉 Agent Skills' : 'Commercial visual Agent Skills'}</p>
-          <h1>{isZh ? '给你的 Agent 装上设计品味' : 'Give your agent design taste'}</h1>
-          <p className="skill-hero-lead">
-            {isZh
-              ? '封面、主图、幻灯片、落地页和短视频，每个 Skill 都由我们设计和实测。装进 Agent，一句话拿到能直接发布的成品。'
-              : 'Covers, product shots, decks, landing pages and short videos, each Skill designed and tested by us. Install it, ask once, and get something you can publish.'}
-          </p>
-          <div className="skill-hero-actions">
-            <ButtonLink to={`/${locale}/skills`} variant="primary" size="lg">
-              {isZh ? '浏览 Skill' : 'Browse Skills'}
-            </ButtonLink>
-            <ButtonLink to={`/${locale}/skills/pricing`} variant="secondary" size="lg">
-              {isZh ? '查看价格' : 'See pricing'}
-            </ButtonLink>
+        <SkillBrandHero locale={locale} isZh={isZh} />
+        <section
+          className="skill-discovery-heading"
+          aria-labelledby="skill-discovery-title"
+        >
+          <div>
+            <h2 id="skill-discovery-title">
+              {isZh ? '今天，你想做点什么？' : 'What will you make next?'}
+            </h2>
           </div>
-          <div className="skill-connect">
-            <p className="skill-connect-label">{isZh ? '或者把这句话发给你的 Agent' : 'Or send this to your agent'}</p>
-            <div className="skill-command skill-command--prompt">
-              <code>{prompt}</code>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(prompt);
-                    setCopied(true);
-                    window.setTimeout(() => setCopied(false), 1600);
-                  } catch {
-                    setCopied(false);
-                  }
-                }}
-              >
-                {copied ? (isZh ? '已复制' : 'Copied') : isZh ? '复制' : 'Copy'}
-              </Button>
-            </div>
-            <ul className="skill-agent-list" aria-label={isZh ? '支持的 Agent' : 'Supported agents'}>
-              {SUPPORTED_AGENTS.map((agent) => (
-                <li key={agent}>{agentLabel(agent)}</li>
-              ))}
-            </ul>
-          </div>
+          <form
+            className="skill-hero-search"
+            role="search"
+            onSubmit={(event) => {
+              event.preventDefault();
+              navigate(
+                `/${locale}/skills${search.trim() ? `?q=${encodeURIComponent(search.trim())}` : ''}`
+              );
+            }}
+          >
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              aria-label={isZh ? '搜索创作任务' : 'Search creative tasks'}
+              placeholder={
+                isZh ? '搜索你要完成的任务' : 'Find a workflow for your idea'
+              }
+            />
+            <Button type="submit" variant="primary">
+              {isZh ? '搜索' : 'Search'} →
+            </Button>
+          </form>
         </section>
+        <nav
+          className="skill-task-nav"
+          aria-label={isZh ? '按交付任务发现' : 'Discover by deliverable'}
+        >
+          {[
+            ['image', '内容与营销', 'Content & campaigns', '01'],
+            ['slides', '提案与演示', 'Decks & stories', '02'],
+            ['web', '网站与转化', 'Websites & launches', '03'],
+            ['video', '产品与视频', 'Demos & video', '04']
+          ].map(([type, zh, en, number]) => (
+            <Link key={type} to={`/${locale}/skills?type=${type}`}>
+              <span>{number}</span>
+              <strong>{isZh ? zh : en}</strong>
+              <span aria-hidden="true">↗</span>
+            </Link>
+          ))}
+        </nav>
 
         <ShelfSection
-          title={isZh ? '精选 Skill' : 'Featured Skills'}
-          description={isZh ? '我们最新设计、实测过的 Skill。' : 'Our newest designed and tested Skills.'}
-          href={`/${locale}/skills`}
+          title={isZh ? '值得带走的工作流' : 'Built for your next big idea'}
+          description={
+            isZh
+              ? '从内容到成品，把成熟的创作流程带进你的项目。'
+              : 'Creative workflows with the structure, source files and examples to get you started.'
+          }
+          href={`/${locale}/skills?tier=premium`}
           shelf={featured}
           locale={locale}
           isZh={isZh}
         />
         <ShelfSection
           title={isZh ? '免费 Skill' : 'Free Skills'}
-          description={isZh ? '装一个跑一遍，成品归你，无需信用卡。' : 'Install one, run it end to end, keep the result. No card needed.'}
+          description={
+            isZh
+              ? '选一个小任务，体验从想法到成品的完整过程。'
+              : 'A small project is a good place to start. No card needed.'
+          }
           href={`/${locale}/skills?tier=free`}
           shelf={free}
           locale={locale}
@@ -196,7 +277,9 @@ export function SkillHomePage() {
           <ol>
             {steps.map(([title, text], index) => (
               <li key={title}>
-                <span className="skill-step-index">{String(index + 1).padStart(2, '0')}</span>
+                <span className="skill-step-index">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
                 <h3>{title}</h3>
                 <p>{text}</p>
               </li>
@@ -204,6 +287,49 @@ export function SkillHomePage() {
           </ol>
         </section>
 
+        <section className="skill-install-strip" id="install">
+          <div>
+            <p className="skill-eyebrow">
+              {isZh
+                ? '把工作流带进你的 Agent'
+                : 'Bring the workflow to your agent'}
+            </p>
+            <h2>
+              {isZh ? '看清要求，再开始。' : 'Know what you need. Then start.'}
+            </h2>
+            <ul className="skill-agent-list">
+              {SUPPORTED_AGENTS.slice(0, 4).map((agent) => (
+                <li key={agent}>{agentLabel(agent)}</li>
+              ))}
+            </ul>
+          </div>
+          <details>
+            <summary>
+              {isZh ? '查看连接说明' : 'Show connection instructions'}
+            </summary>
+            <p className="skill-muted">
+              {isZh
+                ? '安装与可用性以当前官方安装指南为准。模型费用另计。'
+                : 'Follow the current official guide for installation and availability. Model fees are separate.'}
+            </p>
+            <div className="skill-command">
+              <code>{prompt}</code>
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(prompt);
+                    setCopied(true);
+                  } catch {
+                    setCopied(false);
+                  }
+                }}
+              >
+                {copied ? (isZh ? '已复制' : 'Copied') : isZh ? '复制' : 'Copy'}
+              </Button>
+            </div>
+          </details>
+        </section>
         <SkillPricingSection locale={locale} isZh={isZh} />
 
         <section className="skill-faq" aria-labelledby="skill-faq-title">

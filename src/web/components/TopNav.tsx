@@ -138,6 +138,7 @@ export function TopNav() {
   const { language, languageNames, changeLanguage } = useLanguage();
   const [isScrolled, setIsScrolled] = useState(false);
   const [showLangMenu, setShowLangMenu] = useState(false);
+  const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showLanguagePrompt, setShowLanguagePrompt] = useState(() => {
     if (typeof window === 'undefined') return false;
     try {
@@ -149,6 +150,8 @@ export function TopNav() {
     }
   });
   const langMenuRef = useRef<HTMLDivElement>(null);
+  const langMenuListRef = useRef<HTMLDivElement>(null);
+  const langTriggerRef = useRef<HTMLButtonElement>(null);
   const isScrolledRef = useRef(false);
 
   const locale = getLocale(
@@ -161,7 +164,7 @@ export function TopNav() {
   const loginTarget = referralCode
     ? `/login?ref=${encodeURIComponent(referralCode)}`
     : '/login';
-  const ctaTarget = isAuthenticated ? '/create' : loginTarget;
+  const ctaTarget = `${localePrefix}/skills`;
   const promptLibraryHref =
     locale === 'en-US' ? '/en-US/prompts' : `${localePrefix}/prompts`;
   const skillsHref = `${localePrefix}/skills`;
@@ -169,17 +172,68 @@ export function TopNav() {
   const navFallback =
     locale === 'en-US'
       ? {
-          create: 'Creative Studio',
-          skills: 'Skills',
-          promptLibrary: 'AI Image Prompts',
-          pricing: 'Pricing'
+          skills: 'Explore Skills',
+          free: 'Free Skills',
+          pricing: 'Pricing',
+          tools: 'More tools'
         }
       : {
-          create: '创意工作台',
-          skills: 'Skill 目录',
-          promptLibrary: 'Prompt 案例',
-          pricing: '价格'
+          skills: '发现 Skill',
+          free: '免费 Skill',
+          pricing: '会员与价格',
+          tools: '更多工具'
         };
+
+  useEffect(() => {
+    setShowMobileMenu(false);
+  }, [location.pathname, location.search]);
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowMobileMenu(false);
+        setShowLangMenu(false);
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  useEffect(() => {
+    if (!showLangMenu) return;
+    const first = langMenuListRef.current?.querySelector<HTMLElement>(
+      '[role="menuitemradio"]'
+    );
+    first?.focus({ preventScroll: true });
+  }, [showLangMenu]);
+
+  const closeLangMenu = (restoreFocus = false) => {
+    setShowLangMenu(false);
+    if (restoreFocus) langTriggerRef.current?.focus({ preventScroll: true });
+  };
+
+  const handleLangMenuKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Escape' || event.key === 'Tab') {
+      closeLangMenu(true);
+      return;
+    }
+    const keys = ['ArrowDown', 'ArrowUp', 'Home', 'End'];
+    if (!keys.includes(event.key)) return;
+    const items = Array.from(
+      langMenuListRef.current?.querySelectorAll<HTMLElement>(
+        '[role="menuitemradio"]'
+      ) ?? []
+    );
+    if (items.length === 0) return;
+    event.preventDefault();
+    const index = items.indexOf(document.activeElement as HTMLElement);
+    let next = index;
+    if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = items.length - 1;
+    else if (event.key === 'ArrowDown')
+      next = index < 0 ? 0 : (index + 1) % items.length;
+    else next = index <= 0 ? items.length - 1 : index - 1;
+    items[next]?.focus();
+  };
 
   const dismissLanguagePrompt = () => {
     setShowLanguagePrompt(false);
@@ -195,7 +249,11 @@ export function TopNav() {
   ) => {
     // 先跳转再切换：URL 是语言的唯一来源，避免页面的 URL 同步把语言改回去。
     if (targetLanguage !== locale) {
-      navigate(mapPathToLocale(location.pathname, targetLanguage));
+      navigate(
+        mapPathToLocale(location.pathname, targetLanguage) +
+          location.search +
+          location.hash
+      );
     }
     dismissLanguagePrompt();
     await changeLanguage(targetLanguage);
@@ -266,34 +324,56 @@ export function TopNav() {
               density="compact"
             >
               <NavigationLink
-                href="/create"
+                href={skillsHref}
                 className="nav-link-item nav-link-cta"
+                aria-current={
+                  location.pathname === skillsHref && !location.search
+                    ? 'page'
+                    : undefined
+                }
               >
-                {navFallback.create}
-              </NavigationLink>
-              <NavigationLink href={skillsHref} className="nav-link-item">
                 {navFallback.skills}
               </NavigationLink>
               <NavigationLink
-                href={promptLibraryHref}
+                href={`${skillsHref}?tier=free`}
                 className="nav-link-item"
               >
-                {navFallback.promptLibrary}
+                {navFallback.free}
               </NavigationLink>
-              <NavigationLink href={pricingHref} className="nav-link-item">
+              <NavigationLink
+                href={pricingHref}
+                className="nav-link-item"
+                aria-current={
+                  location.pathname === pricingHref ? 'page' : undefined
+                }
+              >
                 {navFallback.pricing}
               </NavigationLink>
-              <AiRechargeLink
-                placement="top_nav"
-                locale={locale}
-                className="nav-link-item"
-              />
+              <details className="nav-tools">
+                <summary className="nav-link-item">{navFallback.tools}</summary>
+                <div className="nav-tools-panel">
+                  <Link to="/create">
+                    {locale === 'en-US' ? 'Image workspace' : '图片创作台'}
+                  </Link>
+                  <Link to={promptLibraryHref}>
+                    {locale === 'en-US' ? 'Prompt library' : '提示词资料库'}
+                  </Link>
+                  <AiRechargeLink
+                    placement="top_nav"
+                    locale={locale}
+                    className="nav-tool-link"
+                  />
+                </div>
+              </details>
             </Navigation>
             <div className="relative" ref={langMenuRef}>
               <IconButton
+                ref={langTriggerRef}
                 onClick={() => setShowLangMenu(!showLangMenu)}
                 className="nav-button-glass nav-language-button"
                 label={t('nav.language')}
+                aria-haspopup="menu"
+                aria-expanded={showLangMenu}
                 icon={
                   <svg
                     className="w-5 h-5"
@@ -312,19 +392,29 @@ export function TopNav() {
               />
 
               {showLangMenu && (
-                <div className="nav-lang-menu">
+                <div
+                  ref={langMenuListRef}
+                  className="nav-lang-menu"
+                  role="menu"
+                  aria-label={t('nav.language')}
+                  onKeyDown={handleLangMenuKeyDown}
+                >
                   {Object.entries(languageNames).map(([code, name]) => (
                     <button
                       type="button"
                       key={code}
+                      role="menuitemradio"
+                      aria-checked={language === code}
                       onClick={() => {
                         const targetLang = code as 'zh-CN' | 'en-US';
                         navigate(
-                          mapPathToLocale(location.pathname, targetLang)
+                          mapPathToLocale(location.pathname, targetLang) +
+                            location.search +
+                            location.hash
                         );
                         void changeLanguage(targetLang);
                         dismissLanguagePrompt();
-                        setShowLangMenu(false);
+                        closeLangMenu(true);
                       }}
                       className={`nav-lang-menu-item ${
                         language === code ? 'is-current' : ''
@@ -352,40 +442,58 @@ export function TopNav() {
               )}
             </div>
 
-            {isAuthenticated ? (
+            {!isAuthenticated && (
               <Button
                 type="button"
-                onClick={() => navigate('/create')}
-                variant="primary"
+                onClick={() => navigate(loginTarget)}
+                variant="ghost"
                 size="md"
-                className="nav-button-glass nav-button-primary"
+                className="nav-button-glass nav-button-secondary"
               >
-                {t('nav.goToWorkspace')}
+                {t('nav.login')}
               </Button>
-            ) : (
-              <>
-                <Button
-                  type="button"
-                  onClick={() => navigate(loginTarget)}
-                  variant="ghost"
-                  size="md"
-                  className="nav-button-glass nav-button-secondary"
-                >
-                  {t('nav.login')}
-                </Button>
-                <Button
-                  type="button"
-                  onClick={() => navigate(ctaTarget)}
-                  variant="primary"
-                  size="md"
-                  className="nav-button-glass nav-button-primary"
-                >
-                  {t('nav.getStarted')}
-                </Button>
-              </>
             )}
+            <Button
+              type="button"
+              onClick={() => navigate(ctaTarget)}
+              variant="primary"
+              size="md"
+              className="nav-button-glass nav-button-primary"
+            >
+              {locale === 'en-US' ? 'Browse Skills' : '浏览 Skill'}
+            </Button>
+            <button
+              type="button"
+              className="nav-mobile-toggle"
+              aria-label={locale === 'en-US' ? 'Menu' : '菜单'}
+              aria-expanded={showMobileMenu}
+              aria-controls="skill-mobile-nav"
+              onClick={() => setShowMobileMenu((v) => !v)}
+            >
+              <span aria-hidden="true">{showMobileMenu ? '×' : '☰'}</span>
+            </button>
           </div>
         </div>
+        {showMobileMenu && (
+          <div id="skill-mobile-nav" className="nav-mobile-panel">
+            <Link to={skillsHref}>{navFallback.skills}</Link>
+            <Link to={`${skillsHref}?tier=free`}>{navFallback.free}</Link>
+            <Link to={pricingHref}>{navFallback.pricing}</Link>
+            <Link to={loginTarget}>
+              {locale === 'en-US' ? 'Account / sign in' : '账号 / 登录'}
+            </Link>
+            <details>
+              <summary>{navFallback.tools}</summary>
+              <Link to="/create">
+                {locale === 'en-US' ? 'Image workspace' : '图片创作台'}
+              </Link>
+              <Link to={promptLibraryHref}>
+                {locale === 'en-US' ? 'Prompt library' : '提示词资料库'}
+              </Link>
+              <AiRechargeLink placement="top_nav" locale={locale} />
+            </details>
+          </div>
+        )}
       </nav>
     </div>
   );

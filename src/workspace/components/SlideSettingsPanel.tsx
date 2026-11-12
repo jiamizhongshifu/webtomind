@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 /**
  * PPT/幻灯片生成设置面板
  * 用于配置幻灯片生成的风格和数量
@@ -138,22 +139,23 @@ export function SlideSettingsPanel({
         </label>
         <div className="grid grid-cols-3 gap-2 max-h-[200px] overflow-y-auto pr-1">
           {SLIDE_STYLE_OPTIONS.map((style) => (
-            <button
-              key={style.value}
-              type="button"
-              onClick={() => handleStyleChange(style.value)}
-              className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
-                settings.style === style.value
-                  ? 'border-emerald-500 bg-emerald-500/20'
-                  : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'
-              }`}
-              title={style.description}
-            >
-              <span className="text-xl">{style.icon}</span>
-              <span className="text-xs text-slate-300 text-center leading-tight">
-                {t(`slideSettings.styles.${style.value}`, style.value)}
-              </span>
-            </button>
+            <TextTooltip text={style.description} key={style.value}>
+              <button
+                key={style.value}
+                type="button"
+                onClick={() => handleStyleChange(style.value)}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg border transition-all ${
+                  settings.style === style.value
+                    ? 'border-emerald-500 bg-emerald-500/20'
+                    : 'border-slate-600 bg-slate-700/50 hover:border-slate-500'
+                }`}
+              >
+                <span className="text-xl">{style.icon}</span>
+                <span className="text-xs text-slate-300 text-center leading-tight">
+                  {t(`slideSettings.styles.${style.value}`, style.value)}
+                </span>
+              </button>
+            </TextTooltip>
           ))}
         </div>
         {/* 选中风格的描述 */}

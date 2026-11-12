@@ -1,3 +1,6 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
+import { Dialog, Input } from '@/shared/ui';
+import { ConfirmDialog } from './ConfirmDialog';
 import { createLogger } from '@/utils/logger';
 import type { SavedSummary } from '@/services/database';
 import { getSummaryById } from '@/services/workspace-api';
@@ -313,15 +316,41 @@ export function SummaryList({
     });
   }, []);
 
+  const [renameTarget, setRenameTarget] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
+  const [renameDraft, setRenameDraft] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
+
   const handleCardDelete = useCallback(
     (id: string) => {
       if (!onDeleteSummary) return;
-      const confirmed = window.confirm('确定要删除这张卡片吗？');
-      if (!confirmed) return;
-      void onDeleteSummary(id);
+      setDeleteTarget(id);
     },
     [onDeleteSummary]
   );
+
+  const confirmCardDelete = useCallback(async () => {
+    if (!deleteTarget || !onDeleteSummary || deleteBusy) return;
+    setDeleteBusy(true);
+    try {
+      await onDeleteSummary(deleteTarget);
+      setDeleteTarget(null);
+    } finally {
+      setDeleteBusy(false);
+    }
+  }, [deleteBusy, deleteTarget, onDeleteSummary]);
+
+  const submitRename = useCallback(() => {
+    if (!renameTarget || !onRenameSummary) return;
+    const trimmed = renameDraft.trim();
+    if (trimmed && trimmed !== renameTarget.title) {
+      void onRenameSummary(renameTarget.id, trimmed);
+    }
+    setRenameTarget(null);
+  }, [onRenameSummary, renameDraft, renameTarget]);
 
   useEffect(() => {
     const onPointerDown = (event: MouseEvent) => {
@@ -1079,30 +1108,31 @@ export function SummaryList({
                         resolveFullImageSrc={resolveFullImageSrc}
                       />
                     </div>
-                    <button
-                      type="button"
-                      data-summary-list-menu
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveListMenuId((prev) =>
-                          prev === summary.id ? null : summary.id
-                        );
-                      }}
-                      className={`absolute flex items-center justify-center bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 transition-opacity ${
-                        isMobileList
-                          ? '-right-1 -top-1 h-7 w-7 rounded-full border border-white/80 shadow-sm dark:border-slate-800'
-                          : 'inset-0 rounded'
-                      } ${
-                        isMenuOpen
-                          ? 'opacity-100'
-                          : isMobileList
+                    <TextTooltip text={'更多'}>
+                      <button
+                        type="button"
+                        data-summary-list-menu
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveListMenuId((prev) =>
+                            prev === summary.id ? null : summary.id
+                          );
+                        }}
+                        className={`absolute flex items-center justify-center bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 transition-opacity ${
+                          isMobileList
+                            ? '-right-1 -top-1 h-7 w-7 rounded-full border border-white/80 shadow-sm dark:border-slate-800'
+                            : 'inset-0 rounded'
+                        } ${
+                          isMenuOpen
                             ? 'opacity-100'
-                            : 'opacity-0 group-hover:opacity-100'
-                      }`}
-                      title="更多"
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
+                            : isMobileList
+                              ? 'opacity-100'
+                              : 'opacity-0 group-hover:opacity-100'
+                        }`}
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </TextTooltip>
                     {isMenuOpen && (
                       <div
                         data-summary-list-menu
@@ -1117,14 +1147,11 @@ export function SummaryList({
                             if (!onRenameSummary) return;
                             const currentTitle =
                               summary.title || getTitle(summary.markdown);
-                            const nextTitle = window.prompt(
-                              '请输入新标题',
-                              currentTitle
-                            );
-                            if (!nextTitle) return;
-                            const trimmed = nextTitle.trim();
-                            if (!trimmed || trimmed === currentTitle) return;
-                            void onRenameSummary(summary.id, trimmed);
+                            setRenameTarget({
+                              id: summary.id,
+                              title: currentTitle
+                            });
+                            setRenameDraft(currentTitle);
                           }}
                         >
                           重命名
@@ -1136,10 +1163,7 @@ export function SummaryList({
                             e.stopPropagation();
                             setActiveListMenuId(null);
                             if (!onDeleteSummary) return;
-                            const confirmed =
-                              window.confirm('确定要删除这张卡片吗？');
-                            if (!confirmed) return;
-                            void onDeleteSummary(summary.id);
+                            setDeleteTarget(summary.id);
                           }}
                         >
                           删除
@@ -1283,18 +1307,19 @@ export function SummaryList({
                       onClick={() => stableOnEnterDetail(summary)}
                     >
                       {onDeleteSummary && (
-                        <button
-                          type="button"
-                          className="absolute left-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-slate-50/95 text-slate-500 opacity-0 shadow-sm transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:bg-slate-700/95 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-300"
-                          title="删除"
-                          aria-label="删除卡片"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleCardDelete(summary.id);
-                          }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        <TextTooltip text={'删除'}>
+                          <button
+                            type="button"
+                            className="absolute left-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-slate-50/95 text-slate-500 opacity-0 shadow-sm transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:bg-slate-700/95 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-300"
+                            aria-label="删除卡片"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleCardDelete(summary.id);
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </TextTooltip>
                       )}
 
                       {onToggleSelect &&
@@ -1378,6 +1403,49 @@ export function SummaryList({
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={Boolean(deleteTarget)}
+        title="删除这张卡片？"
+        description="卡片和它的内容会被删除，此操作无法撤销。"
+        confirmText={deleteBusy ? '正在删除…' : '删除卡片'}
+        cancelText="取消"
+        danger
+        loading={deleteBusy}
+        onConfirm={() => void confirmCardDelete()}
+        onCancel={() => setDeleteTarget(null)}
+      />
+
+      <Dialog
+        open={Boolean(renameTarget)}
+        title="重命名卡片"
+        closeLabel="取消"
+        onClose={() => setRenameTarget(null)}
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setRenameTarget(null)}
+              className="px-4 py-2 text-sm font-medium text-slate-600"
+            >
+              取消
+            </button>
+            <button
+              type="button"
+              onClick={submitRename}
+              className="px-4 py-2 text-sm font-medium text-white bg-slate-900 rounded-lg"
+            >
+              保存
+            </button>
+          </>
+        }
+      >
+        <Input
+          value={renameDraft}
+          onChange={(event) => setRenameDraft(event.target.value)}
+          aria-label="卡片标题"
+        />
+      </Dialog>
     </div>
   );
 }

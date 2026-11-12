@@ -120,6 +120,10 @@ const STATIC_URLS: StaticSitemapItem[] = [
   { path: '/en-US/blog', changefreq: 'weekly', priority: '0.8' },
   { path: '/zh-CN/updates', changefreq: 'daily', priority: '0.85' },
   { path: '/en-US/updates', changefreq: 'daily', priority: '0.85' },
+  { path: '/zh-CN/skills', changefreq: 'daily', priority: '0.88' },
+  { path: '/en-US/skills', changefreq: 'daily', priority: '0.88' },
+  { path: '/zh-CN/skills/pricing', changefreq: 'weekly', priority: '0.78' },
+  { path: '/en-US/skills/pricing', changefreq: 'weekly', priority: '0.78' },
   { path: '/zh-CN/pricing', changefreq: 'weekly', priority: '0.78' },
   { path: '/en-US/pricing', changefreq: 'weekly', priority: '0.78' },
   {
@@ -641,6 +645,90 @@ function mergePromptCaseRows(
   return merged;
 }
 
+export type SkillSitemapRow = {
+  id: string;
+  slug: string;
+  latest_version_id: string | null;
+  published_at: string | null;
+};
+
+export type SkillVersionSitemapRow = {
+  id: string;
+  skill_id: string;
+  published_at: string | null;
+};
+
+function toIsoDate(value: string | null | undefined): string | undefined {
+  if (!value) return undefined;
+  const time = Date.parse(value);
+  return Number.isNaN(time) ? undefined : new Date(time).toISOString();
+}
+
+export function buildSkillSitemapUrls(
+  skills: SkillSitemapRow[],
+  versions: SkillVersionSitemapRow[]
+): SitemapUrl[] {
+  const versionsBySkill = new Map<string, SkillVersionSitemapRow[]>();
+  for (const version of versions) {
+    const list = versionsBySkill.get(version.skill_id) || [];
+    list.push(version);
+    versionsBySkill.set(version.skill_id, list);
+  }
+  return skills
+    .filter((skill) => /^[a-z0-9][a-z0-9-]*$/.test(skill.slug))
+    .flatMap((skill) => {
+      const published = versionsBySkill.get(skill.id) || [];
+      // Only Skills with an installable published version are listed.
+      if (published.length === 0) return [];
+      const latest = published.find((v) => v.id === skill.latest_version_id);
+      const newest = published
+        .map((v) => toIsoDate(v.published_at))
+        .filter((v): v is string => Boolean(v))
+        .sort()
+        .pop();
+      const lastmod =
+        toIsoDate(latest?.published_at) ||
+        newest ||
+        toIsoDate(skill.published_at);
+      return (['zh-CN', 'en-US'] as const).map((locale) => {
+        const path = `/${locale}/skills/${skill.slug}`;
+        return {
+          loc: `${SITE_URL}${path}`,
+          changefreq: 'weekly',
+          priority: '0.8',
+          lastmod,
+          alternates: localizedAlternates(path)
+        };
+      });
+    });
+}
+
+async function loadSkillUrls(): Promise<SitemapUrl[]> {
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  if (!supabaseUrl || !supabaseKey) return [];
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  const [skills, versions] = await Promise.all([
+    supabase
+      .from('skill_catalog')
+      .select('id,slug,latest_version_id,published_at')
+      .eq('status', 'published')
+      .order('slug', { ascending: true })
+      .limit(1000),
+    supabase
+      .from('skill_catalog_versions')
+      .select('id,skill_id,published_at')
+      .eq('status', 'published')
+      .limit(5000)
+  ]);
+  if (skills.error) throw new Error(skills.error.message);
+  if (versions.error) throw new Error(versions.error.message);
+  return buildSkillSitemapUrls(
+    (skills.data || []) as SkillSitemapRow[],
+    (versions.data || []) as SkillVersionSitemapRow[]
+  );
+}
+
 async function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,
@@ -666,11 +754,23 @@ export async function renderSitemapResponse(
     return new Response('Method not allowed', { status: 405 });
   }
 
-  const promptUrls = await withTimeout<SitemapUrl[] | null>(
-    loadPromptUrls().catch(() => null),
-    20000,
-    null
-  );
+  const [promptUrls, skillUrls] = await Promise.all([
+    withTimeout<SitemapUrl[] | null>(
+      loadPromptUrls().catch(() => null),
+      20000,
+      null
+    ),
+    // The Skill catalog is additive: a failed lookup drops Skill detail URLs
+    // instead of withholding the whole sitemap.
+    withTimeout<SitemapUrl[]>(
+      loadSkillUrls().catch((error) => {
+        console.warn('[sitemap] Skill catalog lookup failed:', error);
+        return [];
+      }),
+      20000,
+      []
+    )
+  ]);
   if (!promptUrls) {
     return new Response('Sitemap temporarily unavailable', {
       status: 503,
@@ -700,10 +800,9 @@ export async function renderSitemapResponse(
   }));
   const uniqueUrls = Array.from(
     new Map(
-      [...staticUrls, ...contentUrls, ...promptUrls].map((item) => [
-        item.loc,
-        item
-      ])
+      [...staticUrls, ...contentUrls, ...skillUrls, ...promptUrls].map(
+        (item) => [item.loc, item]
+      )
     ).values()
   );
 

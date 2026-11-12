@@ -90,7 +90,7 @@ export function renderSkillGuide(
   const access =
     skill.tier === 'premium'
       ? `This is a Pro Skill. Installing it needs an active Skill Pro, Pro or Max
-subscription, or lifetime access. If the CLI reports
+subscription, an individual purchase of this Skill, or previously acquired lifetime access. If the CLI reports
 \`SKILL_ENTITLEMENT_REQUIRED\`, send the user to ${appUrl}/en-US/skills/pricing
 and stop; do not retry.`
       : 'This Skill is free. It still requires a signed-in WebToMind account.';

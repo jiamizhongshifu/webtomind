@@ -105,7 +105,7 @@ describe('feature overlay behavior contracts', () => {
     expect(source).toMatch(/from\s+'@\/shared\/ui\/radix\/dialog'/);
     expect(source).toContain('<Dialog');
     expect(source).toContain('onOpenChange={(open) => {');
-    expect(source).toContain('if (!open && !analyzing) onCancel();');
+    expect(source).toContain('if (!open) requestClose();');
     expect(source).toContain('onEscapeKeyDown={(event) => {');
     expect(source).toContain('onInteractOutside={(event) => {');
   });

@@ -247,7 +247,7 @@ export interface UseThumbnailQueueResult {
   handleBatchRegenerate: () => void;
   handleRetryFailed: () => void;
   handleCancelBatch: () => void;
-  handleRegenerateThumbnail: (asset: ImagePromptAsset) => void;
+  regenerateThumbnail: (asset: ImagePromptAsset) => void;
 }
 
 export function useThumbnailQueue({
@@ -462,17 +462,8 @@ export function useThumbnailQueue({
 
   const handleBatchRegenerate = useCallback(() => {
     if (pendingThumbAssets.length === 0) return;
-    if (
-      !window.confirm(
-        t('mine.batchRegenerateConfirm', {
-          count: pendingThumbAssets.length
-        }) as string
-      )
-    ) {
-      return;
-    }
     enqueueRegenerate(pendingThumbAssets.map((a) => a.id));
-  }, [enqueueRegenerate, pendingThumbAssets, t]);
+  }, [enqueueRegenerate, pendingThumbAssets]);
 
   const handleRetryFailed = useCallback(() => {
     const failedIds = Object.entries(batchStatusRef.current)
@@ -487,22 +478,21 @@ export function useThumbnailQueue({
   }, []);
 
   /**
-   * 单点重生缩略图 — 不再阻塞,直接入队。已在排队 / 进行中的素材会被去重。
-   * 用户可以连续点多张,worker 会按点击顺序串行处理。
+   * 单点重生缩略图 — 确认交给调用方的锚定确认层，这里只负责入队。
+   * 已在排队 / 进行中的素材会被去重；用户可以连续点多张。
    */
-  const handleRegenerateThumbnail = useCallback(
+  const regenerateThumbnail = useCallback(
     (asset: ImagePromptAsset) => {
       const existing = batchStatusRef.current[asset.id]?.status;
       if (existing === 'queued' || existing === 'processing') {
-        // 已在队列里,不重复加;也不弹 confirm
+        // 已在队列里,不重复加
         return;
       }
-      if (!window.confirm(t('mine.regenerateConfirm') as string)) return;
       setError('');
       setStatusText('');
       enqueueRegenerate([asset.id]);
     },
-    [enqueueRegenerate, setError, setStatusText, t]
+    [enqueueRegenerate, setError, setStatusText]
   );
 
   /**
@@ -530,6 +520,6 @@ export function useThumbnailQueue({
     handleBatchRegenerate,
     handleRetryFailed,
     handleCancelBatch,
-    handleRegenerateThumbnail
+    regenerateThumbnail
   };
 }

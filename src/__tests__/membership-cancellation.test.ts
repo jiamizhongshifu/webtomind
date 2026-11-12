@@ -3,7 +3,8 @@ import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => ({
   createClient: vi.fn(),
   retrieve: vi.fn(),
-  update: vi.fn()
+  update: vi.fn(),
+  tables: vi.fn()
 }));
 vi.mock('@supabase/supabase-js', () => ({ createClient: mocks.createClient }));
 vi.mock('stripe', () => ({
@@ -78,7 +79,8 @@ beforeEach(() => {
           }
         }
       : {
-          from: () => {
+          from: (table: string) => {
+            mocks.tables(table);
             const conditions: [string, unknown][] = [];
             let updating = false;
             const query = {
@@ -279,5 +281,38 @@ describe('self-service subscription cancellation', () => {
     expect(mocks.update.mock.calls[0][2].idempotencyKey).not.toBe(
       mocks.update.mock.calls[1][2].idempotencyKey
     );
+  });
+});
+
+describe('content subscription cancellation scope', () => {
+  it('reads and cancels only the authenticated content subscription table', async () => {
+    const source = request();
+    const scoped = new Request(source.url + '?scope=skills', {
+      method: 'POST',
+      headers: source.headers,
+      body: await source.text()
+    });
+    const response = await handler(scoped);
+    expect(response.status).toBe(200);
+    expect(mocks.tables.mock.calls.map(([name]) => name)).toEqual([
+      'skill_subscriptions',
+      'skill_subscriptions'
+    ]);
+    expect(filters).toHaveBeenCalledWith('user_id', 'user-1');
+    expect(mocks.update).toHaveBeenCalledWith(
+      'sub_owned',
+      { cancel_at_period_end: true },
+      expect.any(Object)
+    );
+  });
+  it('rejects unknown scopes instead of falling back to compute billing', async () => {
+    const response = await handler(
+      new Request(
+        'https://webtomind.com/api/membership/cancellation?scope=all',
+        { headers: { Authorization: 'Bearer token' } }
+      )
+    );
+    expect(response.status).toBe(400);
+    expect(mocks.tables).not.toHaveBeenCalled();
   });
 });

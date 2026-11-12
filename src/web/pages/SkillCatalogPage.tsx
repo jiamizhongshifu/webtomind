@@ -24,18 +24,29 @@ const SORTS: Array<{ value: SkillCatalogSort; zh: string; en: string }> = [
   { value: 'newest', zh: '最新', en: 'Newest' }
 ];
 
-function readEnum<T extends string>(value: string | null, allowed: readonly T[]): T | null {
-  return value && (allowed as readonly string[]).includes(value) ? (value as T) : null;
+function readEnum<T extends string>(
+  value: string | null,
+  allowed: readonly T[]
+): T | null {
+  return value && (allowed as readonly string[]).includes(value)
+    ? (value as T)
+    : null;
 }
 
 export function SkillCatalogPage() {
   const { locale, isZh } = useMarketingLocale();
   const [params, setParams] = useSearchParams();
-  const outputType = readEnum<SkillOutputType>(params.get('type'), OUTPUT_TYPES);
+  const outputType = readEnum<SkillOutputType>(
+    params.get('type'),
+    OUTPUT_TYPES
+  );
   const tier = readEnum<SkillTier>(params.get('tier'), ['free', 'premium']);
   const sort =
-    readEnum<SkillCatalogSort>(params.get('sort'), ['featured', 'trending', 'newest']) ||
-    'featured';
+    readEnum<SkillCatalogSort>(params.get('sort'), [
+      'featured',
+      'trending',
+      'newest'
+    ]) || 'featured';
   const query = params.get('q') || '';
   const [draft, setDraft] = useState(query);
   const [state, setState] = useState<{
@@ -65,12 +76,16 @@ export function SkillCatalogPage() {
   useEffect(() => {
     const controller = new AbortController();
     setState((prev) => ({ ...prev, status: 'loading' }));
-    listSkillCatalog({ q: query, outputType, tier, sort, limit: 48 }, controller.signal)
+    listSkillCatalog(
+      { q: query, outputType, tier, sort, limit: 48 },
+      controller.signal
+    )
       .then((result) =>
         setState({ status: 'ready', items: result.items, total: result.total })
       )
       .catch((error: unknown) => {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
+        if (error instanceof DOMException && error.name === 'AbortError')
+          return;
         setState({ status: 'error', items: [], total: 0 });
       });
     return () => controller.abort();
@@ -82,11 +97,11 @@ export function SkillCatalogPage() {
     const enHref = `${window.location.origin}/en-US/skills`;
     return applySeo({
       title: isZh
-        ? 'Agent Skills 目录：商业视觉 Skill | WebToMind'
-        : 'Agent Skills for commercial visuals | WebToMind',
+        ? '创作 Skill 目录：发现工作流与成品案例 | WebToMind'
+        : 'Creative Skills and workflow examples | WebToMind',
       description: isZh
-        ? '为 Claude Code、Codex、Cursor、Trae 等 Agent 安装封面、海报、幻灯片、落地页和短视频 Skill，一条命令装好，直接产出成品。'
-        : 'Install Skills for covers, posters, decks, landing pages and short videos into Claude Code, Codex, Cursor and more. One command, finished results.',
+        ? '按交付任务浏览免费与付费 Skill，查看成品案例、输入要求、运行依赖和购买方式。'
+        : 'Browse free and paid Skills by deliverable. Review examples, required inputs, runtime dependencies and purchase options.',
       canonical,
       alternates: [
         { hreflang: 'zh-CN', href: zhHref },
@@ -104,22 +119,31 @@ export function SkillCatalogPage() {
       title={isZh ? 'Skill 目录' : 'Skill library'}
       subtitle={
         isZh
-          ? '每个 Skill 都由 WebToMind 设计、测试和维护，装进你的 Agent 就能产出可交付的成品。'
-          : 'Every Skill is designed, tested and maintained by WebToMind. Install it into your agent and get a finished result.'
+          ? '按你要交付的作品筛选，查看实际案例、输入要求和购买方式。'
+          : 'Find a workflow by its deliverable. Review examples, required inputs and purchase options.'
       }
     >
-      <section className="skill-catalog-toolbar" aria-label={isZh ? '筛选 Skill' : 'Filter Skills'}>
+      <section
+        className="skill-catalog-toolbar"
+        aria-label={isZh ? '筛选 Skill' : 'Filter Skills'}
+      >
         <SearchField
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onClear={() => setDraft('')}
           clearLabel={isZh ? '清除搜索' : 'Clear search'}
-          placeholder={isZh ? '想做什么？如：小红书封面' : 'What to make? e.g. OG image'}
+          placeholder={
+            isZh ? '想做什么？如：小红书封面' : 'What to make? e.g. OG image'
+          }
           aria-label={isZh ? '搜索 Skill' : 'Search Skills'}
           wrapperClassName="skill-catalog-search"
         />
         <div className="skill-filter-row">
-          <div className="skill-pill-group" role="group" aria-label={filterLabel}>
+          <div
+            className="skill-pill-group"
+            role="group"
+            aria-label={filterLabel}
+          >
             <button
               type="button"
               className="skill-pill"
@@ -134,13 +158,19 @@ export function SkillCatalogPage() {
                 type="button"
                 className="skill-pill"
                 aria-pressed={outputType === type}
-                onClick={() => update('type', outputType === type ? null : type)}
+                onClick={() =>
+                  update('type', outputType === type ? null : type)
+                }
               >
                 {outputLabel(type, isZh)}
               </button>
             ))}
           </div>
-          <div className="skill-pill-group" role="group" aria-label={isZh ? '档位' : 'Tier'}>
+          <div
+            className="skill-pill-group"
+            role="group"
+            aria-label={isZh ? '档位' : 'Tier'}
+          >
             {(['free', 'premium'] as const).map((value) => (
               <button
                 key={value}
@@ -149,7 +179,13 @@ export function SkillCatalogPage() {
                 aria-pressed={tier === value}
                 onClick={() => update('tier', tier === value ? null : value)}
               >
-                {value === 'free' ? (isZh ? '免费' : 'Free') : 'Pro'}
+                {value === 'free'
+                  ? isZh
+                    ? '免费'
+                    : 'Free'
+                  : isZh
+                    ? '付费'
+                    : 'Paid'}
               </button>
             ))}
           </div>
@@ -158,7 +194,10 @@ export function SkillCatalogPage() {
             <select
               value={sort}
               onChange={(event) =>
-                update('sort', event.target.value === 'featured' ? null : event.target.value)
+                update(
+                  'sort',
+                  event.target.value === 'featured' ? null : event.target.value
+                )
               }
             >
               {SORTS.map((option) => (
@@ -183,8 +222,15 @@ export function SkillCatalogPage() {
         <SkillGridSkeleton />
       ) : state.status === 'error' ? (
         <div className="skill-empty">
-          <h2>{isZh ? 'Skill 目录暂时无法加载' : 'The Skill library could not load'}</h2>
-          <Button variant="secondary" onClick={() => setReloadKey((key) => key + 1)}>
+          <h2>
+            {isZh
+              ? 'Skill 目录暂时无法加载'
+              : 'The Skill library could not load'}
+          </h2>
+          <Button
+            variant="secondary"
+            onClick={() => setReloadKey((key) => key + 1)}
+          >
             {isZh ? '重试' : 'Try again'}
           </Button>
         </div>
@@ -196,14 +242,23 @@ export function SkillCatalogPage() {
               ? '换个说法试试，或清除筛选条件。'
               : 'Try different words or clear the filters.'}
           </p>
-          <Button variant="secondary" onClick={() => setParams(new URLSearchParams(), { replace: true })}>
+          <Button
+            variant="secondary"
+            onClick={() => setParams(new URLSearchParams(), { replace: true })}
+          >
             {isZh ? '清除筛选' : 'Clear filters'}
           </Button>
         </div>
       ) : (
         <div className="skill-grid">
           {state.items.map((skill, index) => (
-            <SkillCard key={skill.slug} skill={skill} locale={locale} isZh={isZh} eager={index < 4} />
+            <SkillCard
+              key={skill.slug}
+              skill={skill}
+              locale={locale}
+              isZh={isZh}
+              eager={index < 4}
+            />
           ))}
         </div>
       )}

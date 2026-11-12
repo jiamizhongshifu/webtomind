@@ -5194,3 +5194,20 @@
     );
   }
 }
+
+.footer-tools {
+  color: var(--product-task-muted, rgba(255, 245, 219, 0.66));
+  font-size: 14px;
+}
+.footer-tools summary {
+  cursor: pointer;
+  padding: 4px 0;
+}
+.footer-tools[open] {
+  display: flex;
+  flex-direction: column;
+}
+.footer-tools .marketing-footer-link {
+  display: block;
+  margin-top: 12px;
+}

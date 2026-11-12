@@ -1,3 +1,10 @@
+import { useRef } from 'react';
+import {
+  PopoverRoot,
+  PopoverAnchor,
+  PopoverContent
+} from '@/shared/ui/PopoverPrimitives';
+import { Button as ConfirmButton } from '@/shared/ui/radix/button';
 /**
  * 历史生成结果预览弹窗。
  *
@@ -95,6 +102,8 @@ export function HistoryPreviewModal({
   const { t } = useTranslation('imageCreate');
   const [copied, setCopied] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const deleteAnchor = useRef<HTMLButtonElement | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleteError, setDeleteError] = useState('');
   const [thumbnailLoaded, setThumbnailLoaded] = useState(false);
   const [previewLoaded, setPreviewLoaded] = useState(false);
@@ -174,12 +183,12 @@ export function HistoryPreviewModal({
   const handleDelete = async () => {
     if (!onDelete) return;
     if (isDeleting) return;
-    const confirmed = window.confirm(t('preview.deleteConfirm') as string);
-    if (!confirmed) return;
     setIsDeleting(true);
     setDeleteError('');
     try {
       await onDelete(item);
+      setConfirmOpen(false);
+      setIsDeleting(false);
     } catch (error) {
       setDeleteError(
         error instanceof Error
@@ -214,7 +223,8 @@ export function HistoryPreviewModal({
           variant="outline"
           className="creator-preview-delete"
           disabled={isDeleting}
-          onClick={handleDelete}
+          ref={deleteAnchor}
+          onClick={() => setConfirmOpen(true)}
         >
           {isDeleting ? (
             <Loader2 data-icon="inline-start" className="creator-spin-icon" />
@@ -224,6 +234,46 @@ export function HistoryPreviewModal({
           {isDeleting ? t('preview.deleting') : t('preview.delete')}
         </Button>
       )}
+      <PopoverRoot
+        open={Boolean(confirmOpen)}
+        onOpenChange={(open) => {
+          if (!isDeleting && !open) setConfirmOpen(false);
+        }}
+      >
+        <PopoverAnchor virtualRef={deleteAnchor} />
+        <PopoverContent
+          data-floating-confirm="true"
+          className="z-[var(--z-product-menu-portal)]"
+          align="end"
+          collisionPadding={12}
+          aria-label={t('preview.delete')}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            deleteAnchor.current?.focus();
+          }}
+        >
+          <p className="text-sm text-muted-foreground">
+            {t('preview.deleteConfirm')}
+          </p>
+          {deleteError && <p role="alert">{deleteError}</p>}
+          <div className="mt-4 flex justify-end gap-2">
+            <ConfirmButton
+              variant="outline"
+              disabled={isDeleting}
+              onClick={() => setConfirmOpen(false)}
+            >
+              {t('common.cancel', '取消')}
+            </ConfirmButton>
+            <ConfirmButton
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={handleDelete}
+            >
+              {t('preview.delete')}
+            </ConfirmButton>
+          </div>
+        </PopoverContent>
+      </PopoverRoot>
       {onDownloadOriginal && item.imageUrl && (
         <Button
           type="button"

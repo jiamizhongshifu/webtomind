@@ -6,6 +6,7 @@
  */
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
+import { isLocalHttpOrigin } from '../../server/src/utils/cors-origin';
 
 // Supabase client singleton (使用 ANON_KEY，让 RLS 生效)
 let supabaseAuth: SupabaseClient | null = null;
@@ -36,6 +37,7 @@ function getSupabaseAuth(): SupabaseClient | null {
 // Token 验证缓存 (5分钟有效)
 const tokenCache = new Map<string, { userId: string; expiresAt: number }>();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const MAX_CACHE_SIZE = 1000;
 
 export function getRuntimeEnvValue(key: string): string | undefined {
   return typeof process !== 'undefined' ? process.env[key] : undefined;
@@ -89,13 +91,14 @@ export async function verifyTokenAndGetUserId(
 ): Promise<string | null> {
   if (!token) return null;
 
-  cleanupExpiredTokenCache();
-
   // 检查缓存
   const cached = tokenCache.get(token);
   if (cached && cached.expiresAt > Date.now()) {
+    tokenCache.delete(token);
+    tokenCache.set(token, cached);
     return cached.userId;
   }
+  tokenCache.delete(token);
 
   const sb = getSupabaseAuth();
   if (!sb) return null;
@@ -119,6 +122,12 @@ export async function verifyTokenAndGetUserId(
       return userId;
     }
 
+    // Bound memory without scanning every token on each authenticated request.
+    if (tokenCache.size >= MAX_CACHE_SIZE) {
+      cleanupExpiredTokenCache();
+      const oldest = tokenCache.keys().next().value;
+      if (tokenCache.size >= MAX_CACHE_SIZE && oldest) tokenCache.delete(oldest);
+    }
     tokenCache.set(token, {
       userId,
       expiresAt: cacheExpiry
@@ -168,7 +177,7 @@ export function getSessionIdFromRequest(request: Request): string | null {
 function cleanupExpiredTokenCache(): void {
   const now = Date.now();
   for (const [token, data] of tokenCache.entries()) {
-    if (data.expiresAt < now) {
+    if (data.expiresAt <= now) {
       tokenCache.delete(token);
     }
   }
@@ -224,8 +233,7 @@ function getCorsOrigin(origin: string | null): string {
   // 开发环境允许 localhost
   if (
     getRuntimeEnvValue('NODE_ENV') !== 'production' &&
-    (normalizedOrigin.includes('localhost') ||
-      normalizedOrigin.includes('127.0.0.1'))
+    isLocalHttpOrigin(normalizedOrigin)
   ) {
     return normalizedOrigin;
   }

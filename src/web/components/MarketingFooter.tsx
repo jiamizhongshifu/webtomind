@@ -1,4 +1,5 @@
 import { AiRechargeLink } from './AiRechargeLink';
+import { SupportChat } from './SupportChat';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useMarketingLocale } from '../lib/marketing-locale';
@@ -27,26 +28,36 @@ export function MarketingFooter() {
         </div>
 
         <div className="marketing-footer-links">
-          <AiRechargeLink
-            placement="footer"
-            locale={locale}
+          <Link to={`/${locale}/skills`} className="marketing-footer-link">
+            {locale === 'en-US' ? 'Explore Skills' : '发现 Skill'}
+          </Link>
+          <Link
+            to={`/${locale}/skills/pricing`}
             className="marketing-footer-link"
-          />
+          >
+            {locale === 'en-US' ? 'Membership & pricing' : '会员与价格'}
+          </Link>
           <Link to="/terms" className="marketing-footer-link">
             {t('footer.terms')}
           </Link>
           <Link to="/privacy" className="marketing-footer-link">
             {t('footer.privacy')}
           </Link>
-          <Link to={promptLibraryTarget} className="marketing-footer-link">
-            {locale === 'en-US' ? 'AI Image Prompts' : 'Prompt 案例库'}
-          </Link>
-          <a
-            href="mailto:admin@example.com"
-            className="marketing-footer-link"
-          >
-            {t('footer.contact')}
-          </a>
+          <details className="footer-tools">
+            <summary>{locale === 'en-US' ? 'More tools' : '更多工具'}</summary>
+            <Link to="/create" className="marketing-footer-link">
+              {locale === 'en-US' ? 'Image workspace' : '图片创作台'}
+            </Link>
+            <Link to={promptLibraryTarget} className="marketing-footer-link">
+              {locale === 'en-US' ? 'Prompt library' : '提示词资料库'}
+            </Link>
+            <AiRechargeLink
+              placement="footer"
+              locale={locale}
+              className="marketing-footer-link"
+            />
+          </details>
+          <SupportChat locale={locale} />
           <a
             href="https://x.com/webtomind"
             target="_blank"
@@ -54,24 +65,6 @@ export function MarketingFooter() {
             className="marketing-footer-link"
           >
             {t('footer.followX')}
-          </a>
-        </div>
-
-        <div className="marketing-footer-ph">
-          <a
-            href="https://www.producthunt.com/products/webtomind?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-webtomind"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="WebToMind on Product Hunt"
-          >
-            <img
-              alt="WebToMind - AI image prompts + model settings, one-click generate | Product Hunt"
-              width="250"
-              height="54"
-              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1218706&theme=dark"
-              loading="lazy"
-              decoding="async"
-            />
           </a>
         </div>
 

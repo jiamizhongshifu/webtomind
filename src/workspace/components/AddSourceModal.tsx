@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from '@/shared/ui/Dialog';
 /**
  * AddSourceModal - 统一的添加来源弹窗
  * 上半区：全网搜索新来源
@@ -109,6 +110,12 @@ export function AddSourceModal({
   const [textInput, setTextInput] = useState('');
   const [textSaving, setTextSaving] = useState(false);
 
+  const { requestClose, discardConfirmation } = useUnsavedChanges(
+    Boolean(urlInput.trim() || textInput.trim()),
+    onClose,
+    urlImporting || textSaving || searchState === 'importing'
+  );
+
   const inputRef = useRef<HTMLInputElement>(null);
 
   // ============ 搜索逻辑 ============
@@ -208,8 +215,7 @@ export function AddSourceModal({
     if (!text) return;
     setTextSaving(true);
     try {
-      const title =
-        text.substring(0, 50) + (text.length > 50 ? '...' : '');
+      const title = text.substring(0, 50) + (text.length > 50 ? '...' : '');
       await saveSummary({
         title,
         url: '',
@@ -238,164 +244,171 @@ export function AddSourceModal({
   // URL 子视图
   if (subView === 'url') {
     return (
-      <Dialog open onOpenChange={(open) => !open && onClose()}>
-        <DialogContent
-          className="z-[180] w-[calc(100%-2rem)] max-w-lg gap-5 rounded-2xl p-6"
-          overlayClassName="z-[180] bg-black/60"
-          showCloseButton={false}
-        >
-          <DialogHeader className="flex-row items-center justify-between gap-3 text-left">
-            <div className="flex items-center gap-2">
+      <>
+        <Dialog open onOpenChange={(open) => !open && requestClose()}>
+          <DialogContent
+            className="z-[180] w-[calc(100%-2rem)] max-w-lg gap-5 rounded-2xl p-6"
+            overlayClassName="z-[180] bg-black/60"
+            showCloseButton={false}
+          >
+            <DialogHeader className="flex-row items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSubView('main')}
+                  aria-label={t('addSource.back', '返回')}
+                >
+                  <ArrowLeft />
+                </Button>
+                <DialogTitle>
+                  {t('addSource.urlTitle', '网站和 YouTube 网址')}
+                </DialogTitle>
+              </div>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => setSubView('main')}
-                aria-label={t('addSource.back', '返回')}
+                onClick={requestClose}
+                aria-label={t('addSource.close', '关闭')}
               >
-                <ArrowLeft />
+                <X />
               </Button>
-              <DialogTitle>
-                {t('addSource.urlTitle', '网站和 YouTube 网址')}
-              </DialogTitle>
+            </DialogHeader>
+
+            <DialogDescription>
+              {t(
+                'addSource.urlDescription',
+                '在下方粘贴网站和 YouTube 网址，即可将其作为来源导入。'
+              )}
+            </DialogDescription>
+
+            <FieldGroup className="gap-4">
+              <Field>
+                <FieldLabel htmlFor="add-source-url-input">
+                  {t('addSource.urlFieldLabel', '网址')}
+                </FieldLabel>
+                <Textarea
+                  id="add-source-url-input"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  placeholder={t('addSource.urlPlaceholder', '粘贴任何链接')}
+                  className="h-48 resize-none"
+                />
+                <FieldDescription>
+                  {t(
+                    'addSource.urlHint1',
+                    '如要添加多个网址，请用空格或换行符分隔。'
+                  )}
+                </FieldDescription>
+                <FieldDescription>
+                  {t('addSource.urlHint2', '目前只会导入网站上的可见文字。')}
+                </FieldDescription>
+              </Field>
+            </FieldGroup>
+
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={handleUrlImport}
+                disabled={!urlInput.trim() || urlImporting}
+              >
+                {urlImporting ? (
+                  <Loader2 className="animate-spin" data-icon="inline-start" />
+                ) : null}
+                {t('addSource.insert', '插入')}
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              aria-label={t('addSource.close', '关闭')}
-            >
-              <X />
-            </Button>
-          </DialogHeader>
-
-          <DialogDescription>
-            {t(
-              'addSource.urlDescription',
-              '在下方粘贴网站和 YouTube 网址，即可将其作为来源导入。'
-            )}
-          </DialogDescription>
-
-          <FieldGroup className="gap-4">
-            <Field>
-              <FieldLabel htmlFor="add-source-url-input">
-                {t('addSource.urlFieldLabel', '网址')}
-              </FieldLabel>
-              <Textarea
-                id="add-source-url-input"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                placeholder={t('addSource.urlPlaceholder', '粘贴任何链接')}
-                className="h-48 resize-none"
-              />
-              <FieldDescription>
-                {t(
-                  'addSource.urlHint1',
-                  '如要添加多个网址，请用空格或换行符分隔。'
-                )}
-              </FieldDescription>
-              <FieldDescription>
-                {t('addSource.urlHint2', '目前只会导入网站上的可见文字。')}
-              </FieldDescription>
-            </Field>
-          </FieldGroup>
-
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              onClick={handleUrlImport}
-              disabled={!urlInput.trim() || urlImporting}
-            >
-              {urlImporting ? (
-                <Loader2 className="animate-spin" data-icon="inline-start" />
-              ) : null}
-              {t('addSource.insert', '插入')}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+        {discardConfirmation}
+      </>
     );
   }
 
   // 文本子视图
   if (subView === 'text') {
     return (
-      <Dialog open onOpenChange={(open) => !open && onClose()}>
-        <DialogContent
-          className="z-[180] w-[calc(100%-2rem)] max-w-lg gap-5 rounded-2xl p-6"
-          overlayClassName="z-[180] bg-black/60"
-          showCloseButton={false}
-        >
-          <DialogHeader className="flex-row items-center justify-between gap-3 text-left">
-            <div className="flex items-center gap-2">
+      <>
+        <Dialog open onOpenChange={(open) => !open && requestClose()}>
+          <DialogContent
+            className="z-[180] w-[calc(100%-2rem)] max-w-lg gap-5 rounded-2xl p-6"
+            overlayClassName="z-[180] bg-black/60"
+            showCloseButton={false}
+          >
+            <DialogHeader className="flex-row items-center justify-between gap-3 text-left">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSubView('main')}
+                  aria-label={t('addSource.back', '返回')}
+                >
+                  <ArrowLeft />
+                </Button>
+                <DialogTitle>
+                  {t('addSource.textTitle', '粘贴复制的文字')}
+                </DialogTitle>
+              </div>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => setSubView('main')}
-                aria-label={t('addSource.back', '返回')}
+                onClick={requestClose}
+                aria-label={t('addSource.close', '关闭')}
               >
-                <ArrowLeft />
+                <X />
               </Button>
-              <DialogTitle>
-                {t('addSource.textTitle', '粘贴复制的文字')}
-              </DialogTitle>
+            </DialogHeader>
+
+            <DialogDescription>
+              {t(
+                'addSource.textDescription',
+                '在下方粘贴复制的文字，即可将其作为来源导入。'
+              )}
+            </DialogDescription>
+
+            <FieldGroup className="gap-4">
+              <Field>
+                <FieldLabel htmlFor="add-source-text-input">
+                  {t('addSource.textFieldLabel', '文字内容')}
+                </FieldLabel>
+                <Textarea
+                  id="add-source-text-input"
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  placeholder={t('addSource.textPlaceholder', '在此处粘贴文字')}
+                  className="h-48 resize-none"
+                />
+              </Field>
+            </FieldGroup>
+
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                onClick={handleTextSave}
+                disabled={!textInput.trim() || textSaving}
+              >
+                {textSaving ? (
+                  <Loader2 className="animate-spin" data-icon="inline-start" />
+                ) : null}
+                {t('addSource.insert', '插入')}
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              aria-label={t('addSource.close', '关闭')}
-            >
-              <X />
-            </Button>
-          </DialogHeader>
-
-          <DialogDescription>
-            {t(
-              'addSource.textDescription',
-              '在下方粘贴复制的文字，即可将其作为来源导入。'
-            )}
-          </DialogDescription>
-
-          <FieldGroup className="gap-4">
-            <Field>
-              <FieldLabel htmlFor="add-source-text-input">
-                {t('addSource.textFieldLabel', '文字内容')}
-              </FieldLabel>
-              <Textarea
-                id="add-source-text-input"
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                placeholder={t('addSource.textPlaceholder', '在此处粘贴文字')}
-                className="h-48 resize-none"
-              />
-            </Field>
-          </FieldGroup>
-
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              onClick={handleTextSave}
-              disabled={!textInput.trim() || textSaving}
-            >
-              {textSaving ? (
-                <Loader2 className="animate-spin" data-icon="inline-start" />
-              ) : null}
-              {t('addSource.insert', '插入')}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+        {discardConfirmation}
+      </>
     );
   }
 
   // 主视图
   return (
     <>
-      <Dialog open onOpenChange={(open) => !open && onClose()}>
+      {discardConfirmation}
+      <Dialog open onOpenChange={(open) => !open && requestClose()}>
         <DialogContent
           className="z-[180] w-[calc(100%-2rem)] max-w-xl max-h-[85vh] gap-0 overflow-hidden rounded-2xl p-0"
           overlayClassName="z-[180] bg-black/60"
@@ -403,9 +416,7 @@ export function AddSourceModal({
         >
           {/* 头部 */}
           <DialogHeader className="flex-row items-center justify-between gap-3 px-6 pt-5 pb-3 text-left">
-            <DialogTitle>
-              {t('addSource.title', '添加来源')}
-            </DialogTitle>
+            <DialogTitle>{t('addSource.title', '添加来源')}</DialogTitle>
             <DialogDescription className="sr-only">
               {t(
                 'addSource.description',
@@ -416,7 +427,7 @@ export function AddSourceModal({
               type="button"
               variant="ghost"
               size="icon"
-              onClick={onClose}
+              onClick={requestClose}
               aria-label={t('addSource.close', '关闭')}
             >
               <X />
@@ -428,9 +439,7 @@ export function AddSourceModal({
             <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-4 mb-5">
               <div className="flex items-center gap-2 text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">
                 <Search className="w-3.5 h-3.5" />
-                <span>
-                  {t('addSource.searchLabel', '在网络中搜索新来源')}
-                </span>
+                <span>{t('addSource.searchLabel', '在网络中搜索新来源')}</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -445,8 +454,7 @@ export function AddSourceModal({
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={handleSearchKeyDown}
                   disabled={
-                    searchState === 'searching' ||
-                    searchState === 'importing'
+                    searchState === 'searching' || searchState === 'importing'
                   }
                   className="flex-1"
                 />
@@ -546,9 +554,13 @@ export function AddSourceModal({
                         className="mt-1 h-auto justify-start px-0 py-0 text-xs text-muted-foreground"
                       >
                         <ChevronRight data-icon="inline-start" />
-                        {t('sourceSearch.moreResults', '另外 {{count}} 个来源', {
-                          count: moreCount
-                        })}
+                        {t(
+                          'sourceSearch.moreResults',
+                          '另外 {{count}} 个来源',
+                          {
+                            count: moreCount
+                          }
+                        )}
                       </Button>
                     )}
 
@@ -591,7 +603,10 @@ export function AddSourceModal({
                           }
                         >
                           {searchState === 'importing' ? (
-                            <Loader2 className="animate-spin" data-icon="inline-start" />
+                            <Loader2
+                              className="animate-spin"
+                              data-icon="inline-start"
+                            />
                           ) : (
                             <span data-icon="inline-start">+</span>
                           )}
@@ -609,10 +624,7 @@ export function AddSourceModal({
                 {t('addSource.dropLabel', '或拖放文件')}
               </p>
               <p className="text-xs text-slate-400 dark:text-slate-500 mb-5">
-                {t(
-                  'addSource.dropHint',
-                  'PDF、图片、文档、音频，等等'
-                )}
+                {t('addSource.dropHint', 'PDF、图片、文档、音频，等等')}
               </p>
 
               <div className="flex flex-wrap items-center justify-center gap-3">
@@ -686,10 +698,7 @@ export function AddSourceModal({
         >
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t(
-                'sourceSearch.discardTitle',
-                '不导入笔记本就删除吗？'
-              )}
+              {t('sourceSearch.discardTitle', '不导入笔记本就删除吗？')}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {t(

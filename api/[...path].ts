@@ -1,4 +1,6 @@
-﻿/**
+import { isLocalHttpOrigin } from '../server/src/utils/cors-origin';
+
+/**
  * Vercel Serverless Function Entry
  * 直接实现 API 路由，避免跨目录导入问题
  * @version 1.2.0 - 添加 Gemini API 代理
@@ -156,8 +158,7 @@ app.use(
       }
       if (
         process.env.NODE_ENV !== 'production' &&
-        (normalizedOrigin.includes('localhost') ||
-          normalizedOrigin.includes('127.0.0.1'))
+        isLocalHttpOrigin(normalizedOrigin)
       ) {
         return normalizedOrigin;
       }

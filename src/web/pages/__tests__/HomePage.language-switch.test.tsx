@@ -68,7 +68,9 @@ describe('HomePage language switch', () => {
     await renderHome();
 
     fireEvent.click(await screen.findByRole('button', { name: '语言' }));
-    fireEvent.click(await screen.findByRole('button', { name: 'English' }));
+    fireEvent.click(
+      await screen.findByRole('menuitemradio', { name: 'English' })
+    );
 
     await waitFor(() => {
       expect(screen.getByTestId('location')).toHaveTextContent(

@@ -137,6 +137,41 @@ describe('install', () => {
     ).toThrow(/SKILL.md/);
   });
 
+  it('reads byte-counted PAX paths containing Chinese text and later metadata', () => {
+    const pax = (key, value) => {
+      const record = `${key}=${value}\n`;
+      let length = Buffer.byteLength(record) + 2;
+      while (Buffer.byteLength(`${length} ${record}`) !== length) {
+        length = Buffer.byteLength(`${length} ${record}`);
+      }
+      return `${length} ${record}`;
+    };
+    const entries = readTarGz(makeTarGz([
+      { name: 'PaxHeader', type: 'x', content: pax('path', 'references/中文资料.md') + pax('mtime', '123456') },
+      { name: 'placeholder', content: 'Chinese reference' }
+    ]));
+    expect(entries[0].path).toBe('references/中文资料.md');
+    expect(entries[0].data.toString()).toBe('Chinese reference');
+  });
+
+  it('rejects malformed PAX records instead of silently dropping metadata', () => {
+    expect(() => readTarGz(makeTarGz([
+      { name: 'PaxHeader', type: 'x', content: '999 path=unsafe\n' },
+      { name: 'SKILL.md', content: 'skill' }
+    ]))).toThrow(/PAX/);
+  });
+
+  it('rejects malformed tar sizes and damaged headers', () => {
+    const header = tarHeader('SKILL.md', 0);
+    header.write('invalid-size', 124);
+    expect(() => readTarGz(gzipSync(Buffer.concat([header, Buffer.alloc(1024)]))))
+      .toThrow(/Archive/);
+    const damaged = tarHeader('SKILL.md', 0);
+    damaged[0] = 88;
+    expect(() => readTarGz(gzipSync(Buffer.concat([damaged, Buffer.alloc(1024)]))))
+      .toThrow(/checksum/);
+  });
+
   it('reports a missing entitlement with a dedicated exit code', async () => {
     const { fetchImpl } = fakeServer({
       archive,

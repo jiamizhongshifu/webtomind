@@ -26,4 +26,20 @@ describe('safe remote URL validation', () => {
     expect(() => validateHttpsRemoteUrl('http://example.com/a')).toThrow();
     expect(() => validateHttpsRemoteUrl('https://user:pass@example.com/a')).toThrow();
   });
+
+  it.each([
+    'https://localhost./private',
+    'https://service.internal./private',
+    'https://[::ffff:127.0.0.1]/private',
+    'https://[::ffff:a00:1]/private',
+    'https://[fe90::1]/private',
+    'https://[febf::1]/private'
+  ])('rejects alternate local-address spelling %s', (url) => {
+    expect(() => validateHttpsRemoteUrl(url)).toThrow('Untrusted remote URL');
+  });
+
+  it('continues to allow public IPv6 addresses', () => {
+    expect(validateHttpsRemoteUrl('https://[2606:4700:4700::1111]/').hostname)
+      .toBe('[2606:4700:4700::1111]');
+  });
 });

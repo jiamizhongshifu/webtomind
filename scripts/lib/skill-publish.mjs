@@ -1,9 +1,11 @@
 // Pure helpers for scripts/publish-skills.mjs: deterministic archives and the
 // mapping from a content-repository skill.json to skill_catalog rows.
 import { createHash } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import { gzipSync } from 'node:zlib';
 import { readdirSync, readFileSync, statSync, lstatSync } from 'node:fs';
 import path from 'node:path';
+import { assertSkillPrivacy } from './skill-privacy.mjs';
 
 const BLOCK = 512;
 const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -61,6 +63,22 @@ export function listPackageFiles(root) {
   return files;
 }
 
+/** A license identifier alone does not supply the buyer's use terms. */
+export function assertSkillDeliveryFiles(root, manifest) {
+  const files = new Set(listPackageFiles(root));
+  for (const field of ['license_file', 'dependency_notes']) {
+    const file = manifest[field];
+    if (
+      typeof file !== 'string' ||
+      !/^[A-Za-z0-9_-]+\.md$/.test(file) ||
+      !files.has(file) ||
+      readFileSync(path.join(root, file), 'utf8').trim().length < 200
+    ) {
+      throw new Error(`${manifest.slug}: missing complete ${field} document`);
+    }
+  }
+}
+
 function writeOctal(header, offset, length, value) {
   header.write(value.toString(8).padStart(length - 1, '0') + '\0', offset, length, 'ascii');
 }
@@ -103,6 +121,7 @@ export function buildDeterministicArchive(root, slug) {
   const chunks = [];
   for (const file of listPackageFiles(root)) {
     const data = readFileSync(path.join(root, file));
+    assertSkillPrivacy(file, data);
     const mode = file.startsWith('scripts/') ? 0o755 : 0o644;
     chunks.push(tarHeader(`${slug}/${file}`, data.length, mode), data);
     const pad = (BLOCK - (data.length % BLOCK)) % BLOCK;

@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import { AtSign, AudioLines, Image as ImageIcon, Video, X } from 'lucide-react';
 import './prompt-reference-thumbnail.css';
 
@@ -53,22 +54,16 @@ export function PromptReferenceThumbnail({
       )}
       <span className="creation-prompt-reference-label">{label}</span>
       <div className="creation-prompt-reference-actions">
-        <button
-          type="button"
-          onClick={onMention}
-          aria-label={mentionLabel}
-          title={mentionLabel}
-        >
-          <AtSign aria-hidden="true" />
-        </button>
-        <button
-          type="button"
-          onClick={onRemove}
-          aria-label={removeLabel}
-          title={removeLabel}
-        >
-          <X aria-hidden="true" />
-        </button>
+        <TextTooltip text={mentionLabel}>
+          <button type="button" onClick={onMention} aria-label={mentionLabel}>
+            <AtSign aria-hidden="true" />
+          </button>
+        </TextTooltip>
+        <TextTooltip text={removeLabel}>
+          <button type="button" onClick={onRemove} aria-label={removeLabel}>
+            <X aria-hidden="true" />
+          </button>
+        </TextTooltip>
       </div>
     </article>
   );

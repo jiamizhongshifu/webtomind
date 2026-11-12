@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Shortcut, SavedSummary } from '@/services/database';
 import type { Reference } from '@/types';
@@ -29,6 +30,7 @@ import { SkillRunsPanel } from './SkillRunsPanel';
 import { SKILL_RUN_FOCUS_EVENT } from '../utils/skill-run-events';
 import { ReferenceSelector } from './ReferenceSelector';
 import { Button, SearchField } from '@/shared/ui';
+import { ConfirmDialog } from './ConfirmDialog';
 
 type PlazaTab = 'explore' | 'mine' | 'runs';
 type MineFilter = 'all' | 'personal' | 'installed';
@@ -63,11 +65,11 @@ const SOURCE_LABELS: Record<'personal' | 'market' | 'installed', string> = {
 };
 const CATEGORY_ORDER = ['学习', '写作', '图片', 'Slides', '网页'];
 const CATEGORY_DESCRIPTIONS: Record<string, string> = {
-  '学习': '汲取先贤智慧的精华。像伟人一样思考和行动。',
-  '写作': '您的个人简报助手，通过定期任务提供报告。',
-  '图片': '根据主题生成风格化品牌配图和视觉内容。',
-  'Slides': '基于内容自动生成精美的演示文稿。',
-  '网页': '将内容排版并发布到各类平台。'
+  学习: '汲取先贤智慧的精华。像伟人一样思考和行动。',
+  写作: '您的个人简报助手，通过定期任务提供报告。',
+  图片: '根据主题生成风格化品牌配图和视觉内容。',
+  Slides: '基于内容自动生成精美的演示文稿。',
+  网页: '将内容排版并发布到各类平台。'
 };
 const CATEGORIES = [
   '全部',
@@ -111,6 +113,8 @@ function SkillCard({
   showMenu?: boolean;
   installed?: boolean;
 }) {
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [installing, setInstalling] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -142,10 +146,14 @@ function SkillCard({
             />
           </div>
           <div className="min-w-0 flex-1">
-            <h3 className="text-base font-semibold text-slate-900 line-clamp-1">{title}</h3>
+            <h3 className="text-base font-semibold text-slate-900 line-clamp-1">
+              {title}
+            </h3>
           </div>
         </div>
-        <p className="text-sm text-slate-500 leading-relaxed line-clamp-3">{description}</p>
+        <p className="text-sm text-slate-500 leading-relaxed line-clamp-3">
+          {description}
+        </p>
       </button>
 
       {/* 我的 tab: 右上角 ⋯ 菜单 */}
@@ -153,7 +161,10 @@ function SkillCard({
         <div className="absolute top-4 right-4" ref={menuRef}>
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); setMenuOpen(!menuOpen); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setMenuOpen(!menuOpen);
+            }}
             className="p-1.5 rounded-lg text-slate-400 opacity-0 group-hover:opacity-100 hover:bg-slate-100 hover:text-slate-600 transition-all"
             aria-label="更多操作"
           >
@@ -164,7 +175,11 @@ function SkillCard({
               {onDelete && (
                 <button
                   type="button"
-                  onClick={(e) => { e.stopPropagation(); setMenuOpen(false); onDelete(); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMenuOpen(false);
+                    setConfirmDeleteOpen(true);
+                  }}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -182,7 +197,10 @@ function SkillCard({
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); onClick(); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onClick();
+              }}
               className="flex-1 py-2 rounded-full text-sm font-medium border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
             >
               查看更多
@@ -193,18 +211,42 @@ function SkillCard({
                 e.stopPropagation();
                 if (installing || installed) return;
                 setInstalling(true);
-                try { await onInstall(); } finally { setInstalling(false); }
+                try {
+                  await onInstall();
+                } finally {
+                  setInstalling(false);
+                }
               }}
               disabled={installed || installing}
               className="flex-1 py-2 rounded-full text-sm font-medium bg-slate-900 text-white hover:bg-slate-800 disabled:bg-slate-300 transition-colors flex items-center justify-center gap-1.5"
             >
               {installing ? (
-                <><Loader2 className="w-3.5 h-3.5 animate-spin" /> 加入中</>
-              ) : installed ? '已加入' : '加入模板'}
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> 加入中
+                </>
+              ) : installed ? (
+                '已加入'
+              ) : (
+                '加入模板'
+              )}
             </button>
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        isOpen={confirmDeleteOpen}
+        title="删除这个 Skill？"
+        description="删除后无法恢复；已经使用它生成的记录不会被删除。"
+        confirmText="删除 Skill"
+        cancelText="取消"
+        danger
+        onConfirm={() => {
+          setConfirmDeleteOpen(false);
+          onDelete?.();
+        }}
+        onCancel={() => setConfirmDeleteOpen(false)}
+      />
     </div>
   );
 }
@@ -253,7 +295,8 @@ export function SkillsPlaza({
       setPlazaTab('runs');
     };
     window.addEventListener(SKILL_RUN_FOCUS_EVENT, handleFocusRun);
-    return () => window.removeEventListener(SKILL_RUN_FOCUS_EVENT, handleFocusRun);
+    return () =>
+      window.removeEventListener(SKILL_RUN_FOCUS_EVENT, handleFocusRun);
   }, []);
   const [mineFilter, setMineFilter] = useState<MineFilter>('all');
   const [category, setCategory] = useState('全部');
@@ -268,9 +311,18 @@ export function SkillsPlaza({
   const [createDescription, setCreateDescription] = useState('');
   const [createPrompt, setCreatePrompt] = useState('');
   const [createCovers, setCreateCovers] = useState<string[]>([]);
-  const [createRefs, setCreateRefs] = useState<Array<{ id: string; summaryId: string; summaryTitle: string; thumbnailUrl?: string }>>([]);
+  const [createRefs, setCreateRefs] = useState<
+    Array<{
+      id: string;
+      summaryId: string;
+      summaryTitle: string;
+      thumbnailUrl?: string;
+    }>
+  >([]);
   const [showCreateRefSelector, setShowCreateRefSelector] = useState(false);
-  const [createFiles, setCreateFiles] = useState<Array<{ id: string; name: string; data: string }>>([]);
+  const [createFiles, setCreateFiles] = useState<
+    Array<{ id: string; name: string; data: string }>
+  >([]);
   const templateDeepLinkHandledRef = useRef<string | null>(null);
   const [skillCovers, setSkillCovers] = useState<Record<string, string[]>>(
     () => {
@@ -294,9 +346,9 @@ export function SkillsPlaza({
     setPlazaTab(initialTab);
   }, [initialTab]);
 
-  const marketSkillList = marketSkills && marketSkills.length > 0 ? marketSkills : MARKET_SKILLS;
+  const marketSkillList =
+    marketSkills && marketSkills.length > 0 ? marketSkills : MARKET_SKILLS;
   const catalogItems = catalog ?? EMPTY_CATALOG_ITEMS;
-
 
   const filteredMarketSkills = useMemo(() => {
     return marketSkillList.filter((skill) => {
@@ -329,27 +381,32 @@ export function SkillsPlaza({
 
   const mineSkills = useMemo(() => {
     const personalCatalog = catalogItems
-      .filter((item) => item.originType === 'user' || item.originType === 'system')
+      .filter(
+        (item) => item.originType === 'user' || item.originType === 'system'
+      )
       .map((item) => ({
         id: item.id,
         name: item.displayName || item.name,
         description:
-          item.description || item.skill?.coreInstructions?.slice(0, 90) || '自定义技能',
+          item.description ||
+          item.skill?.coreInstructions?.slice(0, 90) ||
+          '自定义技能',
         prompt: item.skill?.coreInstructions || '',
         coverImages: item.skill ? skillCovers[item.id] || [] : [],
         source: 'personal' as const
       }));
-    const personal = personalCatalog.length > 0
-      ? personalCatalog
-      : shortcuts.map((item) => ({
-          id: item.id,
-          name: item.name || '未命名技能',
-          description:
-            item.description || item.prompt?.slice(0, 90) || '自定义技能',
-          prompt: item.prompt || '',
-          coverImages: skillCovers[item.id] || [],
-          source: 'personal' as const
-        }));
+    const personal =
+      personalCatalog.length > 0
+        ? personalCatalog
+        : shortcuts.map((item) => ({
+            id: item.id,
+            name: item.name || '未命名技能',
+            description:
+              item.description || item.prompt?.slice(0, 90) || '自定义技能',
+            prompt: item.prompt || '',
+            coverImages: skillCovers[item.id] || [],
+            source: 'personal' as const
+          }));
     const installed = catalogItems
       .filter((item) => item.originType === 'market-installed' && item.skill)
       .map((item) => ({
@@ -357,7 +414,9 @@ export function SkillsPlaza({
         marketSkillId: item.marketSkillId,
         name: item.displayName || item.name,
         description:
-          item.description || item.skill?.coreInstructions?.slice(0, 90) || '已加入模板',
+          item.description ||
+          item.skill?.coreInstructions?.slice(0, 90) ||
+          '已加入模板',
         category: item.category || '作品模板',
         author: '我',
         badgeColor: 'from-slate-600 to-slate-800',
@@ -406,7 +465,10 @@ export function SkillsPlaza({
           );
         })
         .catch((error) => {
-          console.error('[SkillsPlaza] Load market skill prompt failed:', error);
+          console.error(
+            '[SkillsPlaza] Load market skill prompt failed:',
+            error
+          );
         })
         .finally(() => {
           setLoadingPromptId((current) =>
@@ -417,30 +479,33 @@ export function SkillsPlaza({
     []
   );
 
-  const handleInstall = useCallback(async (skill: MarketSkill) => {
-    if (
-      installedMarketSkills.some((item) => item.id === skill.id) ||
-      installingId
-    ) {
-      return;
-    }
-    try {
-      setInstallingId(skill.id);
-      const hydratedSkill = await hydrateMarketSkillPrompt(skill);
-      await onInstallMarketSkill({
-        marketSkillId: hydratedSkill.id,
-        name: hydratedSkill.name,
-        prompt: hydratedSkill.prompt,
-        description: hydratedSkill.description,
-        category: hydratedSkill.category
-      });
-      setSelectedSkill({ ...hydratedSkill, source: 'installed' });
-    } catch (error) {
-      console.error('[SkillsPlaza] Install skill failed:', error);
-    } finally {
-      setInstallingId(null);
-    }
-  }, [installedMarketSkills, installingId, onInstallMarketSkill]);
+  const handleInstall = useCallback(
+    async (skill: MarketSkill) => {
+      if (
+        installedMarketSkills.some((item) => item.id === skill.id) ||
+        installingId
+      ) {
+        return;
+      }
+      try {
+        setInstallingId(skill.id);
+        const hydratedSkill = await hydrateMarketSkillPrompt(skill);
+        await onInstallMarketSkill({
+          marketSkillId: hydratedSkill.id,
+          name: hydratedSkill.name,
+          prompt: hydratedSkill.prompt,
+          description: hydratedSkill.description,
+          category: hydratedSkill.category
+        });
+        setSelectedSkill({ ...hydratedSkill, source: 'installed' });
+      } catch (error) {
+        console.error('[SkillsPlaza] Install skill failed:', error);
+      } finally {
+        setInstallingId(null);
+      }
+    },
+    [installedMarketSkills, installingId, onInstallMarketSkill]
+  );
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -464,16 +529,17 @@ export function SkillsPlaza({
 
     if (params.get('add') === 'true' && !alreadyInstalled) {
       void handleInstall(skill).finally(() => {
-        window.history.replaceState(
-          { view: 'skills' },
-          '',
-          getSkillsViewUrl()
-        );
+        window.history.replaceState({ view: 'skills' }, '', getSkillsViewUrl());
       });
     } else {
       window.history.replaceState({ view: 'skills' }, '', getSkillsViewUrl());
     }
-  }, [handleInstall, installedMarketSkillIds, marketSkillList, openMarketSkill]);
+  }, [
+    handleInstall,
+    installedMarketSkillIds,
+    marketSkillList,
+    openMarketSkill
+  ]);
 
   const handleCreateSkill = async () => {
     const name = createName.trim();
@@ -535,7 +601,6 @@ export function SkillsPlaza({
     }
   };
 
-
   const handleCreateCoverSelect = (index: number, file?: File) => {
     if (!file) return;
     const reader = new FileReader();
@@ -555,8 +620,10 @@ export function SkillsPlaza({
     const newRefs = refs.map((ref) => {
       const summary = summaries.find((s) => s.id === ref.summaryId);
       const content = summary?.markdown || '';
-      const imgMatch = content.match(/<img[^>]+src=["'](data:image\/[^;]+;base64,[^"']+)["'][^>]*>/i)
-        || content.match(/!\[.*\]\((data:image\/[^;]+;base64,[^)]+)\)/i);
+      const imgMatch =
+        content.match(
+          /<img[^>]+src=["'](data:image\/[^;]+;base64,[^"']+)["'][^>]*>/i
+        ) || content.match(/!\[.*\]\((data:image\/[^;]+;base64,[^)]+)\)/i);
       return {
         id: ref.id,
         summaryId: ref.summaryId!,
@@ -576,7 +643,10 @@ export function SkillsPlaza({
       reader.onload = (ev) => {
         const data = ev.target?.result as string;
         if (!data) return;
-        setCreateFiles((prev) => [...prev, { id: crypto.randomUUID(), name: file.name, data }]);
+        setCreateFiles((prev) => [
+          ...prev,
+          { id: crypto.randomUUID(), name: file.name, data }
+        ]);
       };
       reader.readAsDataURL(file);
     }
@@ -584,7 +654,10 @@ export function SkillsPlaza({
   };
 
   if (createMode) {
-    const createCoverImage = createSkillCoverDataUrl(createName || '新技能', 'custom');
+    const createCoverImage = createSkillCoverDataUrl(
+      createName || '新技能',
+      'custom'
+    );
     const existingRefIds = createRefs.map((r) => r.summaryId);
     return (
       <div className="flex-1 overflow-y-auto bg-slate-50 custom-scrollbar">
@@ -598,15 +671,16 @@ export function SkillsPlaza({
               <ArrowLeft className="w-4 h-4" />
               新技能
             </button>
-            <button
-              type="button"
-              onClick={() => setCreateMode(false)}
-              className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"
-              title="关闭"
-              aria-label="关闭"
-            >
-              <X className="w-6 h-6" />
-            </button>
+            <TextTooltip text={'关闭'}>
+              <button
+                type="button"
+                onClick={() => setCreateMode(false)}
+                className="p-2 rounded-lg hover:bg-slate-100 text-slate-500"
+                aria-label="关闭"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </TextTooltip>
           </header>
 
           <div className="bg-white border border-slate-200 rounded-2xl p-8 space-y-8">
@@ -638,7 +712,9 @@ export function SkillsPlaza({
               <button
                 type="button"
                 onClick={() => void handleCreateSkill()}
-                disabled={!createName.trim() || !createPrompt.trim() || savingSkill}
+                disabled={
+                  !createName.trim() || !createPrompt.trim() || savingSkill
+                }
                 className="px-6 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium disabled:bg-slate-300 hover:bg-slate-800 transition-colors flex-shrink-0"
               >
                 {savingSkill ? '创建中...' : '创建'}
@@ -648,12 +724,18 @@ export function SkillsPlaza({
             {/* 描述 */}
             <section>
               <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium text-slate-700">描述</label>
-                <span className="text-xs text-slate-400">{createDescription.length}/300</span>
+                <label className="text-sm font-medium text-slate-700">
+                  描述
+                </label>
+                <span className="text-xs text-slate-400">
+                  {createDescription.length}/300
+                </span>
               </div>
               <textarea
                 value={createDescription}
-                onChange={(e) => setCreateDescription(e.target.value.slice(0, 300))}
+                onChange={(e) =>
+                  setCreateDescription(e.target.value.slice(0, 300))
+                }
                 placeholder="描述这个技能的功能..."
                 rows={3}
                 className="w-full rounded-xl border border-slate-200 p-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-slate-200 placeholder:text-slate-400"
@@ -662,7 +744,9 @@ export function SkillsPlaza({
 
             {/* 指令 */}
             <section>
-              <label className="block text-sm font-medium text-slate-700 mb-2">指令</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                指令
+              </label>
               <div className="rounded-xl border border-slate-200 overflow-hidden">
                 {/* 已添加的引用/文件标签 */}
                 {(createRefs.length > 0 || createFiles.length > 0) && (
@@ -684,10 +768,16 @@ export function SkillsPlaza({
                         ) : (
                           <FileText className="w-3.5 h-3.5 flex-shrink-0" />
                         )}
-                        <span className="max-w-[120px] truncate">{ref.summaryTitle}</span>
+                        <span className="max-w-[120px] truncate">
+                          {ref.summaryTitle}
+                        </span>
                         <button
                           type="button"
-                          onClick={() => setCreateRefs((prev) => prev.filter((r) => r.id !== ref.id))}
+                          onClick={() =>
+                            setCreateRefs((prev) =>
+                              prev.filter((r) => r.id !== ref.id)
+                            )
+                          }
                           className="p-0.5 hover:bg-blue-100 rounded transition-colors"
                         >
                           <X className="w-3 h-3" />
@@ -700,10 +790,16 @@ export function SkillsPlaza({
                         className="inline-flex items-center gap-1.5 px-2 py-1 bg-amber-50 text-amber-700 rounded-lg text-xs"
                       >
                         <FileText className="w-3.5 h-3.5 flex-shrink-0" />
-                        <span className="max-w-[120px] truncate">{file.name}</span>
+                        <span className="max-w-[120px] truncate">
+                          {file.name}
+                        </span>
                         <button
                           type="button"
-                          onClick={() => setCreateFiles((prev) => prev.filter((f) => f.id !== file.id))}
+                          onClick={() =>
+                            setCreateFiles((prev) =>
+                              prev.filter((f) => f.id !== file.id)
+                            )
+                          }
                           className="p-0.5 hover:bg-amber-100 rounded transition-colors"
                         >
                           <X className="w-3 h-3" />
@@ -717,34 +813,36 @@ export function SkillsPlaza({
                 <textarea
                   value={createPrompt}
                   onChange={(e) => setCreatePrompt(e.target.value)}
-                  placeholder={'为了有效描述技能的工作方式，你可以使用以下结构：\n\n1. 你的目标是什么？\n2. 哪种风格适合？\n3. 这个技能的背景是什么？\n4. 使用哪些关键词？\n5. 输出应该多长？'}
+                  placeholder={
+                    '为了有效描述技能的工作方式，你可以使用以下结构：\n\n1. 你的目标是什么？\n2. 哪种风格适合？\n3. 这个技能的背景是什么？\n4. 使用哪些关键词？\n5. 输出应该多长？'
+                  }
                   rows={12}
                   className="w-full p-4 text-sm text-slate-900 placeholder:text-slate-400 resize-y focus:outline-none bg-white"
                 />
 
                 {/* 底部工具栏 */}
                 <div className="flex items-center gap-1 px-3 py-2 border-t border-slate-100 bg-white">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateRefSelector(true)}
-                    className="p-2 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"
-                    title="从素材库添加引用"
-                  >
-                    <Link2 className="w-4.5 h-4.5" />
-                  </button>
-                  <label
-                    className="p-2 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors cursor-pointer"
-                    title="上传文件"
-                  >
-                    <Upload className="w-4.5 h-4.5" />
-                    <input
-                      type="file"
-                      accept=".pdf,.txt,.md,.csv,.json,image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handleCreateFileUpload}
-                    />
-                  </label>
+                  <TextTooltip text={'从素材库添加引用'}>
+                    <button
+                      type="button"
+                      onClick={() => setShowCreateRefSelector(true)}
+                      className="p-2 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors"
+                    >
+                      <Link2 className="w-4.5 h-4.5" />
+                    </button>
+                  </TextTooltip>
+                  <TextTooltip text={'上传文件'}>
+                    <label className="p-2 rounded-lg text-slate-400 hover:text-violet-600 hover:bg-violet-50 transition-colors cursor-pointer">
+                      <Upload className="w-4.5 h-4.5" />
+                      <input
+                        type="file"
+                        accept=".pdf,.txt,.md,.csv,.json,image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handleCreateFileUpload}
+                      />
+                    </label>
+                  </TextTooltip>
                 </div>
               </div>
             </section>
@@ -753,7 +851,9 @@ export function SkillsPlaza({
             <section>
               <label className="block text-sm font-medium text-slate-700 mb-3">
                 封面图片
-                <span className="ml-2 text-xs text-slate-400 font-normal">（最多 2 张，960×600）</span>
+                <span className="ml-2 text-xs text-slate-400 font-normal">
+                  （最多 2 张，960×600）
+                </span>
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[0, 1].map((index) => (
@@ -772,20 +872,23 @@ export function SkillsPlaza({
                     ) : (
                       <>
                         <ImagePlus className="w-6 h-6 text-slate-400" />
-                        <span className="text-xs text-slate-400">上传或拖放图片到此处</span>
+                        <span className="text-xs text-slate-400">
+                          上传或拖放图片到此处
+                        </span>
                       </>
                     )}
                     <input
                       type="file"
                       accept="image/*"
                       className="hidden"
-                      onChange={(e) => handleCreateCoverSelect(index, e.target.files?.[0])}
+                      onChange={(e) =>
+                        handleCreateCoverSelect(index, e.target.files?.[0])
+                      }
                     />
                   </label>
                 ))}
               </div>
             </section>
-
           </div>
         </div>
 
@@ -815,10 +918,14 @@ export function SkillsPlaza({
         ? (selectedSkill as MarketSkillDetail).category || 'Skill'
         : '个人技能'
     );
-    const marketDetail = isMarketLike ? (selectedSkill as MarketSkillDetail) : null;
-    const hasCoverImages = marketDetail?.coverImages && marketDetail.coverImages.length > 0;
+    const marketDetail = isMarketLike
+      ? (selectedSkill as MarketSkillDetail)
+      : null;
+    const hasCoverImages =
+      marketDetail?.coverImages && marketDetail.coverImages.length > 0;
     const promptLoading = isMarketLike && loadingPromptId === selectedSkill.id;
-    const promptHidden = isMarketLike && !selectedSkill.prompt && !promptLoading;
+    const promptHidden =
+      isMarketLike && !selectedSkill.prompt && !promptLoading;
 
     return (
       <div className="flex-1 overflow-y-auto bg-white custom-scrollbar">
@@ -850,7 +957,9 @@ export function SkillsPlaza({
                 <button
                   type="button"
                   disabled={!!isInstalled || installingId === selectedSkill.id}
-                  onClick={() => void handleInstall(selectedSkill as MarketSkill)}
+                  onClick={() =>
+                    void handleInstall(selectedSkill as MarketSkill)
+                  }
                   className="px-6 py-2.5 rounded-full bg-slate-900 text-white text-sm font-medium disabled:bg-slate-300 hover:bg-slate-800 transition-colors inline-flex items-center gap-2"
                 >
                   {installingId === selectedSkill.id && (
@@ -908,7 +1017,9 @@ export function SkillsPlaza({
           {isMarketLike && (
             <div className="flex items-center gap-4 text-sm text-slate-500 mb-8">
               <span>模板使用</span>
-              <span className="font-medium text-slate-700">👤 {(selectedSkill as MarketSkillDetail).author ? '—' : '—'}</span>
+              <span className="font-medium text-slate-700">
+                👤 {(selectedSkill as MarketSkillDetail).author ? '—' : '—'}
+              </span>
             </div>
           )}
 
@@ -916,7 +1027,10 @@ export function SkillsPlaza({
           {hasCoverImages && (
             <div className="mb-10">
               {marketDetail!.coverImages!.map((url, i) => (
-                <div key={i} className="overflow-hidden rounded-2xl bg-slate-100 mb-4">
+                <div
+                  key={i}
+                  className="overflow-hidden rounded-2xl bg-slate-100 mb-4"
+                >
                   <img
                     src={url}
                     alt=""
@@ -970,7 +1084,9 @@ export function SkillsPlaza({
               ) : promptHidden ? (
                 <div className="rounded-xl bg-slate-50 border border-slate-200 p-8 flex flex-col items-center justify-center gap-3 text-center min-h-[200px]">
                   <Lock className="w-8 h-8 text-slate-300" />
-                  <p className="text-sm text-slate-500">该模板的完整指令已隐藏，你仍可以加入作品模板并直接使用。</p>
+                  <p className="text-sm text-slate-500">
+                    该模板的完整指令已隐藏，你仍可以加入作品模板并直接使用。
+                  </p>
                 </div>
               ) : selectedSkill.source === 'personal' ? (
                 <textarea
@@ -1000,7 +1116,9 @@ export function SkillsPlaza({
 
   // 分类聚合页
   if (selectedCategory) {
-    const categorySkills = marketSkillList.filter((s) => s.category === selectedCategory);
+    const categorySkills = marketSkillList.filter(
+      (s) => s.category === selectedCategory
+    );
     return (
       <div className="flex-1 overflow-y-auto bg-slate-50 custom-scrollbar">
         <div className="max-w-6xl mx-auto px-8 py-6">
@@ -1013,9 +1131,12 @@ export function SkillsPlaza({
             选择一个技能开始
           </button>
 
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">{selectedCategory}</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            {selectedCategory}
+          </h2>
           <p className="text-sm text-slate-500 mb-8">
-            {CATEGORY_DESCRIPTIONS[selectedCategory] || `${selectedCategory}类技能合集`}
+            {CATEGORY_DESCRIPTIONS[selectedCategory] ||
+              `${selectedCategory}类技能合集`}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -1092,7 +1213,9 @@ export function SkillsPlaza({
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
                 {CATEGORY_ORDER.map((cat) => {
-                  const count = marketSkillList.filter((s) => s.category === cat).length;
+                  const count = marketSkillList.filter(
+                    (s) => s.category === cat
+                  ).length;
                   return (
                     <button
                       key={cat}
@@ -1101,11 +1224,15 @@ export function SkillsPlaza({
                       className="relative text-left rounded-2xl border border-slate-200 bg-white p-5 hover:shadow-md transition-all overflow-hidden"
                     >
                       <div className="absolute top-0 right-0 w-24 h-24 rounded-bl-full bg-gradient-to-bl from-violet-100/60 to-transparent" />
-                      <h3 className="text-lg font-semibold text-slate-900 mb-2 relative">{cat}</h3>
+                      <h3 className="text-lg font-semibold text-slate-900 mb-2 relative">
+                        {cat}
+                      </h3>
                       <p className="text-sm text-slate-500 leading-relaxed line-clamp-2 relative">
                         {CATEGORY_DESCRIPTIONS[cat] || `${cat}类技能合集`}
                       </p>
-                      <div className="mt-3 text-xs text-slate-400 relative">{count} 个技能</div>
+                      <div className="mt-3 text-xs text-slate-400 relative">
+                        {count} 个技能
+                      </div>
                     </button>
                   );
                 })}
@@ -1288,7 +1415,9 @@ export function SkillsPlaza({
                         });
                       } else {
                         const marketSkillId =
-                          'marketSkillId' in skill ? skill.marketSkillId : undefined;
+                          'marketSkillId' in skill
+                            ? skill.marketSkillId
+                            : undefined;
                         const market = MARKET_SKILLS.find(
                           (item) => item.id === (marketSkillId || skill.id)
                         );
@@ -1312,7 +1441,11 @@ export function SkillsPlaza({
                     description={skill.description}
                     category={SOURCE_LABELS[skill.source]}
                     showMenu
-                    onDelete={onDeleteSkill ? () => void onDeleteSkill(skill.id) : undefined}
+                    onDelete={
+                      onDeleteSkill
+                        ? () => void onDeleteSkill(skill.id)
+                        : undefined
+                    }
                   />
                 ))
               )}

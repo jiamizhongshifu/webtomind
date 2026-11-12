@@ -11,7 +11,7 @@ dotenv.config({ override: false });
 // Configure the global proxy when HTTPS_PROXY or HTTP_PROXY is present.
 const proxyUrl = process.env.HTTPS_PROXY || process.env.HTTP_PROXY;
 if (proxyUrl) {
-  console.log(`[Proxy] Using proxy: ${proxyUrl}`);
+  console.log('[Proxy] Using configured HTTP proxy');
   // Use undici's dispatcher so fetch-based SDK calls share the proxy.
   const { setGlobalDispatcher, ProxyAgent } = await import('undici');
   setGlobalDispatcher(new ProxyAgent(proxyUrl));
@@ -172,11 +172,21 @@ app.route('/api/content', contentRoutes);
 // ============================================
 
 // Static asset directory.
-const publicDir = path.join(__dirname, '../public');
+// tsc preserves src/ beneath dist/ because rootDir includes server/api too.
+const serverRoot = path.resolve(
+  __dirname,
+  path.basename(path.dirname(__dirname)) === 'dist' ? '../..' : '..'
+);
+const publicDir = path.join(serverRoot, 'public');
 
-// Static asset routes.
-app.use('/assets/*', serveStatic({ root: publicDir }));
-app.use('/icons/*', serveStatic({ root: publicDir }));
+// Serve every shipped public asset, including previews, manifests and sw.js.
+// API paths must never fall through to static files or the SPA.
+const staticFiles = serveStatic({ root: publicDir });
+app.use('*', (c, next) =>
+  c.req.path === '/api' || c.req.path.startsWith('/api/')
+    ? next()
+    : staticFiles(c, next)
+);
 
 // Root route returns the built web app when server/public exists.
 app.get('/', async (c) => {
@@ -222,7 +232,7 @@ app.get('/', async (c) => {
 app.get('*', async (c) => {
   // API and static asset requests should not receive index.html.
   const path_url = c.req.path;
-  if (path_url.startsWith('/api/') || path_url.startsWith('/assets/')) {
+  if (path_url === '/api' || path_url.startsWith('/api/') || path.extname(path_url)) {
     return c.notFound();
   }
 

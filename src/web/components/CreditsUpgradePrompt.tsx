@@ -67,6 +67,8 @@ function isExcludedRoute(pathname: string): boolean {
   return (
     routePath === '/tools/image-editor' ||
     routePath === '/tools/image-upscaler' ||
+    routePath === '/skills' ||
+    routePath.startsWith('/skills/') ||
     routePath === '/pricing' ||
     routePath === '/create/pricing' ||
     routePath === '/recharge' ||

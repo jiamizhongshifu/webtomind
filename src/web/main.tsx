@@ -1,5 +1,8 @@
+import { TooltipProvider } from '@/shared/ui/radix/tooltip';
 import React, { lazy, Suspense, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
+
+installTruncationTooltip();
 import '@fontsource/geist-sans/latin-400.css';
 import '@fontsource/geist-sans/latin-500.css';
 import '@fontsource/geist-sans/latin-600.css';
@@ -60,6 +63,8 @@ import '../design/shared-tokens.css';
 import '../design/web-tokens.css';
 import '../design/ui-primitives.css';
 import '../design/app-shell.css';
+import '../design/typography.css';
+import { installTruncationTooltip } from '@/shared/typography/truncationTooltip';
 import './styles/mobile-adaptations.css';
 import './styles/geist-theme.css';
 
@@ -222,8 +227,7 @@ const CreateHomePage = lazy(() =>
 // /zh-CN/prompts 与 /en-US/prompts 渲染这个包装页；首屏直接预取它的 chunk，
 // 不等 React 首次渲染后才发现。
 const CreatePromptLibraryPage = lazyRouteWithInitialPreload(
-  (pathname) =>
-    /^\/(zh-CN|en-US)\/prompts$/.test(pathname.replace(/\/+$/, '')),
+  (pathname) => /^\/(zh-CN|en-US)\/prompts$/.test(pathname.replace(/\/+$/, '')),
   () =>
     import('./pages/CreatePromptLibraryPage').then((mod) => ({
       default: mod.CreatePromptLibraryPage
@@ -360,6 +364,11 @@ const PromptStyleGridPage = lazyRouteWithInitialPreload(
 const PromptCaseAdminPage = lazy(() =>
   import('./pages/PromptCaseAdminPage').then((mod) => ({
     default: mod.PromptCaseAdminPage
+  }))
+);
+const PromptCaseEditorPage = lazy(() =>
+  import('./pages/PromptCaseEditorPage').then((mod) => ({
+    default: mod.PromptCaseEditorPage
   }))
 );
 const PromptAssetOpsPage = lazy(() =>
@@ -779,11 +788,11 @@ function App() {
                   <Route path="/" element={<SkillHomePage />} />
                   <Route
                     path="/zh-CN"
-                    element={<Navigate to="/zh-CN/overview" replace />}
+                    element={<LocaleRedirect to="/overview" />}
                   />
                   <Route
                     path="/en-US"
-                    element={<Navigate to="/en-US/overview" replace />}
+                    element={<LocaleRedirect to="/overview" />}
                   />
                   <Route
                     path="/overview"
@@ -997,7 +1006,10 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/zh-CN/models" element={<ApiServiceRetiredPage />} />
+                  <Route
+                    path="/zh-CN/models"
+                    element={<ApiServiceRetiredPage />}
+                  />
                   <Route
                     path="/zh-CN/api-console"
                     element={<ApiServiceRetiredPage />}
@@ -1025,12 +1037,36 @@ function App() {
                     element={<PromptCaseAdminPage />}
                   />
                   <Route
+                    path="/zh-CN/prompts/admin/cases/new"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/zh-CN/prompts/admin/cases/import"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/zh-CN/prompts/admin/cases/:caseId/edit"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
                     path="/zh-CN/prompts/admin/:adminTab"
                     element={<PromptCaseAdminPage />}
                   />
                   <Route
                     path="/en-US/prompts/admin"
                     element={<PromptCaseAdminPage />}
+                  />
+                  <Route
+                    path="/en-US/prompts/admin/cases/new"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/en-US/prompts/admin/cases/import"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/en-US/prompts/admin/cases/:caseId/edit"
+                    element={<PromptCaseEditorPage />}
                   />
                   <Route
                     path="/en-US/prompts/admin/:adminTab"
@@ -1175,7 +1211,10 @@ function App() {
                       </ProtectedRoute>
                     }
                   />
-                  <Route path="/en-US/models" element={<ApiServiceRetiredPage />} />
+                  <Route
+                    path="/en-US/models"
+                    element={<ApiServiceRetiredPage />}
+                  />
                   <Route
                     path="/en-US/api-console"
                     element={<ApiServiceRetiredPage />}
@@ -1448,7 +1487,9 @@ if (rootElement) {
     ReactDOM.createRoot(rootElement).render(
       <React.StrictMode>
         <AppErrorBoundary>
-          <App />
+          <TooltipProvider>
+            <App />
+          </TooltipProvider>
         </AppErrorBoundary>
       </React.StrictMode>
     );

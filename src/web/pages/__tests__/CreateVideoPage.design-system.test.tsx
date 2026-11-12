@@ -79,8 +79,7 @@ describe('CreateVideoPage studio composer contracts', () => {
       "import { createPortal } from 'react-dom'"
     );
     expect(composerSource).toContain('data-video-studio-tool={tool}');
-    expect(composerSource).toContain('onMouseEnter={(event) =>');
-    expect(composerSource).toContain('onFocus={(event) =>');
+    expect(composerSource).toContain('onClick={(event) =>');
     expect(composerSource).toContain('role="dialog"');
     expect(composerSource).toContain('aria-expanded={openTool === tool}');
     expect(composerSource).not.toContain('role="tablist"');

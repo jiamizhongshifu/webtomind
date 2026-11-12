@@ -89,6 +89,11 @@ describe('CreditsUpgradePrompt', () => {
     vi.mocked(getImageGenerationCost).mockResolvedValue(60);
   });
 
+  it.each(['/en-US/skills/pricing', '/zh-CN/skills/xhs-carousel', '/en-US/skills'])('does not mix compute upsells into content purchases on %s', async route => {
+    renderPrompt(route);
+    await waitFor(() => expect(screen.queryByRole('region')).toBeNull());
+  });
+
   it('shows for authenticated free users', async () => {
     renderPrompt();
     await waitFor(() =>

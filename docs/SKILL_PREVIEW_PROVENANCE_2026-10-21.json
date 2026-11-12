@@ -1,0 +1,43 @@
+{
+  "scope": "Original fictional WebToMind demonstrations; public previews only. Editable paid source remains in private content repository. No competitor assets or customer data.",
+  "date": "2026-10-21",
+  "sources": {
+    "carousel.png": "xhs-carousel shop-launch/page-01, current 1.0.2 render",
+    "og-image.png": "og-image current 1.0.2 render",
+    "report.png": "weekly-report-deck slide-02, current 1.0.2 render",
+    "case-study.png": "case-study-deck 1.0.1 store-demo/slide-01",
+    "product-launch.png": "product-launch-deck 1.0.1 store-demo/slide-03",
+    "app-demo.jpg": "app-feature-demo-video 1.0.1 store-demo/result-poster",
+    "saas-page.png": "saas-landing-page 1.0.1 store-demo/preview-desktop"
+  },
+  "assets": [
+    {
+      "file": "app-demo.jpg",
+      "sha256": "1d75b63ded8990c1c57a3f9faf02bcdd3d6d0775cc6a27819ab2724c2b72087c"
+    },
+    {
+      "file": "carousel.png",
+      "sha256": "6fd4d8cb594e365eedb7f1c05a7bcd3baad8f6d90d92c55e628bbce01a1da1ba"
+    },
+    {
+      "file": "case-study.png",
+      "sha256": "2597e8ffb09355d3e0f24dcd73a8f349624cecab28cae5d80f36f19db60ee9e2"
+    },
+    {
+      "file": "og-image.png",
+      "sha256": "43f0f1e9295d52902a0cd9cf79d259d8451ee83ee3094589a36afd88830b3935"
+    },
+    {
+      "file": "product-launch.png",
+      "sha256": "ca46255732874edbc5787751f51940b42fd2fd42812dabd61b58d3f2c261f550"
+    },
+    {
+      "file": "report.png",
+      "sha256": "85528edc72bae87d8fcadd992f2b663f5066a07bb70fa1b4b38d56374bee0436"
+    },
+    {
+      "file": "saas-page.png",
+      "sha256": "a62fa86a5b5dc732f673c2aafd68bab58da07efc8f9c8fdb21df53ada85fc275"
+    }
+  ]
+}

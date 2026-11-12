@@ -8,7 +8,7 @@
  * - Supports multiple visual styles
  */
 
-import { AgentSkillDefinition, SkillCategory } from './types';
+import { AgentSkillDefinition, SkillCategory } from './types.js';
 
 /**
  * Slide Deck Generation Skill

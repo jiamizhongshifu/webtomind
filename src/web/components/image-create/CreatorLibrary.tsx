@@ -1,3 +1,12 @@
+import { useRef, useState } from 'react';
+import { ConfirmDialog } from '@/workspace/components/ConfirmDialog';
+import {
+  PopoverRoot,
+  PopoverAnchor,
+  PopoverContent
+} from '@/shared/ui/PopoverPrimitives';
+import { Button as ConfirmButton } from '@/shared/ui/radix/button';
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 /**
  * 左侧素材库面板:公开/我的切换 + 上传 + 批量缩略图工具条 + slot/tag/搜索筛选 + 素材网格。
  *
@@ -70,6 +79,14 @@ export function CreatorLibrary({
   onRequireLogin,
   onOpenEdit
 }: CreatorLibraryProps) {
+  const deleteAnchor = useRef<HTMLElement | null>(null);
+  const regenerateAnchor = useRef<HTMLElement | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const [confirmError, setConfirmError] = useState('');
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [regenerateTarget, setRegenerateTarget] =
+    useState<ImagePromptAsset | null>(null);
+  const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
   const { t } = useTranslation('imageCreate');
 
   const {
@@ -96,7 +113,7 @@ export function CreatorLibrary({
     handleCancelBatch,
     handleRetryFailed,
     handleBatchRegenerate,
-    handleRegenerateThumbnail
+    regenerateThumbnail
   } = queue;
   const selectedActiveCount = getSelectedAssetIds(selection, activeSlot).length;
 
@@ -106,9 +123,9 @@ export function CreatorLibrary({
         <span>{t('library.title')}</span>
         <div className="creator-library-status">
           {librarySource === 'public' ? (
-            <small title={assetLoadError || undefined}>
-              {t(`library.${assetSource}`)}
-            </small>
+            <TextTooltip text={assetLoadError || undefined}>
+              <small>{t(`library.${assetSource}`)}</small>
+            </TextTooltip>
           ) : (
             <small>{t('library.tabs.mine')}</small>
           )}
@@ -268,7 +285,7 @@ export function CreatorLibrary({
                   className="creator-mine-batch-run"
                   title="为当前缺少缩略图的个人素材批量生成 AI 缩略图"
                   aria-label="批量生成缺失的 AI 缩略图"
-                  onClick={handleBatchRegenerate}
+                  onClick={() => setBatchConfirmOpen(true)}
                 >
                   <Wand2 data-icon="inline-start" />
                   {t('mine.batchRegenerate', {
@@ -398,22 +415,23 @@ export function CreatorLibrary({
                   </i>
                 )}
                 {librarySource === 'mine' && batchQueue[asset.id] && (
-                  <span
-                    className={`creator-asset-card-queue-badge status-${batchQueue[asset.id].status}`}
-                    title={batchQueue[asset.id].error || undefined}
-                  >
-                    {batchQueue[asset.id].status === 'processing' && (
-                      <Loader2 size={11} className="creator-spin-icon" />
-                    )}
-                    {batchQueue[asset.id].status === 'queued' &&
-                      t('mine.queueStatusQueued')}
-                    {batchQueue[asset.id].status === 'processing' &&
-                      t('mine.queueStatusProcessing')}
-                    {batchQueue[asset.id].status === 'done' &&
-                      t('mine.queueStatusDone')}
-                    {batchQueue[asset.id].status === 'failed' &&
-                      t('mine.queueStatusFailed')}
-                  </span>
+                  <TextTooltip text={batchQueue[asset.id].error || undefined}>
+                    <span
+                      className={`creator-asset-card-queue-badge status-${batchQueue[asset.id].status}`}
+                    >
+                      {batchQueue[asset.id].status === 'processing' && (
+                        <Loader2 size={11} className="creator-spin-icon" />
+                      )}
+                      {batchQueue[asset.id].status === 'queued' &&
+                        t('mine.queueStatusQueued')}
+                      {batchQueue[asset.id].status === 'processing' &&
+                        t('mine.queueStatusProcessing')}
+                      {batchQueue[asset.id].status === 'done' &&
+                        t('mine.queueStatusDone')}
+                      {batchQueue[asset.id].status === 'failed' &&
+                        t('mine.queueStatusFailed')}
+                    </span>
+                  </TextTooltip>
                 )}
               </Button>
               {librarySource === 'mine' && (
@@ -425,7 +443,10 @@ export function CreatorLibrary({
                   aria-label={t('mine.regenerate') as string}
                   title={t('mine.regenerate') as string}
                   aria-busy={batchQueue[asset.id]?.status === 'processing'}
-                  onClick={() => handleRegenerateThumbnail(asset)}
+                  onClick={(event) => {
+                    regenerateAnchor.current = event.currentTarget;
+                    setRegenerateTarget(asset);
+                  }}
                 >
                   {batchQueue[asset.id]?.status === 'processing' ? (
                     <Loader2 className="creator-spin-icon" />
@@ -455,7 +476,11 @@ export function CreatorLibrary({
                   className="creator-asset-card-delete"
                   aria-label={t('mine.delete') as string}
                   title={t('mine.delete') as string}
-                  onClick={() => void handleDeleteUserAsset(asset.id)}
+                  onClick={(event) => {
+                    deleteAnchor.current = event.currentTarget;
+                    setConfirmError('');
+                    setDeleteId(asset.id);
+                  }}
                 >
                   <Trash2 />
                 </Button>
@@ -471,6 +496,115 @@ export function CreatorLibrary({
             </div>
           )}
       </StaggeredImageGrid>
+      <PopoverRoot
+        open={Boolean(deleteId)}
+        onOpenChange={(open) => {
+          if (!confirmBusy && !open) setDeleteId(null);
+        }}
+      >
+        <PopoverAnchor virtualRef={deleteAnchor} />
+        <PopoverContent
+          data-floating-confirm="true"
+          align="end"
+          collisionPadding={12}
+          aria-label={t('mine.delete')}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            deleteAnchor.current?.focus();
+          }}
+        >
+          <p className="text-sm text-muted-foreground">
+            {t('mine.deleteConfirm')}
+          </p>
+          {confirmError && <p role="alert">{confirmError}</p>}
+          <div className="mt-4 flex justify-end gap-2">
+            <ConfirmButton
+              variant="outline"
+              disabled={confirmBusy}
+              onClick={() => setDeleteId(null)}
+            >
+              {t('common.cancel', '取消')}
+            </ConfirmButton>
+            <ConfirmButton
+              variant="destructive"
+              disabled={confirmBusy}
+              onClick={async () => {
+                if (!deleteId || confirmBusy) return;
+                setConfirmBusy(true);
+                setConfirmError('');
+                try {
+                  await handleDeleteUserAsset(deleteId);
+                  setDeleteId(null);
+                } catch (error) {
+                  setConfirmError(
+                    error instanceof Error
+                      ? error.message
+                      : t('mine.deleteFailed')
+                  );
+                } finally {
+                  setConfirmBusy(false);
+                }
+              }}
+            >
+              {t('mine.delete')}
+            </ConfirmButton>
+          </div>
+        </PopoverContent>
+      </PopoverRoot>
+      <PopoverRoot
+        open={Boolean(regenerateTarget)}
+        onOpenChange={(open) => {
+          if (!open) setRegenerateTarget(null);
+        }}
+      >
+        <PopoverAnchor virtualRef={regenerateAnchor} />
+        <PopoverContent
+          data-floating-confirm="true"
+          align="end"
+          collisionPadding={12}
+          aria-label={t('mine.regenerate')}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            regenerateAnchor.current?.focus();
+          }}
+        >
+          <p className="text-sm text-muted-foreground">
+            {t('mine.regenerateConfirm')}
+          </p>
+          <div className="mt-4 flex justify-end gap-2">
+            <ConfirmButton
+              variant="outline"
+              onClick={() => setRegenerateTarget(null)}
+            >
+              {t('common.cancel', { defaultValue: '取消' })}
+            </ConfirmButton>
+            <ConfirmButton
+              onClick={() => {
+                if (regenerateTarget) regenerateThumbnail(regenerateTarget);
+                setRegenerateTarget(null);
+              }}
+            >
+              {t('mine.regenerate')}
+            </ConfirmButton>
+          </div>
+        </PopoverContent>
+      </PopoverRoot>
+      <ConfirmDialog
+        isOpen={batchConfirmOpen}
+        title={t('mine.batchRegenerate', { count: pendingThumbAssets.length })}
+        description={t('mine.batchRegenerateConfirm', {
+          count: pendingThumbAssets.length
+        })}
+        confirmText={t('mine.batchRegenerate', {
+          count: pendingThumbAssets.length
+        })}
+        cancelText={t('common.cancel', '取消')}
+        onCancel={() => setBatchConfirmOpen(false)}
+        onConfirm={() => {
+          handleBatchRegenerate();
+          setBatchConfirmOpen(false);
+        }}
+      />
     </aside>
   );
 }

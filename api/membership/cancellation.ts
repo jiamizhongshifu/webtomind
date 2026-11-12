@@ -136,8 +136,13 @@ export default async function handler(request: Request): Promise<Response> {
         throw new BillingError('INVALID_REQUEST', 400);
       }
     }
+    const scope = new URL(request.url).searchParams.get('scope');
+    if (scope && scope !== 'skills')
+      throw new BillingError('INVALID_SCOPE', 400);
+    const subscriptionTable =
+      scope === 'skills' ? 'skill_subscriptions' : 'user_subscriptions';
     let query = admin
-      .from('user_subscriptions')
+      .from(subscriptionTable)
       .select(
         'id,plan_id,status,current_period_end,stripe_subscription_id,stripe_customer_id,payment_provider'
       )
@@ -208,7 +213,7 @@ export default async function handler(request: Request): Promise<Response> {
     let syncPending = false;
     try {
       const { error: syncError } = await admin
-        .from('user_subscriptions')
+        .from(subscriptionTable)
         .update({
           cancel_at_period_end: true,
           current_period_end: summary.currentPeriodEnd,

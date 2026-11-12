@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import React, { useEffect, useRef } from 'react';
 import {
   Upload,
@@ -345,24 +346,28 @@ export const ChatInputArea = React.memo(function ChatInputArea(
               canvasReferenceTags.length > 0) && (
               <div className="absolute left-3 top-3 right-12 z-10 flex flex-wrap gap-1.5 max-h-[60px] overflow-y-auto bg-white pb-1">
                 {canvasReferenceTags.map((ref) => (
-                  <div
+                  <TextTooltip
+                    text={ref.summaryTitle || ref.preview}
                     key={ref.id}
-                    className="inline-flex max-w-[120px] items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-600"
-                    title={ref.summaryTitle || ref.preview}
                   >
-                    <span className="shrink-0 font-semibold text-slate-500">
-                      {ref.canvas?.role === 'selected'
-                        ? '当前'
-                        : ref.canvas?.role === 'target'
-                          ? '目标'
-                          : ref.canvas?.role === 'upstream'
-                            ? '上游'
-                            : '引用'}
-                    </span>
-                    <span className="truncate">
-                      {ref.summaryTitle || ref.preview}
-                    </span>
-                  </div>
+                    <div
+                      key={ref.id}
+                      className="inline-flex max-w-[120px] items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-[10px] text-slate-600"
+                    >
+                      <span className="shrink-0 font-semibold text-slate-500">
+                        {ref.canvas?.role === 'selected'
+                          ? '当前'
+                          : ref.canvas?.role === 'target'
+                            ? '目标'
+                            : ref.canvas?.role === 'upstream'
+                              ? '上游'
+                              : '引用'}
+                      </span>
+                      <span className="truncate">
+                        {ref.summaryTitle || ref.preview}
+                      </span>
+                    </div>
+                  </TextTooltip>
                 ))}
                 {/* 快捷指令标签 */}
                 {selectedShortcut && !isProjectCompact && (
@@ -665,19 +670,20 @@ export const ChatInputArea = React.memo(function ChatInputArea(
                     ref={featuresMenuRef}
                   >
                     {!selectedFeature || selectedFeature === 'image' ? (
-                      <button
-                        data-testid="feature-toggle-button"
-                        type="button"
-                        onClick={() => setShowFeaturesMenu(!showFeaturesMenu)}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all text-slate-500 hover:bg-slate-100"
-                        title={t('chat.moreFeatures')}
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        <span className="text-xs font-medium">
-                          {t('chat.moreFeatures')}
-                        </span>
-                        <ChevronDown className="w-3.5 h-3.5" />
-                      </button>
+                      <TextTooltip text={t('chat.moreFeatures')}>
+                        <button
+                          data-testid="feature-toggle-button"
+                          type="button"
+                          onClick={() => setShowFeaturesMenu(!showFeaturesMenu)}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-all text-slate-500 hover:bg-slate-100"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          <span className="text-xs font-medium">
+                            {t('chat.moreFeatures')}
+                          </span>
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+                      </TextTooltip>
                     ) : (
                       <div className="flex items-center">
                         <button
@@ -697,15 +703,16 @@ export const ChatInputArea = React.memo(function ChatInputArea(
                             {getFeatureLabel(selectedFeature)}
                           </span>
                         </button>
-                        <button
-                          type="button"
-                          onClick={handleClearFeature}
-                          title="清除当前功能"
-                          aria-label="清除当前功能"
-                          className="px-1.5 py-1.5 rounded-r-lg transition-colors bg-emerald-50 text-emerald-700 hover:bg-emerald-200"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
+                        <TextTooltip text={'清除当前功能'}>
+                          <button
+                            type="button"
+                            onClick={handleClearFeature}
+                            aria-label="清除当前功能"
+                            className="px-1.5 py-1.5 rounded-r-lg transition-colors bg-emerald-50 text-emerald-700 hover:bg-emerald-200"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </TextTooltip>
                       </div>
                     )}
 
@@ -738,21 +745,22 @@ export const ChatInputArea = React.memo(function ChatInputArea(
                     {/* PPT 设置按钮 */}
                     {selectedFeature === 'slide_deck' && (
                       <div className="relative" ref={slideSettingsRef}>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setShowSlideSettings(!showSlideSettings)
-                          }
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            showSlideSettings
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'text-slate-500 hover:bg-slate-100'
-                          }`}
-                          title={t('chat.slideSettings', 'PPT 设置')}
-                          aria-label="PPT 设置"
-                        >
-                          <SlidersHorizontal className="w-4 h-4" />
-                        </button>
+                        <TextTooltip text={t('chat.slideSettings', 'PPT 设置')}>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowSlideSettings(!showSlideSettings)
+                            }
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              showSlideSettings
+                                ? 'bg-emerald-100 text-emerald-700'
+                                : 'text-slate-500 hover:bg-slate-100'
+                            }`}
+                            aria-label="PPT 设置"
+                          >
+                            <SlidersHorizontal className="w-4 h-4" />
+                          </button>
+                        </TextTooltip>
                         {showSlideSettings && (
                           <SlideSettingsPanel
                             settings={slideSettings}
@@ -767,48 +775,52 @@ export const ChatInputArea = React.memo(function ChatInputArea(
 
                 {agentMode && !imageMode && skillUiEnabled && (
                   <div className="relative group" ref={skillEntryRef}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowSkillEntryPopover(!showSkillEntryPopover);
-                        setShowPlusMenu(false);
-                        setShowModeMenu(false);
-                        setShowFeaturesMenu(false);
-                      }}
-                      className={`relative flex items-center justify-center h-9 w-9 rounded-full border transition-all ${
-                        skillButtonSelected
-                          ? 'border-violet-200 bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-700 shadow-sm hover:from-violet-100 hover:to-fuchsia-100'
-                          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
-                      }`}
-                      title={
-                        selectedSkill
-                          ? `当前技能：${selectedSkill.displayName || selectedSkill.name}`
-                          : '技能入口'
-                      }
-                      aria-label={
+                    <TextTooltip
+                      text={
                         selectedSkill
                           ? `当前技能：${selectedSkill.displayName || selectedSkill.name}`
                           : '技能入口'
                       }
                     >
-                      <Sparkles className="w-4 h-4" />
-                    </button>
-
-                    {skillButtonSelected ? (
                       <button
                         type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          setSelectedSkill(null);
-                          setSelectedSkillCandidate(null);
-                          setShowSkillEntryPopover(false);
+                        onClick={() => {
+                          setShowSkillEntryPopover(!showSkillEntryPopover);
+                          setShowPlusMenu(false);
+                          setShowModeMenu(false);
+                          setShowFeaturesMenu(false);
                         }}
-                        className="absolute -top-1 -right-1 rounded-full border border-white bg-slate-900 text-white p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                        title="取消当前技能"
-                        aria-label="取消当前技能"
+                        className={`relative flex items-center justify-center h-9 w-9 rounded-full border transition-all ${
+                          skillButtonSelected
+                            ? 'border-violet-200 bg-gradient-to-r from-violet-50 to-fuchsia-50 text-violet-700 shadow-sm hover:from-violet-100 hover:to-fuchsia-100'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                        aria-label={
+                          selectedSkill
+                            ? `当前技能：${selectedSkill.displayName || selectedSkill.name}`
+                            : '技能入口'
+                        }
                       >
-                        <X className="w-3 h-3" />
+                        <Sparkles className="w-4 h-4" />
                       </button>
+                    </TextTooltip>
+
+                    {skillButtonSelected ? (
+                      <TextTooltip text={'取消当前技能'}>
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setSelectedSkill(null);
+                            setSelectedSkillCandidate(null);
+                            setShowSkillEntryPopover(false);
+                          }}
+                          className="absolute -top-1 -right-1 rounded-full border border-white bg-slate-900 text-white p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                          aria-label="取消当前技能"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </TextTooltip>
                     ) : null}
 
                     <ChatSkillEntryPopover

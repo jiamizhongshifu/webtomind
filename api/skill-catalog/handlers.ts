@@ -38,7 +38,8 @@ import {
   requestSkillInstall,
   startDeviceAuthorization,
   type DownloadUrlSigner,
-  type SkillCatalogStore
+  type SkillCatalogStore,
+  type SkillDetail
 } from './service';
 import { createSupabaseSkillCatalogStore } from './supabase-store';
 import {
@@ -357,6 +358,27 @@ export function createSkillCatalogHandlers(
 }
 
 export const skillCatalogHandlers = createSkillCatalogHandlers();
+
+/** Published Skill for server-side SEO; null when the slug is unknown. */
+export async function loadPublishedSkillDetail(
+  slug: string,
+  getStore: () => SkillCatalogStore | null = defaultDeps.getStore
+): Promise<SkillDetail | null> {
+  const store = getStore();
+  if (!store) throw new Error('Skill catalog store not configured');
+  try {
+    const detail = await getSkillDetail(store, slug);
+    return detail.latestVersion ? detail : null;
+  } catch (error) {
+    if (
+      error instanceof SkillCatalogError &&
+      error.code === 'SKILL_NOT_FOUND'
+    ) {
+      return null;
+    }
+    throw error;
+  }
+}
 export const SKILL_CATALOG_DETAIL_PATH = /^\/api\/skill-catalog\/skills\/[^/]+$/;
 
 export function isSkillInstallGuidePath(pathname: string): boolean {

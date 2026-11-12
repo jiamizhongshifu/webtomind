@@ -111,7 +111,8 @@ function assertPaidCheckoutSession(
   }
 
   if (
-    order.product_type === 'subscription' &&
+    (order.product_type === 'subscription' ||
+      order.product_type === 'skill_subscription') &&
     (payment.provider || 'stripe') === 'stripe' &&
     !payment.subscription
   ) {
@@ -379,6 +380,39 @@ export async function syncStripeSubscription(
   const { start: currentPeriodStart, end: currentPeriodEnd } =
     getStripeSubscriptionPeriod(subscription);
   const customerId = getStripeCustomerId(subscription.customer);
+  if (subscription.metadata?.product_type === 'skill_subscription') {
+    const { data: content, error: lookupError } = await supabase
+      .from('skill_subscriptions')
+      .select('user_id,plan_id')
+      .eq('stripe_subscription_id', subscription.id)
+      .maybeSingle();
+    if (lookupError) throw lookupError;
+    if (!content) return null;
+    const keepsAccess = hasPaidSubscriptionAccess({
+      status: normalizedStatus,
+      current_period_end: currentPeriodEnd
+    });
+    const { error: syncError } = await supabase.rpc(
+      'sync_skill_commerce_subscription',
+      {
+        p_external_id: subscription.id,
+        p_status: normalizedStatus,
+        p_start: currentPeriodStart,
+        p_end: currentPeriodEnd,
+        p_cancel: subscription.cancel_at_period_end,
+        p_has_access: keepsAccess
+      }
+    );
+    if (syncError) throw syncError;
+    return {
+      userId: content.user_id,
+      planId: content.plan_id,
+      status: normalizedStatus,
+      currentPeriodEnd,
+      current_period_end: currentPeriodEnd,
+      contentOnly: true
+    };
+  }
   const { data: storedSubscription, error } = await supabase
     .from('user_subscriptions')
     .update({
@@ -468,7 +502,8 @@ export async function syncStripeSubscription(
     planId: storedSubscription.plan_id,
     status: normalizedStatus,
     currentPeriodEnd,
-    current_period_end: currentPeriodEnd
+    current_period_end: currentPeriodEnd,
+    contentOnly: false
   };
 }
 
@@ -479,6 +514,7 @@ export async function recordStripeSubscriptionRenewalEvent(params: {
   userId: string;
   planId: string;
   subscriptionId: string;
+  productType?: 'subscription' | 'skill_subscription';
 }) {
   const { supabase, invoice, eventId, userId, planId, subscriptionId } = params;
   await recordConversionEvent(supabase, {
@@ -487,7 +523,7 @@ export async function recordStripeSubscriptionRenewalEvent(params: {
     userId,
     entityType: 'stripe_invoice',
     entityId: invoice.id,
-    productType: 'subscription',
+    productType: params.productType || 'subscription',
     productId: planId,
     ctaSource: 'subscription_renewal',
     idempotencyKey: `subscription_renewal_succeeded:${invoice.id}`,
@@ -534,12 +570,13 @@ async function grantSkillEntitlement(
 
 /**
  * A fully refunded Stripe charge revokes the Skill entitlements created by its
- * checkout order. Lifetime orders are also marked refunded; other products keep
+ * checkout order. Content purchases use atomic, period-aware revocation; legacy products keep
  * their existing refund handling.
  */
 export async function revokeRefundedCheckoutEntitlements(
   supabase: SupabaseClient,
-  stripe: Pick<Stripe, 'checkout'>,
+  stripe: Pick<Stripe, 'checkout'> &
+    Partial<Pick<Stripe, 'invoicePayments' | 'invoices' | 'subscriptions'>>,
   charge: Stripe.Charge
 ): Promise<string | null> {
   if (!charge.refunded) return null;
@@ -549,12 +586,65 @@ export async function revokeRefundedCheckoutEntitlements(
       : charge.payment_intent?.id;
   if (!paymentIntentId) return null;
 
+  // Subscription charges belong to invoices, including renewals without a
+  // Checkout session. Match the refunded invoice interval, not today's period.
+  if (stripe.invoicePayments && stripe.invoices && stripe.subscriptions) {
+    const payments = await stripe.invoicePayments.list({
+      payment: { type: 'payment_intent', payment_intent: paymentIntentId },
+      limit: 100
+    });
+    for (const entry of payments.data) {
+      const invoiceId =
+        typeof entry.invoice === 'string' ? entry.invoice : entry.invoice.id;
+      const invoice = await stripe.invoices.retrieve(invoiceId);
+      const subscriptionId = getStripeInvoiceSubscriptionId(invoice);
+      if (!subscriptionId) continue;
+      const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      if (subscription.metadata?.product_type !== 'skill_subscription')
+        continue;
+      if (
+        typeof invoice.amount_paid === 'number' &&
+        typeof charge.amount_refunded === 'number' &&
+        charge.amount_refunded < invoice.amount_paid
+      )
+        continue;
+      const periods = invoice.lines.data.map((line) => line.period);
+      const start = Math.min(...periods.map((period) => period.start));
+      const end = Math.max(...periods.map((period) => period.end));
+      if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start)
+        throw new Error('Refund invoice has no valid paid period');
+      const { error } = await supabase.rpc('refund_skill_subscription_period', {
+        p_external_id: subscriptionId,
+        p_invoice_id: invoiceId,
+        p_start: new Date(start * 1000).toISOString(),
+        p_end: new Date(end * 1000).toISOString(),
+        p_reason: `stripe_refund:${charge.id}`,
+        p_initial: invoice.billing_reason === 'subscription_create'
+      });
+      if (error) throw error;
+      return subscription.metadata.order_id || subscriptionId;
+    }
+  }
+
   const sessions = await stripe.checkout.sessions.list({
     payment_intent: paymentIntentId,
     limit: 1
   });
   const orderId = sessions.data[0]?.metadata?.order_id;
   if (!orderId) return null;
+  const productType = sessions.data[0]?.metadata?.product_type;
+  if (productType === 'skill_purchase') {
+    const { error } = await supabase.rpc('refund_skill_purchase', {
+      p_order_id: orderId,
+      p_reason: `stripe_refund:${charge.id}`
+    });
+    if (error) throw error;
+    return orderId;
+  }
+  if (productType === 'skill_subscription')
+    throw new Error(
+      'Content subscription refund invoice could not be resolved'
+    );
 
   const { error: revokeError } = await supabase.rpc(
     'revoke_skill_entitlements_for_order',
@@ -566,7 +656,11 @@ export async function revokeRefundedCheckoutEntitlements(
     .from('payment_orders')
     .update({ status: 'refunded', updated_at: new Date().toISOString() })
     .eq('id', orderId)
-    .eq('product_type', 'skill_lifetime')
+    .in('product_type', [
+      'skill_lifetime',
+      'skill_purchase',
+      'skill_subscription'
+    ])
     .eq('status', 'succeeded');
   if (orderError) throw orderError;
   return orderId;
@@ -660,7 +754,51 @@ export async function fulfillOrder(
     const userId = paymentOrder.user_id;
 
     // 2. 灞ヨ閫昏緫
-    if (paymentOrder.product_type === 'subscription') {
+    if (
+      paymentOrder.product_type === 'skill_subscription' ||
+      paymentOrder.product_type === 'skill_purchase'
+    ) {
+      const recurring = paymentOrder.product_type === 'skill_subscription';
+      const provider = payment.provider || 'stripe';
+      if (recurring && provider === 'stripe' && !payment.billingPeriod)
+        throw new Error(
+          'Content subscription is missing the verified billing period'
+        );
+      const start = payment.billingPeriod
+        ? new Date(payment.billingPeriod.start)
+        : new Date();
+      const end = new Date(start);
+      // Clamp calendar months (Jan 31 -> Feb 28), rather than overflowing into March.
+      const day = end.getUTCDate();
+      end.setUTCDate(1);
+      end.setUTCMonth(
+        end.getUTCMonth() +
+          (paymentOrder.metadata?.billingCycle === 'yearly' ? 12 : 1)
+      );
+      const last = new Date(
+        Date.UTC(end.getUTCFullYear(), end.getUTCMonth() + 1, 0)
+      ).getUTCDate();
+      end.setUTCDate(Math.min(day, last));
+      if (payment.billingPeriod)
+        end.setTime(Date.parse(payment.billingPeriod.end));
+      const { error: contentError } = await supabase.rpc(
+        'fulfill_skill_commerce',
+        {
+          p_order_id: orderId,
+          p_provider: provider,
+          p_external_id: recurring
+            ? provider === 'stripe'
+              ? payment.subscription
+              : payment.id
+            : null,
+          p_customer_id:
+            typeof payment.customer === 'string' ? payment.customer : null,
+          p_starts_at: start.toISOString(),
+          p_ends_at: recurring ? end.toISOString() : null
+        }
+      );
+      if (contentError) throw contentError;
+    } else if (paymentOrder.product_type === 'subscription') {
       const planId = paymentOrder.product_id;
       if (!planId) throw new Error('Subscription payment order has no plan id');
       const billingCycle =
@@ -1053,10 +1191,16 @@ export default async function handler(request: Request) {
         eventId: event.id,
         userId: synchronized.userId,
         planId: synchronized.planId,
-        subscriptionId
+        subscriptionId,
+        productType: synchronized.contentOnly
+          ? 'skill_subscription'
+          : 'subscription'
       });
 
-      if (!isEligibleForSubscriptionCreditGrant(synchronized)) {
+      if (
+        synchronized.contentOnly ||
+        !isEligibleForSubscriptionCreditGrant(synchronized)
+      ) {
         return jsonResponse({ success: true });
       }
 

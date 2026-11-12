@@ -413,11 +413,13 @@
     "renameDialog": "Enter a new prompt title",
     "copy": "Copy prompt",
     "delete": "Delete prompt",
+    "applyDialogTitle": "Apply prompt",
     "applyConfirm": "This will overwrite the current custom prompt editor. Continue?",
     "savedToast": "Prompt saved to library",
     "appliedToast": "Filled into the custom prompt editor",
     "renamedToast": "Prompt title renamed",
     "copiedToast": "Prompt copied",
+    "deleteConfirm": "This prompt can't be restored. Delete it?",
     "deletedToast": "Prompt deleted"
   },
   "result": {

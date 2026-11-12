@@ -15,20 +15,30 @@ function readString(buffer, offset, length) {
 
 function readOctal(buffer, offset, length) {
   const text = readString(buffer, offset, length).trim();
-  return text ? parseInt(text, 8) : 0;
+  if (text && !/^[0-7]+$/.test(text)) throw invalid('Archive has an invalid numeric field');
+  const value = text ? parseInt(text, 8) : 0;
+  if (!Number.isSafeInteger(value)) throw invalid('Archive numeric field is too large');
+  return value;
 }
 
 function parsePax(content) {
-  const records = {};
-  let rest = content.toString('utf8');
-  while (rest.length > 0) {
-    const space = rest.indexOf(' ');
-    const length = Number(rest.slice(0, space));
-    if (!Number.isInteger(length) || length <= 0) break;
-    const record = rest.slice(space + 1, length - 1);
+  const records = Object.create(null);
+  let offset = 0;
+  while (offset < content.length) {
+    const space = content.indexOf(32, offset);
+    const lengthText = content.subarray(offset, space).toString('ascii');
+    const length = Number(lengthText);
+    const end = offset + length;
+    if (space < offset || !/^[0-9]+$/.test(lengthText) ||
+        !Number.isSafeInteger(length) || end <= space + 1 ||
+        end > content.length || content[end - 1] !== 10) {
+      throw invalid('Archive has an invalid PAX record');
+    }
+    const record = content.subarray(space + 1, end - 1).toString('utf8');
     const equals = record.indexOf('=');
+    if (equals <= 0) throw invalid('Archive has an invalid PAX field');
     records[record.slice(0, equals)] = record.slice(equals + 1);
-    rest = rest.slice(length);
+    offset = end;
   }
   return records;
 }
@@ -79,6 +89,13 @@ export function readTarGz(gzipped) {
   while (offset + BLOCK <= tar.length) {
     const header = tar.subarray(offset, offset + BLOCK);
     if (header.every((byte) => byte === 0)) break;
+
+    const checksum = readOctal(header, 148, 8);
+    let actualChecksum = 0;
+    for (let index = 0; index < BLOCK; index += 1) {
+      actualChecksum += index >= 148 && index < 156 ? 32 : header[index];
+    }
+    if (actualChecksum !== checksum) throw invalid('Archive header checksum mismatch');
 
     const size = readOctal(header, 124, 12);
     const type = String.fromCharCode(header[156] || 48);

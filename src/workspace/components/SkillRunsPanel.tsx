@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   cleanupSkillRuns,
@@ -30,10 +31,15 @@ function getStatusColor(status: string): string {
 
 export function SkillRunsPanel() {
   const [runs, setRuns] = useState<SkillRunListItem[]>([]);
-  const [selectedRun, setSelectedRun] = useState<SkillRunDetailsResponse | null>(null);
+  const [selectedRun, setSelectedRun] =
+    useState<SkillRunDetailsResponse | null>(null);
   const [loading, setLoading] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'running' | 'waiting_async' | 'completed' | 'failed'>('all');
-  const [timeRange, setTimeRange] = useState<'all' | '24h' | '7d' | '30d'>('all');
+  const [statusFilter, setStatusFilter] = useState<
+    'all' | 'running' | 'waiting_async' | 'completed' | 'failed'
+  >('all');
+  const [timeRange, setTimeRange] = useState<'all' | '24h' | '7d' | '30d'>(
+    'all'
+  );
   const [cleanupRange, setCleanupRange] = useState<'24h' | '7d' | '30d'>('7d');
   const [stats, setStats] = useState<Record<string, number>>({});
 
@@ -68,9 +74,7 @@ export function SkillRunsPanel() {
         setSelectedRun((current) => {
           if (current) return current;
           void getSkillRun(nextRuns[0].id)
-            .then((details) =>
-              setSelectedRun((latest) => latest || details)
-            )
+            .then((details) => setSelectedRun((latest) => latest || details))
             .catch(() => undefined);
           return current;
         });
@@ -93,7 +97,9 @@ export function SkillRunsPanel() {
     const timer = window.setInterval(() => {
       void loadRuns();
       if (selectedRun?.run?.id) {
-        void getSkillRun(selectedRun.run.id).then(setSelectedRun).catch(() => undefined);
+        void getSkillRun(selectedRun.run.id)
+          .then(setSelectedRun)
+          .catch(() => undefined);
       }
     }, 5000);
 
@@ -108,9 +114,15 @@ export function SkillRunsPanel() {
       void handleSelectRun(runId);
     };
 
-    window.addEventListener(SKILL_RUN_FOCUS_EVENT, handleFocusRun as EventListener);
+    window.addEventListener(
+      SKILL_RUN_FOCUS_EVENT,
+      handleFocusRun as EventListener
+    );
     return () => {
-      window.removeEventListener(SKILL_RUN_FOCUS_EVENT, handleFocusRun as EventListener);
+      window.removeEventListener(
+        SKILL_RUN_FOCUS_EVENT,
+        handleFocusRun as EventListener
+      );
     };
   }, []);
 
@@ -147,33 +159,35 @@ export function SkillRunsPanel() {
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
           <div className="font-semibold text-slate-900">Runtime Runs</div>
           <div className="flex items-center gap-2">
-            <select
-              value={timeRange}
-              aria-label="按时间范围过滤"
-              title="按时间范围过滤"
-              onChange={(e) =>
-                setTimeRange(e.target.value as 'all' | '24h' | '7d' | '30d')
-              }
-              className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-600"
-            >
-              <option value="all">全部时间</option>
-              <option value="24h">最近24小时</option>
-              <option value="7d">最近7天</option>
-              <option value="30d">最近30天</option>
-            </select>
-            <select
-              value={cleanupRange}
-              aria-label="选择清理范围"
-              title="选择清理范围"
-              onChange={(e) =>
-                setCleanupRange(e.target.value as '24h' | '7d' | '30d')
-              }
-              className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-600"
-            >
-              <option value="24h">清理24h前</option>
-              <option value="7d">清理7天前</option>
-              <option value="30d">清理30天前</option>
-            </select>
+            <TextTooltip text={'按时间范围过滤'}>
+              <select
+                value={timeRange}
+                aria-label="按时间范围过滤"
+                onChange={(e) =>
+                  setTimeRange(e.target.value as 'all' | '24h' | '7d' | '30d')
+                }
+                className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-600"
+              >
+                <option value="all">全部时间</option>
+                <option value="24h">最近24小时</option>
+                <option value="7d">最近7天</option>
+                <option value="30d">最近30天</option>
+              </select>
+            </TextTooltip>
+            <TextTooltip text={'选择清理范围'}>
+              <select
+                value={cleanupRange}
+                aria-label="选择清理范围"
+                onChange={(e) =>
+                  setCleanupRange(e.target.value as '24h' | '7d' | '30d')
+                }
+                className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-600"
+              >
+                <option value="24h">清理24h前</option>
+                <option value="7d">清理7天前</option>
+                <option value="30d">清理30天前</option>
+              </select>
+            </TextTooltip>
             <button
               type="button"
               onClick={() => void handleCleanup()}
@@ -181,34 +195,37 @@ export function SkillRunsPanel() {
             >
               清理
             </button>
-            <select
-              value={statusFilter}
-              aria-label="按运行状态过滤"
-              title="按运行状态过滤"
-              onChange={(e) =>
-                setStatusFilter(
-                  e.target.value as
-                    | 'all'
-                    | 'running'
-                    | 'waiting_async'
-                    | 'completed'
-                    | 'failed'
-                )
-              }
-              className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-600"
-            >
-              <option value="all">全部</option>
-              <option value="running">running</option>
-              <option value="waiting_async">waiting_async</option>
-              <option value="completed">completed</option>
-              <option value="failed">failed</option>
-            </select>
+            <TextTooltip text={'按运行状态过滤'}>
+              <select
+                value={statusFilter}
+                aria-label="按运行状态过滤"
+                onChange={(e) =>
+                  setStatusFilter(
+                    e.target.value as
+                      | 'all'
+                      | 'running'
+                      | 'waiting_async'
+                      | 'completed'
+                      | 'failed'
+                  )
+                }
+                className="rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-600"
+              >
+                <option value="all">全部</option>
+                <option value="running">running</option>
+                <option value="waiting_async">waiting_async</option>
+                <option value="completed">completed</option>
+                <option value="failed">failed</option>
+              </select>
+            </TextTooltip>
             <button
               type="button"
               onClick={() => void loadRuns()}
               className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900"
             >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`}
+              />
               刷新
             </button>
           </div>
@@ -229,8 +246,12 @@ export function SkillRunsPanel() {
               className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors"
             >
               <div className="flex items-center justify-between gap-2 mb-1">
-                <div className="font-medium text-slate-800">{run.id.slice(-8)}</div>
-                <span className={`px-2 py-0.5 rounded-full text-[11px] ${getStatusColor(run.status)}`}>
+                <div className="font-medium text-slate-800">
+                  {run.id.slice(-8)}
+                </div>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-[11px] ${getStatusColor(run.status)}`}
+                >
                   {run.status}
                 </span>
               </div>
@@ -241,7 +262,9 @@ export function SkillRunsPanel() {
             </button>
           ))}
           {runs.length === 0 && !loading ? (
-            <div className="px-4 py-8 text-sm text-slate-500 text-center">暂无运行记录</div>
+            <div className="px-4 py-8 text-sm text-slate-500 text-center">
+              暂无运行记录
+            </div>
           ) : null}
         </div>
       </div>
@@ -253,19 +276,40 @@ export function SkillRunsPanel() {
         {selectedRun ? (
           <div className="p-4 space-y-4 max-h-[70vh] overflow-y-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-              <div><span className="text-slate-500">Run ID:</span> {selectedRun.run.id}</div>
-              <div><span className="text-slate-500">Skill ID:</span> {selectedRun.run.skillId || '-'}</div>
-              <div><span className="text-slate-500">Status:</span> {selectedRun.run.status}</div>
-              <div><span className="text-slate-500">Mode:</span> {selectedRun.run.mode}</div>
-              <div><span className="text-slate-500">Started:</span> {formatTime(selectedRun.run.startedAt)}</div>
-              <div><span className="text-slate-500">Ended:</span> {formatTime(selectedRun.run.endedAt)}</div>
+              <div>
+                <span className="text-slate-500">Run ID:</span>{' '}
+                {selectedRun.run.id}
+              </div>
+              <div>
+                <span className="text-slate-500">Skill ID:</span>{' '}
+                {selectedRun.run.skillId || '-'}
+              </div>
+              <div>
+                <span className="text-slate-500">Status:</span>{' '}
+                {selectedRun.run.status}
+              </div>
+              <div>
+                <span className="text-slate-500">Mode:</span>{' '}
+                {selectedRun.run.mode}
+              </div>
+              <div>
+                <span className="text-slate-500">Started:</span>{' '}
+                {formatTime(selectedRun.run.startedAt)}
+              </div>
+              <div>
+                <span className="text-slate-500">Ended:</span>{' '}
+                {formatTime(selectedRun.run.endedAt)}
+              </div>
             </div>
 
             <div>
               <div className="font-medium text-slate-800 mb-2">Steps</div>
               <div className="space-y-2">
                 {selectedRun.steps.map((step) => (
-                  <div key={step.id} className="rounded-xl border border-slate-200 p-3">
+                  <div
+                    key={step.id}
+                    className="rounded-xl border border-slate-200 p-3"
+                  >
                     <div className="flex items-center gap-2 mb-1">
                       {step.status === 'completed' ? (
                         <CheckCircle2 className="w-4 h-4 text-green-600" />
@@ -274,26 +318,47 @@ export function SkillRunsPanel() {
                       ) : (
                         <Clock3 className="w-4 h-4 text-blue-600" />
                       )}
-                      <div className="font-medium text-slate-800">{step.title}</div>
-                      <span className={`px-2 py-0.5 rounded-full text-[11px] ${getStatusColor(step.status)}`}>{step.status}</span>
+                      <div className="font-medium text-slate-800">
+                        {step.title}
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[11px] ${getStatusColor(step.status)}`}
+                      >
+                        {step.status}
+                      </span>
                     </div>
-                    <div className="text-xs text-slate-500">{step.kind}{step.toolName ? ` · ${step.toolName}` : ''}</div>
+                    <div className="text-xs text-slate-500">
+                      {step.kind}
+                      {step.toolName ? ` · ${step.toolName}` : ''}
+                    </div>
                     {step.payload ? (
                       <div className="mt-2 space-y-2 text-[11px] text-slate-600">
-                        {getRuntimePayloadSections(step.payload as RuntimeStepPayload).map((section) => (
-                          <div key={section.title} className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5">
+                        {getRuntimePayloadSections(
+                          step.payload as RuntimeStepPayload
+                        ).map((section) => (
+                          <div
+                            key={section.title}
+                            className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5"
+                          >
                             <div className="uppercase text-[10px] text-slate-400 mb-1">
                               {section.title}
                             </div>
                             <div className="space-y-1">
                               {section.rows.map((row) => (
-                                <div key={`${section.title}-${row.label}`} className="flex items-start gap-2">
-                                  <span className="min-w-[110px] text-slate-500">{row.label}</span>
+                                <div
+                                  key={`${section.title}-${row.label}`}
+                                  className="flex items-start gap-2"
+                                >
+                                  <span className="min-w-[110px] text-slate-500">
+                                    {row.label}
+                                  </span>
                                   <span className="break-all">{row.value}</span>
                                 </div>
                               ))}
                               {section.raw ? (
-                                <pre className="mt-1 whitespace-pre-wrap break-all text-[10px] text-slate-500">{JSON.stringify(section.raw, null, 2)}</pre>
+                                <pre className="mt-1 whitespace-pre-wrap break-all text-[10px] text-slate-500">
+                                  {JSON.stringify(section.raw, null, 2)}
+                                </pre>
                               ) : null}
                             </div>
                           </div>
@@ -301,7 +366,9 @@ export function SkillRunsPanel() {
                       </div>
                     ) : null}
                     {step.errorMessage ? (
-                      <div className="mt-1 text-xs text-red-600">{step.errorMessage}</div>
+                      <div className="mt-1 text-xs text-red-600">
+                        {step.errorMessage}
+                      </div>
                     ) : null}
                   </div>
                 ))}
@@ -312,9 +379,18 @@ export function SkillRunsPanel() {
               <div className="font-medium text-slate-800 mb-2">Artifacts</div>
               <div className="space-y-2">
                 {selectedRun.artifacts.map((artifact) => (
-                  <div key={artifact.id} className="rounded-xl border border-slate-200 p-3 text-sm">
-                    <div className="font-medium text-slate-800">{artifact.title || artifact.type}</div>
-                    {artifact.preview ? <div className="text-slate-500 mt-1">{artifact.preview}</div> : null}
+                  <div
+                    key={artifact.id}
+                    className="rounded-xl border border-slate-200 p-3 text-sm"
+                  >
+                    <div className="font-medium text-slate-800">
+                      {artifact.title || artifact.type}
+                    </div>
+                    {artifact.preview ? (
+                      <div className="text-slate-500 mt-1">
+                        {artifact.preview}
+                      </div>
+                    ) : null}
                   </div>
                 ))}
                 {selectedRun.artifacts.length === 0 ? (
@@ -324,7 +400,9 @@ export function SkillRunsPanel() {
             </div>
           </div>
         ) : (
-          <div className="p-8 text-sm text-slate-500 text-center">选择一条运行记录查看详情</div>
+          <div className="p-8 text-sm text-slate-500 text-center">
+            选择一条运行记录查看详情
+          </div>
         )}
       </div>
     </div>

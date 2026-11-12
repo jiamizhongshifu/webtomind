@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import { getMaskEditUnavailableMessage } from '@/shared/image-mask-edit';
 import { useEffect, useRef, useState } from 'react';
 import {
@@ -27,10 +28,7 @@ import {
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ImageCreatorModelOption } from '../../data/image-creator-options';
-import type {
-  EditorExtraReference,
-  ImageAdjustments
-} from './useImageEditor';
+import type { EditorExtraReference, ImageAdjustments } from './useImageEditor';
 import {
   EDITOR_TOOLS,
   type CameraAngleState,
@@ -45,12 +43,7 @@ import {
   PopoverContent,
   PopoverTrigger
 } from '@/shared/ui/radix/popover';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger
-} from '@/shared/ui/radix/tooltip';
+import { TooltipProvider } from '@/shared/ui/radix/tooltip';
 
 const TOOL_ICONS: Record<EditorToolId, LucideIcon> = {
   region: Scan,
@@ -300,7 +293,9 @@ export function ImageEditorPanel({
   const referenceCopy = isEnglish ? REFERENCE_COPY.en : REFERENCE_COPY.zh;
   const [expandedTool, setExpandedTool] = useState<EditorToolId | null>(null);
   const [showMoreTools, setShowMoreTools] = useState(false);
-  useEffect(() => { setExpandedTool(activeTool); }, [activeTool]);
+  useEffect(() => {
+    setExpandedTool(activeTool);
+  }, [activeTool]);
   const annotatedRegions = regions.filter((region) => region.kind === 'rect');
   const panelRef = useRef<HTMLElement | null>(null);
 
@@ -328,7 +323,14 @@ export function ImageEditorPanel({
   };
 
   const handleGenerate = () => {
-    if (maskEditingUnavailable || busy || (activeTool === 'crop' && cropMode === 'crop') || modelsUnavailable || insufficientCredits) return;
+    if (
+      maskEditingUnavailable ||
+      busy ||
+      (activeTool === 'crop' && cropMode === 'crop') ||
+      modelsUnavailable ||
+      insufficientCredits
+    )
+      return;
     if (requiresLogin) {
       onRequireLogin();
       return;
@@ -337,23 +339,27 @@ export function ImageEditorPanel({
   };
 
   const promptInput = (
-<textarea
-          value={prompt}
-          placeholder={copy.promptPlaceholder}
-          aria-label={copy.promptPlaceholder}
-          spellCheck
-          onChange={(event) => onPromptChange(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key !== 'Enter' || event.shiftKey) return;
-            if (event.nativeEvent.isComposing) return;
-            event.preventDefault();
-            handleGenerate();
-          }}
-        />
+    <textarea
+      value={prompt}
+      placeholder={copy.promptPlaceholder}
+      aria-label={copy.promptPlaceholder}
+      spellCheck
+      onChange={(event) => onPromptChange(event.target.value)}
+      onKeyDown={(event) => {
+        if (event.key !== 'Enter' || event.shiftKey) return;
+        if (event.nativeEvent.isComposing) return;
+        event.preventDefault();
+        handleGenerate();
+      }}
+    />
   );
 
   return (
-    <aside ref={panelRef} className="image-editor-panel" aria-label={copy.title}>
+    <aside
+      ref={panelRef}
+      className="image-editor-panel"
+      aria-label={copy.title}
+    >
       <header className="image-editor-panel-header">
         <strong>
           <Wand2 aria-hidden="true" />
@@ -381,61 +387,79 @@ export function ImageEditorPanel({
         </span>
       </section>
 
-      <details className="image-editor-reference-settings"><summary>{referenceCopy.add}{extraReferences.length ? ` · ${extraReferences.length}` : ''}</summary>
-      {extraReferences.length > 0 ? (
-        <section className="image-editor-panel-extra-references" aria-label={referenceCopy.add}>
-          {extraReferences.map((reference, index) => (
-            <div key={reference.id} className="image-editor-extra-reference">
-              <img src={reference.displayUrl} alt={reference.label} loading="lazy" decoding="async" />
-              <span>
-                <strong>{reference.label}</strong>
-                <small>
-                  {isEnglish ? 'Image' : '图片'} {index + 2}
-                </small>
-              </span>
-              <button
-                type="button"
-                className="image-editor-extra-mention"
-                title={referenceCopy.mention}
-                aria-label={`${referenceCopy.mention} ${index + 2}`}
-                onClick={() => onMentionReference(index + 2)}
-              >
-                <Plus aria-hidden="true" />
-              </button>
-              <button
-                type="button"
-                className="image-editor-extra-remove"
-                title={isEnglish ? 'Remove reference' : '移除参考图'}
-                aria-label={isEnglish ? 'Remove reference' : '移除参考图'}
-                onClick={() => onRemoveExtraReference(reference.id)}
-              >
-                <Trash2 aria-hidden="true" />
-              </button>
-            </div>
-          ))}
-        </section>
-      ) : null}
+      <details className="image-editor-reference-settings">
+        <summary>
+          {referenceCopy.add}
+          {extraReferences.length ? ` · ${extraReferences.length}` : ''}
+        </summary>
+        {extraReferences.length > 0 ? (
+          <section
+            className="image-editor-panel-extra-references"
+            aria-label={referenceCopy.add}
+          >
+            {extraReferences.map((reference, index) => (
+              <div key={reference.id} className="image-editor-extra-reference">
+                <img
+                  src={reference.displayUrl}
+                  alt={reference.label}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <span>
+                  <strong>{reference.label}</strong>
+                  <small>
+                    {isEnglish ? 'Image' : '图片'} {index + 2}
+                  </small>
+                </span>
+                <TextTooltip text={referenceCopy.mention}>
+                  <button
+                    type="button"
+                    className="image-editor-extra-mention"
+                    aria-label={`${referenceCopy.mention} ${index + 2}`}
+                    onClick={() => onMentionReference(index + 2)}
+                  >
+                    <Plus aria-hidden="true" />
+                  </button>
+                </TextTooltip>
+                <TextTooltip
+                  text={isEnglish ? 'Remove reference' : '移除参考图'}
+                >
+                  <button
+                    type="button"
+                    className="image-editor-extra-remove"
+                    aria-label={isEnglish ? 'Remove reference' : '移除参考图'}
+                    onClick={() => onRemoveExtraReference(reference.id)}
+                  >
+                    <Trash2 aria-hidden="true" />
+                  </button>
+                </TextTooltip>
+              </div>
+            ))}
+          </section>
+        ) : null}
 
-      {extraReferences.length < maxExtraReferences ? (
-        <div className="image-editor-panel-add-references">
-          <span>
-            <strong>{referenceCopy.add}</strong>
-            <small>{referenceCopy.limit(maxExtraReferences)}</small>
-          </span>
-          <button type="button" onClick={onAddReferenceUpload}>
-            <Upload aria-hidden="true" />
-            {referenceCopy.upload}
-          </button>
-          <button type="button" onClick={onAddReferenceAsset}>
-            <FolderOpen aria-hidden="true" />
-            {referenceCopy.asset}
-          </button>
-        </div>
-      ) : null}
-
+        {extraReferences.length < maxExtraReferences ? (
+          <div className="image-editor-panel-add-references">
+            <span>
+              <strong>{referenceCopy.add}</strong>
+              <small>{referenceCopy.limit(maxExtraReferences)}</small>
+            </span>
+            <button type="button" onClick={onAddReferenceUpload}>
+              <Upload aria-hidden="true" />
+              {referenceCopy.upload}
+            </button>
+            <button type="button" onClick={onAddReferenceAsset}>
+              <FolderOpen aria-hidden="true" />
+              {referenceCopy.asset}
+            </button>
+          </div>
+        ) : null}
       </details>
       {regions.length > 0 ? (
-        <section className="image-editor-panel-regions" aria-label={copy.regions}>
+        <section
+          className="image-editor-panel-regions"
+          aria-label={copy.regions}
+        >
           <h3>{copy.regions}</h3>
           {regions.map((region, index) => (
             <div
@@ -455,85 +479,132 @@ export function ImageEditorPanel({
                 }
               }}
             >
-              <span className="image-editor-panel-region-index">{index + 1}</span>
+              <span className="image-editor-panel-region-index">
+                {index + 1}
+              </span>
               <textarea
                 rows={2}
                 value={region.prompt || ''}
                 placeholder={copy.regionPromptPlaceholder}
                 aria-label={`${copy.regions} ${index + 1}`}
-                onChange={(event) => onUpdateRegionPrompt(region.id, event.target.value)}
+                onChange={(event) =>
+                  onUpdateRegionPrompt(region.id, event.target.value)
+                }
                 onKeyDown={(event) => {
-                  if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
-                    event.preventDefault(); event.stopPropagation(); handleGenerate();
+                  if (
+                    event.key === 'Enter' &&
+                    !event.shiftKey &&
+                    !event.nativeEvent.isComposing
+                  ) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleGenerate();
                   }
                 }}
               />
-              <button
-                type="button"
-                aria-label={isEnglish ? 'Remove region' : '删除区域'}
-                title={isEnglish ? 'Remove region' : '删除区域'}
-                onClick={() => onRemoveRegion(region.id)}
-              >
-                <Trash2 aria-hidden="true" />
-              </button>
+              <TextTooltip text={isEnglish ? 'Remove region' : '删除区域'}>
+                <button
+                  type="button"
+                  aria-label={isEnglish ? 'Remove region' : '删除区域'}
+                  onClick={() => onRemoveRegion(region.id)}
+                >
+                  <Trash2 aria-hidden="true" />
+                </button>
+              </TextTooltip>
             </div>
           ))}
         </section>
       ) : null}
 
       <section className="image-editor-panel-compose">
-        {regions.length ? <details className="image-editor-global-instruction"><summary>{isEnglish ? 'Overall instruction (optional)' : '补充整体说明（可选）'}</summary>{promptInput}</details> : promptInput}
-        <details className="image-editor-model-settings"><summary>{isEnglish ? 'Model' : '模型'} · {models.find((item) => item.value === model)?.label || model}</summary>
-        <div className="image-editor-panel-model-row">
-          <label htmlFor="image-editor-model">{isEnglish ? 'Model' : '模型'}</label>
-          <span className="image-editor-model-select">
-            <select
-              id="image-editor-model"
-              value={model}
-              onChange={(event) => onModelChange(event.target.value)}
-              disabled={busy}
-            >
-              {models.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <ChevronDown aria-hidden="true" />
-          </span>
-        </div>
+        {regions.length ? (
+          <details className="image-editor-global-instruction">
+            <summary>
+              {isEnglish
+                ? 'Overall instruction (optional)'
+                : '补充整体说明（可选）'}
+            </summary>
+            {promptInput}
+          </details>
+        ) : (
+          promptInput
+        )}
+        <details className="image-editor-model-settings">
+          <summary>
+            {isEnglish ? 'Model' : '模型'} ·{' '}
+            {models.find((item) => item.value === model)?.label || model}
+          </summary>
+          <div className="image-editor-panel-model-row">
+            <label htmlFor="image-editor-model">
+              {isEnglish ? 'Model' : '模型'}
+            </label>
+            <span className="image-editor-model-select">
+              <select
+                id="image-editor-model"
+                value={model}
+                onChange={(event) => onModelChange(event.target.value)}
+                disabled={busy}
+              >
+                {models.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown aria-hidden="true" />
+            </span>
+          </div>
         </details>
         {activeTool === 'crop' && cropMode === 'crop' ? (
-          <p className="image-editor-tool-note">{isEnglish ? 'Adjust the frame, then Apply crop below the canvas. No credits required.' : '调整选框后，在画布下方点击「应用裁剪」，不消耗积分。'}</p>
-        ) : <button
-          type="button"
-          className="image-editor-panel-generate"
-          onClick={handleGenerate}
-          disabled={busy || modelsUnavailable || insufficientCredits || maskEditingUnavailable}
-        >
-          {busy ? (
-            <>
-              <LoaderCircle className="spin" aria-hidden="true" />
-              {generationLabel || (copy.queued)}
-            </>
-          ) : maskEditingUnavailable ? (
-            <>{isEnglish ? 'Selection editing unavailable' : '选区编辑暂不可用'}</>
-          ) : requiresLogin ? (
-            <>{copy.login}</>
-          ) : modelsUnavailable ? (
-            <>{copy.unavailable}</>
-          ) : insufficientCredits ? (
-            <>{copy.insufficient}</>
-          ) : (
-            <>
-              <Sparkles aria-hidden="true" />
-              {activeTool === 'crop' && cropMode === 'expand' ? (isEnglish ? 'Generate expansion' : '生成扩图') : copy.generate}
-              <em>
-                {copy.cost} {estimatedCost} {copy.credits}
-              </em>
-            </>
-          )}
-        </button>}
+          <p className="image-editor-tool-note">
+            {isEnglish
+              ? 'Adjust the frame, then Apply crop below the canvas. No credits required.'
+              : '调整选框后，在画布下方点击「应用裁剪」，不消耗积分。'}
+          </p>
+        ) : (
+          <button
+            type="button"
+            className="image-editor-panel-generate"
+            onClick={handleGenerate}
+            disabled={
+              busy ||
+              modelsUnavailable ||
+              insufficientCredits ||
+              maskEditingUnavailable
+            }
+          >
+            {busy ? (
+              <>
+                <LoaderCircle className="spin" aria-hidden="true" />
+                {generationLabel || copy.queued}
+              </>
+            ) : maskEditingUnavailable ? (
+              <>
+                {isEnglish
+                  ? 'Selection editing unavailable'
+                  : '选区编辑暂不可用'}
+              </>
+            ) : requiresLogin ? (
+              <>{copy.login}</>
+            ) : modelsUnavailable ? (
+              <>{copy.unavailable}</>
+            ) : insufficientCredits ? (
+              <>{copy.insufficient}</>
+            ) : (
+              <>
+                <Sparkles aria-hidden="true" />
+                {activeTool === 'crop' && cropMode === 'expand'
+                  ? isEnglish
+                    ? 'Generate expansion'
+                    : '生成扩图'
+                  : copy.generate}
+                <em>
+                  {copy.cost} {estimatedCost} {copy.credits}
+                </em>
+              </>
+            )}
+          </button>
+        )}
         {maskEditingUnavailable ? (
           <p className="image-editor-panel-error" role="alert">
             {getMaskEditUnavailableMessage(isEnglish)}
@@ -549,7 +620,12 @@ export function ImageEditorPanel({
       <nav className="image-editor-tools" aria-label={copy.tools}>
         <h3>{copy.tools}</h3>
         <ul>
-          {EDITOR_TOOLS.filter((tool) => showMoreTools || ['region', 'draw', 'crop', 'enhance'].includes(tool.id) || tool.id === activeTool).map((tool) => {
+          {EDITOR_TOOLS.filter(
+            (tool) =>
+              showMoreTools ||
+              ['region', 'draw', 'crop', 'enhance'].includes(tool.id) ||
+              tool.id === activeTool
+          ).map((tool) => {
             const expanded = expandedTool === tool.id;
             const isCanvasTool =
               tool.id === 'region' ||
@@ -557,8 +633,7 @@ export function ImageEditorPanel({
               tool.id === 'draw' ||
               tool.id === 'crop';
             const isActionTool =
-              tool.id === 'video' ||
-              tool.id === 'background-remover';
+              tool.id === 'video' || tool.id === 'background-remover';
             return (
               <li
                 key={tool.id}
@@ -603,25 +678,66 @@ export function ImageEditorPanel({
                 </button>
                 {expanded && tool.id === 'enhance' ? (
                   <div className="image-editor-enhance-options">
-                    <p>{isEnglish ? 'Upscale this version here. Your original stays available.' : '直接放大当前版本，保留原图，可继续编辑。'}</p>
+                    <p>
+                      {isEnglish
+                        ? 'Upscale this version here. Your original stays available.'
+                        : '直接放大当前版本，保留原图，可继续编辑。'}
+                    </p>
                     <div className="image-editor-enhance-actions">
-                      <button type="button" disabled={busy} onClick={() => onSendToEnhance(2048)}>AI · 2K</button>
-                      <button type="button" disabled={busy} onClick={() => onSendToEnhance(4096)}>AI · 4K</button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => onSendToEnhance(2048)}
+                      >
+                        AI · 2K
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => onSendToEnhance(4096)}
+                      >
+                        AI · 4K
+                      </button>
                     </div>
-                    <details><summary>{isEnglish ? 'Standard upscale' : '普通放大'}</summary>
-                      <p>{isEnglish ? 'Resizes pixels without AI detail recovery.' : '只调整像素尺寸，不使用 AI 恢复细节。'}</p>
+                    <details>
+                      <summary>
+                        {isEnglish ? 'Standard upscale' : '普通放大'}
+                      </summary>
+                      <p>
+                        {isEnglish
+                          ? 'Resizes pixels without AI detail recovery.'
+                          : '只调整像素尺寸，不使用 AI 恢复细节。'}
+                      </p>
                       <div className="image-editor-enhance-actions">
-                        <button type="button" disabled={busy} onClick={() => onSendToEnhance(2048, false)}>2K</button>
-                        <button type="button" disabled={busy} onClick={() => onSendToEnhance(4096, false)}>4K</button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => onSendToEnhance(2048, false)}
+                        >
+                          2K
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => onSendToEnhance(4096, false)}
+                        >
+                          4K
+                        </button>
                       </div>
                     </details>
                   </div>
                 ) : null}
                 {expanded && tool.id === 'region' ? (
-                  <div className="image-editor-region-modes" role="group" aria-label={isEnglish ? 'Region tool mode' : '区域工具模式'}>
+                  <div
+                    className="image-editor-region-modes"
+                    role="group"
+                    aria-label={isEnglish ? 'Region tool mode' : '区域工具模式'}
+                  >
                     <button
                       type="button"
-                      className={regionMode === 'select' ? 'is-selected' : undefined}
+                      className={
+                        regionMode === 'select' ? 'is-selected' : undefined
+                      }
                       aria-pressed={regionMode === 'select'}
                       onClick={() => onRegionModeChange?.('select')}
                     >
@@ -630,7 +746,9 @@ export function ImageEditorPanel({
                     </button>
                     <button
                       type="button"
-                      className={regionMode === 'draw' ? 'is-selected' : undefined}
+                      className={
+                        regionMode === 'draw' ? 'is-selected' : undefined
+                      }
                       aria-pressed={regionMode === 'draw'}
                       onClick={() => onRegionModeChange?.('draw')}
                     >
@@ -639,7 +757,9 @@ export function ImageEditorPanel({
                     </button>
                     <button
                       type="button"
-                      className={regionMode === 'auto' ? 'is-selected' : undefined}
+                      className={
+                        regionMode === 'auto' ? 'is-selected' : undefined
+                      }
                       aria-pressed={regionMode === 'auto'}
                       onClick={() => onRegionModeChange?.('auto')}
                     >
@@ -702,15 +822,9 @@ export function ImageEditorPanel({
                         step={1}
                         value={[brushSize]}
                         className="image-editor-draw-slider"
-                        aria-label={
-                          isEnglish ? 'Brush size' : '笔刷大小'
-                        }
-                        thumbAriaLabel={
-                          isEnglish ? 'Brush size' : '笔刷大小'
-                        }
-                        onValueChange={(value) =>
-                          onBrushSizeChange?.(value[0])
-                        }
+                        aria-label={isEnglish ? 'Brush size' : '笔刷大小'}
+                        thumbAriaLabel={isEnglish ? 'Brush size' : '笔刷大小'}
+                        onValueChange={(value) => onBrushSizeChange?.(value[0])}
                       />
                     </label>
                     <div className="image-editor-draw-colors">
@@ -718,50 +832,46 @@ export function ImageEditorPanel({
                         {isEnglish ? 'Brush color' : '笔刷颜色'}
                       </span>
                       <div className="image-editor-draw-palette">
-                        <TooltipProvider delayDuration={300}>
+                        <TooltipProvider delayDuration={500}>
                           {DRAW_COLORS.map((color) => (
-                            <Tooltip key={color}>
-                              <TooltipTrigger asChild>
-                                <button
-                                  type="button"
-                                  className={
-                                    brushColor.toLowerCase() ===
-                                    color.toLowerCase()
-                                      ? 'is-selected'
-                                      : undefined
-                                  }
-                                  style={{ backgroundColor: color }}
-                                  aria-label={`${
-                                    isEnglish ? 'Brush color' : '笔刷颜色'
-                                  } ${color}`}
-                                  aria-pressed={
-                                    brushColor.toLowerCase() ===
-                                    color.toLowerCase()
-                                  }
-                                  onClick={() => onBrushColorChange?.(color)}
-                                />
-                              </TooltipTrigger>
-                              <TooltipContent side="top">{color}</TooltipContent>
-                            </Tooltip>
+                            <TextTooltip key={color} text={color}>
+                              <button
+                                type="button"
+                                className={
+                                  brushColor.toLowerCase() ===
+                                  color.toLowerCase()
+                                    ? 'is-selected'
+                                    : undefined
+                                }
+                                style={{ backgroundColor: color }}
+                                aria-label={`${
+                                  isEnglish ? 'Brush color' : '笔刷颜色'
+                                } ${color}`}
+                                aria-pressed={
+                                  brushColor.toLowerCase() ===
+                                  color.toLowerCase()
+                                }
+                                onClick={() => onBrushColorChange?.(color)}
+                              />
+                            </TextTooltip>
                           ))}
                         </TooltipProvider>
                         <Popover>
                           <PopoverTrigger asChild>
-                            <button
-                              type="button"
-                              className="image-editor-draw-custom"
-                              style={{ backgroundColor: brushColor }}
-                              title={
-                                isEnglish
-                                  ? 'Custom color'
-                                  : '自定义颜色'
-                              }
-                              aria-label={
-                                isEnglish
-                                  ? 'Custom brush color'
-                                  : '自定义笔刷颜色'
-                              }
-                            />
+                            <TextTooltip
+                              text={isEnglish ? 'Custom color' : '自定义颜色'}
+                            >
+                              <button
+                                type="button"
+                                className="image-editor-draw-custom"
+                                style={{ backgroundColor: brushColor }}
+                                aria-label={
+                                  isEnglish
+                                    ? 'Custom brush color'
+                                    : '自定义笔刷颜色'
+                                }
+                              />
+                            </TextTooltip>
                           </PopoverTrigger>
                           <PopoverContent
                             align="start"
@@ -770,14 +880,8 @@ export function ImageEditorPanel({
                           >
                             <ColorField
                               value={brushColor}
-                              onChange={(color) =>
-                                onBrushColorChange?.(color)
-                              }
-                              label={
-                                isEnglish
-                                  ? 'Custom color'
-                                  : '自定义颜色'
-                              }
+                              onChange={(color) => onBrushColorChange?.(color)}
+                              label={isEnglish ? 'Custom color' : '自定义颜色'}
                             />
                           </PopoverContent>
                         </Popover>
@@ -820,23 +924,43 @@ export function ImageEditorPanel({
                   </div>
                 ) : null}
                 {expanded && tool.id === 'annotate' ? (
-                  <div className="image-editor-annotate-panel">
-                  </div>
+                  <div className="image-editor-annotate-panel"></div>
                 ) : null}
                 {expanded && tool.id === 'crop' ? (
                   <div className="image-editor-crop-presets">
-                    <div className="image-editor-crop-preset-actions" role="group" aria-label={isEnglish ? 'Crop or expand' : '裁剪或扩图'}>
+                    <div
+                      className="image-editor-crop-preset-actions"
+                      role="group"
+                      aria-label={isEnglish ? 'Crop or expand' : '裁剪或扩图'}
+                    >
                       {(['crop', 'expand'] as const).map((mode) => (
-                        <button type="button" key={mode} disabled={busy} aria-pressed={cropMode === mode}
-                          className={cropMode === mode ? 'is-selected' : undefined}
-                          onClick={() => onCropModeChange?.(mode)}>
-                          {mode === 'crop' ? (isEnglish ? 'Local crop · free' : '本地裁剪 · 免费') : (isEnglish ? 'AI Expand' : 'AI 扩图')}
+                        <button
+                          type="button"
+                          key={mode}
+                          disabled={busy}
+                          aria-pressed={cropMode === mode}
+                          className={
+                            cropMode === mode ? 'is-selected' : undefined
+                          }
+                          onClick={() => onCropModeChange?.(mode)}
+                        >
+                          {mode === 'crop'
+                            ? isEnglish
+                              ? 'Local crop · free'
+                              : '本地裁剪 · 免费'
+                            : isEnglish
+                              ? 'AI Expand'
+                              : 'AI 扩图'}
                         </button>
                       ))}
                     </div>
                     <div className="image-editor-crop-presets-head">
                       <span className="image-editor-crop-presets-label">
-                        {isEnglish ? 'Aspect ratio' : cropMode === 'expand' ? '扩图比例' : '裁剪比例'}
+                        {isEnglish
+                          ? 'Aspect ratio'
+                          : cropMode === 'expand'
+                            ? '扩图比例'
+                            : '裁剪比例'}
                       </span>
                       <button
                         type="button"
@@ -883,26 +1007,34 @@ export function ImageEditorPanel({
                         }
                         onClick={() => onCropAspectChange?.(null)}
                       >
-                        {cropMode === 'expand' ? (isEnglish ? 'Source ratio' : '原图比例') : (isEnglish ? 'Free' : '自由比例')}
+                        {cropMode === 'expand'
+                          ? isEnglish
+                            ? 'Source ratio'
+                            : '原图比例'
+                          : isEnglish
+                            ? 'Free'
+                            : '自由比例'}
                       </button>
                     </div>
-                    {cropMode === 'expand' ? <textarea
-                      className="image-editor-crop-prompt"
-                      value={cropPrompt}
-                      placeholder={
-                        isEnglish
-                          ? 'Describe what you want to generate in the expanded area... (optional)'
-                          : '描述扩展区域要生成的内容…（可选）'
-                      }
-                      aria-label={
-                        isEnglish
-                          ? 'Describe what to generate in the expanded area'
-                          : '描述扩展区域要生成的内容'
-                      }
-                      onChange={(event) =>
-                        onCropPromptChange?.(event.target.value)
-                      }
-                    /> : null}
+                    {cropMode === 'expand' ? (
+                      <textarea
+                        className="image-editor-crop-prompt"
+                        value={cropPrompt}
+                        placeholder={
+                          isEnglish
+                            ? 'Describe what you want to generate in the expanded area... (optional)'
+                            : '描述扩展区域要生成的内容…（可选）'
+                        }
+                        aria-label={
+                          isEnglish
+                            ? 'Describe what to generate in the expanded area'
+                            : '描述扩展区域要生成的内容'
+                        }
+                        onChange={(event) =>
+                          onCropPromptChange?.(event.target.value)
+                        }
+                      />
+                    ) : null}
                   </div>
                 ) : null}
                 {expanded && tool.id === 'adjust' ? (
@@ -925,9 +1057,7 @@ export function ImageEditorPanel({
                             value={[value]}
                             className="image-editor-adjust-slider"
                             aria-label={isEnglish ? param.en : param.zh}
-                            thumbAriaLabel={
-                              isEnglish ? param.en : param.zh
-                            }
+                            thumbAriaLabel={isEnglish ? param.en : param.zh}
                             onValueChange={(next) =>
                               onAdjustmentsChange?.({
                                 ...adjustments,
@@ -937,12 +1067,8 @@ export function ImageEditorPanel({
                           />
                           {param.key === 'colorTemp' ? (
                             <small className="image-editor-adjust-scale">
-                              <span>
-                                {isEnglish ? 'Cool' : '冷'}
-                              </span>
-                              <span>
-                                {isEnglish ? 'Warm' : '暖'}
-                              </span>
+                              <span>{isEnglish ? 'Cool' : '冷'}</span>
+                              <span>{isEnglish ? 'Warm' : '暖'}</span>
                             </small>
                           ) : null}
                           <output className="image-editor-adjust-value">
@@ -991,22 +1117,47 @@ export function ImageEditorPanel({
                   />
                 ) : null}
                 {expanded &&
-                  tool.id === 'crop' &&
-                  annotatedRegions.length === 0 ? (
+                tool.id === 'crop' &&
+                annotatedRegions.length === 0 ? (
                   <p className="image-editor-tool-tip">
                     {cropMode === 'expand'
-                      ? (isEnglish ? 'Choose a ratio, then Generate expansion above. AI extends the scene around the original subject; credits apply.' : '选择比例后，点击上方「生成扩图」。AI 将保留原图主体并延展周围场景，按提示消耗积分。')
-                      : (isEnglish ? 'Drag the frame or handles, then Apply crop. Local cropping is free.' : '拖动选框或手柄，点击「应用裁剪」。本地裁剪不消耗积分。')}
+                      ? isEnglish
+                        ? 'Choose a ratio, then Generate expansion above. AI extends the scene around the original subject; credits apply.'
+                        : '选择比例后，点击上方「生成扩图」。AI 将保留原图主体并延展周围场景，按提示消耗积分。'
+                      : isEnglish
+                        ? 'Drag the frame or handles, then Apply crop. Local cropping is free.'
+                        : '拖动选框或手柄，点击「应用裁剪」。本地裁剪不消耗积分。'}
                   </p>
                 ) : null}
               </li>
             );
           })}
         </ul>
-        <button className="image-editor-more-tools" type="button" aria-expanded={showMoreTools} onClick={() => setShowMoreTools((value) => !value)}>{showMoreTools ? (isEnglish ? 'Fewer tools' : '收起工具') : (isEnglish ? 'More tools' : '更多工具')}</button>
+        <button
+          className="image-editor-more-tools"
+          type="button"
+          aria-expanded={showMoreTools}
+          onClick={() => setShowMoreTools((value) => !value)}
+        >
+          {showMoreTools
+            ? isEnglish
+              ? 'Fewer tools'
+              : '收起工具'
+            : isEnglish
+              ? 'More tools'
+              : '更多工具'}
+        </button>
       </nav>
 
-      {enhancing ? <button className="image-editor-more-tools" type="button" onClick={onCancelEnhance}>{isEnglish ? 'Cancel upscale' : '取消放大'}</button> : null}
+      {enhancing ? (
+        <button
+          className="image-editor-more-tools"
+          type="button"
+          onClick={onCancelEnhance}
+        >
+          {isEnglish ? 'Cancel upscale' : '取消放大'}
+        </button>
+      ) : null}
     </aside>
   );
 }

@@ -41,6 +41,7 @@ import {
   NavigationLink,
   useOverlayBehavior
 } from '@/shared/ui';
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import { deleteImageSession } from '@/services/create-workspace-v2-api';
 // 账户菜单的样式也作用于匿名访客的登录入口（.create-side-nav-profile），
 // 保持在原位置静态引入；组件本身登录后才懒加载。
@@ -217,7 +218,9 @@ const CREATE_SIDE_NAV_COPY = {
     sessionOpen: '打开会话',
     sessionDelete: '删除会话',
     sessionDeleting: '正在删除…',
-    sessionDeleteConfirm: '删除这个创作会话？会话中的对话记录也会一起删除。',
+    sessionCancel: '取消',
+    sessionDeleteConfirm:
+      '会话内的所有创作轮次、提示词和结果关联记录将永久删除，无法恢复。资产库中已生成的图片和视频不会因此删除，正在进行的生成任务也不会取消。',
     sessionDeleteFailed: '删除失败，请稍后重试。',
     earnCredits: `赚取 ${REFERRAL_TOTAL_INVITER_REWARD_CREDITS.toLocaleString()} 积分`,
     upgradeDiscount: `省 ${TARGET_YEARLY_DISCOUNT_PERCENT}%`
@@ -290,8 +293,9 @@ const CREATE_SIDE_NAV_COPY = {
     sessionOpen: 'Open session',
     sessionDelete: 'Delete session',
     sessionDeleting: 'Deleting…',
+    sessionCancel: 'Cancel',
     sessionDeleteConfirm:
-      'Delete this session and all of its conversation turns?',
+      'All creation turns, prompts, and result associations in this session will be permanently deleted and cannot be restored. Generated images and videos in your gallery will remain. Running generation tasks will not be cancelled.',
     sessionDeleteFailed: 'Could not delete the session. Try again.',
     earnCredits: `Earn ${REFERRAL_TOTAL_INVITER_REWARD_CREDITS.toLocaleString()} credits`,
     upgradeDiscount: `${TARGET_YEARLY_DISCOUNT_PERCENT}% off`
@@ -589,12 +593,11 @@ function CreateSideNavEntry({
     onMouseEnter: startIconMotion,
     onMouseLeave: stopIconMotion,
     onFocus: startIconMotion,
-    onBlur: stopIconMotion,
-    title: collapsed ? label : undefined
+    onBlur: stopIconMotion
   };
 
-  if (item.id === 'workspace') {
-    return (
+  const link =
+    item.id === 'workspace' ? (
       <NavigationLink
         href={boardsHref}
         target="_blank"
@@ -604,19 +607,19 @@ function CreateSideNavEntry({
         <span>{label}</span>
         {item.badge && <strong>{item.badge}</strong>}
       </NavigationLink>
+    ) : (
+      <NavigationLink
+        as={Link}
+        to={localizeCreateHref(item.href, localePrefix)}
+        {...sharedProps}
+      >
+        <span>{label}</span>
+        {item.badge && <strong>{item.badge}</strong>}
+      </NavigationLink>
     );
-  }
 
-  return (
-    <NavigationLink
-      as={Link}
-      to={localizeCreateHref(item.href, localePrefix)}
-      {...sharedProps}
-    >
-      <span>{label}</span>
-      {item.badge && <strong>{item.badge}</strong>}
-    </NavigationLink>
-  );
+  // 折叠态只剩图标：原生 title 在键盘聚焦与触摸时都不出现，改用系统提示。
+  return collapsed ? <TextTooltip text={label}>{link}</TextTooltip> : link;
 }
 
 function CreateSideNavPromptLink({
@@ -628,17 +631,22 @@ function CreateSideNavPromptLink({
   icon: ReactNode;
   collapsed: boolean;
 }) {
-  return (
+  const link = (
     <NavigationLink
       as={Link}
       to={item.href}
       className={item.active ? 'active' : ''}
       isActive={item.active}
       icon={icon}
-      title={collapsed ? item.label : undefined}
     >
       <span>{item.label}</span>
     </NavigationLink>
+  );
+
+  return collapsed ? (
+    <TextTooltip text={item.label}>{link}</TextTooltip>
+  ) : (
+    link
   );
 }
 
@@ -660,6 +668,7 @@ function ImageSessionNavItem({
     delete: string;
     deleting: string;
     deleteConfirm: string;
+    cancel: string;
     deleteFailed: string;
   };
   onDelete: (session: ImageCreationSession) => Promise<void>;
@@ -672,49 +681,60 @@ function ImageSessionNavItem({
     Boolean(session.coverImageUrl) && failedCoverUrl !== session.coverImageUrl;
 
   const handleDelete = async () => {
-    if (deleting || !window.confirm(copy.deleteConfirm)) return;
+    if (deleting) return false;
     setDeleting(true);
     setDeleteError('');
     try {
       await onDelete(session);
       setMenuOpen(false);
+      return true;
     } catch (error) {
       setDeleteError(
         error instanceof Error && error.message
           ? error.message
           : copy.deleteFailed
       );
+      return false;
     } finally {
       setDeleting(false);
     }
   };
 
+  const sessionLink = (
+    <Link
+      className={`create-side-nav-session-card${selected ? ' is-active' : ''}`}
+      to={href}
+      aria-current={selected ? 'page' : undefined}
+      aria-label={collapsed ? session.title : undefined}
+    >
+      <span className="create-side-nav-session-thumb" aria-hidden="true">
+        {showCover ? (
+          <img
+            src={session.coverImageUrl}
+            alt=""
+            loading="eager"
+            decoding="async"
+            onError={() => setFailedCoverUrl(session.coverImageUrl)}
+          />
+        ) : (
+          <MessageSquare />
+        )}
+      </span>
+      <span className="create-side-nav-session-title" data-truncate>
+        {session.title}
+      </span>
+    </Link>
+  );
+
   return (
     <div
       className={`create-side-nav-session-card-shell${selected ? ' is-active' : ''}`}
     >
-      <Link
-        className={`create-side-nav-session-card${selected ? ' is-active' : ''}`}
-        to={href}
-        aria-current={selected ? 'page' : undefined}
-        aria-label={collapsed ? session.title : undefined}
-        title={collapsed ? session.title : undefined}
-      >
-        <span className="create-side-nav-session-thumb" aria-hidden="true">
-          {showCover ? (
-            <img
-              src={session.coverImageUrl}
-              alt=""
-              loading="eager"
-              decoding="async"
-              onError={() => setFailedCoverUrl(session.coverImageUrl)}
-            />
-          ) : (
-            <MessageSquare />
-          )}
-        </span>
-        <span className="create-side-nav-session-title">{session.title}</span>
-      </Link>
+      {collapsed ? (
+        <TextTooltip text={session.title}>{sessionLink}</TextTooltip>
+      ) : (
+        sessionLink
+      )}
       {!collapsed && (
         <Suspense
           fallback={
@@ -739,7 +759,8 @@ function ImageSessionNavItem({
             copy={copy}
             deleting={deleting}
             deleteError={deleteError}
-            onDelete={() => void handleDelete()}
+            sessionTitle={session.title}
+            onDelete={handleDelete}
           />
         </Suspense>
       )}
@@ -1160,6 +1181,7 @@ export function CreateSideNav({
                       delete: navCopy.sessionDelete,
                       deleting: navCopy.sessionDeleting,
                       deleteConfirm: navCopy.sessionDeleteConfirm,
+                      cancel: navCopy.sessionCancel,
                       deleteFailed: navCopy.sessionDeleteFailed
                     }}
                     onDelete={handleDeleteImageSession}
@@ -1172,15 +1194,16 @@ export function CreateSideNav({
         <div className="create-side-nav-bottom">
           <div className="create-side-nav-account-actions">
             {hasWorkspaceAccountData && !isPaidUser && (
-              <Link
-                className="create-side-nav-upgrade"
-                to={pricingHref}
-                title={isCollapsed ? navCopy.pricing : undefined}
-              >
-                <Sparkles aria-hidden="true" />
-                <span>{navCopy.pricing}</span>
-                <strong>{navCopy.upgradeDiscount}</strong>
-              </Link>
+              <TextTooltip text={isCollapsed ? navCopy.pricing : ''}>
+                <Link
+                  className="create-side-nav-upgrade"
+                  to={pricingHref}
+                >
+                  <Sparkles aria-hidden="true" />
+                  <span>{navCopy.pricing}</span>
+                  <strong>{navCopy.upgradeDiscount}</strong>
+                </Link>
+              </TextTooltip>
             )}
             {isAuthenticated && (
               <Button
@@ -1230,18 +1253,16 @@ export function CreateSideNav({
               />
             </Suspense>
           ) : (
-            <Link
-              to="/login"
-              className="create-side-nav-profile"
-              title={isCollapsed ? navCopy.signIn : undefined}
-            >
-              <span className="create-side-nav-avatar">{userInitial}</span>
-              <span className="create-side-nav-user">
-                <strong>{navCopy.signIn}</strong>
-                <em>{navCopy.signInSubtitle}</em>
-              </span>
-              <Menu size={16} />
-            </Link>
+            <TextTooltip text={isCollapsed ? navCopy.signIn : ''}>
+              <Link to="/login" className="create-side-nav-profile">
+                <span className="create-side-nav-avatar">{userInitial}</span>
+                <span className="create-side-nav-user">
+                  <strong>{navCopy.signIn}</strong>
+                  <em>{navCopy.signInSubtitle}</em>
+                </span>
+                <Menu size={16} />
+              </Link>
+            </TextTooltip>
           )}
         </div>
       </aside>

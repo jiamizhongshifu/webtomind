@@ -1,3 +1,4 @@
+import { TextTooltip } from './radix/tooltip';
 import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { clsx } from 'clsx';
@@ -44,26 +45,28 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
     });
 
     return (
-      <button
-        ref={ref}
-        type={type}
-        className={clsx(
-          'ui-icon-button',
-          ripple && 'ui-ripple-surface',
-          `ui-icon-button--${variant}`,
-          `ui-icon-button--${size}`,
-          className
-        )}
-        aria-label={label}
-        title={props.title ?? label}
-        disabled={disabled}
-        {...rippleHandlers}
-        {...props}
-      >
-        <span className="ui-icon-button__icon" aria-hidden="true">
-          {icon}
-        </span>
-      </button>
+      <TextTooltip text={props.title ?? label}>
+        <button
+          ref={ref}
+          type={type}
+          className={clsx(
+            'ui-icon-button',
+            ripple && 'ui-ripple-surface',
+            `ui-icon-button--${variant}`,
+            `ui-icon-button--${size}`,
+            className
+          )}
+          aria-label={label}
+          disabled={disabled}
+          {...rippleHandlers}
+          {...props}
+          title={undefined}
+        >
+          <span className="ui-icon-button__icon" aria-hidden="true">
+            {icon}
+          </span>
+        </button>
+      </TextTooltip>
     );
   }
 );

@@ -3,7 +3,8 @@
  * Layer 3: 管理 Skill 关联的参考文档
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useUnsavedChanges } from '@/shared/ui/Dialog';
 import { useTranslation } from 'react-i18next';
 import { createLogger } from '@/utils/logger';
 import {
@@ -50,6 +51,14 @@ export function SkillReferencesTab({ skillId }: SkillReferencesTabProps) {
   // 编辑表单
   const [editContent, setEditContent] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const editBaselineRef = useRef({ content: '', description: '' });
+  const editDirty = Boolean(editingRef) &&
+    (editContent !== editBaselineRef.current.content ||
+      editDescription !== editBaselineRef.current.description);
+  const { requestClose, discardConfirmation } = useUnsavedChanges(
+    editDirty,
+    () => setEditingRef(null)
+  );
 
   // 加载参考文档列表
   const loadReferences = useCallback(async () => {
@@ -115,6 +124,10 @@ export function SkillReferencesTab({ skillId }: SkillReferencesTabProps) {
 
   // 开始编辑
   const handleStartEdit = (ref: SkillReference) => {
+    editBaselineRef.current = {
+      content: ref.content || '',
+      description: ref.description || ''
+    };
     setEditingRef(ref);
     setEditContent(ref.content || '');
     setEditDescription(ref.description || '');
@@ -342,7 +355,7 @@ export function SkillReferencesTab({ skillId }: SkillReferencesTabProps) {
               </h3>
               <button
                 type="button"
-                onClick={() => setEditingRef(null)}
+                onClick={requestClose}
                 className="p-1 hover:bg-slate-100 rounded"
               >
                 <X className="w-5 h-5 text-slate-500" />
@@ -369,7 +382,7 @@ export function SkillReferencesTab({ skillId }: SkillReferencesTabProps) {
             <div className="flex justify-end gap-2 mt-4">
               <button
                 type="button"
-                onClick={() => setEditingRef(null)}
+                onClick={requestClose}
                 className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg"
               >
                 {t('common.cancel', '取消')}
@@ -386,6 +399,7 @@ export function SkillReferencesTab({ skillId }: SkillReferencesTabProps) {
           </div>
         </div>
       )}
+      {discardConfirmation}
     </div>
   );
 }

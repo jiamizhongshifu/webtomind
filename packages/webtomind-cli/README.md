@@ -2,9 +2,12 @@
 
 Install WebToMind Skills into your coding agent.
 
+Requires Node.js >=22. These are the commands for the published release;
+registry availability and the hosted Skill API must be verified before launch.
+
 ```bash
 npx webtomind-cli login
-npx webtomind-cli install xhs-cover --agent codex
+npx webtomind-cli install xhs-cover-note --agent codex
 npx webtomind-cli list
 npx webtomind-cli status
 ```
@@ -25,3 +28,7 @@ needs Pro, lifetime access or a purchase, `5` integrity check failed.
 
 `WEBTOMIND_API_URL` points the CLI at another deployment (https only, except
 localhost).
+
+The CLI is licensed under AGPL-3.0-only; see `LICENSE`. Installed Skill content
+has its own package license. The CLI license does not grant redistribution
+rights to paid Skill archives.

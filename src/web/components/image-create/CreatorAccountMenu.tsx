@@ -68,8 +68,7 @@ type CreatorAccountMenuProps = {
   onSignOut: () => void | Promise<void>;
 };
 
-const HOVER_CLOSE_DELAY = 120;
-type AccountMenuOpenReason = 'hover' | 'pointer' | 'keyboard' | 'programmatic';
+type AccountMenuOpenReason = 'pointer' | 'keyboard' | 'programmatic';
 
 function mapPathToLocale(pathname: string, language: SupportedLanguage) {
   const prefix = `/${language}`;
@@ -107,8 +106,6 @@ export function CreatorAccountMenu({
   } = useLanguage();
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>(() => getStoredTheme());
-  const closeTimerRef = useRef<number | null>(null);
-  const preferenceSelectOpenRef = useRef(false);
   const restoreFocusRef = useRef(false);
   const openReasonRef = useRef<AccountMenuOpenReason>('programmatic');
   const triggerRef = useRef<HTMLButtonElement | null>(null);
@@ -119,22 +116,6 @@ export function CreatorAccountMenu({
   const currentLanguage: SupportedLanguage = language?.startsWith('en')
     ? 'en-US'
     : 'zh-CN';
-
-  const cancelScheduledClose = () => {
-    if (closeTimerRef.current !== null) {
-      window.clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-  };
-
-  const scheduleClose = () => {
-    if (preferenceSelectOpenRef.current) return;
-    cancelScheduledClose();
-    closeTimerRef.current = window.setTimeout(() => {
-      setOpen(false);
-      closeTimerRef.current = null;
-    }, HOVER_CLOSE_DELAY);
-  };
 
   const handleLanguageChange = async (nextLanguage: SupportedLanguage) => {
     if (languageLoading || nextLanguage === currentLanguage) return;
@@ -151,20 +132,6 @@ export function CreatorAccountMenu({
     setTheme(nextTheme);
     changeTheme(nextTheme);
   };
-
-  const handlePreferenceOpenChange = (nextOpen: boolean) => {
-    preferenceSelectOpenRef.current = nextOpen;
-    cancelScheduledClose();
-  };
-
-  useEffect(
-    () => () => {
-      if (closeTimerRef.current !== null) {
-        window.clearTimeout(closeTimerRef.current);
-      }
-    },
-    []
-  );
 
   useEffect(() => {
     if (open) setTheme(getStoredTheme());
@@ -264,21 +231,10 @@ export function CreatorAccountMenu({
           ? `create-side-nav-profile-wrap${compact ? ' is-compact' : ''}`
           : 'image-create-mininav-profile-wrap'
       }
-      onPointerEnter={(event) => {
-        if (event.pointerType !== 'mouse') return;
-        cancelScheduledClose();
-        if (!open) openReasonRef.current = 'hover';
-        setOpen(true);
-      }}
-      onPointerLeave={(event) => {
-        if (event.pointerType !== 'mouse') return;
-        scheduleClose();
-      }}
     >
       <PopoverRoot
         open={open}
         onOpenChange={(nextOpen) => {
-          cancelScheduledClose();
           if (nextOpen && openReasonRef.current === 'programmatic') {
             openReasonRef.current = 'pointer';
           }
@@ -299,12 +255,6 @@ export function CreatorAccountMenu({
           collisionPadding={12}
           onOpenAutoFocus={(event) => {
             if (openReasonRef.current !== 'keyboard') event.preventDefault();
-          }}
-          onPointerEnter={(event) => {
-            if (event.pointerType === 'mouse') cancelScheduledClose();
-          }}
-          onPointerLeave={(event) => {
-            if (event.pointerType === 'mouse') scheduleClose();
           }}
           onEscapeKeyDown={() => {
             restoreFocusRef.current = true;
@@ -352,7 +302,6 @@ export function CreatorAccountMenu({
               <SelectRoot
                 value={currentLanguage}
                 disabled={languageLoading}
-                onOpenChange={handlePreferenceOpenChange}
                 onValueChange={(value) =>
                   void handleLanguageChange(value as SupportedLanguage)
                 }
@@ -382,7 +331,6 @@ export function CreatorAccountMenu({
               </span>
               <SelectRoot
                 value={theme}
-                onOpenChange={handlePreferenceOpenChange}
                 onValueChange={(value) => handleThemeChange(value as Theme)}
               >
                 <SelectTrigger

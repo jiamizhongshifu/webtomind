@@ -1,3 +1,4 @@
+import { useEffect, useRef, type RefObject } from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,6 +20,7 @@ interface ConfirmDialogProps {
   cancelText: string;
   danger?: boolean;
   loading?: boolean;
+  returnFocusRef?: RefObject<HTMLElement | null>;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -31,9 +33,18 @@ export function ConfirmDialog({
   cancelText,
   danger = false,
   loading = false,
+  returnFocusRef,
   onConfirm,
   onCancel
 }: ConfirmDialogProps) {
+  const previousFocus = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (isOpen)
+      previousFocus.current =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+  }, [isOpen]);
   return (
     <AlertDialog
       open={isOpen}
@@ -43,7 +54,16 @@ export function ConfirmDialog({
         }
       }}
     >
-      <AlertDialogContent className="max-w-sm">
+      <AlertDialogContent
+        className="max-w-sm"
+        onCloseAutoFocus={(event) => {
+          const target = returnFocusRef?.current ?? previousFocus.current;
+          if (target?.isConnected) {
+            event.preventDefault();
+            target.focus();
+          }
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
@@ -57,7 +77,10 @@ export function ConfirmDialog({
                 : 'bg-foreground text-background hover:bg-foreground/90'
             )}
             disabled={loading}
-            onClick={onConfirm}
+            onClick={(event) => {
+              event.preventDefault();
+              onConfirm();
+            }}
           >
             {confirmText}
           </AlertDialogAction>

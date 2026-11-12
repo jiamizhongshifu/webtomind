@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import type {
@@ -213,7 +213,7 @@ describe('ImageSessionConversation', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('reuses the same prompt-and-image layout after the result arrives', () => {
+  it('reuses the same prompt-and-image layout after the result arrives', async () => {
     const turn: ImageCreationTurn = {
       id: 'turn-1',
       sessionId: 'session-1',
@@ -292,11 +292,14 @@ describe('ImageSessionConversation', () => {
       screen.getByRole('menuitem', { name: '预览大图' })
     ).toBeInTheDocument();
 
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     fireEvent.click(screen.getByRole('menuitem', { name: '删除' }));
-    expect(confirm).toHaveBeenCalled();
+    const confirmDialog = await screen.findByRole('dialog', {
+      name: '删除图片'
+    });
+    fireEvent.click(
+      within(confirmDialog).getByRole('button', { name: '删除图片' })
+    );
     expect(onDelete).toHaveBeenCalledWith(image);
-    confirm.mockRestore();
 
     fireEvent.click(screen.getByRole('button', { name: '再次生成' }));
     expect(onRegenerate).toHaveBeenCalledWith(image);

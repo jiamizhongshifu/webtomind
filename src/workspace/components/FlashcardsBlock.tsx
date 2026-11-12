@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 /**
  * 闪卡组件 - 交互式闪卡展示
  * 支持翻转查看答案、左右切换卡片
@@ -71,14 +72,15 @@ export function FlashcardsBlock({ cards, title }: FlashcardsBlockProps) {
             ({cards.length} {t('flashcards.cards', '张')})
           </span>
         </div>
-        <button
-          type="button"
-          onClick={handleReset}
-          className="p-1.5 text-muted-foreground hover:text-slate-600 hover:bg-white/50 rounded-lg transition-colors"
-          title={t('flashcards.reset', '重新开始')}
-        >
-          <RotateCcw className="w-4 h-4" />
-        </button>
+        <TextTooltip text={t('flashcards.reset', '重新开始')}>
+          <button
+            type="button"
+            onClick={handleReset}
+            className="p-1.5 text-muted-foreground hover:text-slate-600 hover:bg-white/50 rounded-lg transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </button>
+        </TextTooltip>
       </div>
 
       {/* 进度条 */}

@@ -500,10 +500,6 @@ describe('InfiniteCanvasBoard', () => {
 
   it('creates AI image holder and annotation custom nodes', () => {
     const onCanvasStateChange = vi.fn();
-    const promptSpy = vi
-      .spyOn(window, 'prompt')
-      .mockReturnValueOnce('把主体放大，保留标题区');
-
     render(
       <InfiniteCanvasBoard
         projectName="测试项目"
@@ -548,6 +544,10 @@ describe('InfiniteCanvasBoard', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: '添加批注' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '画布批注' }), {
+      target: { value: '把主体放大，保留标题区' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '创建批注' }));
     const annotationPayload = onCanvasStateChange.mock.calls
       .map((call) => call[0])
       .find((payload) =>
@@ -567,15 +567,10 @@ describe('InfiniteCanvasBoard', () => {
       ])
     );
 
-    promptSpy.mockRestore();
   });
 
   it('links a new annotation to the currently selected canvas node', async () => {
     const onCanvasStateChange = vi.fn();
-    const promptSpy = vi
-      .spyOn(window, 'prompt')
-      .mockReturnValueOnce('把杯子放大，其他区域保持不变');
-
     render(
       <InfiniteCanvasBoard
         projectName="测试项目"
@@ -606,6 +601,10 @@ describe('InfiniteCanvasBoard', () => {
     });
 
     fireEvent.click(screen.getByRole('button', { name: '添加批注' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '画布批注' }), {
+      target: { value: '把杯子放大，其他区域保持不变' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '创建批注' }));
 
     const annotationPayload = onCanvasStateChange.mock.calls
       .map((call) => call[0])
@@ -633,7 +632,6 @@ describe('InfiniteCanvasBoard', () => {
       ])
     );
 
-    promptSpy.mockRestore();
   });
 
   it('renders saved AI holder output as an image on the canvas', () => {
@@ -721,10 +719,6 @@ describe('InfiniteCanvasBoard', () => {
   it('turns an AI holder generation click into a canvas generation request', () => {
     const onCanvasStateChange = vi.fn();
     const onRequestGenerateImage = vi.fn();
-    const promptSpy = vi
-      .spyOn(window, 'prompt')
-      .mockReturnValueOnce('为品牌手册生成封面');
-
     render(
       <InfiniteCanvasBoard
         projectName="测试项目"
@@ -758,6 +752,10 @@ describe('InfiniteCanvasBoard', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: '生成图片' }));
+    fireEvent.change(screen.getByRole('textbox', { name: '图片槽提示词' }), {
+      target: { value: '为品牌手册生成封面' }
+    });
+    fireEvent.click(screen.getByRole('button', { name: '开始生成' }));
 
     expect(onCanvasStateChange).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -780,7 +778,6 @@ describe('InfiniteCanvasBoard', () => {
       })
     );
 
-    promptSpy.mockRestore();
   });
 
   it('lets users adjust selected AI holder generation size presets', () => {

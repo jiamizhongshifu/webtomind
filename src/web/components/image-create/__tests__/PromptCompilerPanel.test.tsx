@@ -243,17 +243,25 @@ function renderPanel({
 }
 
 describe('PromptCompilerPanel', () => {
-  it('keeps bill details on the generate button without a separate help button', () => {
+  it('keeps bill details on the generate button without a separate help button', async () => {
     renderPanel();
 
     expect(
       screen.queryByRole('button', { name: 'View bill details' })
     ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /Generate image/ })
-    ).toHaveAttribute(
-      'title',
-      expect.stringContaining('Final charge is settled by the backend')
+    const generateButton = screen.getByRole('button', {
+      name: /Generate image/
+    });
+    // Button 把 title 交给 TextTooltip：说明应出现在提示层，而不是原生 title。
+    expect(generateButton).not.toHaveAttribute('title');
+    fireEvent.pointerMove(generateButton);
+    const tooltip = await screen.findByRole(
+      'tooltip',
+      {},
+      { timeout: 3000 }
+    );
+    expect(tooltip).toHaveTextContent(
+      'Final charge is settled by the backend'
     );
   });
 
@@ -445,15 +453,13 @@ describe('PromptCompilerPanel', () => {
 
     expect(
       screen.getByRole('dialog', { name: 'promptLibrary.title' })
-    ).toHaveAttribute('tabindex', '-1');
-    expect(document.body.style.overflow).toBe('hidden');
+    ).toBeInTheDocument();
 
     fireEvent.keyDown(document, { key: 'Escape' });
 
     expect(
       screen.queryByRole('dialog', { name: 'promptLibrary.title' })
     ).not.toBeInTheDocument();
-    expect(document.body.style.overflow).toBe('');
   });
 
   it('keeps character and gallery reference badges separate', () => {

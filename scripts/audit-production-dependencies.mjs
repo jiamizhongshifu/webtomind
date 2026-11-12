@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -16,7 +17,7 @@ const NON_APPLICABLE_ADVISORIES = new Map([
     {
       moduleName: 'image-size',
       reason:
-        'image-size 1.2.1 is pulled in by pptxgenjs 4.0.1, whose only call site (getSizeFromImage) is commented out as unused in the shipped dist bundle; no patched version exists (affected <= 2.0.2). Exemption fails closed if image-size usage appears.'
+        'image-size 1.2.1 is pulled in by pptxgenjs 4.0.1, whose only call site (getSizeFromImage) is commented out as unused in the shipped dist bundle. A patched 2.x release exists, but replacing this 1.x transitive dependency requires compatibility review. Exemption fails closed if image-size usage appears.'
     }
   ],
   [
@@ -24,7 +25,7 @@ const NON_APPLICABLE_ADVISORIES = new Map([
     {
       moduleName: 'image-size',
       reason:
-        'image-size 1.2.1 is pulled in by pptxgenjs 4.0.1, whose only call site (getSizeFromImage) is commented out as unused in the shipped dist bundle; no patched version exists (affected <= 2.0.2). Exemption fails closed if image-size usage appears.'
+        'image-size 1.2.1 is pulled in by pptxgenjs 4.0.1, whose only call site (getSizeFromImage) is commented out as unused in the shipped dist bundle. A patched 2.x release exists, but replacing this 1.x transitive dependency requires compatibility review. Exemption fails closed if image-size usage appears.'
     }
   ]
 ]);
@@ -45,8 +46,10 @@ const IMAGE_SIZE_USAGE_PATTERNS = [
 
 const AUDIT_SOURCE_PREFIXES = [
   'api/',
+  'apps/',
   'config/',
   'scripts/',
+  'packages/',
   'server/',
   'src/',
   'workers/'
@@ -150,14 +153,14 @@ export function evaluateAuditReport(
   return { ignored, actionable };
 }
 
-function listTrackedAuditSources(cwd) {
-  const result = spawnSync('git', ['ls-files', '-z'], {
+function listAuditSources(cwd) {
+  const result = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
     cwd,
     encoding: 'utf8'
   });
   if (result.status !== 0) {
     throw new Error(
-      `Unable to list tracked files for the RSC usage guard: ${result.stderr.trim()}`
+      `Unable to list working-tree files for the dependency usage guard: ${result.stderr.trim()}`
     );
   }
 
@@ -167,12 +170,17 @@ function listTrackedAuditSources(cwd) {
     .filter(shouldInspectAuditSource);
 }
 
-function readTrackedAuditSources(cwd) {
+export function readAuditSources(cwd) {
   return Object.fromEntries(
-    listTrackedAuditSources(cwd).map((filePath) => [
-      filePath,
-      readFileSync(fileURLToPath(new URL(filePath, `file://${cwd}/`)), 'utf8')
-    ])
+    [...new Set(listAuditSources(cwd))].flatMap((filePath) => {
+      try {
+        return [[filePath, readFileSync(resolve(cwd, filePath), 'utf8')]];
+      } catch (error) {
+        // A tracked file removed in this working tree is no longer shipped.
+        if (error.code === 'ENOENT') return [];
+        throw error;
+      }
+    })
   );
 }
 
@@ -206,7 +214,7 @@ export function runAudit({ cwd = process.cwd() } = {}) {
     );
   }
 
-  const auditSources = readTrackedAuditSources(cwd);
+  const auditSources = readAuditSources(cwd);
   const rscSignals = findRscSignalsInFiles(auditSources);
   const imageSizeSignals = findImageSizeSignalsInFiles(auditSources);
   const result = evaluateAuditReport(report, { rscSignals, imageSizeSignals });

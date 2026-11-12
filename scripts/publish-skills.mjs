@@ -21,6 +21,7 @@ import process from 'node:process';
 import { createClient } from '@supabase/supabase-js';
 import {
   archiveObjectKey,
+  assertSkillDeliveryFiles,
   buildDeterministicArchive,
   exampleObjectKey,
   mapManifest,
@@ -248,6 +249,7 @@ async function main() {
 
   const blocked = skills.filter((skill) => args.requireExamples && skill.mapped.examples.length === 0);
   for (const skill of skills) {
+    assertSkillDeliveryFiles(skill.root, skill.manifest);
     const archive = buildDeterministicArchive(skill.root, skill.mapped.slug);
     const flag = blocked.includes(skill) ? 'BLOCKED (no real-run example)' : 'ready';
     console.log(

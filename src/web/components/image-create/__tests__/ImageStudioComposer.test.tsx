@@ -1,4 +1,11 @@
-import { act, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within
+} from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { VisualMoodboard } from '@/shared/create-workspace-v2';
 import {
@@ -205,7 +212,7 @@ describe('ImageStudioComposer', () => {
   it('offers every supported aspect ratio, including 16:9 and 3:2', () => {
     renderComposer();
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '比例' }));
+    fireEvent.click(screen.getByRole('button', { name: '比例' }));
     const dialog = screen.getByRole('dialog', { name: '比例设置' });
     for (const ratio of [
       'Auto',
@@ -229,7 +236,7 @@ describe('ImageStudioComposer', () => {
   it('offers batch counts up to the model max, including 6/8/10', () => {
     renderComposer();
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '生成张数' }));
+    fireEvent.click(screen.getByRole('button', { name: '生成张数' }));
     const dialog = screen.getByRole('dialog', { name: '生成张数设置' });
     for (const count of [1, 2, 4, 6, 8, 10]) {
       expect(
@@ -243,7 +250,7 @@ describe('ImageStudioComposer', () => {
   it('marks 4+ count options as member-only and routes free users to the upgrade prompt', () => {
     const { callbacks } = renderComposer();
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '生成张数' }));
+    fireEvent.click(screen.getByRole('button', { name: '生成张数' }));
     const dialog = screen.getByRole('dialog', { name: '生成张数设置' });
     const fourImages = within(dialog).getByRole('button', {
       name: '生成 4 张（会员专属）'
@@ -266,7 +273,7 @@ describe('ImageStudioComposer', () => {
   it('lets members select 4+ image counts without an upgrade prompt', () => {
     const { callbacks } = renderComposer({ isMember: true });
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '生成张数' }));
+    fireEvent.click(screen.getByRole('button', { name: '生成张数' }));
     const dialog = screen.getByRole('dialog', { name: '生成张数设置' });
     const fourImages = within(dialog).getByRole('button', {
       name: '生成 4 张（会员专属）'
@@ -312,7 +319,7 @@ describe('ImageStudioComposer', () => {
     };
     const { callbacks } = renderComposer({ settings: currentSettings });
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '比例' }));
+    fireEvent.click(screen.getByRole('button', { name: '比例' }));
     fireEvent.click(
       within(screen.getByRole('dialog', { name: '比例设置' })).getByRole(
         'button',
@@ -332,7 +339,7 @@ describe('ImageStudioComposer', () => {
   it('switching from Auto to a concrete ratio defaults to 2K resolution', () => {
     const { callbacks } = renderComposer(); // default: aspectRatio auto, imageSize auto
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '比例' }));
+    fireEvent.click(screen.getByRole('button', { name: '比例' }));
     fireEvent.click(
       within(screen.getByRole('dialog', { name: '比例设置' })).getByRole(
         'button',
@@ -422,15 +429,29 @@ describe('ImageStudioComposer', () => {
     ).toBeVisible();
   });
 
-  it('keeps only one hover popover open and closes it with Escape', () => {
+  it('does not open interactive settings on hover or keyboard focus', () => {
+    renderComposer();
+    const trigger = screen.getByRole('button', { name: '模型' });
+    fireEvent.mouseEnter(trigger);
+    fireEvent.focus(trigger);
+    expect(
+      screen.queryByRole('dialog', { name: '模型设置' })
+    ).not.toBeInTheDocument();
+    fireEvent.click(trigger);
+    expect(
+      screen.getByRole('dialog', { name: '模型设置' })
+    ).toBeInTheDocument();
+  });
+
+  it('keeps only one click popover open and closes it with Escape', async () => {
     renderComposer();
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '模型' }));
+    fireEvent.click(screen.getByRole('button', { name: '模型' }));
     expect(
       screen.getByRole('dialog', { name: '模型设置' })
     ).toBeInTheDocument();
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '可视化配方' }));
+    fireEvent.click(screen.getByRole('button', { name: '可视化配方' }));
     expect(
       screen.queryByRole('dialog', { name: '模型设置' })
     ).not.toBeInTheDocument();
@@ -438,6 +459,11 @@ describe('ImageStudioComposer', () => {
       screen.getByRole('dialog', { name: '可视化配方设置' })
     ).toBeInTheDocument();
 
+    await waitFor(() =>
+      expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(
+        true
+      )
+    );
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
@@ -452,7 +478,7 @@ describe('ImageStudioComposer', () => {
     expect(trigger.querySelector('img')).toHaveAttribute('src', '/board.webp');
     expect(trigger).toHaveTextContent('Vibrant Surreal Pop');
 
-    fireEvent.mouseEnter(trigger);
+    fireEvent.click(trigger);
     fireEvent.click(
       screen.getByRole('button', { name: /Vibrant Surreal Pop/ })
     );
@@ -461,7 +487,7 @@ describe('ImageStudioComposer', () => {
 
   it('supports whole-recipe randomization, category randomization and asset selection', () => {
     const { callbacks } = renderComposer({ conditioningMode: 'recipe' });
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '可视化配方' }));
+    fireEvent.click(screen.getByRole('button', { name: '可视化配方' }));
 
     expect(callbacks.onRequestRecipeAssets).toHaveBeenCalledWith('character');
 
@@ -476,7 +502,7 @@ describe('ImageStudioComposer', () => {
 
   it('keeps recipe changes as a draft and confirms before replacing an existing prompt', () => {
     const { callbacks } = renderComposer({ prompt: '用户已有提示词' });
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '可视化配方' }));
+    fireEvent.click(screen.getByRole('button', { name: '可视化配方' }));
 
     fireEvent.click(screen.getByRole('button', { name: '应用配方' }));
 
@@ -494,7 +520,7 @@ describe('ImageStudioComposer', () => {
 
   it('applies a recipe directly when the prompt input is empty', () => {
     const { callbacks } = renderComposer({ prompt: '' });
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '可视化配方' }));
+    fireEvent.click(screen.getByRole('button', { name: '可视化配方' }));
 
     fireEvent.click(screen.getByRole('button', { name: '应用配方' }));
 
@@ -523,7 +549,7 @@ describe('ImageStudioComposer', () => {
       assets: thumbnailAssets
     });
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '可视化配方' }));
+    fireEvent.click(screen.getByRole('button', { name: '可视化配方' }));
     const images = Array.from(
       document.querySelectorAll<HTMLImageElement>(
         '.image-studio-recipe-asset-grid img'
@@ -557,7 +583,7 @@ describe('ImageStudioComposer', () => {
 
   it('keeps mobile conditioning tools reachable from the more panel', () => {
     renderComposer();
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '更多' }));
+    fireEvent.click(screen.getByRole('button', { name: '更多' }));
 
     const morePanel = screen.getByRole('dialog', { name: '更多设置' });
     fireEvent.click(within(morePanel).getByRole('button', { name: '情绪板' }));
@@ -590,7 +616,7 @@ describe('ImageStudioComposer', () => {
       screen.queryByRole('dialog', { name: '生成张数设置' })
     ).not.toBeInTheDocument();
 
-    fireEvent.mouseEnter(resolutionTrigger);
+    fireEvent.click(resolutionTrigger);
     const resolutionPanel = screen.getByRole('dialog', {
       name: '分辨率设置'
     });
@@ -617,11 +643,11 @@ describe('ImageStudioComposer', () => {
     );
     expect(callbacks.onImageCountChange).toHaveBeenCalledWith(2);
 
-    fireEvent.mouseEnter(resolutionTrigger);
+    fireEvent.click(resolutionTrigger);
     expect(
       screen.getByRole('dialog', { name: '分辨率设置' })
     ).toBeInTheDocument();
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '比例' }));
+    fireEvent.click(screen.getByRole('button', { name: '比例' }));
     expect(
       screen.queryByRole('dialog', { name: '分辨率设置' })
     ).not.toBeInTheDocument();
@@ -629,7 +655,7 @@ describe('ImageStudioComposer', () => {
       screen.getByRole('dialog', { name: '比例设置' })
     ).toBeInTheDocument();
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '更多' }));
+    fireEvent.click(screen.getByRole('button', { name: '更多' }));
     const morePanel = screen.getByRole('dialog', { name: '更多设置' });
     expect(
       within(morePanel).queryByRole('group', { name: '分辨率' })
@@ -647,7 +673,7 @@ describe('ImageStudioComposer', () => {
     };
     const { callbacks } = renderComposer({ settings: currentSettings });
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '比例' }));
+    fireEvent.click(screen.getByRole('button', { name: '比例' }));
     fireEvent.click(
       within(screen.getByRole('dialog', { name: '比例设置' })).getByRole(
         'button',
@@ -673,7 +699,7 @@ describe('ImageStudioComposer', () => {
       ],
       assets: [asset, expressionAsset]
     });
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '可视化配方' }));
+    fireEvent.click(screen.getByRole('button', { name: '可视化配方' }));
     const expressionSlot = screen.getByRole('button', { name: /表情.*未选择/ });
 
     fireEvent.mouseEnter(expressionSlot);

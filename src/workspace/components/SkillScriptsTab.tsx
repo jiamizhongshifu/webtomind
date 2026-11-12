@@ -3,7 +3,8 @@
  * Layer 3: 管理 Skill 关联的可执行脚本
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useUnsavedChanges } from '@/shared/ui/Dialog';
 import { useTranslation } from 'react-i18next';
 import { createLogger } from '@/utils/logger';
 import {
@@ -57,6 +58,14 @@ export function SkillScriptsTab({ skillId }: SkillScriptsTabProps) {
   // 编辑表单
   const [editContent, setEditContent] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const editBaselineRef = useRef({ content: '', description: '' });
+  const editDirty = Boolean(editingScript) &&
+    (editContent !== editBaselineRef.current.content ||
+      editDescription !== editBaselineRef.current.description);
+  const { requestClose, discardConfirmation } = useUnsavedChanges(
+    editDirty,
+    () => setEditingScript(null)
+  );
 
   // 加载脚本列表
   const loadScripts = useCallback(async () => {
@@ -149,6 +158,10 @@ export function SkillScriptsTab({ skillId }: SkillScriptsTabProps) {
         return;
       }
     }
+    editBaselineRef.current = {
+      content: script.content || '',
+      description: script.description || ''
+    };
     setEditingScript(script);
     setEditContent(script.content || '');
     setEditDescription(script.description || '');
@@ -417,7 +430,7 @@ export function SkillScriptsTab({ skillId }: SkillScriptsTabProps) {
               </div>
               <button
                 type="button"
-                onClick={() => setEditingScript(null)}
+                onClick={requestClose}
                 className="p-1 hover:bg-slate-100 rounded"
               >
                 <X className="w-5 h-5 text-slate-500" />
@@ -445,7 +458,7 @@ export function SkillScriptsTab({ skillId }: SkillScriptsTabProps) {
             <div className="flex justify-end gap-2 mt-4">
               <button
                 type="button"
-                onClick={() => setEditingScript(null)}
+                onClick={requestClose}
                 className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg"
               >
                 {t('common.cancel', '取消')}
@@ -462,6 +475,7 @@ export function SkillScriptsTab({ skillId }: SkillScriptsTabProps) {
           </div>
         </div>
       )}
+      {discardConfirmation}
     </div>
   );
 }

@@ -17,7 +17,9 @@ export function TermsPage() {
 
   useEffect(() => {
     return applySeo({
-      title: isEnglish ? 'Terms of Service | WebToMind' : '服务条款 | WebToMind',
+      title: isEnglish
+        ? 'Terms of Service | WebToMind'
+        : '服务条款 | WebToMind',
       description: isEnglish
         ? 'Review the terms that govern WebToMind accounts, AI creation services, credits, payments and acceptable use.'
         : '查看适用于 WebToMind 账号、AI 创作服务、积分、支付及合理使用行为的服务条款。',
@@ -56,15 +58,16 @@ export function TermsPage() {
         <div className="ui-card--web p-8 md:p-12">
           <div className="prose prose-slate max-w-none">
             <p className="text-muted-foreground mb-8">
-              {t('terms.lastUpdated', '最后更新：2026年1月21日')}
+              {isEnglish
+                ? 'Last updated: October 20, 2026'
+                : '最后更新：2026年10月20日'}
             </p>
 
             <h2>{t('terms.section1.title', '1. 服务说明')}</h2>
             <p>
-              {t(
-                'terms.section1.content',
-                'WebToMind 是一款 AI 驱动的知识管理工具，帮助用户收集、整理和创作内容。我们提供浏览器扩展和 Web 工作台两种产品形态。'
-              )}
+              {isEnglish
+                ? 'WebToMind provides downloadable workflows for AI agents and separate AI creation tools. A Skill purchase provides the described package and access rights. It does not include an AI agent subscription, external model fees or custom production services unless explicitly stated at checkout.'
+                : 'WebToMind 提供可安装到 AI Agent 的工作流及独立的 AI 创作工具。Skill 购买交付商品说明中的安装包与访问权限；除结账时明确列出外，不包含 Agent 订阅、外部模型费用或定制代做服务。'}
             </p>
 
             <h2>{t('terms.section2.title', '2. 用户责任')}</h2>
@@ -77,10 +80,9 @@ export function TermsPage() {
 
             <h2>{t('terms.section3.title', '3. 知识产权')}</h2>
             <p>
-              {t(
-                'terms.section3.content',
-                'WebToMind 的软件、标识、界面设计等知识产权归我们所有。用户在本平台创作的内容，其知识产权归用户本人所有。'
-              )}
+              {isEnglish
+                ? 'WebToMind retains rights in its original software, branding and Skill packages. You retain your rights in supplied material and may use generated outputs subject to applicable law and the separate terms of models, assets and software used. Buying access does not transfer ownership of a Skill package.'
+                : 'WebToMind 保留其原创软件、品牌和 Skill 包的权利。你保留输入资料中原有的权利，生成成品的使用还受适用法律及模型、素材和软件各自条款约束。购买访问权限不等于获得 Skill 包所有权。'}
             </p>
 
             <h2>{t('terms.section4.title', '4. 隐私保护')}</h2>
@@ -113,6 +115,36 @@ export function TermsPage() {
                 'terms.section7.content',
                 '如有任何问题，请通过邮箱 support@webtomind.com 联系我们。'
               )}
+            </p>
+            <h2>
+              {isEnglish
+                ? '8. Skill access and license'
+                : '8. Skill 访问与授权'}
+            </h2>
+            <p>
+              {isEnglish
+                ? 'Each purchase is for one user, who may install the Skill on their own devices and create personal or commercial client deliverables. Do not share accounts, credentials or paid installation links, or redistribute or resell the reusable paid Skill package. Client deliverables may include project source files permitted by their licenses, but not the reusable Skill package. Third-party open-source components retain their own licenses.'
+                : '每次购买授权一位使用者，可在本人设备安装并制作个人或商业客户成品。不得共享账号、凭证或付费安装链接，不得再分发或转售可复用的原始付费 Skill 包。客户交付可以包含许可允许的项目源文件，但不包含可复用 Skill 包；第三方开源组件继续适用自身许可证。'}
+            </p>
+            <p>
+              {isEnglish
+                ? 'Monthly and yearly content memberships include the WebToMind studio Pro library, its new releases and updates during the paid period. Individual purchases include only the identified Skill and its updates while the service operates. Legitimately acquired versions may continue to be used locally after normal subscription expiry; new paid downloads and updates require active access. Existing Pro / Max and previously purchased benefits remain governed by their original contracts.'
+                : '月付与年付内容会员在已付周期内包含 WebToMind 自营 Pro 库、新增内容和更新。单品购买仅包含指定 Skill 及服务运营期间的该商品更新。正常订阅到期后，合法取得的版本可以继续在本地使用；新的付费下载和更新需要有效访问权益。现有 Pro / Max 与历史已购权益仍按原合同履约。'}
+            </p>
+            <p>
+              {isEnglish
+                ? 'Content memberships do not grant workspace credits. Card subscriptions renew until canceled; cancellation stops future renewals while retaining access through the paid period. Alipay content memberships are prepaid and require manual renewal. Lifetime access is not currently offered. Compatibility is limited to the environments described for each product; future agent and model compatibility is not guaranteed.'
+                : '内容会员不发放创作台积分。银行卡订阅会持续续费，取消后停止后续续费并保留已付周期内权益。支付宝内容会员按期预付，需手动续费。终身方案当前未开放。商品兼容范围以各商品说明为准，不保证未来所有 Agent 和模型都兼容。'}
+            </p>
+            <h2>
+              {isEnglish
+                ? '9. Payment issues and refunds'
+                : '9. 付款问题与退款'}
+            </h2>
+            <p>
+              {isEnglish
+                ? 'Contact support with your order reference for duplicate or unauthorized charges, missing access, or reproducible failures in a supported environment. We will investigate and correct delivery or billing errors. Cancellation alone does not request a refund. Any applicable refund or withdrawal rights remain unaffected. A refund withdraws the refunded purchase or billing period, not unrelated valid purchases. Workspace credit returns for failed generation tasks are handled separately.'
+                : '如遇重复或未授权扣款、权益未交付、支持环境中的可复现故障，请提供订单号联系客服核查并纠正交付或计费错误。取消续费本身不发起退款，适用的法定退款或撤回权利不受影响。退款撤销对应商品或账期，不影响其他有效购买。生成任务失败的创作台积分返还单独处理。'}
             </p>
           </div>
         </div>

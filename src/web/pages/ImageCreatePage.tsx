@@ -166,7 +166,7 @@ import {
 } from '../components/image-create/useImageCreationSessions';
 import { VideoHistoryPreviewDialog } from '../components/image-create/VideoHistoryPreviewDialog';
 import { PhotoSwipeViewer } from '../components/image-create/PhotoSwipeViewer';
-import { useOverlayBehavior } from '@/shared/ui';
+import { Button, Dialog, useOverlayBehavior } from '@/shared/ui';
 import { triggerImageDownload } from '../components/image-create/downloadImage';
 import { fileToDataUrl } from '../components/image-create/referenceFileUtils';
 import { analyzeImagePromptStructure } from '../components/image-create/promptDiagnostics';
@@ -973,6 +973,9 @@ export function ImageCreatePage() {
     settings.model
   ]);
   const [toastText, setToastText] = useState('');
+  const [pendingPromptLibraryApplyId, setPendingPromptLibraryApplyId] = useState<
+    string | null
+  >(null);
   const [toastTone, setToastTone] = useState<'info' | 'error'>('info');
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
@@ -4254,12 +4257,9 @@ export function ImageCreatePage() {
     [conditioningMode, setManualSelection, setStatusText]
   );
 
-  const handleApplyPromptLibraryItem = (itemId: string): boolean => {
+  const applyPromptLibraryItem = (itemId: string) => {
     const item = promptLibrary.find((saved) => saved.id === itemId);
-    if (!item) return false;
-    if (!window.confirm(t('promptLibrary.applyConfirm'))) {
-      return false;
-    }
+    if (!item) return;
     setPromptMode('custom');
     setCustomPromptText(item.prompt);
     setCustomNegativePromptText('');
@@ -4269,6 +4269,13 @@ export function ImageCreatePage() {
     setConsistencyResult(null);
     setError('');
     setStatusText(t('promptLibrary.appliedToast') as string);
+  };
+
+  const handleApplyPromptLibraryItem = (itemId: string): boolean => {
+    const item = promptLibrary.find((saved) => saved.id === itemId);
+    if (!item) return false;
+    // 覆盖提示词并清空当前结果，影响不止输入框，所以用系统对话框确认。
+    setPendingPromptLibraryApplyId(itemId);
     return true;
   };
 
@@ -5759,10 +5766,6 @@ export function ImageCreatePage() {
     setStatusText
   ]);
 
-  const characterWorkflowModalRef = useOverlayBehavior<HTMLElement>({
-    open: characterWorkflowOpen,
-    onClose: () => setCharacterWorkflowOpen(false)
-  });
   const upgradePromptModalRef = useOverlayBehavior<HTMLElement>({
     open: upgradePromptOpen,
     onClose: () => setUpgradePromptOpen(false)
@@ -6367,7 +6370,6 @@ export function ImageCreatePage() {
 
       {characterWorkflowOpen && (
         <ImageCreateCharacterWorkflowModal
-          modalRef={characterWorkflowModalRef}
           ariaLabel={t('controls.characterWorkflow.entry') as string}
           title={t('controls.characterWorkflow.entry') as string}
           hint={t('controls.characterWorkflow.entryHint') as string}
@@ -6532,6 +6534,38 @@ export function ImageCreatePage() {
           onSubmit={() => void handleSubmitPromptImport()}
         />
       )}
+
+      <Dialog
+        open={Boolean(pendingPromptLibraryApplyId)}
+        title={t('promptLibrary.applyDialogTitle') as string}
+        description={t('promptLibrary.applyConfirm') as string}
+        closeLabel={t('common.cancel', { defaultValue: '取消' }) as string}
+        onClose={() => setPendingPromptLibraryApplyId(null)}
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPendingPromptLibraryApplyId(null)}
+            >
+              {t('common.cancel', { defaultValue: '取消' }) as string}
+            </Button>
+            <Button
+              type="button"
+              onClick={() => {
+                if (pendingPromptLibraryApplyId) {
+                  applyPromptLibraryItem(pendingPromptLibraryApplyId);
+                }
+                setPendingPromptLibraryApplyId(null);
+              }}
+            >
+              {t('promptLibrary.applyDialogTitle') as string}
+            </Button>
+          </>
+        }
+      >
+        {null}
+      </Dialog>
 
       <UpgradePromptModal
         ref={upgradePromptModalRef}

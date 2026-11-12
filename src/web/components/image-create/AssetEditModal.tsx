@@ -9,6 +9,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Save, Loader2 } from 'lucide-react';
+import { useUnsavedChanges } from '@/shared/ui/Dialog';
 import type {
   ImagePromptAsset,
   ImagePromptSlot
@@ -68,9 +69,31 @@ export function AssetEditModal({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const baseline = {
+    slot: initialAsset.slot,
+    title: initialAsset.title || '',
+    subtitle: initialAsset.subtitle || '',
+    prompt: initialAsset.prompt || initialAsset.promptZh || '',
+    negativePrompt:
+      initialAsset.negativePrompt || initialAsset.negativePromptZh || '',
+    tagsText: (initialAsset.tags || []).join(', ')
+  };
+  const dirty =
+    draft.slot !== baseline.slot ||
+    draft.title !== baseline.title ||
+    draft.subtitle !== baseline.subtitle ||
+    draft.prompt !== baseline.prompt ||
+    draft.negativePrompt !== baseline.negativePrompt ||
+    draft.tagsText !== baseline.tagsText;
+  const { requestClose, discardConfirmation } = useUnsavedChanges(
+    dirty,
+    onClose,
+    saving
+  );
+
   const handleClose = () => {
     if (saving) return;
-    onClose();
+    requestClose();
   };
 
   const handleSave = async () => {
@@ -115,14 +138,16 @@ export function AssetEditModal({
   const title = t('mine.editTitle') as string;
 
   return (
-    <DialogRoot
-      open
-      onOpenChange={(open) => {
-        if (!open && !saving) onClose();
-      }}
-    >
+    <>
+      <DialogRoot
+        open
+        onOpenChange={(open) => {
+          if (!open) requestClose();
+        }}
+      >
       <DialogContent
-        className="creator-edit-modal"
+        placement="right"
+        className="creator-edit-modal !h-dvh !max-h-dvh max-sm:!w-screen"
         onEscapeKeyDown={(event) => {
           if (saving) event.preventDefault();
         }}
@@ -290,6 +315,8 @@ export function AssetEditModal({
           </div>
         </DialogFooter>
       </DialogContent>
-    </DialogRoot>
+      </DialogRoot>
+      {discardConfirmation}
+    </>
   );
 }

@@ -86,20 +86,27 @@ describe('Cloudflare Worker SEO route matching', () => {
       {
         CANONICAL_HOST: 'webtomind.com',
         ASSETS: {
-          fetch: vi.fn(async () => new Response(
-            '<!doctype html><html><head></head><body><div id="root"></div></body></html>',
-            { headers: { 'Content-Type': 'text/html' } }
-          ))
+          fetch: vi.fn(
+            async () =>
+              new Response(
+                '<!doctype html><html><head></head><body><div id="root"></div></body></html>',
+                { headers: { 'Content-Type': 'text/html' } }
+              )
+          )
         }
       } as never,
       { waitUntil: () => undefined } as never
     );
     expect(response.status).toBe(200);
-    const formAction = response.headers.get('Content-Security-Policy')
-      ?.split(';').map((directive) => directive.trim())
+    const formAction = response.headers
+      .get('Content-Security-Policy')
+      ?.split(';')
+      .map((directive) => directive.trim())
       .find((directive) => directive.startsWith('form-action '));
     expect(formAction?.split(/\s+/).slice(1)).toEqual([
-      "'self'", 'https://zpayz.cn', 'https://api.z-pay.cn'
+      "'self'",
+      'https://zpayz.cn',
+      'https://api.z-pay.cn'
     ]);
   });
 
@@ -191,7 +198,7 @@ describe('Cloudflare Worker SEO route matching', () => {
     );
   });
 
-  it('redirects the deprecated landing page to the English prompt library by default', async () => {
+  it('redirects the root to the English Skill home by default', async () => {
     expect(getSeoRouteLabelForTest('/')).toBe('redirect:/');
 
     const response = await worker.fetch(
@@ -202,11 +209,11 @@ describe('Cloudflare Worker SEO route matching', () => {
 
     expect(response.status).toBe(308);
     expect(response.headers.get('location')).toBe(
-      'https://webtomind.com/en-US/prompts?utm_source=landing'
+      'https://webtomind.com/en-US/overview?utm_source=landing'
     );
   });
 
-  it('redirects the deprecated landing page to the Chinese prompt library for zh browsers', async () => {
+  it('redirects the root to the Chinese Skill home for zh browsers', async () => {
     const response = await worker.fetch(
       new Request('https://webtomind.com/?utm_source=landing', {
         headers: { 'Accept-Language': 'zh-CN,zh;q=0.9' }
@@ -217,11 +224,11 @@ describe('Cloudflare Worker SEO route matching', () => {
 
     expect(response.status).toBe(308);
     expect(response.headers.get('location')).toBe(
-      'https://webtomind.com/zh-CN/prompts?utm_source=landing'
+      'https://webtomind.com/zh-CN/overview?utm_source=landing'
     );
   });
 
-  it('redirects the deprecated landing page to the English prompt library for en browsers', async () => {
+  it('redirects the root to the English Skill home for en browsers', async () => {
     const response = await worker.fetch(
       new Request('https://webtomind.com/?utm_source=landing', {
         headers: { 'Accept-Language': 'en-US,en;q=0.9' }
@@ -232,7 +239,7 @@ describe('Cloudflare Worker SEO route matching', () => {
 
     expect(response.status).toBe(308);
     expect(response.headers.get('location')).toBe(
-      'https://webtomind.com/en-US/prompts?utm_source=landing'
+      'https://webtomind.com/en-US/overview?utm_source=landing'
     );
   });
 
@@ -350,7 +357,7 @@ describe('Cloudflare Worker SEO route matching', () => {
 
     expect(response.status).toBe(308);
     expect(response.headers.get('location')).toBe(
-      'https://webtomind.com/zh-CN/prompts?utm_source=landing'
+      'https://webtomind.com/zh-CN/overview?utm_source=landing'
     );
   });
 
@@ -374,6 +381,34 @@ describe('Cloudflare Worker SEO route matching', () => {
     expect(response.headers.get('x-webtomind-seo-renderer')).toBe(
       'cloudflare-assets'
     );
+  });
+
+  it('never answers a crawler Skill detail request with a 500', async () => {
+    const indexHtml =
+      '<!doctype html><html><head><title>WebToMind</title><meta name="robots" content="index,follow" /></head><body><div id="root"></div></body></html>';
+    const fetchSkill = (env: Record<string, unknown>) =>
+      worker.fetch(
+        new Request('https://webtomind.com/en-US/skills/does-not-exist'),
+        {
+          CANONICAL_HOST: 'webtomind.com',
+          ASSETS: { fetch: vi.fn(async () => new Response(indexHtml)) },
+          ...env
+        } as never,
+        { waitUntil: () => undefined } as never
+      );
+
+    const missing = await fetchSkill({
+      SUPABASE_URL: 'https://example.supabase.co',
+      SUPABASE_SERVICE_ROLE_KEY: 'service-role'
+    });
+    expect(missing.status).toBe(404);
+    expect(missing.headers.get('Cache-Control')).toBe('no-store');
+    expect(await missing.text()).toContain('content="noindex,follow"');
+
+    const unconfigured = await fetchSkill({});
+    expect(unconfigured.status).toBe(200);
+    expect(unconfigured.headers.get('Cache-Control')).toBe('no-store');
+    expect(await unconfigured.text()).toContain('content="noindex,follow"');
   });
 
   it('serves standalone boards URLs as app routes', () => {
@@ -603,7 +638,8 @@ describe('Cloudflare Worker SEO route matching', () => {
   });
 
   it('drops the LCP image preload and inerts the SSR body for browsers', async () => {
-    const { toBrowserPromptDetailHtml } = await import('../../workers/webtomind');
+    const { toBrowserPromptDetailHtml } =
+      await import('../../workers/webtomind');
     const html = toBrowserPromptDetailHtml(
       '<html><head><link rel="preload" as="image" href="https://img/a.webp" fetchpriority="high" data-webtomind-prompt-image-preload="1" />\n    <script id="webtomind-prompt-bootstrap" type="application/json">{}</script></head><body><div id="root"><!--webtomind-ssr-body-start--><main class="prompt-detail-ssr"><img src="https://img/a.webp" /></main><!--webtomind-ssr-body-end--></div></body></html>'
     );
@@ -658,7 +694,9 @@ describe('Cloudflare Worker SEO route matching', () => {
     );
     const html = await response.text();
     expect(response.status).toBe(200);
-    expect(html).toContain('href="/assets/index.en1.js" data-webtomind-locale-preload');
+    expect(html).toContain(
+      'href="/assets/index.en1.js" data-webtomind-locale-preload'
+    );
   });
 
   it('keeps crawler prompt detail HTML visible', async () => {
@@ -1967,7 +2005,9 @@ describe('Cloudflare subscription cancellation routing', () => {
     'routes %s cancellation requests to the authenticated billing handler',
     async (method) => {
       const response = await worker.fetch(
-        new Request('https://webtomind.com/api/membership/cancellation', { method }),
+        new Request('https://webtomind.com/api/membership/cancellation', {
+          method
+        }),
         { CANONICAL_HOST: 'webtomind.com' } as never,
         { waitUntil: () => undefined } as never
       );

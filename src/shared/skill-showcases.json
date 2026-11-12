@@ -1,0 +1,510 @@
+{
+  "xhs-cover-note": {
+    "video": "/skill-previews/videos/xhs-cover-note.mp4",
+    "poster": "/skill-previews/videos/xhs-cover-note.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：PNG",
+        "en-US": "Export formats: PNG"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "笔记主题与受众",
+        "en-US": "Note topic and audience"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      }
+    ],
+    "fit": {
+      "zh-CN": "一句话主题生成 3:4 小红书封面：大字标题、重点高亮、标签与可选实拍图，文字由排版引擎渲染，可检查和编辑。",
+      "en-US": "Turn a topic into a 3:4 Xiaohongshu cover with a bold headline, highlight mark, tags and an optional photo; text is typeset and editable for review."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": []
+  },
+  "og-image": {
+    "video": "/skill-previews/videos/og-image.mp4",
+    "poster": "/skill-previews/videos/og-image.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：PNG",
+        "en-US": "Export formats: PNG"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "页面标题",
+        "en-US": "Page title"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      }
+    ],
+    "fit": {
+      "zh-CN": "为博客文章、产品发布和文档页生成 1200×630 链接分享图，中英文皆可，标题清晰、聊天预览也能看清，附 og:image 标签。",
+      "en-US": "1200x630 share images for blog posts, product launches and docs pages in English or Chinese, readable in small link previews, delivered with og:image tags."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": [
+      {
+        "mediaType": "image",
+        "mediaUrl": "/skill-previews/og-image.png",
+        "posterUrl": null,
+        "title": {
+          "zh-CN": "实际渲染示例",
+          "en-US": "Rendered example"
+        },
+        "description": {
+          "zh-CN": "原创虚构示例，非客户案例。",
+          "en-US": "Original fictional example, not a customer case."
+        }
+      }
+    ]
+  },
+  "weekly-report-deck": {
+    "video": "/skill-previews/videos/weekly-report-deck.mp4",
+    "poster": "/skill-previews/videos/weekly-report-deck.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：PNG / PDF",
+        "en-US": "Export formats: PNG / PDF"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "本周工作记录",
+        "en-US": "This week's notes"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      }
+    ],
+    "fit": {
+      "zh-CN": "把零散周报笔记和数据整理成结论先行的 16:9 汇报幻灯片：指标卡、渠道柱状图、成果、问题对策与下周计划，输出 PNG 与 PDF。",
+      "en-US": "Turn messy weekly notes and metrics into a conclusion-first 16:9 deck with KPI cards, a bar chart, wins, issues and next steps, exported as PNG and PDF."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": [
+      {
+        "mediaType": "image",
+        "mediaUrl": "/skill-previews/report.png",
+        "posterUrl": null,
+        "title": {
+          "zh-CN": "实际渲染示例",
+          "en-US": "Rendered example"
+        },
+        "description": {
+          "zh-CN": "原创虚构示例，非客户案例。",
+          "en-US": "Original fictional example, not a customer case."
+        }
+      }
+    ]
+  },
+  "waitlist-page": {
+    "video": "/skill-previews/videos/waitlist-page.mp4",
+    "poster": "/skill-previews/videos/waitlist-page.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：HTML / PNG",
+        "en-US": "Export formats: HTML / PNG"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "产品与目标用户",
+        "en-US": "Product and audience"
+      },
+      {
+        "zh-CN": "品牌名",
+        "en-US": "Brand name"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      }
+    ],
+    "fit": {
+      "zh-CN": "一个自包含的响应式预约/内测落地页：首屏卖点、邮箱收集、产品预览、功能、FAQ 与底部转化，附桌面与手机预览图。",
+      "en-US": "A self-contained responsive waitlist page with hero, email capture, product preview, features, FAQ and final CTA, plus desktop and mobile previews."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": []
+  },
+  "kinetic-typography-short": {
+    "video": "/skill-previews/videos/kinetic-typography-short.mp4",
+    "poster": "/skill-previews/videos/kinetic-typography-short.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：MP4 / JPG",
+        "en-US": "Export formats: MP4 / JPG"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "口播稿或主题",
+        "en-US": "Script or topic"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      },
+      {
+        "zh-CN": "FFmpeg，用于编码视频",
+        "en-US": "FFmpeg for video encoding"
+      }
+    ],
+    "fit": {
+      "zh-CN": "把口播稿或观点变成 10–20 秒竖版文字动效视频：大字钩子、逐行揭示、数字滚动、清单与关注引导，输出 MP4。",
+      "en-US": "Turn a script or talking points into a 10–20 s vertical kinetic-typography MP4 with hook, line reveals, count-up stats, list and CTA."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": []
+  },
+  "xhs-carousel": {
+    "video": "/skill-previews/videos/xhs-carousel.mp4",
+    "poster": "/skill-previews/videos/xhs-carousel.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：PNG",
+        "en-US": "Export formats: PNG"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "主题或原文内容",
+        "en-US": "Topic or source content"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      }
+    ],
+    "fit": {
+      "zh-CN": "把文章或干货整理成 6–9 页小红书知识卡片：封面、要点、对比、步骤、金句、清单与结尾关注页，统一设计系统，文字由 HTML 排版，交付前逐页校对。",
+      "en-US": "Turn notes or an article into a 6–9 page Xiaohongshu knowledge carousel: cover, points, do/don't, steps, quote, checklist and a follow page in one consistent design system."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": [
+      {
+        "mediaType": "image",
+        "mediaUrl": "/skill-previews/carousel.png",
+        "posterUrl": null,
+        "title": {
+          "zh-CN": "实际渲染示例",
+          "en-US": "Rendered example"
+        },
+        "description": {
+          "zh-CN": "原创虚构示例，非客户案例。",
+          "en-US": "Original fictional example, not a customer case."
+        }
+      }
+    ]
+  },
+  "case-study-deck": {
+    "video": "/skill-previews/videos/case-study-deck.mp4",
+    "poster": "/skill-previews/videos/case-study-deck.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：PNG / PDF",
+        "en-US": "Export formats: PNG / PDF"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "客户故事（挑战、方案、成果）",
+        "en-US": "Customer story (challenge, solution, results)"
+      },
+      {
+        "zh-CN": "客户与供应商名称",
+        "en-US": "Customer and vendor names"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      }
+    ],
+    "fit": {
+      "zh-CN": "把一个 B2B 客户成功故事做成英文案例 Deck：客户概况、挑战、实施路径、方案架构、量化成果、前后对比、客户证言与下一步，输出 PNG 与 PDF。",
+      "en-US": "Turn a B2B customer win into an editorial 16:9 case study: customer snapshot, challenge, rollout timeline, solution flow, quantified results, before/after bars, a customer quote and next steps. PNG and PDF."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": [
+      {
+        "mediaType": "image",
+        "mediaUrl": "/skill-previews/case-study.png",
+        "posterUrl": null,
+        "title": {
+          "zh-CN": "实际渲染示例",
+          "en-US": "Rendered example"
+        },
+        "description": {
+          "zh-CN": "原创虚构示例，非客户案例。",
+          "en-US": "Original fictional example, not a customer case."
+        }
+      }
+    ]
+  },
+  "product-launch-deck": {
+    "video": "/skill-previews/videos/product-launch-deck.mp4",
+    "poster": "/skill-previews/videos/product-launch-deck.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：PNG / PDF",
+        "en-US": "Export formats: PNG / PDF"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "产品与核心卖点",
+        "en-US": "Product and key selling points"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      }
+    ],
+    "fit": {
+      "zh-CN": "做一套暗场电影感的新品发布会 Keynote：开场、一句话大字、产品揭幕、巨型参数、卖点标注、性能对比、配色、价格与上市时间，产品由 CSS 绘制，输出 PNG 与 PDF。",
+      "en-US": "Create a dark, cinematic launch keynote: opener, hero statements, product reveal, giant spec numbers, feature callouts, performance bars, colorways, price and availability, with CSS-drawn product stand-ins. PNG and PDF."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": [
+      {
+        "mediaType": "image",
+        "mediaUrl": "/skill-previews/product-launch.png",
+        "posterUrl": null,
+        "title": {
+          "zh-CN": "实际渲染示例",
+          "en-US": "Rendered example"
+        },
+        "description": {
+          "zh-CN": "原创虚构示例，非客户案例。",
+          "en-US": "Original fictional example, not a customer case."
+        }
+      }
+    ]
+  },
+  "saas-landing-page": {
+    "video": "/skill-previews/videos/saas-landing-page.mp4",
+    "poster": "/skill-previews/videos/saas-landing-page.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：HTML / PNG",
+        "en-US": "Export formats: HTML / PNG"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "产品、目标用户与核心价值",
+        "en-US": "Product, audience and core value"
+      },
+      {
+        "zh-CN": "品牌名",
+        "en-US": "Brand name"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      }
+    ],
+    "fit": {
+      "zh-CN": "完整的 SaaS/AI 工具营销首页：导航、首屏与 CSS 产品界面、无 Logo 社会证明、功能网格、使用流程、场景、待替换的客户评价、定价预览、FAQ、转化区与页脚，自包含单文件。",
+      "en-US": "A full SaaS marketing page: nav, hero with a CSS product mock, logo-free proof, feature grid, how it works, use cases, placeholder testimonials, pricing teaser, FAQ, CTA and footer in one self-contained file."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": [
+      {
+        "mediaType": "image",
+        "mediaUrl": "/skill-previews/saas-page.png",
+        "posterUrl": null,
+        "title": {
+          "zh-CN": "实际渲染示例",
+          "en-US": "Rendered example"
+        },
+        "description": {
+          "zh-CN": "原创虚构示例，非客户案例。",
+          "en-US": "Original fictional example, not a customer case."
+        }
+      }
+    ]
+  },
+  "app-feature-demo-video": {
+    "video": "/skill-previews/videos/app-feature-demo-video.mp4",
+    "poster": "/skill-previews/videos/app-feature-demo-video.jpg",
+    "outputs": [
+      {
+        "zh-CN": "可编辑源文件及本地执行脚本",
+        "en-US": "Editable source files and a local renderer"
+      },
+      {
+        "zh-CN": "导出格式：MP4 / JPG",
+        "en-US": "Export formats: MP4 / JPG"
+      }
+    ],
+    "inputs": [
+      {
+        "zh-CN": "App 名称与要演示的功能",
+        "en-US": "App name and features to show"
+      }
+    ],
+    "dependencies": [
+      {
+        "zh-CN": "Node.js；CLI 安装需要 22+，渲染器声明版本见包内说明",
+        "en-US": "Node.js; CLI installation needs 22+. See the package for renderer version requirements."
+      },
+      {
+        "zh-CN": "单独安装 Playwright 与 Chromium / Chrome；初次安装依赖需要网络",
+        "en-US": "Install Playwright and Chromium / Chrome separately. Initial setup requires internet access."
+      },
+      {
+        "zh-CN": "FFmpeg，用于编码视频",
+        "en-US": "FFmpeg for video encoding"
+      }
+    ],
+    "fit": {
+      "zh-CN": "用 CSS 手机样机演示 App 功能的短视频：点击涟漪、列表滚动、开关切换、成功动画与下载引导，支持竖版与横版，输出 MP4。",
+      "en-US": "Show off app features in a short MP4 with a CSS phone mockup: tap ripples, list scrolling, toggles, a success state and a download CTA, in portrait or landscape."
+    },
+    "limits": {
+      "zh-CN": "示例为演示内容，不代表真实客户结果。请核对素材许可、事实和最终布局；不包含模型费用或自动发布。",
+      "en-US": "Examples are demonstration content, not verified customer results. Check input rights, facts and final layouts. Model fees and automatic publication are not included."
+    },
+    "examples": [
+      {
+        "mediaType": "image",
+        "mediaUrl": "/skill-previews/app-demo.jpg",
+        "posterUrl": null,
+        "title": {
+          "zh-CN": "实际渲染示例",
+          "en-US": "Rendered example"
+        },
+        "description": {
+          "zh-CN": "原创虚构示例，非客户案例。",
+          "en-US": "Original fictional example, not a customer case."
+        }
+      }
+    ]
+  }
+}

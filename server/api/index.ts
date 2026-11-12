@@ -7,10 +7,11 @@ import { handle } from 'hono/vercel';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
-import { agentRoutes } from '../src/routes/agent';
-import { workspaceRoutes } from '../src/routes/workspace';
-import { authRoutes } from '../src/routes/auth';
-import { contentRoutes } from '../src/routes/content';
+import { agentRoutes } from '../src/routes/agent.js';
+import { workspaceRoutes } from '../src/routes/workspace.js';
+import { authRoutes } from '../src/routes/auth.js';
+import { contentRoutes } from '../src/routes/content.js';
+import { isLocalHttpOrigin } from '../src/utils/cors-origin.js';
 
 // 加载环境变量
 const ALLOWED_ORIGINS = (
@@ -42,7 +43,7 @@ app.use(
       // 开发环境允许 localhost
       if (
         process.env.NODE_ENV !== 'production' &&
-        (origin.includes('localhost') || origin.includes('127.0.0.1'))
+        isLocalHttpOrigin(origin)
       ) {
         return origin;
       }

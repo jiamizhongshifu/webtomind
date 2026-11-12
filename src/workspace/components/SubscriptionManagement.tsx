@@ -10,7 +10,7 @@ import {
 import type { CancellationSubscription } from '@/shared/subscription-cancellation';
 import './SubscriptionManagement.css';
 
-export function SubscriptionManagement() {
+export function SubscriptionManagement({ scope }: { scope?: 'skills' } = {}) {
   const { t } = useTranslation('workspace');
   const { language } = useLanguage();
   const [subscriptions, setSubscriptions] = useState<
@@ -37,14 +37,14 @@ export function SubscriptionManagement() {
     setLoading(true);
     setLoadError(false);
     try {
-      const result = await getCancellationSubscriptions();
+      const result = await getCancellationSubscriptions(scope);
       if (mounted.current) setSubscriptions(result.subscriptions);
     } catch {
       if (mounted.current) setLoadError(true);
     } finally {
       if (mounted.current) setLoading(false);
     }
-  }, []);
+  }, [scope]);
   useEffect(() => {
     mounted.current = true;
     void load();
@@ -61,7 +61,8 @@ export function SubscriptionManagement() {
     try {
       const result = await cancelSubscriptionAtPeriodEnd(
         selected.id,
-        selected.currentPeriodEnd
+        selected.currentPeriodEnd,
+        scope
       );
       if (!mounted.current) return;
       setSubscriptions((current) =>
@@ -121,7 +122,9 @@ export function SubscriptionManagement() {
         subscriptions.map((item) => (
           <div className="subscription-management__row" key={item.id}>
             <div>
-              <h3>{item.planName.toUpperCase()}</h3>
+              <h3>
+                {scope === 'skills' ? 'Skill Pro' : item.planName.toUpperCase()}
+              </h3>
               <p>
                 {t(
                   item.prepaid

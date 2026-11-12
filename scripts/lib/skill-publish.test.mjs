@@ -5,6 +5,7 @@ import path from 'node:path';
 import test from 'node:test';
 import {
   archiveObjectKey,
+  assertSkillDeliveryFiles,
   buildDeterministicArchive,
   mapManifest,
   sha256Hex
@@ -19,6 +20,16 @@ function makeSkill(files) {
   }
   return root;
 }
+
+test('publication needs package-local license and dependency documents', () => {
+  const root = makeSkill({ 'LICENSE.md': 'License terms. '.repeat(30), 'DEPENDENCIES.md': 'Runtime notes. '.repeat(30) });
+  const declared = { slug: 'sample', license_file: 'LICENSE.md', dependency_notes: 'DEPENDENCIES.md' };
+  assert.doesNotThrow(() => assertSkillDeliveryFiles(root, declared));
+  assert.throws(() => assertSkillDeliveryFiles(root, { slug: 'sample', license: 'LicenseRef-Sample' }), /license_file/);
+  assert.throws(() => assertSkillDeliveryFiles(root, { ...declared, license_file: '../LICENSE.md' }), /license_file/);
+  assert.throws(() => assertSkillDeliveryFiles(root, { ...declared, dependency_notes: 'MISSING.md' }), /dependency_notes/);
+  assert.throws(() => assertSkillDeliveryFiles(makeSkill({ 'LICENSE.md': 'TODO' }), declared), /license_file/);
+});
 
 const manifest = {
   slug: 'og-image',

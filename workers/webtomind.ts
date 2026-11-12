@@ -92,6 +92,7 @@ import membershipCheckoutHandler from '../api/membership/checkout';
 import membershipGrantMonthlyHandler from '../api/membership/grant-monthly';
 import membershipOrderStatusHandler from '../api/membership/order-status';
 import membershipPlansHandler from '../api/membership/plans';
+import skillProductsHandler from '../api/membership/skill-products';
 import membershipPortalHandler from '../api/membership/portal';
 import membershipCancellationHandler from '../api/membership/cancellation';
 import membershipReferralHandler from '../api/membership/referral';
@@ -102,6 +103,7 @@ import membershipZpayNotifyHandler from '../api/membership/zpay-notify';
 import {
   SKILL_CATALOG_DETAIL_PATH,
   isSkillInstallGuidePath,
+  loadPublishedSkillDetail,
   skillCatalogHandlers
 } from '../api/skill-catalog/handlers';
 import membershipZpayReturnHandler from '../api/membership/zpay-return';
@@ -164,10 +166,12 @@ import {
   renderPromptPageHtml
 } from '../api/prompt-page-render';
 import {
+  getSkillDetailSlugFromPath,
   injectPromptLibraryBootstrap,
   renderNoindexAppShellHtml,
   renderSeoPageHtmlWithStatus
 } from '../api/seo-page-render';
+import type { SkillDetail } from '../api/skill-catalog/service';
 import { renderSitemapResponse } from '../api/sitemap-render';
 import { assertPromptCaseAdmin } from '../api/admin/prompt-case-auth';
 import { getCorsHeadersForRequest, getSupabaseAdmin } from '../api/utils/auth';
@@ -429,7 +433,7 @@ export type Env = {
 // 优先级：显式语言 Cookie > Accept-Language（中文浏览器进入 zh-CN，
 // 其余含缺失/未知进入 en-US，英文优先）
 const EXACT_REDIRECTS = new Map<string, string>([
-  ['/', '/{locale}/prompts'],
+  ['/', '/{locale}/overview'],
   ['/overview', '/{locale}/overview'],
   ['/zh-CN', '/zh-CN/overview'],
   ['/en-US', '/en-US/overview'],
@@ -842,12 +846,12 @@ const HTML_CONTENT_SECURITY_POLICY = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self' https://zpayz.cn https://api.z-pay.cn",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.clarity.ms https://scripts.clarity.ms https://ep2.adtrafficquality.google https://static.cloudflareinsights.com https://vibeloft.ai https://analytics.ahrefs.com",
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://accounts.google.com https://www.googletagmanager.com https://pagead2.googlesyndication.com https://www.clarity.ms https://scripts.clarity.ms https://ep2.adtrafficquality.google https://static.cloudflareinsights.com https://vibeloft.ai https://analytics.ahrefs.com https://app.chatwoot.com",
   "style-src 'self' 'unsafe-inline' https://accounts.google.com",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://accounts.google.com https://www.google.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://*.googleadservices.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://www.clarity.ms https://*.clarity.ms https://cloudflareinsights.com https://*.cloudflareinsights.com https://api.vibeloft.ai https://analytics.ahrefs.com",
-  'frame-src https://accounts.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://*.googleadservices.com https://ep2.adtrafficquality.google https://www.google.com',
+  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://accounts.google.com https://www.google.com https://*.google-analytics.com https://analytics.google.com https://*.analytics.google.com https://stats.g.doubleclick.net https://pagead2.googlesyndication.com https://*.googleadservices.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google https://www.clarity.ms https://*.clarity.ms https://cloudflareinsights.com https://*.cloudflareinsights.com https://api.vibeloft.ai https://analytics.ahrefs.com https://app.chatwoot.com",
+  'frame-src https://accounts.google.com https://www.googletagmanager.com https://googleads.g.doubleclick.net https://*.googleadservices.com https://ep2.adtrafficquality.google https://www.google.com https://app.chatwoot.com',
   "media-src 'self' blob: https:",
   "worker-src 'self' blob:",
   "manifest-src 'self'"
@@ -1222,6 +1226,7 @@ const WORKER_API_ROUTES = new Map<
   ['/api/membership/grant-monthly', membershipGrantMonthlyHandler],
   ['/api/membership/order-status', membershipOrderStatusHandler],
   ['/api/membership/plans', membershipPlansHandler],
+  ['/api/membership/skill-products', skillProductsHandler],
   ['/api/membership/portal', membershipPortalHandler],
   ['/api/membership/cancellation', membershipCancellationHandler],
   ['/api/membership/referral', membershipReferralHandler],
@@ -3177,6 +3182,7 @@ async function renderSeoTargetFromAssets(
 
   let html = '';
   let status = 200;
+  let skipCacheWrite = false;
 
   if (url.pathname === '/api/seo-page') {
     const rawPath = url.searchParams.get('path') || '/';
@@ -3186,8 +3192,25 @@ async function renderSeoTargetFromAssets(
       rawPath,
       context
     );
+    const skillSlug = getSkillDetailSlugFromPath(rawPath);
+    let skillDetail: SkillDetail | null | undefined;
+    if (skillSlug) {
+      try {
+        skillDetail = await withRuntimeEnv(env, () =>
+          loadPublishedSkillDetail(skillSlug)
+        );
+      } catch (error) {
+        // Fall back to the noindex shell; never cache a transient miss.
+        skipCacheWrite = true;
+        console.warn('[SEO] Skill detail lookup failed:', {
+          slug: skillSlug,
+          message: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+    }
     const rendered = renderSeoPageHtmlWithStatus(indexHtml, rawPath, {
-      promptLibraryBootstrap
+      promptLibraryBootstrap,
+      skillDetail
     });
     html = rendered.html;
     status = rendered.status;
@@ -3236,8 +3259,12 @@ async function renderSeoTargetFromAssets(
     'x-webtomind-kv-cache': canUseCache ? 'MISS' : 'BYPASS'
   });
   applyPublicSeoCacheHeaders(headers);
+  if (skipCacheWrite || status !== 200) {
+    headers.set('Cache-Control', 'no-store');
+    headers.set('x-webtomind-kv-cache', 'BYPASS');
+  }
 
-  if (canUseCache && status === 200) {
+  if (canUseCache && status === 200 && !skipCacheWrite) {
     const bodyByteLength = new TextEncoder().encode(html).byteLength;
     if (bodyByteLength <= PUBLIC_CONTENT_CACHE_MAX_BODY_BYTES) {
       const write = env

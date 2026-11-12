@@ -7,7 +7,9 @@
  * 本组件只负责渲染 + 把交互回调上抛。
  */
 
+import { useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useUnsavedChanges } from '@/shared/ui/Dialog';
 import { X, Check, Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import type { ImagePromptSlot } from '../../data/image-prompt-core';
 import {
@@ -75,16 +77,28 @@ export function UploadReverseModal({
 }: UploadReverseModalProps) {
   const { t } = useTranslation('imageCreate');
   const selectedCount = rows.filter((row) => row.selected).length;
+  const initialRowsRef = useRef(rows.map((row) => ({ ...row })));
+  const dirty = useMemo(
+    () => JSON.stringify(rows) !== JSON.stringify(initialRowsRef.current),
+    [rows]
+  );
+  const { requestClose, discardConfirmation } = useUnsavedChanges(
+    dirty,
+    onCancel,
+    saving
+  );
 
   return (
-    <DialogRoot
-      open
-      onOpenChange={(open) => {
-        if (!open && !saving) onCancel();
-      }}
-    >
+    <>
+      <DialogRoot
+        open
+        onOpenChange={(open) => {
+          if (!open) requestClose();
+        }}
+      >
       <DialogContent
-        className="creator-upload-modal"
+        placement="right"
+        className="creator-upload-modal !h-dvh !max-h-dvh max-sm:!w-screen"
         onEscapeKeyDown={(event) => {
           if (saving) event.preventDefault();
         }}
@@ -289,7 +303,7 @@ export function UploadReverseModal({
               type="button"
               variant="outline"
               className="creator-upload-cancel"
-              onClick={onCancel}
+              onClick={requestClose}
               disabled={saving}
             >
               {t('upload.cancel')}
@@ -313,6 +327,8 @@ export function UploadReverseModal({
           </div>
         </DialogFooter>
       </DialogContent>
-    </DialogRoot>
+      </DialogRoot>
+      {discardConfirmation}
+    </>
   );
 }

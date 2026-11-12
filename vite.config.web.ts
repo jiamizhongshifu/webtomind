@@ -54,7 +54,8 @@ const STATIC_ASSET_DIRECTORIES = [
   ['prompt-cases', 'prompt case assets'],
   ['moodboards', 'moodboard assets'],
   ['discovery', 'discovery assets'],
-  ['referral', 'referral assets']
+  ['referral', 'referral assets'],
+  ['skill-previews', 'Skill output previews']
 ] as const;
 
 function copyStaticAssetDirectories(outDir: string) {

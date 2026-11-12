@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import { Image as ImageIcon, LoaderCircle, X } from 'lucide-react';
 import type { ImageReferenceAsset } from '@/shared/image-reference-types';
 
@@ -35,41 +36,42 @@ export function HomeReferenceStrip({
       aria-live="polite"
     >
       {references.map((reference, index) => (
-        <div
-          key={reference.id}
-          className="create-home-prompt-reference-item"
-          tabIndex={0}
-          title={reference.label}
-        >
-          <span className="create-home-prompt-reference-thumb">
-            {reference.thumbnailUrl ? (
-              <img
-                src={reference.thumbnailUrl}
-                alt={reference.label}
-                width={46}
-                height={46}
-                loading="lazy"
-                decoding="async"
-              />
-            ) : (
-              <ImageIcon size={18} aria-hidden />
-            )}
-          </span>
-          <span className="create-home-prompt-reference-meta">
-            <strong>{getReferenceLabel(index)}</strong>
-            <em>@image{index + 1}</em>
-          </span>
-          <button
-            type="button"
-            className="create-home-prompt-reference-remove"
-            aria-label={getRemoveLabel(index)}
-            onClick={() => onRemove(reference.id)}
+        <TextTooltip text={reference.label} key={reference.id}>
+          <div
+            key={reference.id}
+            className="create-home-prompt-reference-item"
+            tabIndex={0}
           >
-            <span>
-              <X size={15} aria-hidden />
+            <span className="create-home-prompt-reference-thumb">
+              {reference.thumbnailUrl ? (
+                <img
+                  src={reference.thumbnailUrl}
+                  alt={reference.label}
+                  width={46}
+                  height={46}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : (
+                <ImageIcon size={18} aria-hidden />
+              )}
             </span>
-          </button>
-        </div>
+            <span className="create-home-prompt-reference-meta">
+              <strong>{getReferenceLabel(index)}</strong>
+              <em>@image{index + 1}</em>
+            </span>
+            <button
+              type="button"
+              className="create-home-prompt-reference-remove"
+              aria-label={getRemoveLabel(index)}
+              onClick={() => onRemove(reference.id)}
+            >
+              <span>
+                <X size={15} aria-hidden />
+              </span>
+            </button>
+          </div>
+        </TextTooltip>
       ))}
       {pendingUploads.map((upload, index) => (
         <div

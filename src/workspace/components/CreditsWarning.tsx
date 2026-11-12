@@ -1,4 +1,5 @@
 import React from 'react';
+import { useOverlayBehavior } from '@/shared/ui';
 import { useTranslation } from 'react-i18next';
 import { Zap, X } from 'lucide-react';
 
@@ -40,6 +41,7 @@ export const CreditsWarning: React.FC<CreditsWarningProps> = ({
   onUpgrade
 }) => {
   const { t, i18n } = useTranslation('workspace');
+  const dialogRef = useOverlayBehavior<HTMLDivElement>({ open: true, onClose });
   const lang = i18n.language.startsWith('zh') ? 'zh-CN' : 'en-US';
 
   const handleUpgrade = () => {
@@ -95,7 +97,14 @@ export const CreditsWarning: React.FC<CreditsWarningProps> = ({
       />
 
       {/* 弹窗主体 - 参考竞品简洁设计 */}
-      <div className="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.25)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 duration-base">
+      <div
+        ref={dialogRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-label={getTitle()}
+        className="relative w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.25)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] overflow-hidden animate-in zoom-in-95 duration-base"
+      >
         <button
           onClick={onClose}
           className="absolute right-3 top-3 p-2 text-muted-foreground dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors z-10"

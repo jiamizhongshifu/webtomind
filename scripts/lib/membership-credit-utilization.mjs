@@ -47,14 +47,15 @@ export function aggregateUtilization({
   plans,
   windowStart,
   excludeInternal = false,
-  userLookup = {}
+  userLookup = {},
+  now = new Date()
 }) {
   const planMap = new Map(
     (plans || []).map((plan) => [plan.id, plan])
   );
   const activeSubByUser = new Map();
   for (const sub of subscriptions || []) {
-    if (!keepSubscription(sub)) continue;
+    if (!keepSubscription(sub, now)) continue;
     const previous = activeSubByUser.get(sub.user_id);
     if (
       !previous ||

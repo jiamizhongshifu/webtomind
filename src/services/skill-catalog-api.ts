@@ -25,6 +25,7 @@ export interface SkillCatalogItem {
   compatibleAgents: string[];
   publishedAt: string | null;
   coverUrl: string | null;
+  previewVideoUrl?: string | null;
 }
 
 export interface SkillExample {

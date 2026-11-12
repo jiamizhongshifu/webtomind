@@ -38,6 +38,7 @@ import {
 } from '../src/shared/seo-route-paths.js';
 import { hasVideoPromptHubPublishingThreshold } from '../src/shared/prompt-seo-quality.js';
 import { buildSeoBlogCta } from '../src/shared/seo-blog-cta.js';
+import type { SkillDetail } from './skill-catalog/service.js';
 
 const SITE_URL = 'https://webtomind.com';
 const FALLBACK_IMAGE = `${SITE_URL}/icons/logo-icon.svg`;
@@ -76,7 +77,24 @@ export type SeoPageRenderResult = {
 export type SeoPageRenderOptions = {
   promptLibraryBootstrap?: Record<string, unknown> | null;
   pathname?: string;
+  // /skills/:slug only. undefined: catalog not consulted or lookup failed;
+  // null: no published Skill with that slug.
+  skillDetail?: SkillDetail | null;
 };
+
+const SKILL_DETAIL_PATH_PATTERN = /^\/skills\/([^/]+)$/;
+
+export function getSkillDetailSlugFromPath(rawPath: string): string | null {
+  const pathname = normalizePath(rawPath);
+  if (!/^\/(?:zh-CN|en-US)\//.test(pathname)) return null;
+  const match = stripLocale(pathname).match(SKILL_DETAIL_PATH_PATTERN);
+  if (!match || match[1] === 'pricing') return null;
+  try {
+    return decodeURIComponent(match[1]);
+  } catch {
+    return null;
+  }
+}
 
 type PromptSeoBodyLink = {
   title: string;
@@ -208,11 +226,11 @@ function buildHomeSeo(locale: Locale, canonicalPath: string): SeoPageConfig {
   const isEnglish = locale === 'en-US';
   const canonical = `${SITE_URL}${canonicalPath}`;
   const title = isEnglish
-    ? 'WebToMind: commercial visual Skills for your AI agent'
-    : 'WebToMind：给你的 Agent 装上商业视觉 Skill';
+    ? 'WebToMind: discover creative Skills for your AI agent'
+    : 'WebToMind：发现、购买与使用创作 Skill';
   const description = isEnglish
-    ? 'Skills for OG images, posters, decks, landing pages and short videos. Install into Claude Code, Codex, Cursor or Trae and get finished results from one request.'
-    : '小红书封面、电商主图、发布会幻灯片、落地页和短视频 Skill，装进 Claude Code、Codex、Cursor、Trae，一句话产出可交付的成品。';
+    ? 'Explore Skills for content, campaigns, presentations, websites and videos. Review outputs and dependencies, start free or buy a workflow for your agent.'
+    : '探索内容创作、品牌营销、演示文稿、网页和视频工作流。先看案例与交付内容，免费体验或单独购买，再安装到你的 Agent。';
 
   return {
     title,
@@ -225,17 +243,10 @@ function buildHomeSeo(locale: Locale, canonicalPath: string): SeoPageConfig {
       ...getBaseJsonLd(locale),
       {
         '@context': 'https://schema.org',
-        '@type': 'SoftwareApplication',
-        name: 'WebToMind',
-        applicationCategory: 'DesignApplication',
-        operatingSystem: 'Web, Chrome Extension',
-        url: SITE_URL,
-        description,
-        offers: {
-          '@type': 'Offer',
-          price: '0',
-          priceCurrency: 'USD'
-        }
+        '@type': 'CollectionPage',
+        name: title,
+        url: canonical,
+        description
       }
     ]
   };
@@ -2259,8 +2270,42 @@ function getMarketingSeoBodyForPath(rawPath: string): string | null {
     return renderPindouSeoBody(locale);
   }
 
+  if (pathWithoutLocale === '/overview') {
+    const seo = buildHomeSeo(locale, getLocalizedPath(locale, '/overview'));
+    const isEnglish = locale === 'en-US';
+    const links = renderSeoLinks([
+      {
+        title: isEnglish ? 'Explore Skills' : '浏览 Skill',
+        description: isEnglish
+          ? 'Reusable workflows for visuals, decks, websites and videos.'
+          : '发现图文、演示、网页和视频的可复用工作流。',
+        href: getLocalizedPath(locale, '/skills')
+      },
+      {
+        title: isEnglish ? 'Start with a free Skill' : '从免费 Skill 开始',
+        description: isEnglish
+          ? 'Review real outputs and install a free workflow in your agent.'
+          : '先看真实产出，再把免费工作流安装到你的 Agent。',
+        href: getLocalizedPath(locale, '/skills?tier=free')
+      },
+      {
+        title: isEnglish ? 'Membership and pricing' : '会员与定价',
+        description: isEnglish
+          ? 'Compare individual workflows and studio library access.'
+          : '了解单个工作流与工作室技能库的获取方式。',
+        href: getLocalizedPath(locale, '/skills/pricing')
+      }
+    ]);
+    return `<main id="marketing-seo-ssr" class="seo-fallback marketing-seo-fallback" data-webtomind-ssr="marketing-seo">
+      <article>
+        <h1>${isEnglish ? 'Your agent. A creative studio.' : '给你的 Agent，一间创作工作室。'}</h1>
+        <p>${escapeHtml(seo.description)}</p>
+        <section><h2>${isEnglish ? 'Find your next Skill' : '找到你的 Skill'}</h2><ul>${links}</ul></section>
+      </article>
+    </main>`;
+  }
+
   if (
-    pathWithoutLocale === '/overview' ||
     pathWithoutLocale === '/ai-image-generator' ||
     pathWithoutLocale === '/updates' ||
     pathWithoutLocale === '/privacy' ||
@@ -3069,6 +3114,118 @@ function buildPindouSeo(locale: Locale): SeoPageConfig {
   };
 }
 
+function pickSkillText(value: Record<string, string>, locale: Locale): string {
+  const fallbackLocale = locale === 'zh-CN' ? 'en-US' : 'zh-CN';
+  return (
+    value[locale] ||
+    value[fallbackLocale] ||
+    Object.values(value).find(Boolean) ||
+    ''
+  ).trim();
+}
+
+function getSkillOgImage(skill: SkillDetail): string {
+  const image =
+    skill.examples.find((example) => example.mediaType === 'image') ||
+    skill.examples.find((example) => example.mediaType !== 'video');
+  const poster = skill.examples.find((example) => example.posterUrl);
+  return absoluteImageUrl(image?.mediaUrl || poster?.posterUrl || undefined);
+}
+
+function buildSkillDetailSeo(
+  locale: Locale,
+  skill: SkillDetail
+): SeoPageConfig {
+  const isEnglish = locale === 'en-US';
+  const path = `/skills/${skill.slug}`;
+  const canonical = `${SITE_URL}${getLocalizedPath(locale, path)}`;
+  const name = pickSkillText(skill.name, locale) || skill.slug;
+  const isPro = skill.tier === 'premium';
+  const tierLabel = isPro ? 'Pro ' : '';
+  const description =
+    pickSkillText(skill.summary, locale) ||
+    pickSkillText(skill.description, locale) ||
+    (isEnglish
+      ? `${name}: a WebToMind ${tierLabel}Agent Skill for commercial visuals.`
+      : `${name}：WebToMind 商业视觉 ${tierLabel}Agent Skill。`);
+  const ogImage = getSkillOgImage(skill);
+  const latestPublishedAt =
+    skill.versions.find((version) => version.version === skill.latestVersion)
+      ?.publishedAt || skill.publishedAt;
+  const application: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name,
+    description,
+    url: canonical,
+    image: ogImage,
+    applicationCategory: 'DeveloperApplication',
+    applicationSubCategory: 'Agent Skill',
+    operatingSystem: 'macOS, Windows, Linux',
+    inLanguage: locale,
+    isAccessibleForFree: !isPro,
+    publisher: { '@type': 'Organization', name: 'WebToMind', url: SITE_URL },
+    ...(skill.latestVersion ? { softwareVersion: skill.latestVersion } : {}),
+    ...(skill.publishedAt ? { datePublished: skill.publishedAt } : {}),
+    ...(latestPublishedAt ? { dateModified: latestPublishedAt } : {}),
+    ...(skill.compatibleAgents.length
+      ? { softwareRequirements: skill.compatibleAgents.join(', ') }
+      : {}),
+    ...(skill.sceneTags.length ? { keywords: skill.sceneTags.join(', ') } : {}),
+    // Paid prices live in the commerce catalog and are not loaded here.
+    // Only free Skills carry a fixed Offer; never infer a paid price.
+    ...(isPro
+      ? {}
+      : {
+          offers: {
+            '@type': 'Offer',
+            price: '0',
+            priceCurrency: isEnglish ? 'USD' : 'CNY',
+            availability: 'https://schema.org/InStock',
+            url: canonical
+          }
+        }),
+    ...(skill.ratingAvg !== null && skill.ratingCount > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: skill.ratingAvg,
+            ratingCount: skill.ratingCount,
+            bestRating: 5,
+            worstRating: 1
+          }
+        }
+      : {})
+  };
+
+  return {
+    title: `${name} · Agent Skill | WebToMind`,
+    description,
+    canonical,
+    locale,
+    robots: 'index,follow',
+    ogImage,
+    alternates: getAlternates(path),
+    jsonLd: [
+      ...getBaseJsonLd(locale),
+      application,
+      {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          {
+            '@type': 'ListItem',
+            position: 1,
+            name: isEnglish ? 'Agent Skills' : 'Agent Skills 目录',
+            item: `${SITE_URL}${getLocalizedPath(locale, '/skills')}`
+          },
+          { '@type': 'ListItem', position: 2, name, item: canonical }
+        ]
+      }
+    ]
+  };
+}
+
 function buildSimpleSeo(
   locale: Locale,
   pathname: string
@@ -3097,7 +3254,10 @@ function buildSimpleSeo(
     };
   }
 
-  if (pathWithoutLocale === '/skills' || pathWithoutLocale === '/skills/pricing') {
+  if (
+    pathWithoutLocale === '/skills' ||
+    pathWithoutLocale === '/skills/pricing'
+  ) {
     const isPricing = pathWithoutLocale === '/skills/pricing';
     const canonicalPath = getLocalizedPath(locale, pathWithoutLocale);
     return {
@@ -3106,15 +3266,15 @@ function buildSimpleSeo(
           ? 'Skill Pro pricing | WebToMind'
           : 'Skill Pro 价格 | WebToMind'
         : isEnglish
-          ? 'Agent Skills for commercial visuals | WebToMind'
-          : 'Agent Skills 目录：商业视觉 Skill | WebToMind',
+          ? 'Creative Skills and workflow examples | WebToMind'
+          : '创作 Skill 目录：发现工作流与成品案例 | WebToMind',
       description: isPricing
         ? isEnglish
-          ? 'Free Skills for everyone. Skill Pro monthly, yearly or lifetime unlocks every Pro Skill.'
-          : '免费 Skill 随便装；Skill Pro 月付、年付或一次买断，解锁全部 Pro Skill。'
+          ? 'Try complete free workflows, buy an individual Skill, or subscribe monthly or yearly to the studio Pro library. Model fees are separate.'
+          : '免费体验完整工作流；单独购买指定 Skill，或按月、按年订阅自营 Pro 库。模型费用另计。'
         : isEnglish
-          ? 'Install Skills for covers, posters, decks, landing pages and short videos into Claude Code, Codex, Cursor and more. One command, finished results.'
-          : '为 Claude Code、Codex、Cursor、Trae 等 Agent 安装封面、海报、幻灯片、落地页和短视频 Skill，一条命令装好，直接产出成品。',
+          ? 'Browse free and paid Skills by deliverable. Review examples, required inputs, runtime dependencies and purchase options.'
+          : '按交付任务浏览免费与付费 Skill，查看成品案例、输入要求、运行依赖和购买方式。',
       canonical: `${SITE_URL}${canonicalPath}`,
       locale,
       robots: 'index,follow',
@@ -3123,8 +3283,8 @@ function buildSimpleSeo(
     };
   }
 
-  // Per-Skill server rendering needs catalog data; until then crawlers get a
-  // noindex shell and the browser renders the detail page.
+  // Lookup failed or the path has no slug: crawlers get a noindex shell and
+  // the browser renders the detail page.
   if (pathWithoutLocale.startsWith('/skills/')) {
     const canonicalPath = getLocalizedPath(locale, pathWithoutLocale);
     return {
@@ -3313,6 +3473,15 @@ export function resolveSeoConfigForPathOrNull(
 
   if (pathWithoutLocale === '/tools/pindou-pattern-maker') {
     return buildPindouSeo(locale);
+  }
+
+  if (
+    getSkillDetailSlugFromPath(pathname) &&
+    options.skillDetail !== undefined
+  ) {
+    return options.skillDetail
+      ? buildSkillDetailSeo(locale, options.skillDetail)
+      : null;
   }
 
   return buildSimpleSeo(locale, pathname) || null;

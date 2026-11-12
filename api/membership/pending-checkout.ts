@@ -67,7 +67,11 @@ export async function resolvePendingSubscriptionCheckout(
   recovery?: {
     paymentProvider: 'stripe' | 'alipay';
     zpay?: { config: ZpayConfig; notifyUrl: string; returnUrl: string };
-  }
+  },
+  productType:
+    | 'subscription'
+    | 'skill_subscription'
+    | 'skill_purchase' = 'subscription'
 ): Promise<Record<string, unknown>> {
   const { data: orders, error } = await database
     .from('payment_orders')
@@ -75,7 +79,7 @@ export async function resolvePendingSubscriptionCheckout(
       'id,user_id,created_at,provider,provider_order_id,product_id,metadata,status,amount,currency'
     )
     .eq('user_id', userId)
-    .eq('product_type', 'subscription')
+    .eq('product_type', productType)
     .in('status', ['pending', 'processing'])
     .order('created_at', { ascending: false });
   if (error) throw error;
@@ -102,7 +106,10 @@ export async function resolvePendingSubscriptionCheckout(
       const fields = buildZpayCheckoutFields({
         ...recovery.zpay,
         orderId: order.id,
-        productName: `WebToMind ${order.metadata.productName} ${billingCycle === 'yearly' ? '年度' : '月度'}会员`,
+        productName:
+          productType === 'skill_purchase'
+            ? `WebToMind ${order.metadata.productName}`
+            : `WebToMind ${order.metadata.productName} ${billingCycle === 'yearly' ? '年度' : '月度'}会员`,
         cnyCents: order.amount
       });
       let claim = database

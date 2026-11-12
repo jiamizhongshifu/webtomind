@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import { ArrowUpRight } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import { trackEvent, isAnalyticsCollectionAllowed } from '../lib/analytics';
@@ -34,63 +35,66 @@ export function AiRechargeLink({
   }).toString();
 
   return (
-    <a
-      href={destination.toString()}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`ai-recharge-link ai-recharge-link--${variant} ${className}`.trim()}
-      data-recharge-placement={placement}
-      title={
+    <TextTooltip
+      text={
         isZh
           ? '前往 AICZ AI 会员代充（新窗口打开）'
           : 'Visit AICZ AI membership top-ups (opens in a new tab)'
       }
-      onClick={() => {
-        trackEvent('ai_recharge_click', {
-          placement,
-          link_url: destination.toString(),
-          link_domain: 'aicz.vip',
-          page_path: pathname,
-          locale
-        });
-        if (isAnalyticsCollectionAllowed()) {
-          void recordClientConversionEvent(null, {
-            eventName: 'ai_recharge_click',
-            entityType: 'outbound_link',
-            entityId: 'aicz',
-            ctaSource: placement,
-            idempotencyKey: crypto.randomUUID(),
-            metadata: {
-              placement,
-              path: pathname,
-              locale,
-              link_domain: 'aicz.vip'
-            }
-          });
-        }
-      }}
     >
-      {variant === 'banner' ? (
-        <>
-          <span className="ai-recharge-link__copy">
-            <strong>{isZh ? 'AI 会员代充' : 'AI membership top-ups'}</strong>
-            <span>
-              {isZh
-                ? 'ChatGPT · Claude · Grok，前往 AICZ 选择套餐'
-                : 'ChatGPT · Claude · Grok — explore plans at AICZ'}
+      <a
+        href={destination.toString()}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`ai-recharge-link ai-recharge-link--${variant} ${className}`.trim()}
+        data-recharge-placement={placement}
+        onClick={() => {
+          trackEvent('ai_recharge_click', {
+            placement,
+            link_url: destination.toString(),
+            link_domain: 'aicz.vip',
+            page_path: pathname,
+            locale
+          });
+          if (isAnalyticsCollectionAllowed()) {
+            void recordClientConversionEvent(null, {
+              eventName: 'ai_recharge_click',
+              entityType: 'outbound_link',
+              entityId: 'aicz',
+              ctaSource: placement,
+              idempotencyKey: crypto.randomUUID(),
+              metadata: {
+                placement,
+                path: pathname,
+                locale,
+                link_domain: 'aicz.vip'
+              }
+            });
+          }
+        }}
+      >
+        {variant === 'banner' ? (
+          <>
+            <span className="ai-recharge-link__copy">
+              <strong>{isZh ? 'AI 会员代充' : 'AI membership top-ups'}</strong>
+              <span>
+                {isZh
+                  ? 'ChatGPT · Claude · Grok，前往 AICZ 选择套餐'
+                  : 'ChatGPT · Claude · Grok — explore plans at AICZ'}
+              </span>
             </span>
-          </span>
-          <span className="ai-recharge-link__action">
-            {isZh ? '查看套餐' : 'View plans'}
-            <ArrowUpRight size={16} aria-hidden="true" />
-          </span>
-        </>
-      ) : (
-        <>
-          <span>{isZh ? 'AI 代充' : 'AI top-ups'}</span>
-          <ArrowUpRight size={14} aria-hidden="true" />
-        </>
-      )}
-    </a>
+            <span className="ai-recharge-link__action">
+              {isZh ? '查看套餐' : 'View plans'}
+              <ArrowUpRight size={16} aria-hidden="true" />
+            </span>
+          </>
+        ) : (
+          <>
+            <span>{isZh ? 'AI 代充' : 'AI top-ups'}</span>
+            <ArrowUpRight size={14} aria-hidden="true" />
+          </>
+        )}
+      </a>
+    </TextTooltip>
   );
 }

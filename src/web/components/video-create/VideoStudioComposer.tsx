@@ -1,3 +1,5 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
+import { useOverlayBehavior } from '@/shared/ui/useOverlayBehavior';
 import {
   useEffect,
   useLayoutEffect,
@@ -385,9 +387,18 @@ export function VideoStudioComposer({
   const [openTool, setOpenTool] = useState<VideoStudioTool | null>(null);
   const [pinnedTool, setPinnedTool] = useState<VideoStudioTool | null>(null);
   const [anchor, setAnchor] = useState({ left: 24, bottom: 120 });
-  const panelRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
+  const panelRef = useOverlayBehavior<HTMLDivElement>({
+    open: Boolean(openTool),
+    activationKey: openTool,
+    modal: false,
+    returnFocusRef: triggerRef,
+    onClose: () => {
+      setOpenTool(null);
+      setPinnedTool(null);
+    }
+  });
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const closeTimerRef = useRef<number | null>(null);
 
   useLayoutEffect(() => {
     const textarea = textareaRef.current;
@@ -410,19 +421,8 @@ export function VideoStudioComposer({
     return copy.promptTools;
   };
 
-  const cancelClose = () => {
-    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
-    closeTimerRef.current = null;
-  };
-
-  const scheduleClose = () => {
-    cancelClose();
-    if (pinnedTool) return;
-    closeTimerRef.current = window.setTimeout(() => setOpenTool(null), 150);
-  };
-
   const openFromTrigger = (tool: VideoStudioTool, element: HTMLElement) => {
-    cancelClose();
+    triggerRef.current = element;
     const bounds = element.getBoundingClientRect();
     const panelWidth = tool === 'frames' ? 620 : 420;
     setAnchor({
@@ -449,17 +449,10 @@ export function VideoStudioComposer({
       setOpenTool(null);
       setPinnedTool(null);
     };
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
-      setOpenTool(null);
-      setPinnedTool(null);
-    };
     document.addEventListener('pointerdown', closeOnOutsidePointer);
-    document.addEventListener('keydown', closeOnEscape);
+
     return () => {
       document.removeEventListener('pointerdown', closeOnOutsidePointer);
-      document.removeEventListener('keydown', closeOnEscape);
-      cancelClose();
     };
   }, [openTool]);
 
@@ -470,28 +463,27 @@ export function VideoStudioComposer({
     value?: string,
     active = false
   ) => (
-    <button
-      key={tool}
-      type="button"
-      className="video-studio-tool-trigger"
-      data-video-studio-tool={tool}
-      data-active={active ? 'true' : 'false'}
-      aria-label={label}
-      aria-expanded={openTool === tool}
-      title={label}
-      onMouseEnter={(event) => openFromTrigger(tool, event.currentTarget)}
-      onMouseLeave={scheduleClose}
-      onFocus={(event) => openFromTrigger(tool, event.currentTarget)}
-      onClick={(event) => {
-        const nextPinned = pinnedTool === tool ? null : tool;
-        setPinnedTool(nextPinned);
-        if (nextPinned) openFromTrigger(tool, event.currentTarget);
-        else setOpenTool(null);
-      }}
-    >
-      {icon}
-      <span>{value || label}</span>
-    </button>
+    <TextTooltip text={label} key={tool}>
+      <button
+        key={tool}
+        type="button"
+        className="video-studio-tool-trigger"
+        data-video-studio-tool={tool}
+        data-active={active ? 'true' : 'false'}
+        aria-label={label}
+        aria-haspopup="dialog"
+        aria-expanded={openTool === tool}
+        onClick={(event) => {
+          const nextPinned = pinnedTool === tool ? null : tool;
+          setPinnedTool(nextPinned);
+          if (nextPinned) openFromTrigger(tool, event.currentTarget);
+          else setOpenTool(null);
+        }}
+      >
+        {icon}
+        <span>{value || label}</span>
+      </button>
+    </TextTooltip>
   );
 
   const isBusy =
@@ -741,6 +733,7 @@ export function VideoStudioComposer({
         ? createPortal(
             <div
               ref={panelRef}
+              tabIndex={-1}
               className={`video-studio-tool-popover is-${openTool}`}
               style={
                 {
@@ -750,8 +743,6 @@ export function VideoStudioComposer({
               }
               role="dialog"
               aria-label={`${toolLabel(openTool)} ${isEnglish ? 'settings' : '设置'}`}
-              onMouseEnter={cancelClose}
-              onMouseLeave={scheduleClose}
             >
               <header className="video-studio-popover-header">
                 <strong>{toolLabel(openTool)}</strong>
@@ -1216,21 +1207,20 @@ export function VideoStudioComposer({
                       {watermark ? copy.watermarkOn : copy.watermarkOff}
                     </span>
                   </label>
-                  <label
-                    className="video-studio-optimize"
-                    title={copy.webSearchHint}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={webSearch}
-                      disabled={referenceCount > 0 || Boolean(firstFrameUrl)}
-                      onChange={(event) =>
-                        onWebSearchChange(event.target.checked)
-                      }
-                    />
-                    <Globe2 aria-hidden="true" />
-                    <span>{copy.webSearch}</span>
-                  </label>
+                  <TextTooltip text={copy.webSearchHint}>
+                    <label className="video-studio-optimize">
+                      <input
+                        type="checkbox"
+                        checked={webSearch}
+                        disabled={referenceCount > 0 || Boolean(firstFrameUrl)}
+                        onChange={(event) =>
+                          onWebSearchChange(event.target.checked)
+                        }
+                      />
+                      <Globe2 aria-hidden="true" />
+                      <span>{copy.webSearch}</span>
+                    </label>
+                  </TextTooltip>
                   <p className="video-studio-panel-note">
                     {copy.webSearchHint}
                   </p>

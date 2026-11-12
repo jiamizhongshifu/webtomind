@@ -1,3 +1,4 @@
+import { useUnsavedChanges } from '@/shared/ui/Dialog';
 import React, {
   createContext,
   useCallback,
@@ -248,9 +249,19 @@ function AuthModal({
   );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { requestClose, discardConfirmation } = useUnsavedChanges(
+    open &&
+      Boolean(
+        email ||
+        password ||
+        inviteCode !== (options.referralCode?.trim().toUpperCase() || '')
+      ),
+    onClose,
+    isSubmitting
+  );
   const modalRef = useOverlayBehavior<HTMLDivElement>({
     open,
-    onClose
+    onClose: requestClose
   });
 
   const redirectTarget = options.redirectTo || null;
@@ -384,252 +395,258 @@ function AuthModal({
   if (!open) return null;
 
   return (
-    <div className="auth-modal-backdrop" onMouseDown={onClose}>
-      <Card
-        ref={modalRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="auth-modal-title"
-        tabIndex={-1}
-        variant="raised"
-        className="auth-modal-card"
-        onMouseDown={(event) => event.stopPropagation()}
-      >
-        <IconButton
-          type="button"
-          variant="ghost"
-          size="sm"
-          label={t('login.close', { defaultValue: '关闭登录弹窗' })}
-          icon={<X size={17} />}
-          className="auth-modal-close"
-          onClick={onClose}
-        />
+    <>
+      <div className="auth-modal-backdrop" onMouseDown={requestClose}>
+        <Card
+          ref={modalRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="auth-modal-title"
+          tabIndex={-1}
+          variant="raised"
+          className="auth-modal-card"
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          <IconButton
+            type="button"
+            variant="ghost"
+            size="sm"
+            label={t('login.close', { defaultValue: '关闭登录弹窗' })}
+            icon={<X size={17} />}
+            className="auth-modal-close"
+            onClick={requestClose}
+          />
 
-        <div className="auth-modal-layout">
-          <section className="auth-modal-form-pane">
-            <header className="auth-modal-heading">
-              <span className="auth-modal-kicker">WebToMind Studio</span>
-              <h2 id="auth-modal-title">
-                {mode === 'login'
-                  ? t('login.title', { defaultValue: '欢迎回来' })
-                  : t('register.title', { defaultValue: '创建账户' })}
-              </h2>
-              <p>
-                {mode === 'login'
-                  ? t('login.subtitle')
-                  : t('register.subtitle')}
-              </p>
-            </header>
+          <div className="auth-modal-layout">
+            <section className="auth-modal-form-pane">
+              <header className="auth-modal-heading">
+                <span className="auth-modal-kicker">WebToMind Studio</span>
+                <h2 id="auth-modal-title">
+                  {mode === 'login'
+                    ? t('login.title', { defaultValue: '欢迎回来' })
+                    : t('register.title', { defaultValue: '创建账户' })}
+                </h2>
+                <p>
+                  {mode === 'login'
+                    ? t('login.subtitle')
+                    : t('register.subtitle')}
+                </p>
+              </header>
 
-            {options.fromExtension && (
-              <FeedbackMessage
-                surface="web"
-                tone="warning"
-                className="auth-modal-feedback"
-              >
-                {t('login.extensionSync')}
-              </FeedbackMessage>
-            )}
-
-            {authStep === 'sso' ? (
-              <>
-                <div className="auth-modal-sso-stack">
-                  <Button
-                    type="button"
-                    onClick={handleGoogleLogin}
-                    variant="secondary"
-                    size="lg"
-                    className="auth-modal-google"
-                    aria-label={t('login.continueWithGoogle') as string}
-                    leadingIcon={<GoogleIcon />}
-                  >
-                    {t('login.continueWithGoogle')}
-                  </Button>
-
-                  <Button
-                    type="button"
-                    onClick={handleMicrosoftLogin}
-                    variant="secondary"
-                    size="lg"
-                    className="auth-modal-microsoft"
-                    aria-label={t('login.continueWithMicrosoft') as string}
-                    leadingIcon={<MicrosoftIcon />}
-                  >
-                    {t('login.continueWithMicrosoft')}
-                  </Button>
-                </div>
-
-                <div className="auth-modal-divider" aria-hidden="true">
-                  <span>{t('login.or')}</span>
-                </div>
-
-                <button
-                  type="button"
-                  className="auth-modal-email-toggle"
-                  onClick={() => {
-                    setAuthStep('email');
-                    setError(null);
-                  }}
+              {options.fromExtension && (
+                <FeedbackMessage
+                  surface="web"
+                  tone="warning"
+                  className="auth-modal-feedback"
                 >
-                  {t('login.continueWithEmail')}
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  className="auth-modal-back"
-                  onClick={() => {
-                    setAuthStep('sso');
-                    setError(null);
-                  }}
-                >
-                  <ArrowLeft size={15} aria-hidden="true" />
-                  {t('login.back')}
-                </button>
+                  {t('login.extensionSync')}
+                </FeedbackMessage>
+              )}
 
-                <form onSubmit={handleEmailSubmit} className="auth-modal-form">
-                  <FormField
-                    label={t('login.emailPlaceholder')}
-                    htmlFor="auth-modal-email"
-                    required
+              {authStep === 'sso' ? (
+                <>
+                  <div className="auth-modal-sso-stack">
+                    <Button
+                      type="button"
+                      onClick={handleGoogleLogin}
+                      variant="secondary"
+                      size="lg"
+                      className="auth-modal-google"
+                      aria-label={t('login.continueWithGoogle') as string}
+                      leadingIcon={<GoogleIcon />}
+                    >
+                      {t('login.continueWithGoogle')}
+                    </Button>
+
+                    <Button
+                      type="button"
+                      onClick={handleMicrosoftLogin}
+                      variant="secondary"
+                      size="lg"
+                      className="auth-modal-microsoft"
+                      aria-label={t('login.continueWithMicrosoft') as string}
+                      leadingIcon={<MicrosoftIcon />}
+                    >
+                      {t('login.continueWithMicrosoft')}
+                    </Button>
+                  </div>
+
+                  <div className="auth-modal-divider" aria-hidden="true">
+                    <span>{t('login.or')}</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    className="auth-modal-email-toggle"
+                    onClick={() => {
+                      setAuthStep('email');
+                      setError(null);
+                    }}
                   >
-                    <Input
-                      id="auth-modal-email"
-                      type="email"
-                      value={email}
-                      onChange={(event) => setEmail(event.target.value)}
-                      placeholder={t('login.emailPlaceholder')}
-                      required
-                      inputSize="lg"
-                      className="auth-modal-input"
-                    />
-                  </FormField>
-
-                  <FormField
-                    label={t('login.passwordPlaceholder')}
-                    htmlFor="auth-modal-password"
-                    required
+                    {t('login.continueWithEmail')}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="auth-modal-back"
+                    onClick={() => {
+                      setAuthStep('sso');
+                      setError(null);
+                    }}
                   >
-                    <Input
-                      id="auth-modal-password"
-                      type="password"
-                      value={password}
-                      onChange={(event) => setPassword(event.target.value)}
-                      placeholder={t('login.passwordPlaceholder')}
-                      required
-                      minLength={6}
-                      inputSize="lg"
-                      className="auth-modal-input"
-                    />
-                  </FormField>
+                    <ArrowLeft size={15} aria-hidden="true" />
+                    {t('login.back')}
+                  </button>
 
-                  {mode === 'register' && (
+                  <form
+                    onSubmit={handleEmailSubmit}
+                    className="auth-modal-form"
+                  >
                     <FormField
-                      label={inviteCodeLabel}
-                      htmlFor="auth-modal-invite-code"
+                      label={t('login.emailPlaceholder')}
+                      htmlFor="auth-modal-email"
+                      required
                     >
                       <Input
-                        id="auth-modal-invite-code"
-                        type="text"
-                        value={inviteCode}
-                        onChange={(event) =>
-                          setInviteCode(event.target.value.toUpperCase())
-                        }
-                        placeholder={inviteCodeLabel}
+                        id="auth-modal-email"
+                        type="email"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                        placeholder={t('login.emailPlaceholder')}
+                        required
                         inputSize="lg"
-                        className="auth-modal-input uppercase"
+                        className="auth-modal-input"
                       />
                     </FormField>
-                  )}
 
-                  {error && (
-                    <FeedbackMessage
-                      surface="web"
-                      tone={
-                        error.includes(
-                          t('success.registerSuccess', {
-                            defaultValue:
-                              'Registration successful. Please check your email.'
-                          })
-                        )
-                          ? 'success'
-                          : 'error'
-                      }
-                      className="auth-modal-feedback"
+                    <FormField
+                      label={t('login.passwordPlaceholder')}
+                      htmlFor="auth-modal-password"
+                      required
                     >
-                      {error}
-                    </FeedbackMessage>
-                  )}
+                      <Input
+                        id="auth-modal-password"
+                        type="password"
+                        value={password}
+                        onChange={(event) => setPassword(event.target.value)}
+                        placeholder={t('login.passwordPlaceholder')}
+                        required
+                        minLength={6}
+                        inputSize="lg"
+                        className="auth-modal-input"
+                      />
+                    </FormField>
 
-                  <Button
-                    type="submit"
-                    isLoading={isSubmitting || isLoading}
-                    variant="primary"
-                    size="lg"
-                    className="auth-modal-submit"
-                  >
-                    {isSubmitting
-                      ? t('login.submitting')
-                      : mode === 'login'
-                        ? t('login.submit')
-                        : t('register.submit')}
-                  </Button>
-                </form>
-
-                <div className="auth-modal-mode-switch">
-                  {mode === 'login' ? (
-                    <>
-                      {t('login.noAccount')}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMode('register');
-                          setError(null);
-                        }}
+                    {mode === 'register' && (
+                      <FormField
+                        label={inviteCodeLabel}
+                        htmlFor="auth-modal-invite-code"
                       >
-                        {t('login.signUp')}
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {t('register.hasAccount')}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setMode('login');
-                          setError(null);
-                        }}
+                        <Input
+                          id="auth-modal-invite-code"
+                          type="text"
+                          value={inviteCode}
+                          onChange={(event) =>
+                            setInviteCode(event.target.value.toUpperCase())
+                          }
+                          placeholder={inviteCodeLabel}
+                          inputSize="lg"
+                          className="auth-modal-input uppercase"
+                        />
+                      </FormField>
+                    )}
+
+                    {error && (
+                      <FeedbackMessage
+                        surface="web"
+                        tone={
+                          error.includes(
+                            t('success.registerSuccess', {
+                              defaultValue:
+                                'Registration successful. Please check your email.'
+                            })
+                          )
+                            ? 'success'
+                            : 'error'
+                        }
+                        className="auth-modal-feedback"
                       >
-                        {t('register.signIn')}
-                      </button>
-                    </>
-                  )}
-                </div>
+                        {error}
+                      </FeedbackMessage>
+                    )}
 
-                <div className="auth-modal-terms">
-                  {t('register.agreeTerms')}
-                  <a href="/terms">{t('register.termsOfService')}</a>
-                  {t('register.and')}
-                  <a href="/privacy">{t('register.privacyPolicy')}</a>
-                </div>
-              </>
-            )}
-          </section>
+                    <Button
+                      type="submit"
+                      isLoading={isSubmitting || isLoading}
+                      variant="primary"
+                      size="lg"
+                      className="auth-modal-submit"
+                    >
+                      {isSubmitting
+                        ? t('login.submitting')
+                        : mode === 'login'
+                          ? t('login.submit')
+                          : t('register.submit')}
+                    </Button>
+                  </form>
 
-          <aside className="auth-modal-art" aria-hidden="true">
-            <img
-              src="/create-apps/character-creator.webp"
-              alt=""
-              decoding="async"
-            />
-            <div className="auth-modal-art-overlay">
-              <span>CREATE WITH CONTEXT</span>
-              <strong>把灵感、配方和图像放进同一个创作流。</strong>
-            </div>
-          </aside>
-        </div>
-      </Card>
-    </div>
+                  <div className="auth-modal-mode-switch">
+                    {mode === 'login' ? (
+                      <>
+                        {t('login.noAccount')}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMode('register');
+                            setError(null);
+                          }}
+                        >
+                          {t('login.signUp')}
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        {t('register.hasAccount')}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMode('login');
+                            setError(null);
+                          }}
+                        >
+                          {t('register.signIn')}
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="auth-modal-terms">
+                    {t('register.agreeTerms')}
+                    <a href="/terms">{t('register.termsOfService')}</a>
+                    {t('register.and')}
+                    <a href="/privacy">{t('register.privacyPolicy')}</a>
+                  </div>
+                </>
+              )}
+            </section>
+
+            <aside className="auth-modal-art" aria-hidden="true">
+              <img
+                src="/create-apps/character-creator.webp"
+                alt=""
+                decoding="async"
+              />
+              <div className="auth-modal-art-overlay">
+                <span>CREATE WITH CONTEXT</span>
+                <strong>把灵感、配方和图像放进同一个创作流。</strong>
+              </div>
+            </aside>
+          </div>
+        </Card>
+      </div>
+      {discardConfirmation}
+    </>
   );
 }

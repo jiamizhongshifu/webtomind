@@ -1,3 +1,6 @@
+import { useState } from 'react';
+import { SkillVideoPreview } from './SkillVideoPreview';
+import { skillShowcases } from './skillShowcases';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/shared/ui';
 import {
@@ -7,7 +10,12 @@ import {
 } from '@/services/skill-catalog-api';
 import { createSkillCoverDataUrl } from '../../lib/skill-cover';
 
-export const OUTPUT_TYPES: SkillOutputType[] = ['image', 'slides', 'web', 'video'];
+export const OUTPUT_TYPES: SkillOutputType[] = [
+  'image',
+  'slides',
+  'web',
+  'video'
+];
 
 const OUTPUT_LABELS: Record<SkillOutputType, { zh: string; en: string }> = {
   image: { zh: '图片', en: 'Images' },
@@ -34,7 +42,7 @@ export function outputLabel(type: string, isZh: boolean): string {
 }
 
 export function agentLabel(agent: string): string {
-  return AGENT_LABELS[agent] || agent;
+  return AGENT_LABELS[agent === 'gemini-cli' ? 'gemini' : agent] || agent;
 }
 
 export function formatInstalls(count: number, isZh: boolean): string {
@@ -44,7 +52,9 @@ export function formatInstalls(count: number, isZh: boolean): string {
 
 export function cliConnectPrompt(isZh: boolean): string {
   const origin =
-    typeof window === 'undefined' ? 'https://webtomind.com' : window.location.origin;
+    typeof window === 'undefined'
+      ? 'https://webtomind.com'
+      : window.location.origin;
   return isZh
     ? `阅读 ${origin}/install/agent.md 并按说明连接 WebToMind，然后帮我挑一个合适的 Skill。`
     : `Read ${origin}/install/agent.md and follow it to connect WebToMind, then help me pick the right Skill.`;
@@ -61,35 +71,74 @@ export function SkillCard({
   isZh: boolean;
   eager?: boolean;
 }) {
+  const [hovered, setHovered] = useState(false);
   const name = pickLocalized(skill.name, locale) || skill.slug;
   const type = skill.outputTypes[0] || 'image';
-  const cover = skill.coverUrl || createSkillCoverDataUrl(name, outputLabel(type, isZh));
+  const cover =
+    skill.coverUrl || createSkillCoverDataUrl(name, outputLabel(type, isZh));
+  const showcase = skillShowcases[skill.slug];
+  const preview = skill.previewVideoUrl || showcase?.video;
+  const poster = showcase?.poster || cover;
   return (
-    <Link to={`/${locale}/skills/${skill.slug}`} className="skill-card">
+    <article
+      className="skill-card"
+      onPointerEnter={(event) => {
+        if (
+          event.pointerType === 'mouse' &&
+          matchMedia('(hover: hover)').matches
+        )
+          setHovered(true);
+      }}
+      onPointerLeave={() => setHovered(false)}
+    >
       <div className="skill-card-cover">
-        <img
-          src={cover}
-          alt=""
-          loading={eager ? 'eager' : 'lazy'}
-          decoding="async"
-          width={640}
-          height={400}
-        />
+        {preview ? (
+          <SkillVideoPreview
+            hovered={hovered}
+            src={preview}
+            poster={poster}
+            name={name}
+            isZh={isZh}
+          />
+        ) : (
+          <Link to={`/${locale}/skills/${skill.slug}`} aria-label={name}>
+            <img
+              src={cover}
+              alt=""
+              loading={eager ? 'eager' : 'lazy'}
+              decoding="async"
+              width={640}
+              height={400}
+            />
+          </Link>
+        )}
         <Badge
           size="sm"
           variant={skill.tier === 'free' ? 'success' : 'accent'}
           className="skill-card-tier"
         >
-          {skill.tier === 'free' ? (isZh ? '免费' : 'Free') : 'Pro'}
+          {skill.tier === 'free'
+            ? isZh
+              ? '免费'
+              : 'Free'
+            : isZh
+              ? '付费'
+              : 'Paid'}
         </Badge>
       </div>
-      <div className="skill-card-body">
+      <Link to={`/${locale}/skills/${skill.slug}`} className="skill-card-body">
         <span className="skill-card-type">{outputLabel(type, isZh)}</span>
         <h3>{name}</h3>
         <p>{pickLocalized(skill.summary, locale)}</p>
-        <span className="skill-card-installs">{formatInstalls(skill.installCount, isZh)}</span>
-      </div>
-    </Link>
+        <span className="skill-card-installs">
+          {skill.installCount > 0
+            ? formatInstalls(skill.installCount, isZh)
+            : isZh
+              ? '查看交付与使用方式 →'
+              : 'See outputs & requirements →'}
+        </span>
+      </Link>
+    </article>
   );
 }
 

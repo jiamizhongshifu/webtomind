@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/radix/tooltip';
 import './CreationCreditEstimate.css';
 
 export type CreationCreditEstimateUnit = 'image' | 'second' | 'total';
@@ -45,25 +46,24 @@ export function CreationCreditEstimate({
   if (unit === 'total') {
     // 总积分预估：显示本次共消耗多少积分（例如 1 张 100、4 张 400），
     // 随张数/时长/参数实时变化。可访问名统一用"预计本次共消耗 N 积分"。
-    const visible = isEnglish
-      ? `${formatted} credits`
-      : `${formatted} 积分`;
+    const visible = isEnglish ? `${formatted} credits` : `${formatted} 积分`;
     const accessibleLabel = isEnglish
       ? `Estimated ${normalizedCredits} credits total`
       : `预计本次共消耗 ${normalizedCredits} 积分`;
 
     return (
-      <span
-        className={`creation-credit-estimate is-total${
-          embedded ? ' is-embedded' : ''
-        }`}
-        role={embedded ? undefined : 'note'}
-        aria-label={embedded ? undefined : accessibleLabel}
-        title={accessibleLabel}
-      >
-        <EstimateSparkleIcon />
-        <span>{visible}</span>
-      </span>
+      <TextTooltip text={embedded ? undefined : accessibleLabel}>
+        <span
+          className={`creation-credit-estimate is-total${
+            embedded ? ' is-embedded' : ''
+          }`}
+          role={embedded ? undefined : 'note'}
+          aria-label={embedded ? undefined : accessibleLabel}
+        >
+          <EstimateSparkleIcon />
+          <span>{visible}</span>
+        </span>
+      </TextTooltip>
     );
   }
 
@@ -80,17 +80,18 @@ export function CreationCreditEstimate({
   const visiblePrefix = approximate ? (isEnglish ? '~' : '约 ') : '';
 
   return (
-    <span
-      className={`creation-credit-estimate${embedded ? ' is-embedded' : ''}`}
-      role={embedded ? undefined : 'note'}
-      aria-label={embedded ? undefined : accessibleLabel}
-      title={accessibleLabel}
-    >
-      <EstimateSparkleIcon />
-      <span>
-        {visiblePrefix}
-        {formatted}/{visibleUnit}
+    <TextTooltip text={embedded ? undefined : accessibleLabel}>
+      <span
+        className={`creation-credit-estimate${embedded ? ' is-embedded' : ''}`}
+        role={embedded ? undefined : 'note'}
+        aria-label={embedded ? undefined : accessibleLabel}
+      >
+        <EstimateSparkleIcon />
+        <span>
+          {visiblePrefix}
+          {formatted}/{visibleUnit}
+        </span>
       </span>
-    </span>
+    </TextTooltip>
   );
 }

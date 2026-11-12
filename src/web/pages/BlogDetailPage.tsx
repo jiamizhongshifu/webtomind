@@ -1,3 +1,4 @@
+import { CjkText } from '@/shared/typography/cjk';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
@@ -212,7 +213,9 @@ export function BlogDetailPage() {
         </nav>
 
         <article className="marketing-article blog-detail-article">
-          <h1 className="marketing-article-title">{post.title}</h1>
+          <h1 className="marketing-article-title type-cjk-phrase">
+            <CjkText text={post.title} />
+          </h1>
 
           <div className="marketing-article-meta">
             <span className="blog-tag">{post.tag}</span>
@@ -221,7 +224,7 @@ export function BlogDetailPage() {
             <span className="blog-date">{post.author}</span>
           </div>
 
-          <div className="blog-detail-content">
+          <div className="blog-detail-content type-zh-body">
             {visibleContent.map((paragraph, index) => (
               <ReactMarkdown
                 key={`${post.slug}-${index}`}

@@ -10,6 +10,7 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     include: [
       'src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      'api/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}',
       'server/src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts}',
       'packages/*/test/**/*.test.mjs'
     ],

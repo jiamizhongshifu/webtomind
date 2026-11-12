@@ -11,7 +11,13 @@ import type { AcquisitionSnapshot } from '../web/lib/seo-conversion-attribution'
 const API_BASE = getApiBaseUrl();
 
 interface CheckoutRequest {
-  type: 'subscription' | 'credit_package' | 'api_credit_package' | 'skill_lifetime';
+  type:
+    | 'subscription'
+    | 'credit_package'
+    | 'api_credit_package'
+    | 'skill_lifetime'
+    | 'skill_purchase'
+    | 'skill_subscription';
   id: string;
   paymentProvider?: 'stripe' | 'alipay';
   customAmountUsdCents?: number;
@@ -54,7 +60,7 @@ export interface CheckoutOrderStatus {
   status: CheckoutOrderState;
   amount: number;
   currency: string;
-  productType: 'subscription' | 'credit_package' | 'api_credit_package';
+  productType: CheckoutRequest['type'];
   productId: string;
   createdAt?: string;
   updatedAt?: string;
@@ -68,7 +74,13 @@ const PENDING_CHECKOUT_INTENT_KEY = 'webtomind:pending-checkout-intent:v1';
 const PENDING_CHECKOUT_INTENT_TTL_MS = 15 * 60 * 1000;
 
 export interface PendingCheckoutIntent {
-  type: 'subscription' | 'credit_package' | 'api_credit_package' | 'skill_lifetime';
+  type:
+    | 'subscription'
+    | 'credit_package'
+    | 'api_credit_package'
+    | 'skill_lifetime'
+    | 'skill_purchase'
+    | 'skill_subscription';
   id: string;
   paymentProvider?: 'stripe' | 'alipay';
   billingCycle?: 'monthly' | 'yearly';
@@ -100,7 +112,10 @@ export function consumePendingCheckoutIntent(
     if (
       (intent.type !== 'subscription' &&
         intent.type !== 'credit_package' &&
-        intent.type !== 'api_credit_package') ||
+        intent.type !== 'api_credit_package' &&
+        intent.type !== 'skill_lifetime' &&
+        intent.type !== 'skill_purchase' &&
+        intent.type !== 'skill_subscription') ||
       typeof intent.id !== 'string' ||
       (intent.paymentProvider !== undefined &&
         intent.paymentProvider !== 'stripe' &&
@@ -301,6 +316,7 @@ export async function verifyCheckoutReturn(params: {
 export async function createBillingPortalSession(
   params: {
     returnUrl?: string;
+    scope?: 'skills';
   } = {}
 ): Promise<BillingPortalResponse> {
   const token = await getAccessToken();
@@ -333,21 +349,27 @@ export class SubscriptionCancellationError extends Error {
   }
 }
 
-async function cancellationRequest<T>(body?: {
-  subscriptionId: string;
-  currentPeriodEnd: string;
-}): Promise<T> {
+async function cancellationRequest<T>(
+  body?: {
+    subscriptionId: string;
+    currentPeriodEnd: string;
+  },
+  scope?: 'skills'
+): Promise<T> {
   const token = await getAccessToken();
   if (!token) throw new SubscriptionCancellationError('AUTH_REQUIRED');
-  const response = await fetch(`${API_BASE}/api/membership/cancellation`, {
-    method: body ? 'POST' : 'GET',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      ...(body ? { 'Content-Type': 'application/json' } : {})
-    },
-    cache: 'no-store',
-    ...(body ? { body: JSON.stringify(body) } : {})
-  });
+  const response = await fetch(
+    `${API_BASE}/api/membership/cancellation${scope === 'skills' ? '?scope=skills' : ''}`,
+    {
+      method: body ? 'POST' : 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(body ? { 'Content-Type': 'application/json' } : {})
+      },
+      cache: 'no-store',
+      ...(body ? { body: JSON.stringify(body) } : {})
+    }
+  );
   const result = await response.json();
   if (!response.ok)
     throw new SubscriptionCancellationError(
@@ -356,18 +378,19 @@ async function cancellationRequest<T>(body?: {
   return result;
 }
 
-export function getCancellationSubscriptions() {
+export function getCancellationSubscriptions(scope?: 'skills') {
   return cancellationRequest<{
     subscriptions: import('../shared/subscription-cancellation').CancellationSubscription[];
-  }>();
+  }>(undefined, scope);
 }
 
 export function cancelSubscriptionAtPeriodEnd(
   subscriptionId: string,
-  currentPeriodEnd: string
+  currentPeriodEnd: string,
+  scope?: 'skills'
 ) {
   return cancellationRequest<{
     subscription: import('../shared/subscription-cancellation').CancellationSubscription;
     syncPending: boolean;
-  }>({ subscriptionId, currentPeriodEnd });
+  }>({ subscriptionId, currentPeriodEnd }, scope);
 }
