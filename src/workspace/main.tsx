@@ -10,6 +10,7 @@ import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import '../design/shared-tokens.css';
 import '../design/app-shell.css';
+import '../design/typography.css';
 import { initTheme } from '../utils/theme';
 
 const log = createLogger('Workspace');

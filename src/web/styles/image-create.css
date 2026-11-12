@@ -18562,7 +18562,7 @@ button.create-gallery-sentinel:disabled {
   font-size: 13px;
   color: var(--product-text-primary, #141414);
   font-weight: 500;
-  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .creator-preview-meta-note {

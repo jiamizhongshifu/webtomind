@@ -61,6 +61,8 @@ import '../design/shared-tokens.css';
 import '../design/web-tokens.css';
 import '../design/ui-primitives.css';
 import '../design/app-shell.css';
+import '../design/typography.css';
+import { installTruncationTooltip } from '@/shared/typography/truncationTooltip';
 import './styles/mobile-adaptations.css';
 import './styles/geist-theme.css';
 
@@ -1415,6 +1417,8 @@ function App() {
     </QueryClientProvider>
   );
 }
+
+installTruncationTooltip();
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
