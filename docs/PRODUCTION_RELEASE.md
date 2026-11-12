@@ -33,6 +33,16 @@ source gate rejects any changes outside the verified overlay and checks every
 overlaid file again before deployment. The public release manifest records
 both the public Git commit and `hostedOverlaySha256`.
 
+## Temporary reliability override
+
+The release health gate blocks when the observed image failure rate exceeds
+`IMAGE_HEALTH_MAX_FAILURE_RATE` (default `0.1`). A release owner can raise it
+for a deliberate, time-boxed risk acceptance by setting the repository variable
+`IMAGE_HEALTH_MAX_FAILURE_RATE` (for example `0.5`). The release keeps emitting
+`image_failure_rate_above_target` warnings and records the effective policy in
+the guardrail report. Remove the variable once reliability recovers; do not use
+it to make an unhealthy release look healthy.
+
 ## Verification and recovery
 
 A successful release requires the check job, production type checks, build,
