@@ -29,6 +29,45 @@ export function getImageGenerationHealthPolicy(env = process.env) {
   };
 }
 
+/**
+ * Pick the health report used by the release gate.
+ *
+ * The release gate asks for a 7-day window, but a quiet week (zero image
+ * tasks) yields `insufficient_sample`, which is not evidence of a
+ * regression. When the short window saw no activity at all and the 30-day
+ * window is observed, use the longer window and surface a warning. A short
+ * window with *some* recent tasks still blocks: that is ambiguous evidence,
+ * not an absence of evidence.
+ */
+export function selectReleaseHealthReport({
+  releaseHealth,
+  longWindowHealth,
+  allowLongWindowFallback = true
+} = {}) {
+  if (releaseHealth?.ok) {
+    return { report: releaseHealth, fallback: null };
+  }
+
+  const noRecentActivity =
+    releaseHealth?.status === 'insufficient_sample' &&
+    (releaseHealth?.sampleSize ?? 0) === 0;
+  const longWindowObserved =
+    longWindowHealth?.ok && longWindowHealth?.status === 'observed';
+
+  if (allowLongWindowFallback && noRecentActivity && longWindowObserved) {
+    return {
+      report: longWindowHealth,
+      fallback: {
+        fromDays: releaseHealth.windowDays,
+        toDays: longWindowHealth.windowDays,
+        sampleSize: longWindowHealth.sampleSize
+      }
+    };
+  }
+
+  return { report: releaseHealth, fallback: null };
+}
+
 export function evaluateImageGenerationHealth(report, policy = {}) {
   const effectivePolicy = {
     ...getImageGenerationHealthPolicy({}),

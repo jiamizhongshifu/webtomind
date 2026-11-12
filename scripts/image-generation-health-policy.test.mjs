@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
   evaluateImageGenerationHealth,
-  getImageGenerationHealthPolicy
+  getImageGenerationHealthPolicy,
+  selectReleaseHealthReport
 } from './lib/image-generation-health-policy.mjs';
 
 function healthyReport(overrides = {}) {
@@ -133,4 +134,89 @@ test('labels missing paid snapshots as unverified instead of inventing success',
     healthyReport({ enqueueEntitlements: { paidFailureRate: null } })
   );
   assert.equal(result.warnings[0].class, 'paid_image_reliability_unverified');
+});
+
+test('uses the short release window while it has enough samples', () => {
+  const short = { ...healthyReport(), windowDays: 7, sampleSize: 42 };
+  const long = { ...healthyReport(), windowDays: 30, sampleSize: 400 };
+  const result = selectReleaseHealthReport({
+    releaseHealth: short,
+    longWindowHealth: long
+  });
+  assert.equal(result.report, short);
+  assert.equal(result.fallback, null);
+});
+
+test('falls back to the 30-day window when the 7-day window saw no tasks', () => {
+  const short = {
+    ok: false,
+    status: 'insufficient_sample',
+    windowDays: 7,
+    sampleSize: 0
+  };
+  const long = { ...healthyReport(), windowDays: 30, sampleSize: 370 };
+  const result = selectReleaseHealthReport({
+    releaseHealth: short,
+    longWindowHealth: long
+  });
+  assert.equal(result.report, long);
+  assert.deepEqual(result.fallback, {
+    fromDays: 7,
+    toDays: 30,
+    sampleSize: 370
+  });
+});
+
+test('does not fall back when the short window has a few recent tasks', () => {
+  const short = {
+    ok: false,
+    status: 'insufficient_sample',
+    windowDays: 7,
+    sampleSize: 3
+  };
+  const long = { ...healthyReport(), windowDays: 30, sampleSize: 370 };
+  const result = selectReleaseHealthReport({
+    releaseHealth: short,
+    longWindowHealth: long
+  });
+  assert.equal(result.report, short);
+  assert.equal(result.fallback, null);
+});
+
+test('does not fall back to an unobserved long window', () => {
+  const short = {
+    ok: false,
+    status: 'insufficient_sample',
+    windowDays: 7,
+    sampleSize: 0
+  };
+  const long = {
+    ok: false,
+    status: 'insufficient_sample',
+    windowDays: 30,
+    sampleSize: 4
+  };
+  const result = selectReleaseHealthReport({
+    releaseHealth: short,
+    longWindowHealth: long
+  });
+  assert.equal(result.report, short);
+  assert.equal(result.fallback, null);
+});
+
+test('honours an explicit opt-out of the long-window fallback', () => {
+  const short = {
+    ok: false,
+    status: 'insufficient_sample',
+    windowDays: 7,
+    sampleSize: 0
+  };
+  const long = { ...healthyReport(), windowDays: 30, sampleSize: 370 };
+  const result = selectReleaseHealthReport({
+    releaseHealth: short,
+    longWindowHealth: long,
+    allowLongWindowFallback: false
+  });
+  assert.equal(result.report, short);
+  assert.equal(result.fallback, null);
 });
