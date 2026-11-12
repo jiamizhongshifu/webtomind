@@ -78,6 +78,11 @@ function createStripeClient(secretKey: string): Stripe {
   });
 }
 
+function getFixedCnyAmount(value: unknown): number | null {
+  const amount = Number(value);
+  return Number.isSafeInteger(amount) && amount > 0 ? amount : null;
+}
+
 function createStripeIntegrationIdentifier(): string {
   const alphabet = 'abcdefghijklmnopqrstuvwxyz';
   const bytes = new Uint8Array(8);
@@ -97,7 +102,7 @@ function getConversionEventClient(fallback: SupabaseClient): SupabaseClient {
 }
 
 interface CheckoutRequest {
-  type: 'subscription' | 'credit_package' | 'api_credit_package';
+  type: 'subscription' | 'credit_package' | 'api_credit_package' | 'skill_lifetime';
   id: string;
   paymentProvider?: 'stripe' | 'alipay';
   customAmountUsdCents?: number;
@@ -129,7 +134,8 @@ export function getCheckoutRequestValidationError(
   if (
     request.type !== 'subscription' &&
     request.type !== 'credit_package' &&
-    request.type !== 'api_credit_package'
+    request.type !== 'api_credit_package' &&
+    request.type !== 'skill_lifetime'
   ) {
     return 'Invalid checkout type';
   }
@@ -313,6 +319,9 @@ function getZpayProductName(input: {
   }
   if (input.type === 'credit_package') {
     return `WebToMind ${input.productName} 积分包`;
+  }
+  if (input.type === 'skill_lifetime') {
+    return 'WebToMind Skill 买断';
   }
   const cycleName = input.billingCycle === 'yearly' ? '年度' : '月度';
   return `WebToMind ${input.productName} ${cycleName}会员`;
@@ -609,6 +618,15 @@ export default async function handler(request: Request) {
       400
     );
   }
+  if (type === 'skill_lifetime' && promoCode) {
+    return jsonResponse(
+      {
+        error: 'Promo codes are not available for lifetime access',
+        errorCode: 'SKILL_PROMO_UNAVAILABLE'
+      },
+      400
+    );
+  }
   if (type === 'api_credit_package' && promoCode) {
     return jsonResponse(
       {
@@ -678,6 +696,10 @@ export default async function handler(request: Request) {
     const isCustomApiRecharge =
       type === 'api_credit_package' && id === 'custom';
     let trialUpgradeCouponId: string | undefined;
+    // Skill plans carry list prices in CNY fen for Alipay instead of
+    // converting the USD price at the configured exchange rate.
+    let fixedCnyAmount: number | null = null;
+    let fixedCnyPromoBaseAmount: number | null = null;
     // Product Hunt 年付 5 折基准价：月付原价 × 12（年付原价），
     // 与折后年付价（price_yearly）无关，禁止折上折。
     let promoOriginalAnnualAmountUsdCents: number | null = null;
@@ -690,7 +712,8 @@ export default async function handler(request: Request) {
         .eq('is_active', true)
         .single();
 
-      if (!plan) return jsonResponse({ error: 'Plan not found' }, 404);
+      if (!plan || plan.billing_kind === 'one_time')
+        return jsonResponse({ error: 'Plan not found' }, 404);
 
       // 免费版不需要创建 Stripe 会话
       if (plan.id === 'free' || plan.price_monthly === 0) {
@@ -754,6 +777,18 @@ export default async function handler(request: Request) {
       }
       productName = plan.name;
       stripePriceId = resolveStripePriceId(plan, billingCycle);
+      fixedCnyAmount = getFixedCnyAmount(
+        billingCycle === 'yearly'
+          ? plan.price_cny_yearly
+          : plan.price_cny_monthly
+      );
+      // Mirrors the USD promo base: annual promos discount twelve monthly
+      // list prices, never the already discounted yearly price.
+      const fixedCnyMonthly = getFixedCnyAmount(plan.price_cny_monthly);
+      fixedCnyPromoBaseAmount =
+        fixedCnyMonthly && billingCycle === 'yearly'
+          ? fixedCnyMonthly * 12
+          : fixedCnyMonthly;
 
       if (
         stripe &&
@@ -784,6 +819,46 @@ export default async function handler(request: Request) {
           trialUpgradeCouponId = coupon.id;
         }
       }
+    } else if (type === 'skill_lifetime') {
+      const { data: product } = await supabase
+        .from('subscription_plans')
+        .select('*')
+        .eq('id', id)
+        .eq('is_active', true)
+        .eq('billing_kind', 'one_time')
+        .maybeSingle();
+      if (!product) return jsonResponse({ error: 'Product not found' }, 404);
+
+      const { data: ownedLifetime, error: ownedLifetimeError } = await orderDb
+        .from('skill_entitlements')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('source', 'lifetime')
+        .eq('status', 'active')
+        .limit(1);
+      if (ownedLifetimeError) {
+        return jsonResponse(
+          {
+            error: 'Unable to verify current Skill access',
+            errorCode: 'SKILL_ENTITLEMENT_LOOKUP_FAILED'
+          },
+          503
+        );
+      }
+      if (ownedLifetime && ownedLifetime.length > 0) {
+        return jsonResponse(
+          {
+            error: 'Lifetime Skill access is already active',
+            errorCode: 'SKILL_LIFETIME_ALREADY_OWNED'
+          },
+          409
+        );
+      }
+
+      amount = Number(product.price_one_time || 0);
+      productName = product.display_name?.['en-US'] || product.name;
+      stripePriceId = undefined;
+      fixedCnyAmount = getFixedCnyAmount(product.price_cny_one_time);
     } else {
       if (type === 'api_credit_package' && !apiUsdToCnyRate) {
         return jsonResponse(
@@ -969,7 +1044,14 @@ export default async function handler(request: Request) {
       type === 'api_credit_package'
         ? apiCreditPayment?.amount || 0
         : paymentProvider === 'alipay' && zpay
-          ? usdCentsToCnyCents(chargedAmountUsdCents, zpay.usdToCnyRate)
+          ? fixedCnyAmount
+            ? promo
+              ? getPromoDiscountedAmountCents(
+                  fixedCnyPromoBaseAmount ?? fixedCnyAmount,
+                  promo.percentOff
+                )
+              : fixedCnyAmount
+            : usdCentsToCnyCents(chargedAmountUsdCents, zpay.usdToCnyRate)
           : chargedAmountUsdCents;
     const orderCurrency =
       apiCreditPayment?.currency ||
@@ -1001,6 +1083,7 @@ export default async function handler(request: Request) {
                   : {})
               }
             : { catalogAmountUsdCents: fullAmountUsdCents }),
+          ...(fixedCnyAmount ? { catalogAmountCnyCents: fixedCnyAmount } : {}),
           ...(promo
             ? {
                 promoCode: promo.code,

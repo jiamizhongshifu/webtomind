@@ -209,6 +209,24 @@ export function hasR2S3Config(): boolean {
   return Boolean(buildConfig());
 }
 
+// Private Skill archives: always a short-lived S3 signature from the dedicated
+// SKILL_PACKAGES_R2_BUCKET. The public media bucket is never used, so a missing
+// setting fails closed instead of serving archives from a public origin.
+export async function createPrivateR2DownloadUrl(input: {
+  key: string;
+  expiresIn: number;
+}): Promise<string | null> {
+  const config = buildConfig();
+  const bucket = getEnv('SKILL_PACKAGES_R2_BUCKET');
+  if (!config || !bucket || bucket === config.bucket) return null;
+  return createPresignedUrl({
+    config,
+    bucket,
+    key: input.key,
+    expiresIn: Math.min(3600, Math.max(1, input.expiresIn))
+  });
+}
+
 // Stored import URLs may outlive their seven-day S3 signature. Only re-sign
 // objects belonging to our configured endpoint and bucket.
 export async function refreshR2SignedStorageUrl(

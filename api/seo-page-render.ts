@@ -208,11 +208,11 @@ function buildHomeSeo(locale: Locale, canonicalPath: string): SeoPageConfig {
   const isEnglish = locale === 'en-US';
   const canonical = `${SITE_URL}${canonicalPath}`;
   const title = isEnglish
-    ? 'WebToMind - Reproducible AI Image Creation Workflow'
-    : 'WebToMind - 可复现的 AI 图片创作工作流';
+    ? 'WebToMind: commercial visual Skills for your AI agent'
+    : 'WebToMind：给你的 Agent 装上商业视觉 Skill';
   const description = isEnglish
-    ? 'Reverse prompts from reference images, compose visual slots, generate AI images, and re-edit history in one reproducible WebToMind workflow.'
-    : 'WebToMind 专注 AI 图片创作：支持参考图反推提示词、视觉 slot 组合、多模型出图与历史重编辑，让每张图都可复现、可迭代。';
+    ? 'Skills for OG images, posters, decks, landing pages and short videos. Install into Claude Code, Codex, Cursor or Trae and get finished results from one request.'
+    : '小红书封面、电商主图、发布会幻灯片、落地页和短视频 Skill，装进 Claude Code、Codex、Cursor、Trae，一句话产出可交付的成品。';
 
   return {
     title,
@@ -3097,16 +3097,41 @@ function buildSimpleSeo(
     };
   }
 
-  if (
-    pathWithoutLocale === '/skills' ||
-    pathWithoutLocale.startsWith('/skills/')
-  ) {
+  if (pathWithoutLocale === '/skills' || pathWithoutLocale === '/skills/pricing') {
+    const isPricing = pathWithoutLocale === '/skills/pricing';
     const canonicalPath = getLocalizedPath(locale, pathWithoutLocale);
     return {
-      title: isEnglish ? 'WebToMind Creation Templates' : 'WebToMind 作品模板',
+      title: isPricing
+        ? isEnglish
+          ? 'Skill Pro pricing | WebToMind'
+          : 'Skill Pro 价格 | WebToMind'
+        : isEnglish
+          ? 'Agent Skills for commercial visuals | WebToMind'
+          : 'Agent Skills 目录：商业视觉 Skill | WebToMind',
+      description: isPricing
+        ? isEnglish
+          ? 'Free Skills for everyone. Skill Pro monthly, yearly or lifetime unlocks every Pro Skill.'
+          : '免费 Skill 随便装；Skill Pro 月付、年付或一次买断，解锁全部 Pro Skill。'
+        : isEnglish
+          ? 'Install Skills for covers, posters, decks, landing pages and short videos into Claude Code, Codex, Cursor and more. One command, finished results.'
+          : '为 Claude Code、Codex、Cursor、Trae 等 Agent 安装封面、海报、幻灯片、落地页和短视频 Skill，一条命令装好，直接产出成品。',
+      canonical: `${SITE_URL}${canonicalPath}`,
+      locale,
+      robots: 'index,follow',
+      ogImage: FALLBACK_IMAGE,
+      alternates: getAlternates(pathWithoutLocale)
+    };
+  }
+
+  // Per-Skill server rendering needs catalog data; until then crawlers get a
+  // noindex shell and the browser renders the detail page.
+  if (pathWithoutLocale.startsWith('/skills/')) {
+    const canonicalPath = getLocalizedPath(locale, pathWithoutLocale);
+    return {
+      title: isEnglish ? 'Agent Skill | WebToMind' : 'Agent Skill | WebToMind',
       description: isEnglish
-        ? 'Legacy WebToMind creation templates are being reworked for the image-first workflow.'
-        : 'WebToMind 旧作品模板正在按图片创作工作流重新规划。',
+        ? 'A WebToMind Agent Skill for commercial visuals.'
+        : 'WebToMind 商业视觉 Agent Skill。',
       canonical: `${SITE_URL}${canonicalPath}`,
       locale,
       robots: 'noindex,follow',
