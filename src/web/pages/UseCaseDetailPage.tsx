@@ -1,3 +1,4 @@
+import { CjkText } from '@/shared/typography/cjk';
 import { useEffect } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { applySeo } from '../lib/seo';
@@ -88,7 +89,11 @@ export function UseCaseDetailPage() {
             <p className="usecases-workspace-eyebrow">
               {isZh ? tutorial.category.zh : tutorial.category.en}
             </p>
-            <h1>{isZh ? tutorial.title.zh : tutorial.title.en}</h1>
+            <h1 className="type-cjk-phrase">
+              <CjkText
+                text={isZh ? tutorial.title.zh : tutorial.title.en}
+              />
+            </h1>
             <p>{isZh ? tutorial.summary.zh : tutorial.summary.en}</p>
           </header>
 

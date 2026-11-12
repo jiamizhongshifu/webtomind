@@ -713,7 +713,9 @@ function ImageSessionNavItem({
             <MessageSquare />
           )}
         </span>
-        <span className="create-side-nav-session-title">{session.title}</span>
+        <span className="create-side-nav-session-title" data-truncate>
+          {session.title}
+        </span>
       </Link>
       {!collapsed && (
         <Suspense
