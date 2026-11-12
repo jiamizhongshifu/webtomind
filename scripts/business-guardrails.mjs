@@ -6,7 +6,8 @@ import process from 'node:process';
 import { loadObservedImageGenerationMetrics } from './lib/image-generation-observed-metrics.mjs';
 import {
   evaluateImageGenerationHealth,
-  getImageGenerationHealthPolicy
+  getImageGenerationHealthPolicy,
+  selectReleaseHealthReport
 } from './lib/image-generation-health-policy.mjs';
 
 const root = process.cwd();
@@ -219,13 +220,25 @@ const scenarios = [...imageScenarios, ...videoScenarios];
 const blockers = [];
 const warnings = [];
 const evaluatedMargins = [];
+const releaseHealthSelection = selectReleaseHealthReport({
+  releaseHealth: observedReleaseHealth,
+  longWindowHealth: observedGeneration,
+  allowLongWindowFallback:
+    process.env.IMAGE_HEALTH_LONG_WINDOW_FALLBACK !== '0'
+});
 const imageHealthEvaluation = evaluateImageGenerationHealth(
-  observedReleaseHealth,
+  releaseHealthSelection.report,
   getImageGenerationHealthPolicy()
 );
 
 blockers.push(...imageHealthEvaluation.blockers);
 warnings.push(...imageHealthEvaluation.warnings);
+if (releaseHealthSelection.fallback) {
+  warnings.push({
+    class: 'image_health_long_window_fallback',
+    detail: `No image tasks in the last ${releaseHealthSelection.fallback.fromDays} days; release health uses the ${releaseHealthSelection.fallback.toDays}-day window (${releaseHealthSelection.fallback.sampleSize} tasks).`
+  });
+}
 
 if (!observedGeneration.ok) {
   blockers.push({
@@ -449,6 +462,7 @@ const report = {
   assumptions,
   observedGeneration,
   observedReleaseHealth,
+  releaseHealthFallback: releaseHealthSelection.fallback,
   minGrossMargin,
   marginWarningBuffer,
   imageMarginMethod: {
