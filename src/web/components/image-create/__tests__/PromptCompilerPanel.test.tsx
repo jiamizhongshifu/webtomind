@@ -243,18 +243,16 @@ function renderPanel({
 }
 
 describe('PromptCompilerPanel', () => {
-  it('keeps bill details on the generate button without a separate help button', () => {
+  it('keeps bill details on the generate button without a separate help button', async () => {
     renderPanel();
 
     expect(
       screen.queryByRole('button', { name: 'View bill details' })
     ).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /Generate image/ })
-    ).toHaveAttribute(
-      'title',
-      expect.stringContaining('Final charge is settled by the backend')
-    );
+    const generate = screen.getByRole('button', { name: /Generate image/ });
+    fireEvent.focus(generate);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent('Final charge is settled by the backend');
+    expect(generate).toHaveAttribute('aria-describedby');
   });
 
   it('shows generation failures beside the generate controls', () => {

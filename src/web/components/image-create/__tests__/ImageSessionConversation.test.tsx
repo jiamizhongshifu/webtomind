@@ -292,11 +292,11 @@ describe('ImageSessionConversation', () => {
       screen.getByRole('menuitem', { name: '预览大图' })
     ).toBeInTheDocument();
 
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
     fireEvent.click(screen.getByRole('menuitem', { name: '删除' }));
-    expect(confirm).toHaveBeenCalled();
+    expect(onDelete).not.toHaveBeenCalled();
+    expect(screen.getByRole('dialog', { name: '删除图片' })).toHaveTextContent('此操作无法撤销');
+    fireEvent.click(screen.getByRole('button', { name: '删除图片' }));
     expect(onDelete).toHaveBeenCalledWith(image);
-    confirm.mockRestore();
 
     fireEvent.click(screen.getByRole('button', { name: '再次生成' }));
     expect(onRegenerate).toHaveBeenCalledWith(image);

@@ -314,7 +314,7 @@ describe('CreativeWorkspaceControlsHarnessPage', () => {
     expect(clearButton).toBeEnabled();
     fireEvent.click(clearButton);
     expect(screen.getByText('clear combo')).toBeInTheDocument();
-    expect(clearButton).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Clear combo' })).toBeDisabled();
     expect(screen.queryByText('Choose an asset')).not.toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: '打开大图选择器' })
