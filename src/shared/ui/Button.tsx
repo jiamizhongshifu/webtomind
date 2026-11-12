@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { forwardRef } from 'react';
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { clsx } from 'clsx';
@@ -49,36 +50,39 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     });
 
     return (
-      <button
-        ref={ref}
-        type={type}
-        className={clsx(
-          'ui-button',
-          ripple && 'ui-ripple-surface',
-          `ui-button--${variant}`,
-          `ui-button--${size}`,
-          isLoading && 'ui-button--loading',
-          className
-        )}
-        disabled={isDisabled}
-        aria-busy={isLoading || undefined}
-        {...rippleHandlers}
-        {...props}
-      >
-        {leadingIcon ? (
-          <span className="ui-button__icon" aria-hidden="true">
-            {leadingIcon}
-          </span>
-        ) : null}
-        {children !== null && children !== undefined && children !== false ? (
-          <span className="ui-button__label">{children}</span>
-        ) : null}
-        {trailingIcon ? (
-          <span className="ui-button__icon" aria-hidden="true">
-            {trailingIcon}
-          </span>
-        ) : null}
-      </button>
+      <TextTooltip text={props.title}>
+        <button
+          ref={ref}
+          type={type}
+          className={clsx(
+            'ui-button',
+            ripple && 'ui-ripple-surface',
+            `ui-button--${variant}`,
+            `ui-button--${size}`,
+            isLoading && 'ui-button--loading',
+            className
+          )}
+          disabled={isDisabled}
+          aria-busy={isLoading || undefined}
+          {...rippleHandlers}
+          {...props}
+          title={undefined}
+        >
+          {leadingIcon ? (
+            <span className="ui-button__icon" aria-hidden="true">
+              {leadingIcon}
+            </span>
+          ) : null}
+          {children !== null && children !== undefined && children !== false ? (
+            <span className="ui-button__label">{children}</span>
+          ) : null}
+          {trailingIcon ? (
+            <span className="ui-button__icon" aria-hidden="true">
+              {trailingIcon}
+            </span>
+          ) : null}
+        </button>
+      </TextTooltip>
     );
   }
 );

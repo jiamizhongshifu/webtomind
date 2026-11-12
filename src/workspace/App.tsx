@@ -1,3 +1,5 @@
+import { useOverlayBehavior } from '@/shared/ui/useOverlayBehavior';
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import {
   lazy,
   Suspense,
@@ -1128,20 +1130,18 @@ function App({
   const userPopoverRef = useRef<HTMLDivElement>(null);
   const CONTACT_WECHAT_QR_URL = `${import.meta.env.BASE_URL}contact/wechat-qr.jpg`;
 
-  useEffect(() => {
-    if (!showContactModal) {
-      return;
-    }
-
-    const handleEscClose = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        setShowContactModal(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleEscClose);
-    return () => window.removeEventListener('keydown', handleEscClose);
-  }, [showContactModal]);
+  const userTriggerRef = useRef<HTMLDivElement>(null);
+  const contactDialogRef = useOverlayBehavior<HTMLDivElement>({
+    open: showContactModal,
+    returnFocusRef: userTriggerRef,
+    onClose: () => setShowContactModal(false)
+  });
+  const userMenuRef = useOverlayBehavior<HTMLDivElement>({
+    open: showUserPopover,
+    modal: false,
+    returnFocusRef: userTriggerRef,
+    onClose: () => setShowUserPopover(false)
+  });
 
   // 点击外部关闭用户浮窗
   useEffect(() => {
@@ -2329,10 +2329,13 @@ function App({
   );
 
   // 移除骨架卡片（保存失败时）
-  const handleRemovePendingSummary = useCallback((tempId: string) => {
-    log.info('[Workspace] Removing pending summary:', tempId);
-    setSummaries((prev) => prev.filter((s) => s.id !== tempId));
-  }, [setSummaries]);
+  const handleRemovePendingSummary = useCallback(
+    (tempId: string) => {
+      log.info('[Workspace] Removing pending summary:', tempId);
+      setSummaries((prev) => prev.filter((s) => s.id !== tempId));
+    },
+    [setSummaries]
+  );
 
   // 检测卡片类型的函数（纯函数，用于 useMemo）
   const detectCardType = useCallback((summary: SavedSummary): string => {
@@ -3620,19 +3623,25 @@ function App({
   ]);
 
   // 拖拽开始
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setHasManualColumnResize(true);
-    setDragTarget('left');
-    setIsDragging(true);
-  }, [setDragTarget, setHasManualColumnResize, setIsDragging]);
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setHasManualColumnResize(true);
+      setDragTarget('left');
+      setIsDragging(true);
+    },
+    [setDragTarget, setHasManualColumnResize, setIsDragging]
+  );
 
-  const handleStudioMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setHasManualColumnResize(true);
-    setDragTarget('studio');
-    setIsDragging(true);
-  }, [setDragTarget, setHasManualColumnResize, setIsDragging]);
+  const handleStudioMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault();
+      setHasManualColumnResize(true);
+      setDragTarget('studio');
+      setIsDragging(true);
+    },
+    [setDragTarget, setHasManualColumnResize, setIsDragging]
+  );
 
   // 拖拽移动
   useEffect(() => {
@@ -4023,62 +4032,78 @@ function App({
               className="workspace-shell-user-popover-anchor"
               ref={userPopoverRef}
             >
-              <div
-                onMouseEnter={() => setShowUserPopover(true)}
-                onMouseLeave={() => setShowUserPopover(false)}
-                className={`workspace-shell-user-trigger ${
-                  showUserPopover ? 'workspace-shell-user-trigger--open' : ''
-                }`}
-                title={user?.email || 'User Settings'}
-              >
-                <div className="workspace-shell-user-summary">
-                  <UserAvatar
-                    user={user}
-                    email={user?.email}
-                    className="workspace-shell-avatar-sm"
-                    imageClassName="workspace-shell-avatar-image"
-                    loading="eager"
-                    fetchPriority="high"
-                    preload
-                  />
-                  <div className="workspace-shell-user-copy">
-                    <span className="workspace-shell-user-name">
-                      {user?.user_metadata?.full_name ||
-                        user?.email?.split('@')[0] ||
-                        'WebtoMind User'}
-                    </span>
-                    <div className="workspace-shell-user-plan-row">
-                      <span
-                        className={`workspace-shell-plan-badge workspace-shell-plan-badge--sm ${
-                          subscription?.planName &&
-                          subscription.planName !== 'free'
-                            ? 'workspace-shell-plan-badge--paid'
-                            : 'workspace-shell-plan-badge--free'
-                        }`}
-                      >
-                        {subscription?.planName
-                          ? subscription.planName === 'free'
-                            ? 'Free'
-                            : subscription.planName.toUpperCase()
-                          : 'Free'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              <TextTooltip text={user?.email || 'User Settings'}>
                 <div
-                  className={`workspace-shell-chevron-wrap ${
-                    showUserPopover ? 'workspace-shell-chevron-wrap--open' : ''
+                  ref={userTriggerRef}
+                  role="button"
+                  tabIndex={0}
+                  aria-haspopup="dialog"
+                  aria-expanded={showUserPopover}
+                  onClick={() => setShowUserPopover((value) => !value)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setShowUserPopover((value) => !value);
+                    }
+                  }}
+                  className={`workspace-shell-user-trigger ${
+                    showUserPopover ? 'workspace-shell-user-trigger--open' : ''
                   }`}
                 >
-                  <ChevronRight className="workspace-shell-chevron" />
+                  <div className="workspace-shell-user-summary">
+                    <UserAvatar
+                      user={user}
+                      email={user?.email}
+                      className="workspace-shell-avatar-sm"
+                      imageClassName="workspace-shell-avatar-image"
+                      loading="eager"
+                      fetchPriority="high"
+                      preload
+                    />
+                    <div className="workspace-shell-user-copy">
+                      <span className="workspace-shell-user-name">
+                        {user?.user_metadata?.full_name ||
+                          user?.email?.split('@')[0] ||
+                          'WebtoMind User'}
+                      </span>
+                      <div className="workspace-shell-user-plan-row">
+                        <span
+                          className={`workspace-shell-plan-badge workspace-shell-plan-badge--sm ${
+                            subscription?.planName &&
+                            subscription.planName !== 'free'
+                              ? 'workspace-shell-plan-badge--paid'
+                              : 'workspace-shell-plan-badge--free'
+                          }`}
+                        >
+                          {subscription?.planName
+                            ? subscription.planName === 'free'
+                              ? 'Free'
+                              : subscription.planName.toUpperCase()
+                            : 'Free'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    className={`workspace-shell-chevron-wrap ${
+                      showUserPopover
+                        ? 'workspace-shell-chevron-wrap--open'
+                        : ''
+                    }`}
+                  >
+                    <ChevronRight className="workspace-shell-chevron" />
+                  </div>
                 </div>
-              </div>
+              </TextTooltip>
 
               {/* 用户信息浮窗 (Popover) - 包含在hover区域内 */}
               {/* 用户信息浮窗 (Popover) - 使用 CSS 控制显示，避免重新渲染导致头像重新加载 */}
               <div
-                onMouseEnter={() => setShowUserPopover(true)}
-                onMouseLeave={() => setShowUserPopover(false)}
+                ref={userMenuRef}
+                role="dialog"
+                aria-label="用户菜单"
+                tabIndex={-1}
+                hidden={!showUserPopover}
                 className={`workspace-shell-popover ${
                   showUserPopover
                     ? 'workspace-shell-popover--open'
@@ -4114,10 +4139,12 @@ function App({
                             ? subscription.planName === 'free'
                               ? 'Free'
                               : subscription.planName.toUpperCase()
-                          : 'Free'}
+                            : 'Free'}
                         </span>
                       </div>
-                      <span className="workspace-shell-user-email">{user?.email}</span>
+                      <span className="workspace-shell-user-email">
+                        {user?.email}
+                      </span>
                     </div>
                   </div>
 
@@ -4145,16 +4172,17 @@ function App({
                             <span className="workspace-shell-credit-value">
                               {credits?.total || 0}
                             </span>
-                            <button
-                              onClick={() => {
-                                setShowPricing(true);
-                                setShowUserPopover(false);
-                              }}
-                              className="workspace-shell-credit-link"
-                              title="查看套餐"
-                            >
-                              <ChevronRight className="workspace-shell-credit-link-icon" />
-                            </button>
+                            <TextTooltip text={'查看套餐'}>
+                              <button
+                                onClick={() => {
+                                  setShowPricing(true);
+                                  setShowUserPopover(false);
+                                }}
+                                className="workspace-shell-credit-link"
+                              >
+                                <ChevronRight className="workspace-shell-credit-link-icon" />
+                              </button>
+                            </TextTooltip>
                           </div>
                         </div>
                         <div className="workspace-shell-credit-row workspace-shell-credit-row--muted">
@@ -4169,7 +4197,8 @@ function App({
                             每日免费积分
                           </span>
                           <span className="workspace-shell-credit-value">
-                            {credits?.daily || 0}/{credits?.dailyMax ?? FREE_DAILY_CREDITS}
+                            {credits?.daily || 0}/
+                            {credits?.dailyMax ?? FREE_DAILY_CREDITS}
                           </span>
                         </div>
                         <div className="workspace-shell-progress-track">
@@ -4301,9 +4330,7 @@ function App({
               >
                 <Logo size={34} className="workspace-shell-mobile-logo" />
                 <div className="workspace-shell-mobile-brand-copy">
-                  <div className="workspace-shell-mobile-kicker">
-                    WebToMind
-                  </div>
+                  <div className="workspace-shell-mobile-kicker">WebToMind</div>
                   <div className="workspace-shell-mobile-title">
                     {t('boards:boards.title')}
                   </div>
@@ -4319,24 +4346,25 @@ function App({
                   <Wand2 className="workspace-shell-mobile-action-icon" />
                   <span>{t('boards:boards.create', '创意工作台')}</span>
                 </button>
-                <button
-                  type="button"
-                  onClick={() => navigate(getSettingsBasePath())}
-                  className="workspace-shell-mobile-avatar-button"
-                  aria-label="个人中心"
-                  title="个人中心"
-                >
-                  <UserAvatar
-                    user={user}
-                    email={user?.email}
-                    alt=""
-                    className="workspace-shell-mobile-avatar"
-                    imageClassName="workspace-shell-avatar-image"
-                    loading="eager"
-                    fetchPriority="high"
-                    preload
-                  />
-                </button>
+                <TextTooltip text={'个人中心'}>
+                  <button
+                    type="button"
+                    onClick={() => navigate(getSettingsBasePath())}
+                    className="workspace-shell-mobile-avatar-button"
+                    aria-label="个人中心"
+                  >
+                    <UserAvatar
+                      user={user}
+                      email={user?.email}
+                      alt=""
+                      className="workspace-shell-mobile-avatar"
+                      imageClassName="workspace-shell-avatar-image"
+                      loading="eager"
+                      fetchPriority="high"
+                      preload
+                    />
+                  </button>
+                </TextTooltip>
               </div>
             </div>
 
@@ -4604,15 +4632,18 @@ function App({
                                 <Plus className="w-3.5 h-3.5" />
                                 添加来源
                               </button>
-                              <button
-                                type="button"
-                                onClick={() => setIsSourcePanelCollapsed(true)}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                                title="收起素材栏"
-                                aria-label="收起素材栏"
-                              >
-                                <PanelLeftClose className="h-4 w-4" />
-                              </button>
+                              <TextTooltip text={'收起素材栏'}>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setIsSourcePanelCollapsed(true)
+                                  }
+                                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                                  aria-label="收起素材栏"
+                                >
+                                  <PanelLeftClose className="h-4 w-4" />
+                                </button>
+                              </TextTooltip>
                             </div>
                           </div>
                         </div>
@@ -4636,17 +4667,18 @@ function App({
                               autoFocus
                             />
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowSearch(false);
-                              setSearchTerm('');
-                            }}
-                            className="p-1.5 rounded-lg text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                            title={t('chat.close')}
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
+                          <TextTooltip text={t('chat.close')}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowSearch(false);
+                                setSearchTerm('');
+                              }}
+                              className="p-1.5 rounded-lg text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            >
+                              <X className="w-5 h-5" />
+                            </button>
+                          </TextTooltip>
                         </div>
                       ) : (
                         <div className="flex items-center justify-between gap-3">
@@ -4719,65 +4751,73 @@ function App({
                             )}
                           </div>
                           <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => setSummaryDisplayMode('cards')}
-                              className={`p-1.5 rounded-lg transition-colors ${
-                                summaryDisplayMode === 'cards'
-                                  ? 'bg-slate-900 text-white'
-                                  : 'text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                              }`}
-                              title="瀑布流展示"
-                            >
-                              <Grid3X3 className="w-5 h-5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setSummaryDisplayMode('list')}
-                              className={`p-1.5 rounded-lg transition-colors ${
-                                summaryDisplayMode === 'list'
-                                  ? 'bg-slate-900 text-white'
-                                  : 'text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
-                              }`}
-                              title="列表展示"
-                            >
-                              <List className="w-5 h-5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setShowSearch(true);
-                                setTimeout(
-                                  () => searchInputRef.current?.focus(),
-                                  0
-                                );
-                              }}
-                              className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-700 transition-colors"
-                              title={
+                            <TextTooltip text={'瀑布流展示'}>
+                              <button
+                                type="button"
+                                onClick={() => setSummaryDisplayMode('cards')}
+                                className={`p-1.5 rounded-lg transition-colors ${
+                                  summaryDisplayMode === 'cards'
+                                    ? 'bg-slate-900 text-white'
+                                    : 'text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                }`}
+                              >
+                                <Grid3X3 className="w-5 h-5" />
+                              </button>
+                            </TextTooltip>
+                            <TextTooltip text={'列表展示'}>
+                              <button
+                                type="button"
+                                onClick={() => setSummaryDisplayMode('list')}
+                                className={`p-1.5 rounded-lg transition-colors ${
+                                  summaryDisplayMode === 'list'
+                                    ? 'bg-slate-900 text-white'
+                                    : 'text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                }`}
+                              >
+                                <List className="w-5 h-5" />
+                              </button>
+                            </TextTooltip>
+                            <TextTooltip
+                              text={
                                 effectiveProjectId
                                   ? '搜索当前项目来源'
                                   : t('summaryList.searchPlaceholder')
                               }
                             >
-                              <Search className="w-5 h-5" />
-                            </button>
-                            <div className="relative" ref={addMenuRef}>
                               <button
                                 type="button"
                                 onClick={() => {
-                                  if (effectiveProjectId) {
-                                    setShowAddSourceModal(true);
-                                  } else {
-                                    setShowAddMenu(!showAddMenu);
-                                  }
+                                  setShowSearch(true);
+                                  setTimeout(
+                                    () => searchInputRef.current?.focus(),
+                                    0
+                                  );
                                 }}
-                                className="p-1.5 rounded-lg text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                                title={
+                                className="p-1.5 rounded-lg text-muted-foreground hover:text-white hover:bg-slate-700 transition-colors"
+                              >
+                                <Search className="w-5 h-5" />
+                              </button>
+                            </TextTooltip>
+                            <div className="relative" ref={addMenuRef}>
+                              <TextTooltip
+                                text={
                                   effectiveProjectId ? '添加来源' : t('app.add')
                                 }
                               >
-                                <Plus className="w-5 h-5" />
-                              </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (effectiveProjectId) {
+                                      setShowAddSourceModal(true);
+                                    } else {
+                                      setShowAddMenu(!showAddMenu);
+                                    }
+                                  }}
+                                  className="p-1.5 rounded-lg text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                  <Plus className="w-5 h-5" />
+                                </button>
+                              </TextTooltip>
                               {!effectiveProjectId && showAddMenu && (
                                 <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 py-1.5 min-w-[140px] z-20">
                                   <button
@@ -4897,17 +4937,18 @@ function App({
                               autoFocus
                             />
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowSearch(false);
-                              setSearchTerm('');
-                            }}
-                            className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100"
-                            title={t('chat.close')}
-                          >
-                            <X className="h-5 w-5" />
-                          </button>
+                          <TextTooltip text={t('chat.close')}>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowSearch(false);
+                                setSearchTerm('');
+                              }}
+                              className="rounded-xl p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100"
+                            >
+                              <X className="h-5 w-5" />
+                            </button>
+                          </TextTooltip>
                         </div>
                       ) : (
                         <div className="flex items-center justify-between gap-3">
@@ -4924,30 +4965,32 @@ function App({
                             </div>
                           </div>
                           <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => setSummaryDisplayMode('cards')}
-                              className={`rounded-xl p-2 transition-colors ${
-                                summaryDisplayMode === 'cards'
-                                  ? 'bg-slate-900 text-white'
-                                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100'
-                              }`}
-                              title="瀑布流展示"
-                            >
-                              <Grid3X3 className="h-5 w-5" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setSummaryDisplayMode('list')}
-                              className={`rounded-xl p-2 transition-colors ${
-                                summaryDisplayMode === 'list'
-                                  ? 'bg-slate-900 text-white'
-                                  : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100'
-                              }`}
-                              title="列表展示"
-                            >
-                              <List className="h-5 w-5" />
-                            </button>
+                            <TextTooltip text={'瀑布流展示'}>
+                              <button
+                                type="button"
+                                onClick={() => setSummaryDisplayMode('cards')}
+                                className={`rounded-xl p-2 transition-colors ${
+                                  summaryDisplayMode === 'cards'
+                                    ? 'bg-slate-900 text-white'
+                                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100'
+                                }`}
+                              >
+                                <Grid3X3 className="h-5 w-5" />
+                              </button>
+                            </TextTooltip>
+                            <TextTooltip text={'列表展示'}>
+                              <button
+                                type="button"
+                                onClick={() => setSummaryDisplayMode('list')}
+                                className={`rounded-xl p-2 transition-colors ${
+                                  summaryDisplayMode === 'list'
+                                    ? 'bg-slate-900 text-white'
+                                    : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-700 dark:hover:text-slate-100'
+                                }`}
+                              >
+                                <List className="h-5 w-5" />
+                              </button>
+                            </TextTooltip>
                           </div>
                         </div>
                       )}
@@ -5240,6 +5283,8 @@ function App({
           role="dialog"
           aria-modal="true"
           aria-label="联系我们"
+          ref={contactDialogRef}
+          tabIndex={-1}
         >
           <div
             className="w-full max-w-[420px] rounded-2xl border border-slate-700 bg-slate-900 shadow-2xl shadow-black/50 overflow-hidden"

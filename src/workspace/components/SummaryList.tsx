@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { createLogger } from '@/utils/logger';
 import type { SavedSummary } from '@/services/database';
 import { getSummaryById } from '@/services/workspace-api';
@@ -1079,30 +1080,31 @@ export function SummaryList({
                         resolveFullImageSrc={resolveFullImageSrc}
                       />
                     </div>
-                    <button
-                      type="button"
-                      data-summary-list-menu
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setActiveListMenuId((prev) =>
-                          prev === summary.id ? null : summary.id
-                        );
-                      }}
-                      className={`absolute flex items-center justify-center bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 transition-opacity ${
-                        isMobileList
-                          ? '-right-1 -top-1 h-7 w-7 rounded-full border border-white/80 shadow-sm dark:border-slate-800'
-                          : 'inset-0 rounded'
-                      } ${
-                        isMenuOpen
-                          ? 'opacity-100'
-                          : isMobileList
+                    <TextTooltip text={'更多'}>
+                      <button
+                        type="button"
+                        data-summary-list-menu
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveListMenuId((prev) =>
+                            prev === summary.id ? null : summary.id
+                          );
+                        }}
+                        className={`absolute flex items-center justify-center bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 transition-opacity ${
+                          isMobileList
+                            ? '-right-1 -top-1 h-7 w-7 rounded-full border border-white/80 shadow-sm dark:border-slate-800'
+                            : 'inset-0 rounded'
+                        } ${
+                          isMenuOpen
                             ? 'opacity-100'
-                            : 'opacity-0 group-hover:opacity-100'
-                      }`}
-                      title="更多"
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
+                            : isMobileList
+                              ? 'opacity-100'
+                              : 'opacity-0 group-hover:opacity-100'
+                        }`}
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </TextTooltip>
                     {isMenuOpen && (
                       <div
                         data-summary-list-menu
@@ -1283,18 +1285,19 @@ export function SummaryList({
                       onClick={() => stableOnEnterDetail(summary)}
                     >
                       {onDeleteSummary && (
-                        <button
-                          type="button"
-                          className="absolute left-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-slate-50/95 text-slate-500 opacity-0 shadow-sm transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:bg-slate-700/95 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-300"
-                          title="删除"
-                          aria-label="删除卡片"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleCardDelete(summary.id);
-                          }}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                        <TextTooltip text={'删除'}>
+                          <button
+                            type="button"
+                            className="absolute left-2 top-2 z-10 inline-flex h-7 w-7 items-center justify-center rounded-md bg-slate-50/95 text-slate-500 opacity-0 shadow-sm transition-all hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:bg-slate-700/95 dark:text-slate-300 dark:hover:bg-red-900/30 dark:hover:text-red-300"
+                            aria-label="删除卡片"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              handleCardDelete(summary.id);
+                            }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </TextTooltip>
                       )}
 
                       {onToggleSelect &&

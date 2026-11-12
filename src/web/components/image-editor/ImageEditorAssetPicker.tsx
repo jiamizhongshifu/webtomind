@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useOverlayBehavior } from '@/shared/ui';
 import { ImageOff, LoaderCircle, X } from 'lucide-react';
-import { getVisualImageHistoryResult, type VisualImageHistoryItem } from '@/services/agent-api';
+import {
+  getVisualImageHistoryResult,
+  type VisualImageHistoryItem
+} from '@/services/agent-api';
 
 interface ImageEditorAssetPickerProps {
   isEnglish: boolean;
@@ -24,6 +28,7 @@ export function ImageEditorAssetPicker({
   const [error, setError] = useState('');
   const [pickingId, setPickingId] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const dialogRef = useOverlayBehavior<HTMLElement>({ open, onClose });
   const multi = selectionMode === 'multi';
 
   useEffect(() => {
@@ -82,6 +87,8 @@ export function ImageEditorAssetPicker({
       }}
     >
       <section
+        ref={dialogRef}
+        tabIndex={-1}
         className="image-editor-asset-dialog"
         role="dialog"
         aria-modal="true"
@@ -89,7 +96,11 @@ export function ImageEditorAssetPicker({
       >
         <header>
           <h2>{isEnglish ? 'Select an asset' : '选择一张图片资产'}</h2>
-          <button type="button" aria-label={isEnglish ? 'Close' : '关闭'} onClick={onClose}>
+          <button
+            type="button"
+            aria-label={isEnglish ? 'Close' : '关闭'}
+            onClick={onClose}
+          >
             <X aria-hidden="true" />
           </button>
         </header>

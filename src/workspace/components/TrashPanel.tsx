@@ -1,3 +1,9 @@
+import {
+  PopoverRoot,
+  PopoverTrigger,
+  PopoverAnchor,
+  PopoverContent
+} from '@/shared/ui/PopoverPrimitives';
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { createLogger } from '@/utils/logger';
@@ -26,26 +32,14 @@ export const TrashPanel: React.FC<TrashPanelProps> = ({
   const [loading, setLoading] = useState(true);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const deleteAnchor = useRef<HTMLElement | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const [confirmError, setConfirmError] = useState('');
 
   // 加载回收站数据
   useEffect(() => {
     loadTrashItems();
   }, []);
-
-  // 点击外部关闭菜单
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setActiveMenu(null);
-      }
-    };
-    if (activeMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-      return () =>
-        document.removeEventListener('mousedown', handleClickOutside);
-    }
-  }, [activeMenu]);
 
   const loadTrashItems = async () => {
     try {
@@ -71,6 +65,9 @@ export const TrashPanel: React.FC<TrashPanelProps> = ({
   };
 
   const handlePermanentDelete = async (id: string) => {
+    if (confirmBusy) return;
+    setConfirmBusy(true);
+    setConfirmError('');
     try {
       await permanentlyDeleteTrashItem(id);
       setItems((prev) => prev.filter((item) => item.id !== id));
@@ -78,6 +75,9 @@ export const TrashPanel: React.FC<TrashPanelProps> = ({
       setActiveMenu(null);
     } catch (error) {
       log.error('[Trash] Permanent delete failed:', error);
+      setConfirmError(error instanceof Error ? error.message : '删除失败');
+    } finally {
+      setConfirmBusy(false);
     }
   };
 
@@ -218,21 +218,27 @@ export const TrashPanel: React.FC<TrashPanelProps> = ({
                 </div>
 
                 {/* 操作 */}
-                <div
-                  className="relative"
-                  ref={activeMenu === item.id ? menuRef : null}
-                >
-                  <button
-                    onClick={() =>
-                      setActiveMenu(activeMenu === item.id ? null : item.id)
-                    }
-                    className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                <div className="relative">
+                  <PopoverRoot
+                    open={activeMenu === item.id}
+                    onOpenChange={(open) => {
+                      if (!confirmDelete) setActiveMenu(open ? item.id : null);
+                    }}
                   >
-                    <MoreHorizontal className="w-5 h-5" />
-                  </button>
-
-                  {activeMenu === item.id && (
-                    <div className="absolute right-0 top-full mt-1 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[140px] z-50">
+                    <PopoverTrigger asChild>
+                      <button className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 transition-colors">
+                        <MoreHorizontal className="w-5 h-5" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      unstyled
+                      align="end"
+                      sideOffset={4}
+                      onInteractOutside={(event) => {
+                        if (confirmDelete) event.preventDefault();
+                      }}
+                      className="bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[140px] z-50"
+                    >
                       <button
                         onClick={() => handleRestore(item.id)}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
@@ -241,14 +247,18 @@ export const TrashPanel: React.FC<TrashPanelProps> = ({
                         {t('trash.actions.restore')}
                       </button>
                       <button
-                        onClick={() => setConfirmDelete(item.id)}
+                        onClick={(event) => {
+                          deleteAnchor.current = event.currentTarget;
+                          setConfirmError('');
+                          setConfirmDelete(item.id);
+                        }}
                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                       >
                         <Trash2 className="w-4 h-4" />
                         {t('trash.actions.deletePermanently')}
                       </button>
-                    </div>
-                  )}
+                    </PopoverContent>
+                  </PopoverRoot>
                 </div>
               </div>
             ))}
@@ -256,43 +266,67 @@ export const TrashPanel: React.FC<TrashPanelProps> = ({
         </div>
       )}
 
-      {/* 确认删除弹窗 */}
-      {confirmDelete && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/30 dark:bg-black/50">
-          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-[400px] max-w-[calc(100vw-2rem)] overflow-hidden">
-            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                {t('trash.confirmDelete.title')}
-              </h3>
-              <button
-                onClick={() => setConfirmDelete(null)}
-                className="p-1 text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-5">
-              <p className="text-sm text-slate-500">
-                {t('trash.confirmDelete.desc')}
-              </p>
-            </div>
-            <div className="flex justify-end gap-3 p-5 pt-0">
-              <button
-                onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                {t('trash.confirmDelete.cancel')}
-              </button>
-              <button
-                onClick={() => handlePermanentDelete(confirmDelete)}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
-              >
-                {t('trash.confirmDelete.confirm')}
-              </button>
-            </div>
+      <PopoverRoot
+        open={Boolean(confirmDelete)}
+        onOpenChange={(open) => {
+          if (!confirmBusy && !open) setConfirmDelete(null);
+        }}
+      >
+        <PopoverAnchor virtualRef={deleteAnchor} />
+        <PopoverContent
+          unstyled
+          align="end"
+          collisionPadding={12}
+          data-floating-confirm="true"
+          aria-label={t('trash.confirmDelete.title')}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            deleteAnchor.current?.focus();
+          }}
+          className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-[400px] max-w-[calc(100vw-2rem)] overflow-hidden"
+        >
+          <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-700">
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+              {t('trash.confirmDelete.title')}
+            </h3>
+            <button
+              disabled={confirmBusy}
+              onClick={() => setConfirmDelete(null)}
+              className="p-1 text-muted-foreground hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
-        </div>
-      )}
+          <div className="p-5">
+            <p className="text-sm text-slate-500">
+              {t('trash.confirmDelete.desc')}
+            </p>
+          </div>
+          {confirmError && (
+            <p role="alert" className="px-5">
+              {confirmError}
+            </p>
+          )}
+          <div className="flex justify-end gap-3 p-5 pt-0">
+            <button
+              disabled={confirmBusy}
+              onClick={() => setConfirmDelete(null)}
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            >
+              {t('trash.confirmDelete.cancel')}
+            </button>
+            <button
+              disabled={confirmBusy}
+              onClick={() => {
+                if (confirmDelete) void handlePermanentDelete(confirmDelete);
+              }}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors"
+            >
+              {t('trash.actions.deletePermanently')}
+            </button>
+          </div>
+        </PopoverContent>
+      </PopoverRoot>
     </div>
   );
 };

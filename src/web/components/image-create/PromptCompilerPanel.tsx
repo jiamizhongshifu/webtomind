@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 /**
  * 提示词编译器。默认作为底部 dock 使用,也可内嵌到创作台中栏。
  */
@@ -712,7 +713,9 @@ export function PromptCompilerPanel({
                         <X />
                       </Button>
                       <div className="creator-reference-upload-meta">
-                        <strong title={item.fileName}>{item.fileName}</strong>
+                        <TextTooltip text={item.fileName}>
+                          <strong>{item.fileName}</strong>
+                        </TextTooltip>
                         {item.error && <small>{item.error}</small>}
                       </div>
                     </article>

@@ -1,4 +1,15 @@
-import { useId } from 'react';
+import { useId, useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel
+} from './radix/alert-dialog';
 import { X } from 'lucide-react';
 import { clsx } from 'clsx';
 import { createPortal } from 'react-dom';
@@ -118,4 +129,88 @@ export function Dialog({
   }
 
   return createPortal(dialog, document.body);
+}
+
+/** Guard only callers with unsaved form data, never instant-apply filters. */
+export function useUnsavedChanges(
+  dirty: boolean,
+  onClose: () => void,
+  busy = false
+) {
+  const { i18n } = useTranslation();
+  const en = i18n?.language?.startsWith('en') ?? false;
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const closeTrigger = useRef<HTMLElement | null>(null);
+  const [confirmationZ, setConfirmationZ] = useState(200);
+  useEffect(() => {
+    if (!dirty) return;
+    const beforeUnload = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = '';
+    };
+    window.addEventListener('beforeunload', beforeUnload);
+    return () => window.removeEventListener('beforeunload', beforeUnload);
+  }, [dirty]);
+  const requestClose = () => {
+    if (busy) return;
+    if (dirty) {
+      closeTrigger.current =
+        document.activeElement instanceof HTMLElement
+          ? document.activeElement
+          : null;
+      let z = 199;
+      for (
+        let element = closeTrigger.current;
+        element;
+        element = element.parentElement
+      ) {
+        const value = Number.parseInt(
+          window.getComputedStyle(element).zIndex,
+          10
+        );
+        if (Number.isFinite(value)) z = Math.max(z, value);
+      }
+      setConfirmationZ(z + 1);
+      setConfirmOpen(true);
+    } else onClose();
+  };
+  const discardConfirmation = (
+    <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <AlertDialogContent
+        style={{ zIndex: confirmationZ }}
+        overlayStyle={{ zIndex: confirmationZ }}
+        onCloseAutoFocus={(event) => {
+          if (closeTrigger.current?.isConnected) {
+            event.preventDefault();
+            closeTrigger.current.focus({ preventScroll: true });
+          }
+        }}
+      >
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {en ? 'Discard unsaved changes?' : '放弃未保存的更改？'}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {en
+              ? 'Your unsaved changes will be lost.'
+              : '未保存的更改将丢失，无法撤销。'}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>
+            {en ? 'Keep editing' : '继续编辑'}
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => {
+              setConfirmOpen(false);
+              onClose();
+            }}
+          >
+            {en ? 'Discard changes' : '放弃更改'}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+  return { requestClose, discardConfirmation };
 }

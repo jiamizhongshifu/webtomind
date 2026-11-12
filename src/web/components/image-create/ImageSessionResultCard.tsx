@@ -1,3 +1,10 @@
+import {
+  PopoverRoot,
+  PopoverAnchor,
+  PopoverContent
+} from '@/shared/ui/PopoverPrimitives';
+import { Button as ConfirmButton } from '@/shared/ui/radix/button';
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { createPortal } from 'react-dom';
@@ -44,6 +51,10 @@ export function ImageSessionResultCard({
   onEdit,
   isEnglish = false
 }: ImageSessionResultCardProps) {
+  const deleteAnchor = useRef<HTMLElement | null>(null);
+  const [confirmBusy, setConfirmBusy] = useState(false);
+  const [confirmError, setConfirmError] = useState('');
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [menuAnchor, setMenuAnchor] = useState<{
     right: number;
     top: number;
@@ -76,15 +87,18 @@ export function ImageSessionResultCard({
     });
   };
 
-  const requestDelete = () => {
-    if (!onDelete) return;
-    if (
-      !window.confirm(
-        `删除这个生成${isVideo ? '视频' : '图片'}？此操作无法撤销。`
-      )
-    )
-      return;
-    return onDelete(item);
+  const requestDelete = async () => {
+    if (!onDelete || confirmBusy) return;
+    setConfirmBusy(true);
+    setConfirmError('');
+    try {
+      await onDelete(item);
+      setConfirmOpen(false);
+    } catch (error) {
+      setConfirmError(error instanceof Error ? error.message : '删除失败');
+    } finally {
+      setConfirmBusy(false);
+    }
   };
 
   const startVideoPreview = () => {
@@ -132,62 +146,66 @@ export function ImageSessionResultCard({
           />
         )}
       </button>
-
       <div className="image-session-result-hover-actions">
         {!isVideo && onEdit ? (
-          <button
-            type="button"
-            aria-label={isEnglish ? 'Edit in image editor' : '编辑图片'}
-            title={isEnglish ? 'Edit in image editor' : '编辑图片'}
-            onClick={(event) => {
-              event.stopPropagation();
-              onEdit(item);
-            }}
-          >
-            <Wand2 />
-          </button>
+          <TextTooltip text={isEnglish ? 'Edit in image editor' : '编辑图片'}>
+            <button
+              type="button"
+              aria-label={isEnglish ? 'Edit in image editor' : '编辑图片'}
+              onClick={(event) => {
+                event.stopPropagation();
+                onEdit(item);
+              }}
+            >
+              <Wand2 />
+            </button>
+          </TextTooltip>
         ) : null}
         {onFavorite ? (
+          <TextTooltip text={item.isFavorite ? '取消收藏' : '加入收藏'}>
+            <button
+              type="button"
+              aria-label={item.isFavorite ? '取消收藏' : '加入收藏'}
+              aria-pressed={Boolean(item.isFavorite)}
+              onClick={(event) => {
+                event.stopPropagation();
+                onFavorite(item);
+              }}
+            >
+              <Heart fill={item.isFavorite ? 'currentColor' : 'none'} />
+            </button>
+          </TextTooltip>
+        ) : null}
+        <TextTooltip text={isVideo ? '更多视频操作' : '更多图片操作'}>
           <button
             type="button"
-            aria-label={item.isFavorite ? '取消收藏' : '加入收藏'}
-            title={item.isFavorite ? '取消收藏' : '加入收藏'}
-            aria-pressed={Boolean(item.isFavorite)}
+            ref={(node) => {
+              deleteAnchor.current = node;
+            }}
+            aria-label={isVideo ? '更多视频操作' : '更多图片操作'}
+            aria-haspopup="menu"
+            aria-expanded={Boolean(menuAnchor)}
+            onPointerDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();
-              onFavorite(item);
+              const rect = event.currentTarget.getBoundingClientRect();
+              setMenuAnchor((current) =>
+                current
+                  ? null
+                  : {
+                      right: Math.max(12, window.innerWidth - rect.right),
+                      top: Math.min(
+                        rect.bottom + 8,
+                        Math.max(12, window.innerHeight - 254)
+                      )
+                    }
+              );
             }}
           >
-            <Heart fill={item.isFavorite ? 'currentColor' : 'none'} />
+            <MoreVertical />
           </button>
-        ) : null}
-        <button
-          type="button"
-          aria-label={isVideo ? '更多视频操作' : '更多图片操作'}
-          title={isVideo ? '更多视频操作' : '更多图片操作'}
-          aria-haspopup="menu"
-          aria-expanded={Boolean(menuAnchor)}
-          onPointerDown={(event) => event.stopPropagation()}
-          onClick={(event) => {
-            event.stopPropagation();
-            const rect = event.currentTarget.getBoundingClientRect();
-            setMenuAnchor((current) =>
-              current
-                ? null
-                : {
-                    right: Math.max(12, window.innerWidth - rect.right),
-                    top: Math.min(
-                      rect.bottom + 8,
-                      Math.max(12, window.innerHeight - 254)
-                    )
-                  }
-            );
-          }}
-        >
-          <MoreVertical />
-        </button>
+        </TextTooltip>
       </div>
-
       {menuAnchor &&
         createPortal(
           <div
@@ -242,7 +260,11 @@ export function ImageSessionResultCard({
                 type="button"
                 role="menuitem"
                 className="is-danger"
-                onClick={() => runMenuAction(requestDelete)}
+                onClick={() => {
+                  setMenuAnchor(null);
+                  setConfirmError('');
+                  setConfirmOpen(true);
+                }}
               >
                 <Trash2 /> 删除
               </button>
@@ -250,6 +272,43 @@ export function ImageSessionResultCard({
           </div>,
           document.body
         )}
+      <PopoverRoot
+        open={Boolean(confirmOpen)}
+        onOpenChange={(open) => {
+          if (!confirmBusy && !open) setConfirmOpen(false);
+        }}
+      >
+        <PopoverAnchor virtualRef={deleteAnchor} />
+        <PopoverContent
+          data-floating-confirm="true"
+          align="end"
+          collisionPadding={12}
+          aria-label={isVideo ? '删除视频' : '删除图片'}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            deleteAnchor.current?.focus();
+          }}
+        >
+          <p className="text-sm text-muted-foreground">{`删除这个生成${isVideo ? '视频' : '图片'}？此操作无法撤销。`}</p>
+          {confirmError && <p role="alert">{confirmError}</p>}
+          <div className="mt-4 flex justify-end gap-2">
+            <ConfirmButton
+              variant="outline"
+              disabled={confirmBusy}
+              onClick={() => setConfirmOpen(false)}
+            >
+              {isEnglish ? 'Cancel' : '取消'}
+            </ConfirmButton>
+            <ConfirmButton
+              variant="destructive"
+              disabled={confirmBusy}
+              onClick={requestDelete}
+            >
+              {isVideo ? '删除视频' : '删除图片'}
+            </ConfirmButton>
+          </div>
+        </PopoverContent>
+      </PopoverRoot>{' '}
     </figure>
   );
 }

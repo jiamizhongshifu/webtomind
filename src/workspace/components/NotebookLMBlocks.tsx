@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 /**
  * NotebookLM 输出内容展示组件
  * 支持各种输出类型：测验、思维导图、报告、摘要、音频、视频、信息图、演示文稿、数据表格
@@ -526,14 +527,15 @@ export function AudioBlock({ audioUrl, duration, title }: AudioBlockProps) {
             {title || t('audio.title', '音频概览')}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="p-2 text-slate-500 hover:text-slate-700 hover:bg-white/50 rounded-lg transition-colors"
-          title={t('audio.download', '下载音频')}
-        >
-          <Download className="w-4 h-4" />
-        </button>
+        <TextTooltip text={t('audio.download', '下载音频')}>
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="p-2 text-slate-500 hover:text-slate-700 hover:bg-white/50 rounded-lg transition-colors"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        </TextTooltip>
       </div>
 
       <div className="bg-white rounded-xl p-4">
@@ -582,14 +584,15 @@ export function VideoBlock({ videoUrl, duration, title }: VideoBlockProps) {
             {title || t('video.title', '视频概览')}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="p-2 text-slate-500 hover:text-slate-700 hover:bg-white/50 rounded-lg transition-colors"
-          title={t('video.download', '下载视频')}
-        >
-          <Download className="w-4 h-4" />
-        </button>
+        <TextTooltip text={t('video.download', '下载视频')}>
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="p-2 text-slate-500 hover:text-slate-700 hover:bg-white/50 rounded-lg transition-colors"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        </TextTooltip>
       </div>
 
       <div className="bg-black rounded-xl overflow-hidden">
@@ -632,14 +635,15 @@ export function InfographicBlock({ imageUrl, title }: InfographicBlockProps) {
             {title || t('infographic.title', '信息图')}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="p-2 text-slate-500 hover:text-slate-700 hover:bg-white/50 rounded-lg transition-colors"
-          title={t('infographic.download', '下载图片')}
-        >
-          <Download className="w-4 h-4" />
-        </button>
+        <TextTooltip text={t('infographic.download', '下载图片')}>
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="p-2 text-slate-500 hover:text-slate-700 hover:bg-white/50 rounded-lg transition-colors"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        </TextTooltip>
       </div>
 
       <div
@@ -777,14 +781,15 @@ export function DataTableBlock({
             </span>
           )}
         </div>
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="p-2 text-slate-500 hover:text-slate-700 hover:bg-white/50 rounded-lg transition-colors"
-          title={t('dataTable.download', '下载 CSV')}
-        >
-          <Download className="w-4 h-4" />
-        </button>
+        <TextTooltip text={t('dataTable.download', '下载 CSV')}>
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="p-2 text-slate-500 hover:text-slate-700 hover:bg-white/50 rounded-lg transition-colors"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        </TextTooltip>
       </div>
 
       <div className="bg-white rounded-xl overflow-hidden">

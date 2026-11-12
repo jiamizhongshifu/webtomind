@@ -1,3 +1,4 @@
+import { TooltipProvider } from '@/shared/ui/TooltipPrimitives';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createLogger } from '@/utils/logger';
@@ -21,7 +22,9 @@ initTheme();
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ErrorBoundary>
-      <App />
+      <TooltipProvider>
+        <App />
+      </TooltipProvider>
     </ErrorBoundary>
   </React.StrictMode>
 );

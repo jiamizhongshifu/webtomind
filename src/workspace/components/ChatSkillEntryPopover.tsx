@@ -1,9 +1,20 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { useState } from 'react';
 import type { Skill } from '@/services/workspace-api';
 import type { SavedSummary } from '@/services/database';
 import type { Reference } from '@/types';
 import type { SkillResolverCandidate } from '@/workspace/types/skill-resolver';
-import { Sparkles, X, Compass, Settings2, Check, Plus, ArrowLeft, Link2, FileText } from 'lucide-react';
+import {
+  Sparkles,
+  X,
+  Compass,
+  Settings2,
+  Check,
+  Plus,
+  ArrowLeft,
+  Link2,
+  FileText
+} from 'lucide-react';
 import { ReferenceSelector } from './ReferenceSelector';
 
 interface SelectedReference {
@@ -64,9 +75,8 @@ export function ChatSkillEntryPopover({
         name,
         prompt,
         description: createDescription.trim() || undefined,
-        referenceIds: createRefs.length > 0
-          ? createRefs.map((r) => r.summaryId)
-          : undefined
+        referenceIds:
+          createRefs.length > 0 ? createRefs.map((r) => r.summaryId) : undefined
       });
       setCreateMode(false);
       setCreateName('');
@@ -83,11 +93,10 @@ export function ChatSkillEntryPopover({
       const summary = summaries.find((s) => s.id === ref.summaryId);
       const content = summary?.markdown || '';
       // 提取缩略图
-      const imgMatch = content.match(
-        /<img[^>]+src=["'](data:image\/[^;]+;base64,[^"']+)["'][^>]*>/i
-      ) || content.match(
-        /!\[.*\]\((data:image\/[^;]+;base64,[^)]+)\)/i
-      );
+      const imgMatch =
+        content.match(
+          /<img[^>]+src=["'](data:image\/[^;]+;base64,[^"']+)["'][^>]*>/i
+        ) || content.match(/!\[.*\]\((data:image\/[^;]+;base64,[^)]+)\)/i);
       return {
         id: ref.id,
         summaryId: ref.summaryId!,
@@ -121,15 +130,16 @@ export function ChatSkillEntryPopover({
               <ArrowLeft className="w-4 h-4" />
               <span>新建技能</span>
             </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-              title="关闭"
-              aria-label="关闭"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <TextTooltip text={'关闭'}>
+              <button
+                type="button"
+                onClick={onClose}
+                className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                aria-label="关闭"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </TextTooltip>
           </div>
 
           {/* 表单 */}
@@ -175,14 +185,15 @@ export function ChatSkillEntryPopover({
                         <span className="max-w-[100px] truncate">
                           {ref.summaryTitle}
                         </span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveRef(ref.id)}
-                          className="p-0.5 hover:bg-blue-100 rounded transition-colors"
-                          title="移除引用"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
+                        <TextTooltip text={'移除引用'}>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveRef(ref.id)}
+                            className="p-0.5 hover:bg-blue-100 rounded transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </TextTooltip>
                       </span>
                     ))}
                   </div>
@@ -198,14 +209,15 @@ export function ChatSkillEntryPopover({
 
                 {/* 底部工具栏 */}
                 <div className="flex items-center px-2 py-1.5 border-t border-slate-100 bg-white">
-                  <button
-                    type="button"
-                    onClick={() => setShowRefSelector(true)}
-                    className="p-1.5 rounded-lg transition-all text-slate-400 hover:text-violet-600 hover:bg-violet-50"
-                    title="添加引用"
-                  >
-                    <Link2 className="w-4 h-4" />
-                  </button>
+                  <TextTooltip text={'添加引用'}>
+                    <button
+                      type="button"
+                      onClick={() => setShowRefSelector(true)}
+                      className="p-1.5 rounded-lg transition-all text-slate-400 hover:text-violet-600 hover:bg-violet-50"
+                    >
+                      <Link2 className="w-4 h-4" />
+                    </button>
+                  </TextTooltip>
                 </div>
               </div>
             </div>
@@ -214,12 +226,16 @@ export function ChatSkillEntryPopover({
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">
                 描述
-                <span className="ml-1 text-slate-400 font-normal">（可选）</span>
+                <span className="ml-1 text-slate-400 font-normal">
+                  （可选）
+                </span>
               </label>
               <input
                 type="text"
                 value={createDescription}
-                onChange={(e) => setCreateDescription(e.target.value.slice(0, 200))}
+                onChange={(e) =>
+                  setCreateDescription(e.target.value.slice(0, 200))
+                }
                 placeholder="简要描述技能用途"
                 className="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-200 focus:border-violet-300 transition-shadow"
               />
@@ -269,15 +285,16 @@ export function ChatSkillEntryPopover({
           </div>
           <span>已添加技能</span>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-          title="关闭技能列表"
-          aria-label="关闭技能列表"
-        >
-          <X className="w-4 h-4" />
-        </button>
+        <TextTooltip text={'关闭技能列表'}>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            aria-label="关闭技能列表"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </TextTooltip>
       </div>
 
       <div className="max-h-[360px] overflow-y-auto px-2 py-2">

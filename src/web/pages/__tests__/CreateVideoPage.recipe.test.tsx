@@ -326,16 +326,19 @@ describe('CreateVideoPage Krea-style workflow', () => {
     );
   });
 
-  it('opens every desktop setting panel on hover', async () => {
+  it('opens desktop setting panels by click, not hover or focus', async () => {
     renderPage();
 
     const resolutionButton = await screen.findByRole('button', {
       name: '分辨率'
     });
     fireEvent.mouseEnter(resolutionButton);
+    fireEvent.focus(resolutionButton);
+    expect(screen.queryByRole('dialog', { name: '分辨率 设置' })).not.toBeInTheDocument();
+    fireEvent.click(resolutionButton);
     expect(screen.getByRole('dialog', { name: '分辨率 设置' })).toBeVisible();
 
-    fireEvent.mouseEnter(screen.getByRole('button', { name: '提示词' }));
+    fireEvent.click(screen.getByRole('button', { name: '提示词' }));
     const promptDialog = screen.getByRole('dialog', { name: '提示词 设置' });
     expect(promptDialog).toBeVisible();
     expect(screen.getByText('生成前自动优化提示词')).toBeVisible();

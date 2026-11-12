@@ -53,21 +53,22 @@ describe('ShortcutEditorHarnessPage', () => {
       target: { value: '新的整理技能' }
     });
 
-    await waitFor(() => {
-      expect(screen.getByTestId('harness-status')).toHaveTextContent(
-        'updated:name'
-      );
-    }, { timeout: 1500 });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('harness-status')).toHaveTextContent(
+          'updated:name'
+        );
+      },
+      { timeout: 1500 }
+    );
   });
 
-  it('confirms deletion through AlertDialog', async () => {
+  it('confirms deletion through an anchored popover', async () => {
     render(<ShortcutEditorHarnessPage />);
 
     fireEvent.click(screen.getByRole('button', { name: '删除技能' }));
 
-    expect(
-      screen.getByRole('alertdialog', { name: '确认删除' })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: '删除' })).toBeInTheDocument();
     expect(
       screen.getByText('确定要删除技能「研究材料整理」吗？此操作无法撤销。')
     ).toBeInTheDocument();
@@ -75,9 +76,7 @@ describe('ShortcutEditorHarnessPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '删除' }));
 
     await waitFor(() => {
-      expect(screen.getByTestId('harness-status')).toHaveTextContent(
-        'deleted'
-      );
+      expect(screen.getByTestId('harness-status')).toHaveTextContent('deleted');
     });
   });
 
@@ -94,10 +93,13 @@ describe('ShortcutEditorHarnessPage', () => {
     fireEvent.click(screen.getByRole('checkbox', { name: '访谈纪要' }));
     fireEvent.click(screen.getByRole('button', { name: '确认添加 (1)' }));
 
-    await waitFor(() => {
-      expect(screen.getByTestId('harness-status')).toHaveTextContent(
-        'updated:references'
-      );
-    }, { timeout: 1500 });
+    await waitFor(
+      () => {
+        expect(screen.getByTestId('harness-status')).toHaveTextContent(
+          'updated:references'
+        );
+      },
+      { timeout: 1500 }
+    );
   });
 });

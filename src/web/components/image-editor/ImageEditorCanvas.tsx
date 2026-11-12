@@ -1,5 +1,15 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Hand, LoaderCircle, Minus, MousePointer2, Plus, Scan, Trash2, Wand2 } from 'lucide-react';
+import {
+  Hand,
+  LoaderCircle,
+  Minus,
+  MousePointer2,
+  Plus,
+  Scan,
+  Trash2,
+  Wand2
+} from 'lucide-react';
 import type {
   BrushPoint,
   BrushStroke,
@@ -68,17 +78,17 @@ function parseAspect(aspect: string | null): number | null {
 // Cropping is local and must stay within the source pixels.
 const cropExtend = 0;
 
-export function expansionFrame(aspect: string | null, imageAspect: number): DraftRect {
+export function expansionFrame(
+  aspect: string | null,
+  imageAspect: number
+): DraftRect {
   const target = (parseAspect(aspect) || imageAspect) / imageAspect;
   const width = Math.max(1, target) * 1.2;
   const height = Math.max(1, 1 / target) * 1.2;
   return { x: (1 - width) / 2, y: (1 - height) / 2, width, height };
 }
 
-function clampCropRect(
-  rect: DraftRect,
-  extend: number
-): DraftRect {
+function clampCropRect(rect: DraftRect, extend: number): DraftRect {
   const min = -extend;
   const max = 1 + extend;
   const x = Math.min(max, Math.max(min, rect.x));
@@ -104,11 +114,15 @@ export function fitCropToAspect(
   let height = rect.height;
   if (width / height > target) width = height * target;
   else height = width / target;
-  return clampCropRect({
-    x: rect.x + (rect.width - width) / 2,
-    y: rect.y + (rect.height - height) / 2,
-    width, height
-  }, extend);
+  return clampCropRect(
+    {
+      x: rect.x + (rect.width - width) / 2,
+      y: rect.y + (rect.height - height) / 2,
+      width,
+      height
+    },
+    extend
+  );
 }
 
 export function resizeCropRect(
@@ -126,14 +140,25 @@ export function resizeCropRect(
   const anchorY = north ? rect.y + rect.height : rect.y;
   const maxWidth = west ? anchorX : 1 - anchorX;
   const maxHeight = north ? anchorY : 1 - anchorY;
-  let width = Math.min(maxWidth, Math.max(0.01, west ? anchorX - point.x : point.x - anchorX));
-  let height = Math.min(maxHeight, Math.max(0.01, north ? anchorY - point.y : point.y - anchorY));
+  let width = Math.min(
+    maxWidth,
+    Math.max(0.01, west ? anchorX - point.x : point.x - anchorX)
+  );
+  let height = Math.min(
+    maxHeight,
+    Math.max(0.01, north ? anchorY - point.y : point.y - anchorY)
+  );
   if (handle.length === 2) {
     if (target) {
       width = Math.min(width, height * target);
       height = width / target;
     }
-    return { x: west ? anchorX - width : anchorX, y: north ? anchorY - height : anchorY, width, height };
+    return {
+      x: west ? anchorX - width : anchorX,
+      y: north ? anchorY - height : anchorY,
+      width,
+      height
+    };
   }
   if (handle === 'w' || handle === 'e') {
     const centerY = rect.y + rect.height / 2;
@@ -142,15 +167,25 @@ export function resizeCropRect(
       width = Math.min(width, 2 * Math.min(centerY, 1 - centerY) * target);
       height = width / target;
     }
-    return { x: west ? anchorX - width : anchorX, y: centerY - height / 2, width, height };
+    return {
+      x: west ? anchorX - width : anchorX,
+      y: centerY - height / 2,
+      width,
+      height
+    };
   }
   const centerX = rect.x + rect.width / 2;
   width = rect.width;
   if (target) {
-    height = Math.min(height, 2 * Math.min(centerX, 1 - centerX) / target);
+    height = Math.min(height, (2 * Math.min(centerX, 1 - centerX)) / target);
     width = height * target;
   }
-  return { x: centerX - width / 2, y: north ? anchorY - height : anchorY, width, height };
+  return {
+    x: centerX - width / 2,
+    y: north ? anchorY - height : anchorY,
+    width,
+    height
+  };
 }
 
 function hitCropHandle(
@@ -174,9 +209,7 @@ function hitCropHandle(
     ['e', x + w, y + h / 2]
   ];
   const hit = handles.find(
-    ([, hx, hy]) =>
-      Math.hypot(clientX - hx, clientY - hy) <=
-      14
+    ([, hx, hy]) => Math.hypot(clientX - hx, clientY - hy) <= 14
   );
   return hit ? hit[0] : null;
 }
@@ -218,10 +251,14 @@ export function ImageEditorCanvas({
   const [naturalSize, setNaturalSize] = useState({ width: 1, height: 1 });
   const [stageSize, setStageSize] = useState({ width: 1, height: 1 });
   const expanding = activeTool === 'crop' && cropMode === 'expand';
-  const frame = expanding ? expansionFrame(cropAspect, naturalSize.width / naturalSize.height) : null;
+  const frame = expanding
+    ? expansionFrame(cropAspect, naturalSize.width / naturalSize.height)
+    : null;
   const fit = Math.min(
-    Math.max(1, stageSize.width - 40) / (naturalSize.width * (frame?.width || 1)),
-    Math.max(1, stageSize.height - 40) / (naturalSize.height * (frame?.height || 1))
+    Math.max(1, stageSize.width - 40) /
+      (naturalSize.width * (frame?.width || 1)),
+    Math.max(1, stageSize.height - 40) /
+      (naturalSize.height * (frame?.height || 1))
   );
   const imageWidth = naturalSize.width * fit;
   const imageHeight = naturalSize.height * fit;
@@ -255,7 +292,8 @@ export function ImageEditorCanvas({
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage) return;
-    const update = () => setStageSize({ width: stage.clientWidth, height: stage.clientHeight });
+    const update = () =>
+      setStageSize({ width: stage.clientWidth, height: stage.clientHeight });
     update();
     const observer = new ResizeObserver(update);
     observer.observe(stage);
@@ -264,7 +302,13 @@ export function ImageEditorCanvas({
 
   useEffect(() => {
     const down = (event: KeyboardEvent) => {
-      if (event.code !== 'Space' || (event.target as HTMLElement).closest('input, textarea, button, select, [contenteditable="true"]')) return;
+      if (
+        event.code !== 'Space' ||
+        (event.target as HTMLElement).closest(
+          'input, textarea, button, select, [contenteditable="true"]'
+        )
+      )
+        return;
       event.preventDefault();
       setSpaceHeld(true);
     };
@@ -280,7 +324,10 @@ export function ImageEditorCanvas({
   }, []);
 
   const drawingEnabled =
-    activeTool === 'region' || activeTool === 'annotate' || (activeTool === 'crop' && !expanding) || activeTool === 'draw';
+    activeTool === 'region' ||
+    activeTool === 'annotate' ||
+    (activeTool === 'crop' && !expanding) ||
+    activeTool === 'draw';
 
   useEffect(() => {
     if (!drawingEnabled) {
@@ -312,13 +359,21 @@ export function ImageEditorCanvas({
 
   useEffect(() => {
     setCropDrag(null);
-    setCropRect(activeTool === 'crop' && !expanding
-      ? fitCropToAspect({ x: 0.05, y: 0.05, width: 0.9, height: 0.9 }, cropAspect, naturalSize.width / naturalSize.height, 0)
-      : null);
+    setCropRect(
+      activeTool === 'crop' && !expanding
+        ? fitCropToAspect(
+            { x: 0.05, y: 0.05, width: 0.9, height: 0.9 },
+            cropAspect,
+            naturalSize.width / naturalSize.height,
+            0
+          )
+        : null
+    );
   }, [activeTool, expanding, cropAspect, cropResetSignal, naturalSize]);
 
   useEffect(() => {
-    if (cropExtentRef) cropExtentRef.current = naturalSize.width / naturalSize.height;
+    if (cropExtentRef)
+      cropExtentRef.current = naturalSize.width / naturalSize.height;
   }, [naturalSize, cropExtentRef]);
 
   // Read raw coordinates; crop geometry constrains them to the image bounds.
@@ -336,16 +391,19 @@ export function ImageEditorCanvas({
     []
   );
 
-  const toNormalized = useCallback((event: PointerEvent | React.PointerEvent) => {
-    const image = imageRef.current;
-    if (!image) return { x: 0, y: 0 };
-    const bounds = image.getBoundingClientRect();
-    if (bounds.width <= 0 || bounds.height <= 0) return { x: 0, y: 0 };
-    return {
-      x: clamp01((event.clientX - bounds.left) / bounds.width),
-      y: clamp01((event.clientY - bounds.top) / bounds.height)
-    };
-  }, []);
+  const toNormalized = useCallback(
+    (event: PointerEvent | React.PointerEvent) => {
+      const image = imageRef.current;
+      if (!image) return { x: 0, y: 0 };
+      const bounds = image.getBoundingClientRect();
+      if (bounds.width <= 0 || bounds.height <= 0) return { x: 0, y: 0 };
+      return {
+        x: clamp01((event.clientX - bounds.left) / bounds.width),
+        y: clamp01((event.clientY - bounds.top) / bounds.height)
+      };
+    },
+    []
+  );
 
   // 浏览模式平移/缩放钳制：图片变换后的包围盒始终留在舞台内，
   // 因此默认拖拽/滚轮不会触发内层蒙版裁剪（蒙版只在裁剪与扩图模式出现）。
@@ -392,7 +450,8 @@ export function ImageEditorCanvas({
         return;
       }
       if (activeTool === 'crop' || !drawingEnabled) return;
-      if (!(event.target as HTMLElement).closest('.image-editor-source-image')) return;
+      if (!(event.target as HTMLElement).closest('.image-editor-source-image'))
+        return;
       event.preventDefault();
       event.currentTarget.setPointerCapture(event.pointerId);
       const point = toNormalized(event);
@@ -416,7 +475,10 @@ export function ImageEditorCanvas({
         onAutoMaskPoint?.(point);
         return;
       }
-      if (activeTool === 'draw' || (activeTool === 'region' && regionMode === 'draw')) {
+      if (
+        activeTool === 'draw' ||
+        (activeTool === 'region' && regionMode === 'draw')
+      ) {
         // Draw Region（绘制区域）：自由画笔涂抹，笔迹实时显示，松手提交为 brush 区域
         const isRegionBrush = activeTool === 'region';
         brushPathRef.current = [point];
@@ -447,17 +509,20 @@ export function ImageEditorCanvas({
     ]
   );
 
-  const zoom = useCallback((factor: number) => {
-    setView((current) => {
-      const nextScale = Math.max(0.5, Math.min(4, current.scale * factor));
-      const ratio = nextScale / current.scale;
-      return clampViewToStage(current, {
-        scale: nextScale,
-        x: imageWidth / 2 - (imageWidth / 2 - current.x) * ratio,
-        y: imageHeight / 2 - (imageHeight / 2 - current.y) * ratio
+  const zoom = useCallback(
+    (factor: number) => {
+      setView((current) => {
+        const nextScale = Math.max(0.5, Math.min(4, current.scale * factor));
+        const ratio = nextScale / current.scale;
+        return clampViewToStage(current, {
+          scale: nextScale,
+          x: imageWidth / 2 - (imageWidth / 2 - current.x) * ratio,
+          y: imageHeight / 2 - (imageHeight / 2 - current.y) * ratio
+        });
       });
-    });
-  }, [clampViewToStage, imageWidth, imageHeight]);
+    },
+    [clampViewToStage, imageWidth, imageHeight]
+  );
 
   useEffect(() => {
     const stage = stageRef.current;
@@ -465,8 +530,16 @@ export function ImageEditorCanvas({
     const wheel = (event: WheelEvent) => {
       if (busy || (!canPan && !event.ctrlKey && !event.metaKey)) return;
       event.preventDefault();
-      if (event.ctrlKey || event.metaKey || event.deltaX === 0) zoom(event.deltaY < 0 ? 1.12 : 1 / 1.12);
-      else setView((current) => clampViewToStage(current, { ...current, x: current.x - event.deltaX, y: current.y - event.deltaY }));
+      if (event.ctrlKey || event.metaKey || event.deltaX === 0)
+        zoom(event.deltaY < 0 ? 1.12 : 1 / 1.12);
+      else
+        setView((current) =>
+          clampViewToStage(current, {
+            ...current,
+            x: current.x - event.deltaX,
+            y: current.y - event.deltaY
+          })
+        );
     };
     stage.addEventListener('wheel', wheel, { passive: false });
     return () => stage.removeEventListener('wheel', wheel);
@@ -475,7 +548,15 @@ export function ImageEditorCanvas({
   // Capture crop gestures on the stage, including handles just outside the image.
   const handleCropPointerDown = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
-      if (activeTool !== 'crop' || expanding || canPan || event.button === 1 || !cropRect || busy) return;
+      if (
+        activeTool !== 'crop' ||
+        expanding ||
+        canPan ||
+        event.button === 1 ||
+        !cropRect ||
+        busy
+      )
+        return;
       // Ignore controls; crop gestures never escape the stage.
       const target = event.target as HTMLElement;
       if (
@@ -553,10 +634,11 @@ export function ImageEditorCanvas({
       if (!pointerOriginRef.current) return;
       if (busy) return;
       const point =
-        activeTool === 'crop'
-          ? toNormalizedRaw(event)
-          : toNormalized(event);
-      if (activeTool === 'draw' || (activeTool === 'region' && regionMode === 'draw')) {
+        activeTool === 'crop' ? toNormalizedRaw(event) : toNormalized(event);
+      if (
+        activeTool === 'draw' ||
+        (activeTool === 'region' && regionMode === 'draw')
+      ) {
         const current = brushPathRef.current;
         const last = current[current.length - 1];
         if (
@@ -579,8 +661,14 @@ export function ImageEditorCanvas({
       }
       if (activeTool === 'crop' && cropRect && cropDrag) {
         if (cropDrag.handle === 'move' && cropDrag.origin) {
-          const nextX = Math.max(0, Math.min(1 - cropRect.width, point.x - cropDrag.origin.x));
-          const nextY = Math.max(0, Math.min(1 - cropRect.height, point.y - cropDrag.origin.y));
+          const nextX = Math.max(
+            0,
+            Math.min(1 - cropRect.width, point.x - cropDrag.origin.x)
+          );
+          const nextY = Math.max(
+            0,
+            Math.min(1 - cropRect.height, point.y - cropDrag.origin.y)
+          );
           setCropRect(
             clampCropRect(
               {
@@ -680,7 +768,9 @@ export function ImageEditorCanvas({
       return;
     }
     if (activeTool === 'crop') {
-      setCropRect(fitCropToAspect(draft, cropAspect, getImageAspect(), cropExtend));
+      setCropRect(
+        fitCropToAspect(draft, cropAspect, getImageAspect(), cropExtend)
+      );
       setDraft(null);
       return;
     }
@@ -711,9 +801,15 @@ export function ImageEditorCanvas({
 
   const toolCaption = (() => {
     if (!activeTool || (!drawingEnabled && !expanding)) return null;
-    if (panMode || spaceHeld) return isEnglish ? 'Drag to pan; turn off Pan to continue editing' : '拖动平移画布；关闭「平移」后继续编辑';
+    if (panMode || spaceHeld)
+      return isEnglish
+        ? 'Drag to pan; turn off Pan to continue editing'
+        : '拖动平移画布；关闭「平移」后继续编辑';
     if (activeTool === 'crop') {
-      if (expanding) return isEnglish ? 'Choose a ratio, then Generate expansion in the tools panel' : '选择比例后，在工具面板点击「生成扩图」';
+      if (expanding)
+        return isEnglish
+          ? 'Choose a ratio, then Generate expansion in the tools panel'
+          : '选择比例后，在工具面板点击「生成扩图」';
       return cropRect
         ? isEnglish
           ? 'Drag the border or handles to adjust, then Apply crop'
@@ -735,9 +831,9 @@ export function ImageEditorCanvas({
           ? isEnglish
             ? 'Click the subject to auto-generate a mask'
             : '点击主体，AI 自动生成蒙版'
-        : isEnglish
-          ? 'Drag to box the region you want to change'
-          : '拖拽框选要修改的区域';
+          : isEnglish
+            ? 'Drag to box the region you want to change'
+            : '拖拽框选要修改的区域';
     if (activeTool === 'annotate')
       return isEnglish
         ? 'Box a region, then type what should change below'
@@ -761,76 +857,125 @@ export function ImageEditorCanvas({
     (isEnglish ? 'Source' : '源图');
 
   return (
-    <div
-      className="image-editor-canvas"
-      aria-label="图片编辑画布"
-    >
+    <div className="image-editor-canvas" aria-label="图片编辑画布">
       {versions.length > 1 ? (
-        <div className="image-editor-versions" aria-label={isEnglish ? 'Edit versions' : '编辑版本'}>
+        <div
+          className="image-editor-versions"
+          aria-label={isEnglish ? 'Edit versions' : '编辑版本'}
+        >
           <span className="image-editor-versions-label">
             {isEnglish ? 'Versions' : '版本'} · {activeVersionLabel}
           </span>
           <div className="image-editor-versions-strip">
             {versions.map((version) => (
-              <button
+              <TextTooltip
+                text={`${version.label}${version.id === activeVersionId ? ` · ${isEnglish ? 'current' : '当前'}` : ` · ${isEnglish ? 'view' : '查看'}`}`}
                 key={version.id}
-                type="button"
-                className={version.id === activeVersionId ? 'is-active' : undefined}
-                title={`${version.label}${version.id === activeVersionId ? ` · ${isEnglish ? 'current' : '当前'}` : ` · ${isEnglish ? 'view' : '查看'}`}`}
-                aria-label={`${version.label}${version.id === activeVersionId ? (isEnglish ? ' · current version' : ' · 当前版本') : (isEnglish ? ' · switch to this version' : ' · 切换到该版本')}`}
-                aria-pressed={version.id === activeVersionId}
-                onClick={() => onSelectVersion(version.id)}
-                disabled={busy}
               >
-                <img
-                  src={version.url}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
+                <button
+                  key={version.id}
+                  type="button"
                   className={
-                    failedVersionIds.has(version.id) ? 'is-broken' : undefined
+                    version.id === activeVersionId ? 'is-active' : undefined
                   }
-                  onError={() =>
-                    setFailedVersionIds((current) => {
-                      if (current.has(version.id)) return current;
-                      return new Set(current).add(version.id);
-                    })
-                  }
-                />
-                {failedVersionIds.has(version.id) ? (
-                  <span className="is-broken">
-                    {isEnglish ? 'Expired' : '已过期'}
-                  </span>
-                ) : (
-                  <span>
-                    {version.id === 'source'
-                      ? isEnglish
-                        ? 'Source'
-                        : '源图'
-                      : version.label}
-                  </span>
-                )}
-              </button>
+                  aria-label={`${version.label}${version.id === activeVersionId ? (isEnglish ? ' · current version' : ' · 当前版本') : isEnglish ? ' · switch to this version' : ' · 切换到该版本'}`}
+                  aria-pressed={version.id === activeVersionId}
+                  onClick={() => onSelectVersion(version.id)}
+                  disabled={busy}
+                >
+                  <img
+                    src={version.url}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className={
+                      failedVersionIds.has(version.id) ? 'is-broken' : undefined
+                    }
+                    onError={() =>
+                      setFailedVersionIds((current) => {
+                        if (current.has(version.id)) return current;
+                        return new Set(current).add(version.id);
+                      })
+                    }
+                  />
+                  {failedVersionIds.has(version.id) ? (
+                    <span className="is-broken">
+                      {isEnglish ? 'Expired' : '已过期'}
+                    </span>
+                  ) : (
+                    <span>
+                      {version.id === 'source'
+                        ? isEnglish
+                          ? 'Source'
+                          : '源图'
+                        : version.label}
+                    </span>
+                  )}
+                </button>
+              </TextTooltip>
             ))}
           </div>
         </div>
       ) : null}
-      <div className="image-editor-view-controls" role="group" aria-label={isEnglish ? 'Canvas navigation' : '画布导航'}>
-        <button type="button" aria-pressed={canPan} disabled={busy} onClick={() => setPanMode((value) => !value)}><Hand aria-hidden="true" />{isEnglish ? 'Pan' : '平移'}</button>
-        <button type="button" disabled={busy} aria-label={isEnglish ? 'Zoom out' : '缩小画布'} onClick={() => zoom(1 / 1.2)}><Minus /></button>
+      <div
+        className="image-editor-view-controls"
+        role="group"
+        aria-label={isEnglish ? 'Canvas navigation' : '画布导航'}
+      >
+        <button
+          type="button"
+          aria-pressed={canPan}
+          disabled={busy}
+          onClick={() => setPanMode((value) => !value)}
+        >
+          <Hand aria-hidden="true" />
+          {isEnglish ? 'Pan' : '平移'}
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          aria-label={isEnglish ? 'Zoom out' : '缩小画布'}
+          onClick={() => zoom(1 / 1.2)}
+        >
+          <Minus />
+        </button>
         <span>{Math.round(view.scale * 100)}%</span>
-        <button type="button" disabled={busy} aria-label={isEnglish ? 'Zoom in' : '放大画布'} onClick={() => zoom(1.2)}><Plus /></button>
-        <button type="button" disabled={busy} onClick={() => setView({ scale: 1, x: 0, y: 0 })}>{isEnglish ? 'Fit' : '适应画布'}</button>
+        <button
+          type="button"
+          disabled={busy}
+          aria-label={isEnglish ? 'Zoom in' : '放大画布'}
+          onClick={() => zoom(1.2)}
+        >
+          <Plus />
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => setView({ scale: 1, x: 0, y: 0 })}
+        >
+          {isEnglish ? 'Fit' : '适应画布'}
+        </button>
       </div>
-      <div ref={stageRef} className={`image-editor-canvas-stage${canPan ? ' is-panning' : ''}`}
-        onPointerDown={(event) => { handlePointerDown(event); handleCropPointerDown(event); }}
-        onPointerMove={handlePointerMove} onPointerUp={commitPointer}
-        onPointerCancel={() => { pointerOriginRef.current = null; panRef.current = null; brushPathRef.current = []; setPreviewStroke(null); setCropDrag(null); setDraft(null); }}
+      <div
+        ref={stageRef}
+        className={`image-editor-canvas-stage${canPan ? ' is-panning' : ''}`}
+        onPointerDown={(event) => {
+          handlePointerDown(event);
+          handleCropPointerDown(event);
+        }}
+        onPointerMove={handlePointerMove}
+        onPointerUp={commitPointer}
+        onPointerCancel={() => {
+          pointerOriginRef.current = null;
+          panRef.current = null;
+          brushPathRef.current = [];
+          setPreviewStroke(null);
+          setCropDrag(null);
+          setDraft(null);
+        }}
       >
         <div
-          className={`image-editor-canvas-image${
-            canPan ? ' is-browsing' : ''
-          }`}
+          className={`image-editor-canvas-image${canPan ? ' is-browsing' : ''}`}
           style={{ width: imageWidth, height: imageHeight }}
         >
           <div
@@ -839,176 +984,193 @@ export function ImageEditorCanvas({
               transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})`
             }}
           >
-          {frame ? <div className="image-editor-crop-extend-bg" style={{ left: `${frame.x * 100}%`, top: `${frame.y * 100}%`, width: `${frame.width * 100}%`, height: `${frame.height * 100}%` }} /> : null}
-          <img
-            ref={imageRef}
-            src={imageUrl}
-            alt={sourceLabel || '正在编辑的图片'}
-            draggable={false}
-            decoding="async"
-            style={adjustmentFilter ? { filter: adjustmentFilter } : undefined}
-            className={`image-editor-source-image${drawingEnabled && !busy ? ' is-drawing' : ''}`}
-            onError={() => setImageFailed(true)}
-            onLoad={(event) => setNaturalSize({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
-
-          />
-          {autoMaskUrl ? (
+            {frame ? (
+              <div
+                className="image-editor-crop-extend-bg"
+                style={{
+                  left: `${frame.x * 100}%`,
+                  top: `${frame.y * 100}%`,
+                  width: `${frame.width * 100}%`,
+                  height: `${frame.height * 100}%`
+                }}
+              />
+            ) : null}
             <img
-              className="image-editor-auto-mask-overlay"
-              src={autoMaskUrl}
-              alt=""
-              aria-hidden="true"
+              ref={imageRef}
+              src={imageUrl}
+              alt={sourceLabel || '正在编辑的图片'}
+              draggable={false}
               decoding="async"
+              style={
+                adjustmentFilter ? { filter: adjustmentFilter } : undefined
+              }
+              className={`image-editor-source-image${drawingEnabled && !busy ? ' is-drawing' : ''}`}
+              onError={() => setImageFailed(true)}
+              onLoad={(event) =>
+                setNaturalSize({
+                  width: event.currentTarget.naturalWidth,
+                  height: event.currentTarget.naturalHeight
+                })
+              }
             />
-          ) : null}
-          {(activeTool === 'crop' ? [] : regions).map((region, index) => (
-            <div
-              key={region.id}
-              className={`image-editor-region is-${region.kind}${
-                region.id === activeRegionId ? ' is-active' : ''
-              }`}
-              style={{
-                left: `${region.x * 100}%`,
-                top: `${region.y * 100}%`,
-                width: `${region.width * 100}%`,
-                height: `${region.height * 100}%`
-              }}
-            >
-              <button
-                type="button"
-                className="image-editor-region-remove"
-                aria-label={isEnglish ? 'Remove region' : '删除该区域'}
-                title={isEnglish ? 'Remove region' : '删除该区域'}
-                onClick={() => onRemoveRegion(region.id)}
+            {autoMaskUrl ? (
+              <img
+                className="image-editor-auto-mask-overlay"
+                src={autoMaskUrl}
+                alt=""
+                aria-hidden="true"
+                decoding="async"
+              />
+            ) : null}
+            {(activeTool === 'crop' ? [] : regions).map((region, index) => (
+              <div
+                key={region.id}
+                className={`image-editor-region is-${region.kind}${
+                  region.id === activeRegionId ? ' is-active' : ''
+                }`}
+                style={{
+                  left: `${region.x * 100}%`,
+                  top: `${region.y * 100}%`,
+                  width: `${region.width * 100}%`,
+                  height: `${region.height * 100}%`
+                }}
               >
-                <Trash2 aria-hidden="true" />
-              </button>
-              {region.kind === 'rect' ? (
-                <span className="image-editor-region-tag">
-                  {index + 1}
-                </span>
-              ) : null}
-            </div>
-          ))}
-          {draftStyle ? (
-            <div className="image-editor-region is-draft" style={draftStyle} />
-          ) : null}
-          {activeTool === 'crop' && cropRect ? (
-            <div className="image-editor-crop-mask" aria-hidden="true">
+                <TextTooltip text={isEnglish ? 'Remove region' : '删除该区域'}>
+                  <button
+                    type="button"
+                    className="image-editor-region-remove"
+                    aria-label={isEnglish ? 'Remove region' : '删除该区域'}
+                    onClick={() => onRemoveRegion(region.id)}
+                  >
+                    <Trash2 aria-hidden="true" />
+                  </button>
+                </TextTooltip>
+                {region.kind === 'rect' ? (
+                  <span className="image-editor-region-tag">{index + 1}</span>
+                ) : null}
+              </div>
+            ))}
+            {draftStyle ? (
               <div
-                style={{
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: `${Math.max(0, cropRect.y * 100)}%`
-                }}
+                className="image-editor-region is-draft"
+                style={draftStyle}
               />
-              <div
-                style={{
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: `${Math.max(
-                    0,
-                    (1 - cropRect.y - cropRect.height) * 100
-                  )}%`
-                }}
-              />
-              <div
-                style={{
-                  top: `${Math.max(0, cropRect.y * 100)}%`,
-                  left: 0,
-                  width: `${Math.max(0, cropRect.x * 100)}%`,
-                  height: `${Math.min(100, cropRect.height * 100)}%`
-                }}
-              />
-              <div
-                style={{
-                  top: `${Math.max(0, cropRect.y * 100)}%`,
-                  right: 0,
-                  width: `${Math.max(
-                    0,
-                    (1 - cropRect.x - cropRect.width) * 100
-                  )}%`,
-                  height: `${Math.min(100, cropRect.height * 100)}%`
-                }}
-              />
-            </div>
-          ) : null}
-          {activeTool === 'crop' && (frame || cropRect) ? (
-            <div
-              className="image-editor-crop-box"
-              style={{
-                left: `${(frame || cropRect)!.x * 100}%`,
-                top: `${(frame || cropRect)!.y * 100}%`,
-                width: `${(frame || cropRect)!.width * 100}%`,
-                height: `${(frame || cropRect)!.height * 100}%`
-              }}
-            >
-              {!expanding ? <>
-              <i className="is-nw" />
-              <i className="is-n" />
-              <i className="is-ne" />
-              <i className="is-e" />
-              <i className="is-se" />
-              <i className="is-s" />
-              <i className="is-sw" />
-              <i className="is-w" />
-              </> : null}
-            </div>
-          ) : null}
-          {activeTool !== 'crop' && (activeTool === 'draw' ||
-            activeTool === 'region' ||
-            regions.some((region) => region.kind === 'brush')) &&
-          (strokes.length > 0 ||
-            previewStroke ||
-            regions.some(
-              (region) => region.kind === 'brush' && region.points
-            )) ? (
-            <svg
-              className="image-editor-brush-layer"
-              viewBox="0 0 1 1"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              {strokes.map((stroke) => (
-                <polyline
-                  key={stroke.id}
-                  className={stroke.region ? 'is-region-brush' : undefined}
-                  points={stroke.points
-                    .map((p) => `${p.x},${p.y}`)
-                    .join(' ')}
-                  stroke={stroke.color}
-                  strokeWidth={stroke.size / 100 / 8}
+            ) : null}
+            {activeTool === 'crop' && cropRect ? (
+              <div className="image-editor-crop-mask" aria-hidden="true">
+                <div
+                  style={{
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: `${Math.max(0, cropRect.y * 100)}%`
+                  }}
                 />
-              ))}
-              {regions
-                .filter(
-                  (region) => region.kind === 'brush' && region.points
-                )
-                .map((region) => (
+                <div
+                  style={{
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: `${Math.max(
+                      0,
+                      (1 - cropRect.y - cropRect.height) * 100
+                    )}%`
+                  }}
+                />
+                <div
+                  style={{
+                    top: `${Math.max(0, cropRect.y * 100)}%`,
+                    left: 0,
+                    width: `${Math.max(0, cropRect.x * 100)}%`,
+                    height: `${Math.min(100, cropRect.height * 100)}%`
+                  }}
+                />
+                <div
+                  style={{
+                    top: `${Math.max(0, cropRect.y * 100)}%`,
+                    right: 0,
+                    width: `${Math.max(
+                      0,
+                      (1 - cropRect.x - cropRect.width) * 100
+                    )}%`,
+                    height: `${Math.min(100, cropRect.height * 100)}%`
+                  }}
+                />
+              </div>
+            ) : null}
+            {activeTool === 'crop' && (frame || cropRect) ? (
+              <div
+                className="image-editor-crop-box"
+                style={{
+                  left: `${(frame || cropRect)!.x * 100}%`,
+                  top: `${(frame || cropRect)!.y * 100}%`,
+                  width: `${(frame || cropRect)!.width * 100}%`,
+                  height: `${(frame || cropRect)!.height * 100}%`
+                }}
+              >
+                {!expanding ? (
+                  <>
+                    <i className="is-nw" />
+                    <i className="is-n" />
+                    <i className="is-ne" />
+                    <i className="is-e" />
+                    <i className="is-se" />
+                    <i className="is-s" />
+                    <i className="is-sw" />
+                    <i className="is-w" />
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+            {activeTool !== 'crop' &&
+            (activeTool === 'draw' ||
+              activeTool === 'region' ||
+              regions.some((region) => region.kind === 'brush')) &&
+            (strokes.length > 0 ||
+              previewStroke ||
+              regions.some(
+                (region) => region.kind === 'brush' && region.points
+              )) ? (
+              <svg
+                className="image-editor-brush-layer"
+                viewBox="0 0 1 1"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                {strokes.map((stroke) => (
                   <polyline
-                    key={region.id}
-                    className="is-region-brush"
-                    points={region.points!
-                      .map((p) => `${p.x},${p.y}`)
-                      .join(' ')}
+                    key={stroke.id}
+                    className={stroke.region ? 'is-region-brush' : undefined}
+                    points={stroke.points.map((p) => `${p.x},${p.y}`).join(' ')}
+                    stroke={stroke.color}
+                    strokeWidth={stroke.size / 100 / 8}
                   />
                 ))}
-              {previewStroke ? (
-                <polyline
-                  className={
-                    previewStroke.region ? 'is-region-brush' : undefined
-                  }
-                  points={previewStroke.points
-                    .map((p) => `${p.x},${p.y}`)
-                    .join(' ')}
-                  stroke={previewStroke.color}
-                  strokeWidth={previewStroke.size / 100 / 8}
-                />
-              ) : null}
-            </svg>
-          ) : null}
+                {regions
+                  .filter((region) => region.kind === 'brush' && region.points)
+                  .map((region) => (
+                    <polyline
+                      key={region.id}
+                      className="is-region-brush"
+                      points={region
+                        .points!.map((p) => `${p.x},${p.y}`)
+                        .join(' ')}
+                    />
+                  ))}
+                {previewStroke ? (
+                  <polyline
+                    className={
+                      previewStroke.region ? 'is-region-brush' : undefined
+                    }
+                    points={previewStroke.points
+                      .map((p) => `${p.x},${p.y}`)
+                      .join(' ')}
+                    stroke={previewStroke.color}
+                    strokeWidth={previewStroke.size / 100 / 8}
+                  />
+                ) : null}
+              </svg>
+            ) : null}
           </div>
           {imageFailed && !busy ? (
             <div className="image-editor-canvas-expired" role="status">
@@ -1029,7 +1191,13 @@ export function ImageEditorCanvas({
         <span>
           {drawingEnabled || expanding ? (
             <>
-              {activeTool === 'draw' ? <Wand2 aria-hidden="true" /> : activeTool === 'crop' ? <Scan aria-hidden="true" /> : <MousePointer2 aria-hidden="true" />}
+              {activeTool === 'draw' ? (
+                <Wand2 aria-hidden="true" />
+              ) : activeTool === 'crop' ? (
+                <Scan aria-hidden="true" />
+              ) : (
+                <MousePointer2 aria-hidden="true" />
+              )}
               {toolCaption}
             </>
           ) : (

@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Download, Redo2, Undo2, Upload } from 'lucide-react';
@@ -7,8 +8,14 @@ import { ImageEditorCanvas } from '@/web/components/image-editor/ImageEditorCanv
 import { useAutoMaskWorker } from '@/web/hooks/useAutoMaskWorker';
 import { ImageEditorLanding } from '@/web/components/image-editor/ImageEditorLanding';
 import { ImageEditorPanel } from '@/web/components/image-editor/ImageEditorPanel';
-import { isEditorBusy, useImageEditor } from '@/web/components/image-editor/useImageEditor';
-import { getToolOption, type EditorToolId } from '@/web/components/image-editor/editor-tools';
+import {
+  isEditorBusy,
+  useImageEditor
+} from '@/web/components/image-editor/useImageEditor';
+import {
+  getToolOption,
+  type EditorToolId
+} from '@/web/components/image-editor/editor-tools';
 import '@/web/components/image-editor/image-editor.css';
 import { useAuth } from '@/web/contexts/AuthContext';
 import { useRuntimeImageModels } from '@/web/hooks/useRuntimeImageModels';
@@ -59,9 +66,9 @@ export function ImageEditorPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const referenceFileInputRef = useRef<HTMLInputElement | null>(null);
   const [assetPickerOpen, setAssetPickerOpen] = useState(false);
-  const [assetPickerMode, setAssetPickerMode] = useState<
-    'single' | 'multi'
-  >('single');
+  const [assetPickerMode, setAssetPickerMode] = useState<'single' | 'multi'>(
+    'single'
+  );
   const cropAspect = editor.cropExpand.aspect;
   const [cropResetSignal, setCropResetSignal] = useState(0);
   const localePrefix = locale === 'en-US' ? '/en-US' : '/zh-CN';
@@ -137,7 +144,8 @@ export function ImageEditorPage() {
         typeof routeState.label === 'string' ? routeState.label : undefined
       )
       .then((loaded) => {
-        if (loaded && !cancelled && routeState.initialTool === 'region') editor.setActiveTool('region');
+        if (loaded && !cancelled && routeState.initialTool === 'region')
+          editor.setActiveTool('region');
       })
       .finally(() => {
         if (cancelled) return;
@@ -195,10 +203,7 @@ export function ImageEditorPage() {
           activeVersion.generationId,
           'original'
         );
-        triggerImageDownload(
-          blobUrl,
-          `${copy.downloadName}-${Date.now()}.png`
-        );
+        triggerImageDownload(blobUrl, `${copy.downloadName}-${Date.now()}.png`);
         window.setTimeout(() => URL.revokeObjectURL(blobUrl), 30_000);
         return;
       } catch {
@@ -239,14 +244,17 @@ export function ImageEditorPage() {
 
   const autoMaskWorker = useAutoMaskWorker(
     editor.currentImageUrl,
-    editor.versions.find((version) => version.id === editor.activeVersionId)?.referenceId,
-    editor.versions.find((version) => version.id === editor.activeVersionId)?.generationId
+    editor.versions.find((version) => version.id === editor.activeVersionId)
+      ?.referenceId,
+    editor.versions.find((version) => version.id === editor.activeVersionId)
+      ?.generationId
   );
 
   // 进入「自动蒙版」模式时，先用当前图片完成一次图像编码
   useEffect(() => {
     if (editor.activeTool === 'region' && editor.regionMode === 'auto') {
-      if (!autoMaskWorker.encoded && autoMaskWorker.status === 'idle') void autoMaskWorker.encode();
+      if (!autoMaskWorker.encoded && autoMaskWorker.status === 'idle')
+        void autoMaskWorker.encode();
     }
   }, [editor.activeTool, editor.regionMode, autoMaskWorker]);
 
@@ -268,7 +276,12 @@ export function ImageEditorPage() {
           <ImageEditorLanding
             isEnglish={isEnglish}
             importing={editor.generation.status === 'running'}
-            error={editor.error || (editor.regionMode === 'auto' && autoMaskWorker.status === 'error' ? autoMaskWorker.message : '')}
+            error={
+              editor.error ||
+              (editor.regionMode === 'auto' && autoMaskWorker.status === 'error'
+                ? autoMaskWorker.message
+                : '')
+            }
             onUpload={() => fileInputRef.current?.click()}
             onSelectAsset={() => setAssetPickerOpen(true)}
           />
@@ -277,24 +290,26 @@ export function ImageEditorPage() {
             <section className="image-editor-canvas-column">
               <div className="image-editor-canvas-toolbar">
                 <div className="image-editor-canvas-history">
-                  <button
-                    type="button"
-                    aria-label={isEnglish ? 'Undo' : '撤销'}
-                    title={isEnglish ? 'Undo' : '撤销'}
-                    disabled={!editor.canUndo || busy}
-                    onClick={editor.undo}
-                  >
-                    <Undo2 aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    aria-label={isEnglish ? 'Redo' : '重做'}
-                    title={isEnglish ? 'Redo' : '重做'}
-                    disabled={!editor.canRedo || busy}
-                    onClick={editor.redo}
-                  >
-                    <Redo2 aria-hidden="true" />
-                  </button>
+                  <TextTooltip text={isEnglish ? 'Undo' : '撤销'}>
+                    <button
+                      type="button"
+                      aria-label={isEnglish ? 'Undo' : '撤销'}
+                      disabled={!editor.canUndo || busy}
+                      onClick={editor.undo}
+                    >
+                      <Undo2 aria-hidden="true" />
+                    </button>
+                  </TextTooltip>
+                  <TextTooltip text={isEnglish ? 'Redo' : '重做'}>
+                    <button
+                      type="button"
+                      aria-label={isEnglish ? 'Redo' : '重做'}
+                      disabled={!editor.canRedo || busy}
+                      onClick={editor.redo}
+                    >
+                      <Redo2 aria-hidden="true" />
+                    </button>
+                  </TextTooltip>
                 </div>
                 <div className="image-editor-canvas-toolbar-right">
                   <span>
@@ -338,7 +353,8 @@ export function ImageEditorPage() {
                       ? 'Queued…'
                       : '排队中…'
                     : editor.generation.status === 'running'
-                      ? editor.generation.label || (isEnglish ? 'Generating…' : '正在生成…')
+                      ? editor.generation.label ||
+                        (isEnglish ? 'Generating…' : '正在生成…')
                       : ''
                 }
                 onSelectVersion={(versionId) => {
@@ -357,7 +373,9 @@ export function ImageEditorPage() {
               maxExtraReferences={editor.maxExtraReferences}
               onRemoveExtraReference={editor.removeExtraReference}
               onMentionReference={editor.mentionReference}
-              onAddReferenceUpload={() => referenceFileInputRef.current?.click()}
+              onAddReferenceUpload={() =>
+                referenceFileInputRef.current?.click()
+              }
               onAddReferenceAsset={() => {
                 setAssetPickerMode('multi');
                 setAssetPickerOpen(true);
@@ -370,17 +388,29 @@ export function ImageEditorPage() {
               onModelChange={editor.setModel}
               busy={busy}
               generationLabel={editor.generation.label}
-              error={editor.error || (editor.regionMode === 'auto' && autoMaskWorker.status === 'error' ? autoMaskWorker.message : '')}
+              error={
+                editor.error ||
+                (editor.regionMode === 'auto' &&
+                autoMaskWorker.status === 'error'
+                  ? autoMaskWorker.message
+                  : '')
+              }
               regions={editor.regions}
               regionMode={editor.regionMode}
-              onRegionModeChange={(mode) => { editor.clearAutoMask(); editor.setRegionMode(mode); }}
+              onRegionModeChange={(mode) => {
+                editor.clearAutoMask();
+                editor.setRegionMode(mode);
+              }}
               activeRegionId={editor.activeRegionId}
               onSelectRegion={editor.setActiveRegionId}
               activeTool={editor.activeTool}
               onSelectTool={handleSelectTool}
               onApplyOption={handleApplyOption}
               cropMode={editor.cropMode}
-              onCropModeChange={(mode) => { editor.setCropMode(mode); setCropResetSignal((value) => value + 1); }}
+              onCropModeChange={(mode) => {
+                editor.setCropMode(mode);
+                setCropResetSignal((value) => value + 1);
+              }}
               cropAspect={cropAspect}
               onCropAspectChange={(aspect) => {
                 editor.setCropExpand((current) => ({ ...current, aspect }));
@@ -412,7 +442,9 @@ export function ImageEditorPage() {
               onUpdateRegionPrompt={editor.updateRegionPrompt}
               onGenerate={editor.generate}
               onDownload={handleDownload}
-              onSendToEnhance={(target, useAi) => void editor.enhance(target, useAi)}
+              onSendToEnhance={(target, useAi) =>
+                void editor.enhance(target, useAi)
+              }
               enhancing={editor.enhancing}
               onCancelEnhance={editor.cancelEnhance}
               onSendToBackgroundRemover={handleSendToBackgroundRemover}
@@ -426,12 +458,24 @@ export function ImageEditorPage() {
             />
           </div>
         )}
-        {editor.source ? <div className="image-editor-download-dock">
-          <span>{editor.versions.find((version) => version.id === editor.activeVersionId)?.label || copy.sourceLabel}</span>
-          <button type="button" className="image-editor-panel-download" onClick={() => void handleDownload()} disabled={busy}>
-            <Download aria-hidden="true" />{isEnglish ? 'Download current version' : '下载当前版本'}
-          </button>
-        </div> : null}
+        {editor.source ? (
+          <div className="image-editor-download-dock">
+            <span>
+              {editor.versions.find(
+                (version) => version.id === editor.activeVersionId
+              )?.label || copy.sourceLabel}
+            </span>
+            <button
+              type="button"
+              className="image-editor-panel-download"
+              onClick={() => void handleDownload()}
+              disabled={busy}
+            >
+              <Download aria-hidden="true" />
+              {isEnglish ? 'Download current version' : '下载当前版本'}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <input

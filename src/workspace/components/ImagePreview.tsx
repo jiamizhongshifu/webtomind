@@ -1,9 +1,11 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { createLogger } from '@/utils/logger';
 import { X, Download, ZoomIn, ZoomOut, Loader2 } from 'lucide-react';
 
 const log = createLogger('ImagePreview');
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { useOverlayBehavior } from '@/shared/ui';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -88,14 +90,7 @@ export function ImagePreview({
   const [imageError, setImageError] = useState(false);
   const [sideNavInset, setSideNavInset] = useState(0);
 
-  // 键盘事件：ESC 关闭
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  const dialogRef = useOverlayBehavior<HTMLDivElement>({ open: true, onClose });
 
   useEffect(() => {
     setIsLoading(true);
@@ -183,52 +178,61 @@ export function ImagePreview({
   // 弹窗内容
   const content = (
     <div
+      ref={dialogRef}
+      tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('imagePreview.hint') as string}
       className="workspace-image-preview-backdrop fixed inset-y-0 right-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm"
       style={{ left: sideNavInset }}
       onClick={handleBackdropClick}
     >
       {/* 工具栏 */}
       <div className="workspace-image-preview-toolbar absolute top-4 right-4 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={zoomOut}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-          title={t('imagePreview.zoomOut')}
-          aria-label={t('imagePreview.zoomOut') as string}
-        >
-          <ZoomOut className="w-5 h-5" />
-        </button>
+        <TextTooltip text={t('imagePreview.zoomOut')}>
+          <button
+            type="button"
+            onClick={zoomOut}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            aria-label={t('imagePreview.zoomOut') as string}
+          >
+            <ZoomOut className="w-5 h-5" />
+          </button>
+        </TextTooltip>
         <span className="px-3 py-1 rounded-lg bg-white/10 text-white text-sm min-w-[60px] text-center">
           {Math.round(scale * 100)}%
         </span>
-        <button
-          type="button"
-          onClick={zoomIn}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-          title={t('imagePreview.zoomIn')}
-          aria-label={t('imagePreview.zoomIn') as string}
-        >
-          <ZoomIn className="w-5 h-5" />
-        </button>
+        <TextTooltip text={t('imagePreview.zoomIn')}>
+          <button
+            type="button"
+            onClick={zoomIn}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            aria-label={t('imagePreview.zoomIn') as string}
+          >
+            <ZoomIn className="w-5 h-5" />
+          </button>
+        </TextTooltip>
         <div className="w-px h-6 bg-white/20 mx-1" />
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-          title={t('imagePreview.download')}
-          aria-label={t('imagePreview.download') as string}
-        >
-          <Download className="w-5 h-5" />
-        </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-          title={t('imagePreview.close')}
-          aria-label={t('imagePreview.close') as string}
-        >
-          <X className="w-5 h-5" />
-        </button>
+        <TextTooltip text={t('imagePreview.download')}>
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            aria-label={t('imagePreview.download') as string}
+          >
+            <Download className="w-5 h-5" />
+          </button>
+        </TextTooltip>
+        <TextTooltip text={t('imagePreview.close')}>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-lg bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            aria-label={t('imagePreview.close') as string}
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </TextTooltip>
       </div>
 
       {/* 图片容器 */}

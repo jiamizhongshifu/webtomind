@@ -160,7 +160,7 @@ describe('SummaryDetail security regression', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('detail.more'));
+    fireEvent.click(screen.getByRole('button', { name: 'detail.more' }));
     fireEvent.mouseEnter(
       screen.getByText('detail.export').closest('div') as Element
     );
@@ -182,7 +182,7 @@ describe('SummaryDetail security regression', () => {
       />
     );
 
-    fireEvent.click(screen.getByTitle('detail.more'));
+    fireEvent.click(screen.getByRole('button', { name: 'detail.more' }));
     fireEvent.click(screen.getByText('detail.copy'));
     expect(await screen.findByText('detail.copyMarkdown')).toBeInTheDocument();
     expect(screen.getByText('detail.copyText')).toBeInTheDocument();

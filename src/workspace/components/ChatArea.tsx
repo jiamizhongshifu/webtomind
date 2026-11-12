@@ -1,3 +1,5 @@
+import { useOverlayBehavior } from '@/shared/ui/useOverlayBehavior';
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { createLogger } from '@/utils/logger';
 import type { SavedSummary, Shortcut } from '@/services/database';
 import type { Reference } from '@/types';
@@ -1524,20 +1526,24 @@ export function ChatArea({
                 {canvasContextItems.length > 0 ? (
                   <div className="mt-1.5 flex max-w-[min(28rem,70vw)] flex-wrap gap-1.5">
                     {canvasContextItems.slice(0, 4).map((item) => (
-                      <button
+                      <TextTooltip
+                        text={`${item.label}：${item.title}`}
                         key={item.id}
-                        type="button"
-                        onClick={() => onReferenceClick?.(item.summaryId)}
-                        className={`inline-flex max-w-[8.5rem] items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
-                          item.role === 'selected'
-                            ? 'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/70 dark:bg-orange-950/30 dark:text-orange-200'
-                            : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
-                        }`}
-                        title={`${item.label}：${item.title}`}
                       >
-                        <span className="shrink-0">{item.label}</span>
-                        <span className="truncate">{item.title}</span>
-                      </button>
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => onReferenceClick?.(item.summaryId)}
+                          className={`inline-flex max-w-[8.5rem] items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-medium ${
+                            item.role === 'selected'
+                              ? 'border-orange-200 bg-orange-50 text-orange-700 dark:border-orange-900/70 dark:bg-orange-950/30 dark:text-orange-200'
+                              : 'border-slate-200 bg-slate-50 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          }`}
+                        >
+                          <span className="shrink-0">{item.label}</span>
+                          <span className="truncate">{item.title}</span>
+                        </button>
+                      </TextTooltip>
                     ))}
                     {canvasContextItems.length > 4 ? (
                       <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-400">
@@ -1557,36 +1563,39 @@ export function ChatArea({
 
           <div className="flex flex-shrink-0 items-center gap-1">
             {isProjectWorkspace && onCollapsePanel ? (
-              <button
-                type="button"
-                onClick={onCollapsePanel}
-                className="hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 flex-shrink-0 md:inline-flex"
-                title="收起 Agent"
-                aria-label="收起 Agent"
-              >
-                <PanelRightClose className="w-5 h-5" />
-              </button>
+              <TextTooltip text={'收起 Agent'}>
+                <button
+                  type="button"
+                  onClick={onCollapsePanel}
+                  className="hidden p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 flex-shrink-0 md:inline-flex"
+                  aria-label="收起 Agent"
+                >
+                  <PanelRightClose className="w-5 h-5" />
+                </button>
+              </TextTooltip>
             ) : null}
 
             {/* 新对话按钮 */}
-            <button
-              type="button"
-              onClick={handleNewConversation}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 flex-shrink-0"
-              title={t('chat.newConversation')}
-            >
-              <MessageSquarePlus className="w-5 h-5" />
-            </button>
+            <TextTooltip text={t('chat.newConversation')}>
+              <button
+                type="button"
+                onClick={handleNewConversation}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 flex-shrink-0"
+              >
+                <MessageSquarePlus className="w-5 h-5" />
+              </button>
+            </TextTooltip>
 
             {/* 对话历史按钮 */}
-            <button
-              type="button"
-              onClick={handleShowHistory}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 flex-shrink-0"
-              title={t('chat.conversationHistory')}
-            >
-              <History className="w-5 h-5" />
-            </button>
+            <TextTooltip text={t('chat.conversationHistory')}>
+              <button
+                type="button"
+                onClick={handleShowHistory}
+                className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-600 flex-shrink-0"
+              >
+                <History className="w-5 h-5" />
+              </button>
+            </TextTooltip>
           </div>
         </header>
 
@@ -1787,20 +1796,7 @@ export function ChatArea({
         {showSelector && (
           <ErrorBoundary
             fallback={
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-xl p-6 max-w-sm text-center">
-                  <p className="text-red-500 mb-4">
-                    {t('chat.referenceSelectorError')}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => setShowSelector(false)}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
-                  >
-                    {t('chat.close')}
-                  </button>
-                </div>
-              </div>
+              <ReferenceSelectorError onClose={() => setShowSelector(false)} />
             }
           >
             <ReferenceSelector
@@ -1943,5 +1939,31 @@ export function ChatArea({
         )}
       </div>
     </>
+  );
+}
+
+function ReferenceSelectorError({ onClose }: { onClose: () => void }) {
+  const { t } = useTranslation('workspace');
+  const dialogRef = useOverlayBehavior<HTMLDivElement>({ open: true, onClose });
+  return (
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('chat.referenceSelectorError')}
+      tabIndex={-1}
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+    >
+      <div className="bg-white rounded-xl p-6 max-w-sm text-center">
+        <p className="text-red-500 mb-4">{t('chat.referenceSelectorError')}</p>
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg"
+        >
+          {t('chat.close')}
+        </button>
+      </div>
+    </div>
   );
 }

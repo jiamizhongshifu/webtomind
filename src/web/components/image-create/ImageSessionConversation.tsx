@@ -1,3 +1,4 @@
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import {
   CheckCircle2,
   Download,
@@ -107,15 +108,16 @@ function ImageTaskSkeletonTurn({
       <div className="image-session-turn-layout">
         <header className="image-session-prompt image-session-prompt-panel">
           <div className="image-session-prompt-copy-shell">
-            <button
-              type="button"
-              className="image-session-prompt-scroll is-copyable"
-              aria-label="复制本次生成提示词"
-              title="点击复制提示词"
-              onClick={() => void onCopyPrompt(task.prompt || '')}
-            >
-              <p>{task.prompt || '未填写提示词'}</p>
-            </button>
+            <TextTooltip text={'点击复制提示词'}>
+              <button
+                type="button"
+                className="image-session-prompt-scroll is-copyable"
+                aria-label="复制本次生成提示词"
+                onClick={() => void onCopyPrompt(task.prompt || '')}
+              >
+                <p>{task.prompt || '未填写提示词'}</p>
+              </button>
+            </TextTooltip>
           </div>
           <div className="image-session-prompt-footer">
             <div className="image-session-prompt-meta">
@@ -130,24 +132,26 @@ function ImageTaskSkeletonTurn({
           {(task.onEdit || task.onCancel) && (
             <div className="image-session-task-actions">
               {task.onEdit && (
-                <button
-                  type="button"
-                  aria-label="查看任务提示词"
-                  title="查看任务提示词"
-                  onClick={task.onEdit}
-                >
-                  <PencilLine />
-                </button>
+                <TextTooltip text={'查看任务提示词'}>
+                  <button
+                    type="button"
+                    aria-label="查看任务提示词"
+                    onClick={task.onEdit}
+                  >
+                    <PencilLine />
+                  </button>
+                </TextTooltip>
               )}
               {task.onCancel && (
-                <button
-                  type="button"
-                  aria-label="取消生成任务"
-                  title="取消生成任务"
-                  onClick={task.onCancel}
-                >
-                  <X />
-                </button>
+                <TextTooltip text={'取消生成任务'}>
+                  <button
+                    type="button"
+                    aria-label="取消生成任务"
+                    onClick={task.onCancel}
+                  >
+                    <X />
+                  </button>
+                </TextTooltip>
               )}
             </div>
           )}
@@ -235,15 +239,16 @@ export function ImageSessionConversation({
             <div className="image-session-turn-layout">
               <header className="image-session-prompt image-session-prompt-panel">
                 <div className="image-session-prompt-copy-shell">
-                  <button
-                    type="button"
-                    className="image-session-prompt-scroll is-copyable"
-                    aria-label="复制本次生成提示词"
-                    title="点击复制提示词"
-                    onClick={() => void onCopyPrompt(turn.prompt || '')}
-                  >
-                    <p>{turn.prompt || '未填写提示词'}</p>
-                  </button>
+                  <TextTooltip text={'点击复制提示词'}>
+                    <button
+                      type="button"
+                      className="image-session-prompt-scroll is-copyable"
+                      aria-label="复制本次生成提示词"
+                      onClick={() => void onCopyPrompt(turn.prompt || '')}
+                    >
+                      <p>{turn.prompt || '未填写提示词'}</p>
+                    </button>
+                  </TextTooltip>
                 </div>
                 <div className="image-session-prompt-footer">
                   <div className="image-session-prompt-meta">
