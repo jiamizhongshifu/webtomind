@@ -27,7 +27,7 @@ function checkMemoryRateLimit(identifier: string): {
   cleanupExpiredMemoryRecords(now);
   const record = memoryStore.get(identifier);
 
-  if (!record || now > record.resetTime) {
+  if (!record || now >= record.resetTime) {
     memoryStore.set(identifier, {
       count: 1,
       resetTime: now + RATE_LIMIT_WINDOW_MS
@@ -53,23 +53,30 @@ async function checkUpstashRateLimit(identifier: string): Promise<{
 
   const key = `ratelimit:${identifier}`;
   try {
-    const incrementResp = await fetch(`${url}/pipeline`, {
+    const incrementResp = await fetch(`${url.replace(/\/+$/, '')}/multi-exec`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify([['INCR', key], ['PEXPIRE', key, RATE_LIMIT_WINDOW_MS]])
+      // Increment and initialize expiry atomically. Retrying a blocked request
+      // must not push the fixed window's deadline into the future.
+      body: JSON.stringify([['INCR', key], ['PEXPIRE', key, RATE_LIMIT_WINDOW_MS, 'NX']])
     });
 
     if (!incrementResp.ok) return null;
 
     const incrementData = (await incrementResp.json()) as Array<{
       result: number;
+      error?: string;
     }>;
 
+    if (!Array.isArray(incrementData) || incrementData.length !== 2 ||
+        incrementData.some((entry) => !entry || entry.error) ||
+        ![0, 1].includes(incrementData[1].result)) return null;
+
     const currentCount = Number(incrementData?.[0]?.result || 0);
-    if (!Number.isFinite(currentCount) || currentCount <= 0) return null;
+    if (!Number.isSafeInteger(currentCount) || currentCount <= 0) return null;
 
     if (currentCount > RATE_LIMIT_MAX_REQUESTS) {
       return { allowed: false, remaining: 0 };

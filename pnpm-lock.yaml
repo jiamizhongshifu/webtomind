@@ -179,7 +179,7 @@ importers:
         specifier: ^1.11.22
         version: 1.11.22
       dompurify:
-        specifier: ^3.4.16
+        specifier: ^3.4.17
         version: 3.4.17
       embla-carousel-react:
         specifier: ^8.6.0

@@ -138,8 +138,11 @@ export async function validateURL(url: string): Promise<URLValidationResult> {
     }
     
     // 检查主机名是否在黑名单中
-    const hostname = parsedUrl.hostname.toLowerCase();
-    if (BLOCKED_HOSTNAMES.includes(hostname)) {
+    const hostname = parsedUrl.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
+    if (parsedUrl.username || parsedUrl.password ||
+        BLOCKED_HOSTNAMES.includes(hostname) ||
+        /\.(localhost|local|internal)$/.test(hostname) ||
+        (hostname.includes(':') && isPrivateIP(hostname))) {
       return { valid: false, error: 'URL blocked for security reasons' };
     }
     
@@ -200,8 +203,11 @@ export function validateURLSync(url: string): URLValidationResult {
       return { valid: false, error: 'Only http and https protocols are allowed' };
     }
     
-    const hostname = parsedUrl.hostname.toLowerCase();
-    if (BLOCKED_HOSTNAMES.includes(hostname)) {
+    const hostname = parsedUrl.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
+    if (parsedUrl.username || parsedUrl.password ||
+        BLOCKED_HOSTNAMES.includes(hostname) ||
+        /\.(localhost|local|internal)$/.test(hostname) ||
+        (hostname.includes(':') && isPrivateIP(hostname))) {
       return { valid: false, error: 'URL blocked for security reasons' };
     }
     

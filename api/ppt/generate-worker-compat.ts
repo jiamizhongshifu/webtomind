@@ -1,3 +1,5 @@
+import { isLocalHttpOrigin } from '../../server/src/utils/cors-origin';
+
 export interface GenerateRequest {
   content: string;
   style?: string;
@@ -34,7 +36,7 @@ export function getPptCorsOrigin(origin: string | undefined): string {
   if (allowedOrigins.includes(origin)) return origin;
   if (
     getRuntimeEnvValue('NODE_ENV') !== 'production' &&
-    (origin.includes('localhost') || origin.includes('127.0.0.1'))
+    isLocalHttpOrigin(origin)
   ) {
     return origin;
   }
