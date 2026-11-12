@@ -140,6 +140,9 @@ jobs:
       WEBTOMIND_HOSTED_OVERLAY_CONFIG: ${{ secrets.WEBTOMIND_HOSTED_OVERLAY_CONFIG }}
       CF_VALIDATE_MAX_ATTEMPTS: 4
       CF_VALIDATE_RETRY_DELAY_MS: 20000
+      # Deliberate, time-boxed risk acceptance for a known reliability gap.
+      # Unset (or 0.1) keeps the production gate at the original 10% ceiling.
+      IMAGE_HEALTH_MAX_FAILURE_RATE: ${{ vars.IMAGE_HEALTH_MAX_FAILURE_RATE || '0.1' }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       WEBTOMIND_RUNTIME_ENV_B64: ${{ secrets.WEBTOMIND_RUNTIME_ENV_B64 }}
