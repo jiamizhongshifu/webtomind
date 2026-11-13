@@ -172,18 +172,6 @@ export function PromptCaseAdminPage() {
               }
               variant="full"
               forceManageOpen
-              onOpenImport={() =>
-                navigate(`${localePrefix}/prompts/admin/cases/import`)
-              }
-              onOpenEditor={(mode, caseId) => {
-                if (mode === 'edit' && caseId) {
-                  navigate(
-                    `${localePrefix}/prompts/admin/cases/${encodeURIComponent(caseId)}/edit`
-                  );
-                  return;
-                }
-                navigate(`${localePrefix}/prompts/admin/cases/new`);
-              }}
             />
           </section>
         )}
