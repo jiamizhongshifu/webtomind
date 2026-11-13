@@ -706,12 +706,14 @@
 .ui-button--md {
   --btn-u: 1px;
   --btn-label-size: 14px;
+  --btn-height: 44;
 }
 
 .ui-button--lg {
   --btn-u: 1.142857px;
   --btn-label-size: 16px;
   --btn-gap: 9.14;
+  --btn-height: 48;
 }
 
 .ui-button--icon {
@@ -724,6 +726,7 @@
 }
 
 .ui-button--primary {
+  background-color: hsl(var(--primary));
   --btn-face-top: #404859;
   --btn-face-bottom: #273042;
   --btn-edge: #12161f;
