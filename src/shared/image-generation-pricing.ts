@@ -21,6 +21,7 @@ export const IMAGE_GENERATION_DEFAULT_MODEL_MULTIPLIER = 1;
 const IMAGE_GENERATION_MODEL_MULTIPLIERS: Record<string, number> = {
   'gpt-image-2': 1,
   'gpt-image-2.5': 1,
+  'gpt-image-2.6': 1,
   'nano-banana': 1,
   // 与 nano-banana 同一后端模型（gemini-3.1-flash-image-preview），成本一致。
   'nano-banana-2': 1,

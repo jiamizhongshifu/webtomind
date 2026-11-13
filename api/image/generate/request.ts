@@ -617,13 +617,16 @@ export function sanitizeImageGenerateInput(
     };
   }
   const requestedModelKey = normalizeKey(input.model).replace(/\s+/g, '-');
-  if (requestedModelKey.startsWith('gpt-image-2.5-')) {
+  if (
+    requestedModelKey.startsWith('gpt-image-2.5-') ||
+    requestedModelKey.startsWith('gpt-image-2.6-')
+  ) {
     return {
       ok: false,
       status: 400,
       body: {
         error: 'unsupported model',
-        message: `${input.model?.trim()} 尚未在当前图像通道验证，请使用 gpt-image-2.5。`
+        message: `${input.model?.trim()} 尚未在当前图像通道验证，请使用 gpt-image-2.5 或 gpt-image-2.6。`
       }
     };
   }

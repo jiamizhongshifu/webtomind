@@ -88,6 +88,21 @@ describe('Tuzi image model directory', () => {
     });
   });
 
+  it('registers GPT Image 2.6 as a Tuzi model with the same capabilities as 2.5', () => {
+    expect(normalizeTuziImageModelId('gpt-image-2.6')).toBe('gpt-image-2.6');
+    expect(normalizeTuziImageModelId('gpt image 2.6')).toBe('gpt-image-2.6');
+    expect(getTuziImageModelConfig('gpt-image-2.6')).toMatchObject({
+      id: 'gpt-image-2.6',
+      apiModel: 'gpt-image-2.6',
+      label: 'GPT Image 2.6',
+      provider: 'tuzi',
+      supportsReferenceImage: true,
+      supportsMultipleImages: true,
+      maxImageCount: 10,
+      creditMultiplier: 1
+    });
+  });
+
   it('covers every supported aspect ratio in recommended sizes', () => {
     for (const model of TUZI_IMAGE_MODELS) {
       const ratios = new Set(

@@ -96,6 +96,10 @@ export const MODEL_CONFIG: Record<
     label: 'GPT Image 2.5',
     provider: 'tuzi'
   },
+  'gpt-image-2.6': {
+    label: 'GPT Image 2.6',
+    provider: 'tuzi'
+  },
   'nano-banana': { label: 'Nano Banana', provider: 'tuzi' },
   'nano-banana-2': { label: 'Nano Banana 2', provider: 'tuzi' },
   'nano-banana-pro': { label: 'Nano Banana Pro', provider: 'tuzi' },
