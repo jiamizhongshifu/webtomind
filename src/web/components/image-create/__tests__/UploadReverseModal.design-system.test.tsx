@@ -20,10 +20,14 @@ describe('UploadReverseModal design-system contracts', () => {
     expect(modalSource).toContain('Textarea');
     expect(modalSource).toContain("from '@/shared/ui/radix/field'");
     expect(modalSource).toContain('<Dialog');
-    expect(modalSource).toContain('if (!open && !saving) onCancel();');
+    expect(modalSource).toContain('if (!open) requestClose();');
+    expect(modalSource).toContain('useUnsavedChanges');
     expect(modalSource).toContain('onEscapeKeyDown={(event) => {');
     expect(modalSource).toContain('onInteractOutside={(event) => {');
-    expect(modalSource).toContain('className="creator-upload-modal"');
+    expect(modalSource).toContain('placement="right"');
+    expect(modalSource).toContain(
+      'className="creator-upload-modal !h-dvh !max-h-dvh max-sm:!w-screen"'
+    );
     expect(modalSource).not.toContain('creator-preview-backdrop');
     expect(modalSource).not.toContain(
       'className="creator-preview creator-upload-modal"'

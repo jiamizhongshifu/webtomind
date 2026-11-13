@@ -16,7 +16,7 @@
   margin: 16px 0;
   padding: 14px 18px;
   border: 1px solid var(--web-border-default, #ddd7cf);
-  border-radius: 14px;
+  border-radius: var(--radius-2xl, 24px);
   background: var(--web-bg-card, #fff);
   color: var(--web-text-primary, #20201e);
   text-align: left;
@@ -46,7 +46,7 @@
   gap: 4px;
   min-height: 32px;
   padding: 0 10px;
-  border-radius: 8px;
+  border-radius: var(--radius-md, 12px);
   background: var(--web-action-primary-bg, #242424);
   color: var(--web-action-primary-text, #fff);
   font-size: 12px;

@@ -36,8 +36,12 @@ describe('Button', () => {
       join(process.cwd(), 'src/design/ui-primitives.css'),
       'utf8'
     );
+    // 填充按钮按下时沉入 1u，不再缩放；图标按钮沿用旧的缩放反馈。
     expect(styles).toMatch(
-      /\.ui-button:not\(:disabled\):active,[\s\S]*?transform:\s*scale\(0\.98\);[\s\S]*?var\(--motion-press, 100ms\)/
+      /\.ui-button:not\(:disabled\):active\s*\{[\s\S]*?transform:\s*translateY\(calc\(var\(--btn-press\) \* var\(--btn-u\)\)\);/
+    );
+    expect(styles).toMatch(
+      /\.ui-icon-button:not\(:disabled\):active,[\s\S]*?transform:\s*scale\(0\.98\);/
     );
     expect(styles).toMatch(
       /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.ui-button:not\(:disabled\):active,[\s\S]*?transform:\s*none;/
@@ -52,11 +56,17 @@ describe('Button', () => {
 
     expect(styles).not.toContain('box-shadow: 0 5px 0');
     expect(styles).not.toContain('box-shadow: 0 4px 0');
+    // 五层材质：高光、底影、占位内层、接触影、抬升影。
+    expect(styles).toMatch(/--btn-face-top:\s*#404859;/);
+    expect(styles).toMatch(/--btn-face-bottom:\s*#273042;/);
     expect(styles).toMatch(
-      /--product-action-primary-shadow:\s*0 1px 2px[\s\S]*?0 6px 16px -10px/
+      /inset 0 calc\(1 \* var\(--btn-u\)\) 0 var\(--btn-highlight\)/
     );
+    expect(styles).toMatch(/inset 0 0 0 transparent/);
+    // 尺寸随字号缩放：lg 的 u = 16/14。
+    expect(styles).toMatch(/--btn-u:\s*1\.142857px;/);
     expect(styles).toMatch(
-      /\.ui-button--primary:not\(:disabled\):hover,[\s\S]*?background:\s*var\(--product-action-primary-hover\);/
+      /\.ui-button--primary:not\(:disabled\):hover\s*\{[\s\S]*?--btn-face-top:\s*#485062;/
     );
     expect(styles).toMatch(
       /\.ui-button,[\s\S]*?\.ui-icon-button\s*\{[\s\S]*?touch-action:\s*manipulation;[\s\S]*?-webkit-tap-highlight-color:\s*transparent;/

@@ -1,4 +1,6 @@
+import { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useUnsavedChanges } from '@/shared/ui/Dialog';
 import { ClipboardPaste, Loader2, Sparkles } from 'lucide-react';
 import { Button, Textarea } from '@/shared/ui';
 import {
@@ -28,14 +30,22 @@ export function PromptImportModal({
   onSubmit
 }: PromptImportModalProps) {
   const { t } = useTranslation('imageCreate');
+  const initialValueRef = useRef(value);
+  const dirty = value !== initialValueRef.current;
+  const { requestClose, discardConfirmation } = useUnsavedChanges(
+    dirty,
+    onCancel,
+    analyzing
+  );
 
   return (
-    <Dialog
-      open
-      onOpenChange={(open) => {
-        if (!open && !analyzing) onCancel();
-      }}
-    >
+    <>
+      <Dialog
+        open
+        onOpenChange={(open) => {
+          if (!open) requestClose();
+        }}
+      >
       <DialogContent
         className="creator-preview creator-prompt-import-modal"
         onEscapeKeyDown={(event) => {
@@ -68,7 +78,7 @@ export function PromptImportModal({
               type="button"
               variant="outline"
               className="creator-upload-cancel"
-              onClick={onCancel}
+              onClick={requestClose}
               disabled={analyzing}
             >
               {t('upload.cancel')}
@@ -93,6 +103,8 @@ export function PromptImportModal({
           </DialogFooter>
         </div>
       </DialogContent>
-    </Dialog>
+      </Dialog>
+      {discardConfirmation}
+    </>
   );
 }

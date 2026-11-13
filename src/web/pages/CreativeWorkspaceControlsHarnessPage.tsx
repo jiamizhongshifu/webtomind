@@ -172,7 +172,6 @@ export function CreativeWorkspaceControlsHarnessPage() {
   );
   const uploadInputRef = useRef<HTMLInputElement>(null);
   const upgradeModalRef = useRef<HTMLElement>(null);
-  const characterWorkflowModalRef = useRef<HTMLElement>(null);
 
   const slotAssets = useMemo(
     () =>
@@ -246,8 +245,7 @@ export function CreativeWorkspaceControlsHarnessPage() {
     handleBatchRegenerate: () => setLastAction('batch regenerate'),
     handleRetryFailed: () => setLastAction('retry failed'),
     handleCancelBatch: () => setLastAction('cancel batch'),
-    handleRegenerateThumbnail: (asset) =>
-      setLastAction(`regenerate ${asset.id}`)
+    handleRegenerateThumbnail: (asset) => setLastAction(`regenerate ${asset.id}`)
   };
 
   const tasks: ProgressTask[] = [
@@ -657,7 +655,6 @@ export function CreativeWorkspaceControlsHarnessPage() {
 
         {mode === 'character-workflow-modal' && (
           <ImageCreateCharacterWorkflowModal
-            modalRef={characterWorkflowModalRef}
             ariaLabel="Character workflow harness"
             title="Character workflow"
             hint="Manage references, recipes, and consistency checks."

@@ -151,7 +151,7 @@ describe('CreateSideNav design-system overlay contracts', () => {
     expect(source).toContain('className="create-side-nav-referral-trigger"');
     expect(accountMenuSource).toContain('creator-account-upgrade');
     expect(imageCreateCss).toMatch(
-      /\.create-side-nav\s*\{[\s\S]*?--create-side-nav-rail-inset:\s*14px;[\s\S]*?--create-side-nav-rail-radius:\s*14px;[\s\S]*?--create-side-nav-rail-height:\s*42px;[\s\S]*?padding:\s*18px\s+var\(--create-side-nav-rail-inset\)[\s\S]*?var\(--create-side-nav-rail-inset\);[\s\S]*?\}/
+      /\.create-side-nav\s*\{[\s\S]*?--create-side-nav-rail-inset:\s*14px;[\s\S]*?--create-side-nav-rail-radius:\s*12px;[\s\S]*?--create-side-nav-rail-height:\s*42px;[\s\S]*?padding:\s*18px\s+var\(--create-side-nav-rail-inset\)[\s\S]*?var\(--create-side-nav-rail-inset\);[\s\S]*?\}/
     );
     expect(imageCreateCss).toMatch(
       /\.create-side-nav-bottom\s*\{[\s\S]*?position:\s*static;[\s\S]*?\}/
@@ -193,9 +193,9 @@ describe('CreateSideNav design-system overlay contracts', () => {
     expect(accountMenuSource).toContain('open={open}');
     expect(accountMenuSource).toContain('<PopoverTrigger asChild>');
     expect(accountMenuSource).toContain('<PopoverContent');
-    expect(accountMenuSource).toContain('const HOVER_CLOSE_DELAY = 120');
-    expect(accountMenuSource).toContain('onPointerEnter');
-    expect(accountMenuSource).toContain('onPointerLeave');
+    expect(accountMenuSource).not.toContain('HOVER_CLOSE_DELAY');
+    expect(accountMenuSource).not.toContain('onPointerEnter');
+    expect(accountMenuSource).not.toContain('onPointerLeave');
     expect(accountMenuSource).toContain('onOpenAutoFocus');
     expect(accountMenuSource).toContain("openReasonRef.current !== 'keyboard'");
     expect(accountMenuSource).toContain('leadingIcon={');

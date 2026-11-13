@@ -19,10 +19,14 @@ describe('AssetEditModal design-system contracts', () => {
     expect(modalSource).toContain('SelectRoot,');
     expect(modalSource).toContain("from '@/shared/ui/radix/field'");
     expect(modalSource).toContain('<Dialog');
-    expect(modalSource).toContain('if (!open && !saving) onClose();');
+    expect(modalSource).toContain('if (!open) requestClose();');
+    expect(modalSource).toContain('useUnsavedChanges');
     expect(modalSource).toContain('onEscapeKeyDown');
     expect(modalSource).toContain('onInteractOutside');
-    expect(modalSource).toContain('className="creator-edit-modal"');
+    expect(modalSource).toContain('placement="right"');
+    expect(modalSource).toContain(
+      'className="creator-edit-modal !h-dvh !max-h-dvh max-sm:!w-screen"'
+    );
     expect(modalSource).toContain('<DialogHeader');
     expect(modalSource).toContain('<DialogFooter');
     expect(modalSource).not.toContain('addEventListener');

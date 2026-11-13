@@ -404,6 +404,8 @@
     }
   },
   "promptLibrary": {
+    "applyDialogTitle": "Apply prompt",
+    "deleteConfirm": "This prompt can't be restored. Delete it?",
     "title": "Prompt library",
     "entry": "Prompt library",
     "savePrompt": "Save prompt",

@@ -160,13 +160,40 @@ try {
             aliasColor: b.color,
             background: a.backgroundColor,
             aliasBackground: b.backgroundColor,
+            face: a.getPropertyValue('--btn-face-top').trim(),
             height: button.getBoundingClientRect().height
           };
           button.remove();
           alias.remove();
           return result;
         });
-        assert.equal(tokenContract.color, tokenContract.aliasColor);
+        // The button material intentionally uses its own label colour (white
+        // on the layered dark face), so judge the pair by contrast against the
+        // primary token background instead of requiring the exact foreground.
+        const rgb = (value) => {
+          const hex = /^#([0-9a-f]{6})$/i.exec(value.trim());
+          if (hex) {
+            const n = parseInt(hex[1], 16);
+            return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+          }
+          return (value.match(/\d+(?:\.\d+)?/g) || []).slice(0, 3).map(Number);
+        };
+        const luminance = (value) => {
+          const [r, g, b] = rgb(value).map((channel) => {
+            const c = channel / 255;
+            return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+          });
+          return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        };
+        const contrast = (foreground, background) => {
+          const a = luminance(foreground);
+          const b = luminance(background);
+          return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        };
+        assert.ok(
+          contrast(tokenContract.color, tokenContract.face) >= 4.5,
+          `primary button label must stay readable on its face (color=${tokenContract.color}, face=${tokenContract.face}, contrast=${contrast(tokenContract.color, tokenContract.face)})`
+        );
         assert.equal(tokenContract.background, tokenContract.aliasBackground);
         assert.ok(tokenContract.height >= 44);
         assert.ok(
