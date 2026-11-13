@@ -281,6 +281,7 @@
       "@modelcontextprotocol/client": "2.3.0",
       "@modelcontextprotocol/core": "2.3.0",
       "@hono/node-server": "2.1.8",
+      "hono": "4.13.18",
       "fast-uri": "3.1.9",
       "ip-address": "10.7.4",
       "moment": "2.31.0",
