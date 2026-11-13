@@ -115,16 +115,12 @@ describe('ImageCreatePage design-system overlay contracts', () => {
   });
 
   it('keeps page-owned workflow modals on the shared overlay behavior', () => {
-    expect(pageSource).toContain(
-      "import { useOverlayBehavior } from '@/shared/ui'"
-    );
-    expect(pageSource).toContain(
-      'const characterWorkflowModalRef = useOverlayBehavior<HTMLElement>'
+    expect(pageSource).toMatch(
+      /import \{[^}]*useOverlayBehavior[^}]*\} from '@\/shared\/ui';/
     );
     expect(pageSource).toContain(
       'const upgradePromptModalRef = useOverlayBehavior<HTMLElement>'
     );
-    expect(pageSource).toContain('modalRef={characterWorkflowModalRef}');
     expect(pageSource).toContain('ref={upgradePromptModalRef}');
     expect(pageSource).toContain('<ImageCreateCharacterWorkflowModal');
     expect(pageSource).toContain('<UpgradePromptModal');

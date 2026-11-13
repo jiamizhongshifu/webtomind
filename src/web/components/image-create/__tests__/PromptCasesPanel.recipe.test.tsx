@@ -1,11 +1,12 @@
 import {
   fireEvent,
   render,
+  cleanup,
   screen,
   waitFor,
   within
 } from '@testing-library/react';
-import { MemoryRouter } from 'react-router-dom';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PromptCase, PromptCaseDraft } from '@/services/agent-api';
 import { PromptCasesPanel } from '../PromptCasesPanel';
@@ -193,6 +194,11 @@ function makeDraft(
   };
 }
 
+function LocationProbe() {
+  const location = useLocation();
+  return <output data-testid="location">{location.pathname}</output>;
+}
+
 function renderPanel(
   onRecreate = vi.fn(),
   options: {
@@ -206,6 +212,7 @@ function renderPanel(
     onRecreate,
     ...render(
       <MemoryRouter initialEntries={[options.path || '/zh-CN/create/image']}>
+        <LocationProbe />
         <PromptCasesPanel
           isAuthenticated
           isPromptCaseAdmin={options.isPromptCaseAdmin ?? false}
@@ -255,6 +262,43 @@ describe('PromptCasesPanel visual recipe actions', () => {
       disconnect() {}
     }
     window.ResizeObserver = ResizeObserverMock as typeof ResizeObserver;
+  });
+
+  it('navigates to the case editor and import pages from the standalone admin list', async () => {
+    renderPanel(vi.fn(), {
+      forceManageOpen: true,
+      isPromptCaseAdmin: true,
+      path: '/zh-CN/prompts/admin',
+      variant: 'full'
+    });
+
+    fireEvent.click(await screen.findByRole('button', { name: /New case/ }));
+    await waitFor(() => {
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        '/zh-CN/prompts/admin/cases/new'
+      );
+    });
+
+    cleanup();
+    render(
+      <MemoryRouter initialEntries={['/zh-CN/prompts/admin/drafts']}>
+        <LocationProbe />
+        <PromptCasesPanel
+          isAuthenticated
+          isPromptCaseAdmin
+          onRequireLogin={vi.fn()}
+          onRecreate={vi.fn()}
+          variant="full"
+          forceManageOpen
+        />
+      </MemoryRouter>
+    );
+    fireEvent.click(await screen.findByRole('button', { name: /导入案例/ }));
+    await waitFor(() => {
+      expect(screen.getByTestId('location')).toHaveTextContent(
+        '/zh-CN/prompts/admin/cases/import'
+      );
+    });
   });
 
   it('does not load the formal case list while the admin drafts tab is active', async () => {
