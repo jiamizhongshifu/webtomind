@@ -130,7 +130,8 @@ describe('ImageCreatePage design-system overlay contracts', () => {
     expect(pageSource).toContain('<UpgradePromptModal');
     expect(pageSource).not.toContain('<HistoryAddToProjectModal');
     expect(pageSource).not.toContain('open={Boolean(addToProjectItem)}');
-    expect(characterWorkflowModalSource).toContain('tabIndex={-1}');
+    expect(characterWorkflowModalSource).toContain('placement="right"');
+    expect(characterWorkflowModalSource).toContain('<DialogContent');
     expect(upgradePromptModalSource).toContain('tabIndex={-1}');
   });
 
