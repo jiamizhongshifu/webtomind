@@ -218,9 +218,12 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
     fireEvent.click(screen.getByRole('button', { name: '收起左侧导航' }));
 
     expect(sessionSection).toHaveClass('is-collapsed');
-    expect(sessionCards).toHaveLength(2);
-    expect(sessionCards[0]).toHaveAttribute('aria-label', 'Untitled');
-    expect(sessionCards[1]).toHaveAttribute(
+    const collapsedCards = container.querySelectorAll(
+      '.create-side-nav-session-card'
+    );
+    expect(collapsedCards).toHaveLength(2);
+    expect(collapsedCards[0]).toHaveAttribute('aria-label', 'Untitled');
+    expect(collapsedCards[1]).toHaveAttribute(
       'aria-label',
       'Frog Racecar Driver'
     );
@@ -356,7 +359,7 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
         updatedAt: '2026-07-17T08:00:00.000Z'
       }
     ];
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+    const confirmSpy = vi.spyOn(window, 'confirm');
 
     render(
       <MemoryRouter initialEntries={['/zh-CN/image?sessionId=session-1']}>
@@ -378,13 +381,31 @@ describe('CreateSideNav prompt library entry hierarchy', () => {
 
     fireEvent.click(screen.getByRole('menuitem', { name: '删除会话' }));
 
+    const dialog = await screen.findByRole('alertdialog', { name: '删除会话' });
+    expect(dialog).toHaveTextContent('Horsea');
+    expect(dialog).toHaveTextContent(
+      '所有创作轮次、提示词和结果关联记录将永久删除'
+    );
+    expect(dialog).toHaveTextContent('正在进行的生成任务也不会取消');
+    expect(deleteImageSessionMock).not.toHaveBeenCalled();
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(deleteImageSessionMock).not.toHaveBeenCalled();
+    fireEvent.pointerDown(trigger, { button: 0 });
+    fireEvent.click(await screen.findByRole('menuitem', { name: '删除会话' }));
+    deleteImageSessionMock.mockRejectedValueOnce(new Error('Temporary delete failure'));
+    fireEvent.click(screen.getByRole('button', { name: '删除会话' }));
+    await screen.findByText(/Temporary delete failure/);
+    expect(screen.getByRole('alertdialog')).toBeInTheDocument();
+    expect(deleteImageSessionMock).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: '删除会话' }));
+
     await waitFor(() => {
       expect(deleteImageSessionMock).toHaveBeenCalledWith('session-1');
       expect(trigger).toHaveAttribute('aria-expanded', 'false');
     });
-    expect(confirmSpy).toHaveBeenCalledWith(
-      '删除这个创作会话？会话中的对话记录也会一起删除。'
-    );
+    expect(confirmSpy).not.toHaveBeenCalled();
     confirmSpy.mockRestore();
   });
 

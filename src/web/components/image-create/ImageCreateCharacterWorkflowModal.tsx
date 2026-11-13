@@ -1,6 +1,9 @@
-import type { Ref } from 'react';
 import { X } from 'lucide-react';
 import { Button } from '@/shared/ui/radix/button';
+import {
+  Dialog as DialogRoot,
+  DialogContent
+} from '@/shared/ui/radix/dialog';
 import type { ImageCreatorRecipe } from '@/services/agent-api';
 import type {
   ImageCharacterCard,
@@ -10,7 +13,6 @@ import type {
 import { ReferenceCharacterWorkflowPanel } from './ReferenceCharacterWorkflowPanel';
 
 interface ImageCreateCharacterWorkflowModalProps {
-  modalRef: Ref<HTMLElement>;
   ariaLabel: string;
   title: string;
   hint: string;
@@ -41,7 +43,6 @@ interface ImageCreateCharacterWorkflowModalProps {
 }
 
 export function ImageCreateCharacterWorkflowModal({
-  modalRef,
   ariaLabel,
   title,
   hint,
@@ -71,22 +72,18 @@ export function ImageCreateCharacterWorkflowModal({
   onRunRecipe
 }: ImageCreateCharacterWorkflowModalProps) {
   return (
-    <div
-      className="creator-character-modal-backdrop"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) {
-          onClose();
-        }
+    <DialogRoot
+      open
+      onOpenChange={(open) => {
+        if (!open) onClose();
       }}
     >
-      <section
-        ref={modalRef}
-        className="creator-character-modal"
-        role="dialog"
-        aria-modal="true"
+      <DialogContent
+        showCloseButton={false}
+        placement="right"
         aria-label={ariaLabel}
-        tabIndex={-1}
+        overlayClassName="!bg-[rgba(20,18,16,0.42)]"
+        className="creator-character-modal !h-dvh !max-h-dvh !w-[min(720px,100vw)] !gap-0 !rounded-none !border-y-0 !border-r-0 !p-0 !shadow-none max-sm:!w-screen"
       >
         <div className="creator-character-modal-head">
           <div>
@@ -127,7 +124,7 @@ export function ImageCreateCharacterWorkflowModal({
           onApplyRecipe={onApplyRecipe}
           onRunRecipe={onRunRecipe}
         />
-      </section>
-    </div>
+      </DialogContent>
+    </DialogRoot>
   );
 }

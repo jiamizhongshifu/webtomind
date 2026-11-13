@@ -1,6 +1,8 @@
 import { TooltipProvider } from '@/shared/ui/TooltipPrimitives';
 import React, { lazy, Suspense, useEffect } from 'react';
 import ReactDOM from 'react-dom/client';
+
+installTruncationTooltip();
 import '@fontsource/geist-sans/latin-400.css';
 import '@fontsource/geist-sans/latin-500.css';
 import '@fontsource/geist-sans/latin-600.css';
@@ -349,6 +351,11 @@ const PromptStyleGridPage = lazyRouteWithInitialPreload(
 const PromptCaseAdminPage = lazy(() =>
   import('./pages/PromptCaseAdminPage').then((mod) => ({
     default: mod.PromptCaseAdminPage
+  }))
+);
+const PromptCaseEditorPage = lazy(() =>
+  import('./pages/PromptCaseEditorPage').then((mod) => ({
+    default: mod.PromptCaseEditorPage
   }))
 );
 const PromptAssetOpsPage = lazy(() =>
@@ -768,11 +775,11 @@ function App() {
                   <Route path="/" element={<HomePage />} />
                   <Route
                     path="/zh-CN"
-                    element={<Navigate to="/zh-CN/overview" replace />}
+                    element={<LocaleRedirect to="/overview" />}
                   />
                   <Route
                     path="/en-US"
-                    element={<Navigate to="/en-US/overview" replace />}
+                    element={<LocaleRedirect to="/overview" />}
                   />
                   <Route
                     path="/overview"
@@ -1004,12 +1011,60 @@ function App() {
                     element={<PromptCaseAdminPage />}
                   />
                   <Route
+                    path="/zh-CN/prompts/admin/cases/new"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/zh-CN/prompts/admin/cases/import"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/zh-CN/prompts/admin/cases/:caseId/edit"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/zh-CN/prompts/admin/cases/new"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/zh-CN/prompts/admin/cases/import"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/zh-CN/prompts/admin/cases/:caseId/edit"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
                     path="/zh-CN/prompts/admin/:adminTab"
                     element={<PromptCaseAdminPage />}
                   />
                   <Route
                     path="/en-US/prompts/admin"
                     element={<PromptCaseAdminPage />}
+                  />
+                  <Route
+                    path="/en-US/prompts/admin/cases/new"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/en-US/prompts/admin/cases/import"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/en-US/prompts/admin/cases/:caseId/edit"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/en-US/prompts/admin/cases/new"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/en-US/prompts/admin/cases/import"
+                    element={<PromptCaseEditorPage />}
+                  />
+                  <Route
+                    path="/en-US/prompts/admin/cases/:caseId/edit"
+                    element={<PromptCaseEditorPage />}
                   />
                   <Route
                     path="/en-US/prompts/admin/:adminTab"

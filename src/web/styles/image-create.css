@@ -687,7 +687,7 @@
   z-index: var(--z-product-nav);
   width: var(--create-side-nav-width);
   --create-side-nav-rail-inset: 14px;
-  --create-side-nav-rail-radius: 14px;
+  --create-side-nav-rail-radius: 12px;
   --create-side-nav-rail-height: 42px;
   display: flex;
   flex-direction: column;
@@ -742,7 +742,7 @@
   height: 28px;
   min-height: 28px;
   margin-bottom: 10px;
-  border-radius: 9px;
+  border-radius: var(--radius-md, 12px);
   border-color: var(--product-border-soft, rgba(23, 17, 13, 0.1));
   background: var(--product-surface-subtle, rgba(23, 17, 13, 0.035));
   color: var(--product-text-primary, #241916);
@@ -840,7 +840,7 @@
   align-items: center;
   gap: 9px;
   min-height: var(--create-side-nav-rail-height, 38px);
-  border-radius: var(--create-side-nav-rail-radius, 10px);
+  border-radius: var(--create-side-nav-rail-radius, 12px);
   color: rgba(45, 35, 30, 0.7);
   font-size: 13px;
   font-weight: 700;
@@ -875,7 +875,7 @@
 .create-side-nav nav a strong {
   margin-left: auto;
   padding: 2px 5px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm, 8px);
   background: var(--brand-coral-500, #c9472f);
   color: #fff;
   font-size: 10px;
@@ -892,7 +892,7 @@
 .create-side-nav nav .create-side-nav-submenu a {
   position: relative;
   min-height: 31px;
-  border-radius: 10px;
+  border-radius: var(--radius-md, 12px);
   color: rgba(45, 35, 30, 0.64);
   padding: 0 10px;
   font-size: 12px;
@@ -959,7 +959,7 @@
   gap: 10px;
   padding: 9px 12px;
   border: 1px solid rgba(23, 17, 13, 0.08);
-  border-radius: 13px;
+  border-radius: var(--radius-md, 12px);
   font-size: 13px;
   font-weight: 800;
   text-decoration: none;

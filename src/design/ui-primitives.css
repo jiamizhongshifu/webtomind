@@ -147,7 +147,7 @@
 }
 
 .ui-state-block {
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--plugin-border-soft);
   background: var(--plugin-bg-card);
   box-shadow: var(--shadow-sm);
@@ -300,7 +300,34 @@
   }
 }
 
+/* Overlay enter/exit: strong UI curve, not the CSS default ease. */
+:where(.animate-in) {
+  animation-timing-function: var(
+    --ease-out-strong,
+    cubic-bezier(0.23, 1, 0.32, 1)
+  );
+}
+
+:where(.animate-out) {
+  animation-timing-function: var(
+    --ease-in-strong,
+    cubic-bezier(0.77, 0, 0.175, 1)
+  );
+}
+
+/* Edge panels use the drawer curve, not the popover curve. */
+:where([data-placement='right']).animate-in {
+  animation-timing-function: var(
+    --ease-drawer,
+    cubic-bezier(0.32, 0.72, 0, 1)
+  );
+}
+
 @media (prefers-reduced-motion: reduce) {
+  :where(.animate-in, .animate-out) {
+    animation: none;
+  }
+
   .web-app-stale-recovery__spinner {
     animation: none;
     opacity: 0.64;
@@ -531,19 +558,71 @@
   justify-content: center;
 }
 
+/* Button material: one set of tokens, five weights of the same key.
+   Lengths are multiples of --btn-u so the material scales with the label. */
 .ui-button {
+  --btn-u: 1px;
+  --btn-label-size: 14px;
+  --btn-height: 40;
+  --btn-pad-x: 18;
+  --btn-gap: 8;
+  --btn-icon-size: 16;
+  --btn-press: 1;
+
+  --btn-face-top: #ffffff;
+  --btn-face-bottom: #f4f5f7;
+  --btn-edge: rgba(15, 23, 42, 0.14);
+  --btn-label-color: #273042;
+  --btn-label-shadow: none;
+  --btn-highlight: rgba(255, 255, 255, 0.95);
+  --btn-shade: rgba(0, 0, 0, 0.06);
+  --btn-contact: rgba(15, 23, 42, 0.06);
+  --btn-lift: rgba(15, 23, 42, 0.1);
+  --btn-press-inset: rgba(0, 0, 0, 0.14);
+  --btn-press-contact: rgba(15, 23, 42, 0.08);
+  --btn-press-line: rgba(255, 255, 255, 0.9);
+  --btn-lift-y: 4;
+  --btn-lift-blur: 10;
+  --btn-lift-spread: -3;
+
   display: inline-flex;
   min-width: 0;
   max-width: 100%;
-  min-height: 44px;
+  min-height: calc(var(--btn-height) * var(--btn-u));
   align-items: center;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 0.5rem;
-  border-radius: var(--radius-full);
+  gap: calc(var(--btn-gap) * var(--btn-u));
+  padding: 0 calc(var(--btn-pad-x) * var(--btn-u));
+  border: calc(1 * var(--btn-u)) solid var(--btn-edge);
+  border-radius: var(--radius-md, 12px);
+  background-image: linear-gradient(
+    180deg,
+    var(--btn-face-top) 0%,
+    var(--btn-face-bottom) 100%
+  );
+  color: var(--btn-label-color);
+  font-size: var(--btn-label-size);
+  font-weight: 600;
   letter-spacing: 0;
+  line-height: 1.2;
   text-decoration: none;
+  text-shadow: var(--btn-label-shadow);
   white-space: nowrap;
+  box-shadow:
+    inset 0 calc(1 * var(--btn-u)) 0 var(--btn-highlight),
+    inset 0 calc(-1 * var(--btn-u)) 0 var(--btn-shade),
+    inset 0 0 0 transparent,
+    0 calc(1 * var(--btn-u)) calc(2 * var(--btn-u)) var(--btn-contact),
+    0 calc(var(--btn-lift-y) * var(--btn-u))
+      calc(var(--btn-lift-blur) * var(--btn-u))
+      calc(var(--btn-lift-spread) * var(--btn-u)) var(--btn-lift);
+  transition:
+    transform 120ms var(--ease-standard, ease),
+    box-shadow 140ms var(--ease-standard, ease),
+    background-color 160ms var(--ease-standard, ease),
+    border-color 160ms var(--ease-standard, ease),
+    color 160ms var(--ease-standard, ease);
 }
 
 .ui-button__label {
@@ -584,16 +663,33 @@
   opacity: 0.56;
 }
 
-.ui-button:not(:disabled):hover,
 .ui-icon-button:not(:disabled):hover {
   transform: translateY(-1px);
 }
 
-.ui-button:not(:disabled):active,
 .ui-icon-button:not(:disabled):active,
 .ui-navigation-link:active {
   transform: scale(0.98);
   transition-duration: var(--motion-press, 100ms);
+}
+
+.ui-button:not(:disabled):hover {
+  --btn-lift-y: 8;
+  --btn-lift-blur: 16;
+  --btn-lift-spread: -5;
+  transform: none;
+}
+
+.ui-button:not(:disabled):active {
+  transform: translateY(calc(var(--btn-press) * var(--btn-u)));
+  /* 与静止态同样 3 个内层 + 2 个投影层，阴影才能插值而不是跳变。 */
+  box-shadow:
+    inset 0 calc(1 * var(--btn-u)) calc(2 * var(--btn-u))
+      var(--btn-press-inset),
+    inset 0 0 0 transparent,
+    inset 0 0 0 transparent,
+    0 calc(1 * var(--btn-u)) calc(1 * var(--btn-u)) var(--btn-press-contact),
+    0 calc(1 * var(--btn-u)) 0 var(--btn-press-line);
 }
 
 .ui-button:focus-visible,
@@ -603,109 +699,174 @@
 }
 
 .ui-button--sm {
-  min-height: 36px;
-  padding: 0 0.875rem;
-  font-size: 0.875rem;
+  --btn-u: 0.928571px;
+  --btn-label-size: 13px;
 }
 
 .ui-button--md {
-  min-height: 44px;
-  padding: 0 1.125rem;
-  font-size: 0.9375rem;
+  --btn-u: 1px;
+  --btn-label-size: 14px;
 }
 
 .ui-button--lg {
-  min-height: 52px;
-  padding: 0 1.5rem;
-  font-size: 1rem;
+  --btn-u: 1.142857px;
+  --btn-label-size: 16px;
+  --btn-gap: 9.14;
 }
 
 .ui-button--icon {
-  width: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  --btn-u: 1px;
+  width: calc(40 * var(--btn-u));
+  min-width: calc(40 * var(--btn-u));
+  min-height: calc(40 * var(--btn-u));
   padding: 0;
+  gap: 0;
 }
 
 .ui-button--primary {
-  border-color: var(--product-action-primary-border, #000);
-  background: var(--product-action-primary-bg, #000);
-  color: var(--product-action-primary-text, #fff);
-  box-shadow: var(--product-action-primary-shadow);
+  --btn-face-top: #404859;
+  --btn-face-bottom: #273042;
+  --btn-edge: #12161f;
+  --btn-label-color: #ffffff;
+  --btn-label-shadow: 0 -1px 0 rgba(0, 0, 0, 0.28);
+  --btn-highlight: rgba(255, 255, 255, 0.18);
+  --btn-shade: rgba(0, 0, 0, 0.22);
+  --btn-contact: rgba(0, 0, 0, 0.18);
+  --btn-lift: rgba(0, 0, 0, 0.28);
+  --btn-press-inset: rgba(0, 0, 0, 0.4);
+  --btn-press-contact: rgba(0, 0, 0, 0.28);
+  --btn-press-line: transparent;
 }
 
 .ui-button--secondary {
-  border-color: var(--product-action-secondary-border);
-  background: var(--product-action-secondary-bg);
-  color: var(--product-action-secondary-text);
-  box-shadow: var(--product-action-secondary-shadow);
+  --btn-face-top: #ffffff;
+  --btn-face-bottom: #f4f5f7;
+  --btn-edge: rgba(15, 23, 42, 0.14);
+  --btn-label-color: #273042;
+  --btn-highlight: rgba(255, 255, 255, 0.95);
+  --btn-shade: rgba(0, 0, 0, 0.06);
+  --btn-contact: rgba(15, 23, 42, 0.06);
+  --btn-lift: rgba(15, 23, 42, 0.09);
+  --btn-press-inset: rgba(0, 0, 0, 0.14);
+  --btn-press-contact: rgba(15, 23, 42, 0.06);
+  --btn-press-line: rgba(255, 255, 255, 0.9);
 }
 
 .ui-button--outline {
-  border-color: var(--product-action-secondary-border);
-  background: transparent;
-  color: var(--product-action-secondary-text);
-  box-shadow: none;
+  --btn-face-top: #f3f4f6;
+  --btn-face-bottom: #e7e9ec;
+  --btn-edge: rgba(15, 23, 42, 0.1);
+  --btn-label-color: #273042;
+  --btn-highlight: rgba(255, 255, 255, 0.9);
+  --btn-shade: rgba(0, 0, 0, 0.06);
+  --btn-contact: rgba(15, 23, 42, 0.06);
+  --btn-lift: rgba(15, 23, 42, 0.09);
+  --btn-press-inset: rgba(0, 0, 0, 0.15);
+  --btn-press-contact: rgba(15, 23, 42, 0.06);
+  --btn-press-line: rgba(255, 255, 255, 0.9);
 }
 
 .ui-button--ghost {
-  border-color: transparent;
-  background: transparent;
-  color: var(--product-text);
+  --btn-face-top: transparent;
+  --btn-face-bottom: transparent;
+  --btn-edge: transparent;
+  --btn-label-color: #3b4457;
+  --btn-highlight: transparent;
+  --btn-shade: transparent;
+  --btn-contact: transparent;
+  --btn-lift: transparent;
+  --btn-press-inset: rgba(15, 23, 42, 0.12);
+  --btn-press-contact: transparent;
+  --btn-press-line: transparent;
+  box-shadow: none;
 }
 
 .ui-button--danger {
-  border-color: var(--state-error-line);
-  background: var(--state-error-bg);
-  color: var(--state-error-text);
+  --btn-face-top: #e0575b;
+  --btn-face-bottom: #c2353b;
+  --btn-edge: #9f2429;
+  --btn-label-color: #ffffff;
+  --btn-label-shadow: 0 -1px 0 rgba(0, 0, 0, 0.28);
+  --btn-highlight: rgba(255, 255, 255, 0.22);
+  --btn-shade: rgba(0, 0, 0, 0.22);
+  --btn-contact: rgba(0, 0, 0, 0.18);
+  --btn-lift: rgba(0, 0, 0, 0.28);
+  --btn-press-inset: rgba(0, 0, 0, 0.35);
+  --btn-press-contact: rgba(0, 0, 0, 0.28);
+  --btn-press-line: transparent;
 }
 
 .ui-button--link {
-  min-height: auto;
+  --btn-face-top: transparent;
+  --btn-face-bottom: transparent;
+  --btn-edge: transparent;
+  --btn-label-color: #4b5563;
+  --btn-highlight: transparent;
+  --btn-shade: transparent;
+  --btn-contact: transparent;
+  --btn-lift: transparent;
+  --btn-press-inset: transparent;
+  --btn-press-contact: transparent;
+  --btn-press-line: transparent;
+  min-height: 0;
   padding: 0;
-  border-color: transparent;
+  border: 0;
   border-radius: 0;
   background: transparent;
-  color: var(--product-text);
   box-shadow: none;
   text-decoration: underline;
-  text-underline-offset: 0.2em;
+  text-decoration-thickness: calc(1 * var(--btn-u));
+  text-underline-offset: 0.22em;
+  transition:
+    color 160ms var(--ease-standard, ease),
+    opacity 120ms var(--ease-standard, ease);
+}
+
+.ui-button--link .ui-button__label::after {
+  content: '→';
+  display: inline-block;
+  margin-inline-start: 0.35em;
+  transition: transform 120ms var(--ease-standard, ease);
+}
+
+.ui-button--link:not(:disabled):hover {
+  --btn-label-color: #111827;
+  transform: none;
+}
+
+.ui-button--link:not(:disabled):hover .ui-button__label::after {
+  transform: translateX(calc(2 * var(--btn-u)));
 }
 
 .ui-button--glass {
-  border-color: var(--surface-glass-border, var(--product-border));
-  background: var(--surface-glass-bg, var(--product-surface));
-  color: var(--product-text);
+  --btn-face-top: transparent;
+  --btn-face-bottom: transparent;
+  --btn-edge: var(--surface-glass-border, var(--product-border));
+  --btn-label-color: var(--product-text);
+  --btn-highlight: transparent;
+  --btn-shade: transparent;
+  --btn-contact: transparent;
+  --btn-lift: transparent;
+  border-color: var(--btn-edge);
+  background-image: none;
+  background-color: var(--surface-glass-bg, var(--product-surface));
+  color: var(--btn-label-color);
   box-shadow: var(--surface-glass-shadow, var(--shadow-md));
   backdrop-filter: var(--surface-glass-filter, none);
   -webkit-backdrop-filter: var(--surface-glass-filter, none);
 }
 
-.ui-button--primary:not(:disabled):hover,
 .ui-icon-button--solid:not(:disabled):hover {
   border-color: var(--product-action-primary-hover);
   background: var(--product-action-primary-hover);
 }
 
-.ui-button--secondary:not(:disabled):hover {
-  border-color: var(
-    --product-border-strong,
-    var(--product-action-secondary-border)
-  );
-  background: var(--product-action-secondary-hover);
-}
-
-:is(
-    .ui-button--outline,
-    .ui-button--ghost,
-    .ui-icon-button--outline,
-    .ui-icon-button--ghost
-  ):not(:disabled):hover {
+:is(.ui-icon-button--outline, .ui-icon-button--ghost):not(:disabled):hover {
   border-color: var(--product-border-default, var(--product-border));
   background: var(--product-surface-subtle, var(--product-surface));
 }
 
-:is(.ui-button--danger, .ui-icon-button--danger):not(:disabled):hover {
+.ui-icon-button--danger:not(:disabled):hover {
   border-color: color-mix(in srgb, var(--state-error-text) 30%, transparent);
   background: color-mix(
     in srgb,
@@ -714,13 +875,171 @@
   );
 }
 
-:is(.ui-button--primary, .ui-button--secondary, .ui-icon-button--solid):not(
-    :disabled
-  ):active {
+.ui-icon-button--solid:not(:disabled):active {
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
 }
 
-.ui-button__icon svg,
+.ui-button--primary:not(:disabled):hover {
+  --btn-face-top: #485062;
+  --btn-face-bottom: #2d374b;
+}
+
+.ui-button--secondary:not(:disabled):hover {
+  --btn-face-top: #ffffff;
+  --btn-face-bottom: #f9fafb;
+}
+
+.ui-button--outline:not(:disabled):hover {
+  --btn-face-top: #f7f8fa;
+  --btn-face-bottom: #eef0f3;
+}
+
+.ui-button--ghost:not(:disabled):hover {
+  background-color: #f1f3f5;
+}
+
+.ui-button--danger:not(:disabled):hover {
+  --btn-face-top: #e66a6d;
+  --btn-face-bottom: #c93f44;
+}
+
+.ui-button--primary:not(:disabled):active {
+  --btn-face-top: #1f2735;
+  --btn-face-bottom: #333c4d;
+}
+
+.ui-button--secondary:not(:disabled):active {
+  --btn-face-top: #eceef1;
+  --btn-face-bottom: #f7f8fa;
+}
+
+.ui-button--outline:not(:disabled):active {
+  --btn-face-top: #e1e4e8;
+  --btn-face-bottom: #eef0f3;
+}
+
+.ui-button--ghost:not(:disabled):active {
+  background-color: #e7e9ec;
+}
+
+.ui-button--danger:not(:disabled):active {
+  --btn-face-top: #a52a30;
+  --btn-face-bottom: #c2353b;
+}
+
+/* Dark surfaces keep the same five layers; only the neutral values flip. */
+html.dark .ui-button--primary {
+  --btn-face-top: #4a5468;
+  --btn-face-bottom: #38414f;
+  --btn-edge: #1b2230;
+  --btn-highlight: rgba(255, 255, 255, 0.12);
+  --btn-shade: rgba(0, 0, 0, 0.35);
+  --btn-contact: rgba(0, 0, 0, 0.35);
+  --btn-lift: rgba(0, 0, 0, 0.45);
+  --btn-press-inset: rgba(0, 0, 0, 0.5);
+}
+
+html.dark .ui-button--primary:not(:disabled):hover {
+  --btn-face-top: #545f74;
+  --btn-face-bottom: #414b5d;
+}
+
+html.dark .ui-button--primary:not(:disabled):active {
+  --btn-face-top: #2f3745;
+  --btn-face-bottom: #3d4757;
+}
+
+html.dark .ui-button--secondary {
+  --btn-face-top: #333a47;
+  --btn-face-bottom: #262c37;
+  --btn-edge: #161b24;
+  --btn-label-color: #e8ebf0;
+  --btn-highlight: rgba(255, 255, 255, 0.12);
+  --btn-shade: rgba(0, 0, 0, 0.4);
+  --btn-contact: rgba(0, 0, 0, 0.35);
+  --btn-lift: rgba(0, 0, 0, 0.45);
+  --btn-press-inset: rgba(0, 0, 0, 0.5);
+  --btn-press-contact: rgba(0, 0, 0, 0.35);
+  --btn-press-line: rgba(255, 255, 255, 0.06);
+}
+
+html.dark .ui-button--secondary:not(:disabled):hover {
+  --btn-face-top: #3a4250;
+  --btn-face-bottom: #2c3340;
+}
+
+html.dark .ui-button--secondary:not(:disabled):active {
+  --btn-face-top: #222834;
+  --btn-face-bottom: #2e3543;
+}
+
+html.dark .ui-button--outline {
+  --btn-face-top: #2b323f;
+  --btn-face-bottom: #232936;
+  --btn-edge: #181d26;
+  --btn-label-color: #e2e6ed;
+  --btn-highlight: rgba(255, 255, 255, 0.08);
+  --btn-shade: rgba(0, 0, 0, 0.35);
+  --btn-contact: rgba(0, 0, 0, 0.3);
+  --btn-lift: rgba(0, 0, 0, 0.4);
+  --btn-press-inset: rgba(0, 0, 0, 0.45);
+  --btn-press-contact: rgba(0, 0, 0, 0.3);
+  --btn-press-line: rgba(255, 255, 255, 0.06);
+}
+
+html.dark .ui-button--outline:not(:disabled):hover {
+  --btn-face-top: #323a48;
+  --btn-face-bottom: #29303e;
+}
+
+html.dark .ui-button--outline:not(:disabled):active {
+  --btn-face-top: #1f2431;
+  --btn-face-bottom: #2b3140;
+}
+
+html.dark .ui-button--ghost {
+  --btn-label-color: #c6ccd6;
+  --btn-press-inset: rgba(0, 0, 0, 0.45);
+}
+
+html.dark .ui-button--ghost:not(:disabled):hover {
+  background-color: rgba(255, 255, 255, 0.07);
+}
+
+html.dark .ui-button--ghost:not(:disabled):active {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+html.dark .ui-button--link {
+  --btn-label-color: #c6ccd6;
+}
+
+html.dark .ui-button--link:not(:disabled):hover {
+  --btn-label-color: #f5f7fa;
+}
+
+html.dark .ui-button--danger {
+  --btn-face-top: #c13a40;
+  --btn-face-bottom: #9e2a30;
+  --btn-edge: #7c1e22;
+}
+
+html.dark .ui-button--danger:not(:disabled):hover {
+  --btn-face-top: #cc4a4f;
+  --btn-face-bottom: #a93136;
+}
+
+html.dark .ui-button--danger:not(:disabled):active {
+  --btn-face-top: #7e2226;
+  --btn-face-bottom: #9e2a30;
+}
+
+.ui-button__icon svg {
+  width: calc(var(--btn-icon-size) * var(--btn-u));
+  height: calc(var(--btn-icon-size) * var(--btn-u));
+  stroke-width: 2.25;
+}
+
 .ui-icon-button__icon svg {
   width: 1.125em;
   height: 1.125em;
@@ -851,7 +1170,7 @@
   width: 100%;
   min-width: 0;
   border: 1px solid var(--product-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   background: var(--product-surface);
   color: var(--product-text);
   caret-color: var(--product-text);
@@ -1574,7 +1893,7 @@
   justify-items: center;
   padding: 1.5rem;
   border: 1px solid var(--product-border-soft);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-2xl);
   background: var(--product-surface);
   color: var(--product-text);
   text-align: center;
@@ -1827,4 +2146,28 @@
 
 .ui-btn-secondary--web:hover {
   background: var(--web-action-secondary-hover);
+}
+
+
+/* Continuous corners: progressive enhancement only. Browsers without
+   corner-shape keep the plain border-radius above. Pills and circles stay
+   perfectly round, so they opt out of the superellipse. */
+@supports (corner-shape: superellipse(1.25)) {
+  :where(*) {
+    corner-shape: superellipse(1.25);
+  }
+
+  :where(
+    .ui-icon-button,
+    .ui-avatar,
+    .user-avatar,
+    [class*='avatar'],
+    [class*='dot'],
+    [class*='circle'],
+    [class*='pill'],
+    .create-v2-search,
+    .create-v2-search *
+  ) {
+    corner-shape: round;
+  }
 }

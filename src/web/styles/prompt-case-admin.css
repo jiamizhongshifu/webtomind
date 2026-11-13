@@ -883,3 +883,95 @@
   [data-slot='empty-description'] {
   color: var(--create-night-text-2);
 }
+
+/* 案例编辑器独立页面：表单仍来自 PromptCasesPanel，这里只负责页面骨架。 */
+.creator-prompt-case-editor-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--product-surface, #ffffff);
+  color: var(--product-text-primary, #141414);
+}
+
+.creator-prompt-case-editor-page__head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--product-border-soft, rgba(20, 20, 20, 0.1));
+  background: inherit;
+}
+
+.creator-prompt-case-editor-page__head h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.creator-prompt-case-editor-page__back {
+  appearance: none;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--product-border-soft, rgba(20, 20, 20, 0.12));
+  border-radius: var(--radius-md, 12px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.creator-prompt-case-editor-page__back:disabled {
+  opacity: 0.56;
+  cursor: not-allowed;
+}
+
+.creator-prompt-case-editor-page__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 24px;
+}
+
+.creator-prompt-case-editor-page__body > * {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+}
+
+.creator-prompt-case-editor-page__foot {
+  position: sticky;
+  bottom: 0;
+  padding: 12px 24px;
+  border-top: 1px solid var(--product-border-soft, rgba(20, 20, 20, 0.1));
+  background: inherit;
+}
+
+.creator-prompt-case-editor-page__foot > * {
+  width: min(100%, 1080px);
+  margin: 0 auto;
+}
+
+.creator-prompt-case-editor-page__foot .creator-prompt-case-admin-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.creator-prompt-case-editor-page__foot .creator-library-upload {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.creator-prompt-case-editor-page__error,
+.creator-prompt-case-editor-page__status {
+  width: min(100%, 1080px);
+  margin: 0 auto 16px;
+  font-size: 13px;
+}
+
+.creator-prompt-case-editor-page__error {
+  color: var(--state-error-text, #b42318);
+}

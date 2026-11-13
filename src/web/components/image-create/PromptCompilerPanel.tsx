@@ -50,10 +50,14 @@ import {
   SelectRoot,
   SelectTrigger,
   SelectValue,
-  Textarea,
-  useOverlayBehavior
+  Textarea
 } from '@/shared/ui';
 import { Checkbox } from '@/shared/ui/radix/checkbox';
+import {
+  PopoverContent,
+  PopoverRoot,
+  PopoverTrigger
+} from '@/shared/ui/PopoverPrimitives';
 import { BeamCta } from '@/web/components/BeamCta';
 import {
   clampImageCountForModel,
@@ -292,6 +296,10 @@ export function PromptCompilerPanel({
   const { t } = useTranslation('imageCreate');
   const promptEditorRef = useRef<HTMLTextAreaElement | null>(null);
   const [presetModalOpen, setPresetModalOpen] = useState(false);
+  const [resetConfirmOpen, setResetConfirmOpen] = useState(false);
+  const [pendingLibraryDeleteId, setPendingLibraryDeleteId] = useState<
+    string | null
+  >(null);
   const [referencePanelOpen, setReferencePanelOpen] = useState(false);
   const [dismissedCombinationPrompt, setDismissedCombinationPrompt] = useState<
     string | null
@@ -301,10 +309,6 @@ export function PromptCompilerPanel({
   const [modalView, setModalView] = useState<'presets' | 'promptLibrary'>(
     'presets'
   );
-  const presetModalRef = useOverlayBehavior<HTMLElement>({
-    open: presetModalOpen,
-    onClose: () => setPresetModalOpen(false)
-  });
   const [mentionQuery, setMentionQuery] = useState<MentionQueryState | null>(
     null
   );
@@ -362,9 +366,8 @@ export function PromptCompilerPanel({
     onOpenHistoryReferencePicker?.();
   };
   const handleResetClick = () => {
-    if (window.confirm(t('controls.resetConfirm') as string)) {
-      onReset();
-    }
+    setResetConfirmOpen(false);
+    onReset();
   };
   const displayImageCount = Math.max(
     1,
@@ -735,18 +738,46 @@ export function PromptCompilerPanel({
             <Wand2 size={17} />
             {t('prompt.inputTitle')}
           </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="creator-prompt-reset-inline"
-            title={t('controls.reset') as string}
-            aria-label={t('controls.reset') as string}
-            onClick={handleResetClick}
+          <PopoverRoot
+            open={resetConfirmOpen}
+            onOpenChange={setResetConfirmOpen}
           >
-            <RotateCcw size={13} />
-            <span>{t('controls.reset')}</span>
-          </Button>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="creator-prompt-reset-inline"
+                title={t('controls.reset') as string}
+                aria-label={t('controls.reset') as string}
+              >
+                <RotateCcw size={13} />
+                <span>{t('controls.reset')}</span>
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              data-floating-confirm="true"
+              align="start"
+              collisionPadding={12}
+              aria-label={t('controls.reset') as string}
+            >
+              <p className="text-sm text-muted-foreground">
+                {t('controls.resetConfirm')}
+              </p>
+              <div className="mt-4 flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setResetConfirmOpen(false)}
+                >
+                  {t('common.cancel', { defaultValue: '取消' })}
+                </Button>
+                <Button type="button" onClick={handleResetClick}>
+                  {t('controls.reset')}
+                </Button>
+              </div>
+            </PopoverContent>
+          </PopoverRoot>
           <label className="creator-prompt-auto-optimize">
             <Checkbox
               checked={autoOptimizePrompt}
@@ -1260,26 +1291,22 @@ export function PromptCompilerPanel({
         )}
       </div>
 
-      {presetModalOpen && (
-        <div
-          className="creator-preset-modal-backdrop"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) {
-              setPresetModalOpen(false);
-            }
-          }}
+      <DialogRoot
+        open={presetModalOpen}
+        onOpenChange={(open) => {
+          if (!open) setPresetModalOpen(false);
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          placement="right"
+          aria-label={modalTitle as string}
+          overlayClassName="!bg-[rgba(20,18,16,0.42)]"
+          className={`creator-preset-modal !h-dvh !max-h-dvh !w-[min(460px,100vw)] !gap-0 !rounded-none !border-0 !p-0 !shadow-none max-sm:!w-screen${
+            isPromptLibraryView ? ' prompt-library' : ''
+          }`}
         >
-          <section
-            ref={presetModalRef}
-            className={`creator-preset-modal${
-              isPromptLibraryView ? ' prompt-library' : ''
-            }`}
-            role="dialog"
-            aria-modal="true"
-            aria-label={modalTitle as string}
-            tabIndex={-1}
-          >
+            <DialogTitle className="sr-only">{modalTitle}</DialogTitle>
             <div className="creator-preview-head">
               <span>{modalTitle}</span>
               <Button
@@ -1345,17 +1372,57 @@ export function PromptCompilerPanel({
                           >
                             <Copy />
                           </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="creator-prompt-library-icon danger"
-                            aria-label={t('promptLibrary.delete') as string}
-                            title={t('promptLibrary.delete') as string}
-                            onClick={() => onDeletePromptLibraryItem(item.id)}
+                          <PopoverRoot
+                            open={pendingLibraryDeleteId === item.id}
+                            onOpenChange={(open) => {
+                              if (!open) setPendingLibraryDeleteId(null);
+                            }}
                           >
-                            <Trash2 />
-                          </Button>
+                            <PopoverTrigger asChild>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="creator-prompt-library-icon danger"
+                                aria-label={t('promptLibrary.delete') as string}
+                                title={t('promptLibrary.delete') as string}
+                              >
+                                <Trash2 />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              data-floating-confirm="true"
+                              className="z-[var(--z-product-menu-portal)]"
+                              align="end"
+                              collisionPadding={12}
+                              aria-label={t('promptLibrary.delete') as string}
+                            >
+                              <p className="text-sm text-muted-foreground">
+                                {t('promptLibrary.deleteConfirm')}
+                              </p>
+                              <div className="mt-4 flex justify-end gap-2">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() => setPendingLibraryDeleteId(null)}
+                                >
+                                  {t('common.cancel', {
+                                    defaultValue: '取消'
+                                  })}
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="danger"
+                                  onClick={() => {
+                                    onDeletePromptLibraryItem(item.id);
+                                    setPendingLibraryDeleteId(null);
+                                  }}
+                                >
+                                  {t('promptLibrary.delete')}
+                                </Button>
+                              </div>
+                            </PopoverContent>
+                          </PopoverRoot>
                         </div>
                       </div>
                     ))}
@@ -1403,9 +1470,8 @@ export function PromptCompilerPanel({
                 </p>
               )}
             </div>
-          </section>
-        </div>
-      )}
+        </DialogContent>
+      </DialogRoot>
     </section>
   );
 }

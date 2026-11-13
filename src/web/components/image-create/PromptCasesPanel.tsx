@@ -106,6 +106,7 @@ import {
   imageFetchPriority,
   useOverlayBehavior
 } from '@/shared/ui';
+import { useUnsavedChanges } from '@/shared/ui/Dialog';
 import {
   completeRewardTaskOnce,
   REWARD_TASK_IDENTIFIERS
@@ -245,6 +246,14 @@ export interface PromptCasesPanelProps {
   shareAccessToken?: string | null;
   onClearSharedCase?: () => void;
   onOpenMembershipUpsell?: (source: string) => void;
+  /** 路由模式：把案例编辑器作为独立页面渲染。 */
+  editorRoute?: { mode: 'create' | 'edit'; caseId?: string } | null;
+  onEditorExit?: () => void;
+  onOpenEditor?: (mode: 'create' | 'edit', caseId?: string) => void;
+  /** 草稿导入作为独立页面渲染。 */
+  importRoute?: boolean;
+  onImportExit?: () => void;
+  onOpenImport?: () => void;
 }
 
 interface EditablePromptCase {
@@ -1333,7 +1342,13 @@ export function PromptCasesPanel({
   buildShareUrl,
   shareAccessToken = null,
   onClearSharedCase,
-  onOpenMembershipUpsell
+  onOpenMembershipUpsell,
+  editorRoute = null,
+  onEditorExit,
+  onOpenEditor,
+  importRoute = false,
+  onImportExit,
+  onOpenImport
 }: PromptCasesPanelProps) {
   const { t } = useTranslation('imageCreate');
   const td = t as (
@@ -1351,6 +1366,7 @@ export function PromptCasesPanel({
     null
   );
   const [editor, setEditor] = useState<EditablePromptCase>(() => toEditable());
+  const editorBaselineRef = useRef(JSON.stringify(toEditable()));
   const [adminTab, setAdminTab] = useState<AdminPanelTab>(() =>
     getAdminPanelTabFromUrl(location.pathname, location.search)
   );
@@ -1359,6 +1375,9 @@ export function PromptCasesPanel({
   const [adminModalMode, setAdminModalMode] =
     useState<AdminCaseModalMode | null>(null);
   const [isDraftImportOpen, setIsDraftImportOpen] = useState(false);
+  const draftImportBaselineRef = useRef(
+    JSON.stringify(createEmptyDraftImportForm())
+  );
   const [draftImportForm, setDraftImportForm] = useState<DraftImportForm>(() =>
     createEmptyDraftImportForm()
   );
@@ -2407,7 +2426,11 @@ export function PromptCasesPanel({
   };
 
   const openCreateCaseModal = () => {
-    setEditor({
+    if (onOpenEditor) {
+      onOpenEditor('create');
+      return;
+    }
+    const next = {
       ...toEditable(),
       locale: activeLocale,
       model: 'gpt-image-2',
@@ -2416,7 +2439,9 @@ export function PromptCasesPanel({
           ? activeCategory
           : 'portrait',
       featured: activeCategory === 'featured'
-    });
+    };
+    editorBaselineRef.current = JSON.stringify(next);
+    setEditor(next);
     setAdminModalMode('create');
     setError('');
   };
@@ -2447,9 +2472,15 @@ export function PromptCasesPanel({
   };
 
   const openEditCaseModal = async (caseItem: PromptCase) => {
+    if (onOpenEditor) {
+      onOpenEditor('edit', caseItem.sourceCaseId || caseItem.id);
+      return;
+    }
     setError('');
     try {
-      setEditor(toEditable(await loadAdminCaseDetail(caseItem)));
+      const next = toEditable(await loadAdminCaseDetail(caseItem));
+      editorBaselineRef.current = JSON.stringify(next);
+      setEditor(next);
       setAdminModalMode('edit');
     } catch (detailError) {
       setError(
@@ -2460,11 +2491,60 @@ export function PromptCasesPanel({
     }
   };
 
+  useEffect(() => {
+    if (!importRoute) return undefined;
+    setDraftImportForm(createEmptyDraftImportForm());
+    draftImportBaselineRef.current = JSON.stringify(
+      createEmptyDraftImportForm()
+    );
+    setError('');
+    return undefined;
+  }, [importRoute]);
+
+  useEffect(() => {
+    if (!editorRoute) return undefined;
+    let cancelled = false;
+    if (editorRoute.mode === 'edit' && editorRoute.caseId) {
+      void getAdminPromptCase(editorRoute.caseId)
+        .then((item) => {
+          if (cancelled) return;
+          const next = toEditable(item);
+          editorBaselineRef.current = JSON.stringify(next);
+          setEditor(next);
+          setAdminModalMode('edit');
+        })
+        .catch((detailError) => {
+          if (!cancelled) {
+            setError(
+              detailError instanceof Error
+                ? detailError.message
+                : (t('promptCases.loadFailed') as string)
+            );
+          }
+        });
+    } else {
+      const next = toEditable();
+      editorBaselineRef.current = JSON.stringify(next);
+      setEditor(next);
+      setAdminModalMode('create');
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [editorRoute, t]);
+
   const closeAdminCaseModal = () => {
     if (isSaving || isUploading) return;
     setAdminModalMode(null);
     setEditor(toEditable());
+    if (editorRoute) onEditorExit?.();
   };
+
+  const editorDirty =
+    Boolean(adminModalMode) &&
+    JSON.stringify(editor) !== editorBaselineRef.current;
+  const { requestClose: requestEditorClose, discardConfirmation } =
+    useUnsavedChanges(editorDirty, closeAdminCaseModal, isSaving || isUploading);
 
   const openEditDraftModal = (draft: PromptCaseDraft) => {
     setEditingDraftId(draft.id);
@@ -2644,13 +2724,24 @@ export function PromptCasesPanel({
   };
 
   const openDraftImportModal = () => {
+    if (onOpenImport) {
+      onOpenImport();
+      return;
+    }
     setDraftImportForm(createEmptyDraftImportForm());
+    draftImportBaselineRef.current = JSON.stringify(
+      createEmptyDraftImportForm()
+    );
     setIsDraftImportOpen(true);
     setError('');
     setStatusText('');
   };
 
   const closeDraftImportModal = () => {
+    if (importRoute) {
+      onImportExit?.();
+      return;
+    }
     if (
       isDraftImportExtracting ||
       isDraftImportSaving ||
@@ -2660,7 +2751,27 @@ export function PromptCasesPanel({
     }
     setIsDraftImportOpen(false);
     setDraftImportForm(createEmptyDraftImportForm());
+    draftImportBaselineRef.current = JSON.stringify(
+      createEmptyDraftImportForm()
+    );
   };
+
+  const draftImportBusy =
+    isDraftImportExtracting ||
+    isDraftImportSaving ||
+    isDraftImportUploading ||
+    isDraftImportGenerating;
+  const draftImportDirty =
+    (importRoute || isDraftImportOpen) &&
+    JSON.stringify(draftImportForm) !== draftImportBaselineRef.current;
+  const {
+    requestClose: requestDraftImportClose,
+    discardConfirmation: importDiscardConfirmation
+  } = useUnsavedChanges(
+    draftImportDirty,
+    closeDraftImportModal,
+    draftImportBusy
+  );
 
   const updateDraftImportForm = <K extends keyof DraftImportForm>(
     key: K,
@@ -3192,6 +3303,7 @@ export function PromptCasesPanel({
       void loadAdminCases();
       setEditor(toEditable(saved));
       setAdminModalMode(null);
+      if (editorRoute) onEditorExit?.();
       setStatusText(t('promptCases.saved') as string);
     } catch (saveError) {
       setError(
@@ -3259,6 +3371,753 @@ export function PromptCasesPanel({
       );
     }
   };
+
+
+const adminCaseEditorBody = adminModalMode ? (
+          <div className="creator-prompt-case-admin-modal-body">
+            <div className="creator-prompt-case-form creator-prompt-case-form-compact creator-prompt-case-modal-form">
+              <section className="creator-prompt-case-form-section creator-prompt-case-form-basics">
+                <div className="creator-prompt-case-form-section-head">
+                  <strong>{t('promptCases.formSections.basics')}</strong>
+                  <span>{t('promptCases.modalBasicsHint')}</span>
+                </div>
+                <label className="wide">
+                  {t('promptCases.title')}
+                  <input
+                    value={editor.title}
+                    onChange={(event) =>
+                      updateEditor('title', event.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  {t('promptCases.model')}
+                  <select
+                    value={editor.model}
+                    onChange={(event) =>
+                      updateEditor('model', event.target.value)
+                    }
+                  >
+                    {editor.model &&
+                      !PROMPT_CASE_MODEL_PRESETS.some(
+                        (preset) => preset.value === editor.model
+                      ) && <option value={editor.model}>{editor.model}</option>}
+                    {PROMPT_CASE_MODEL_PRESETS.map((preset) => (
+                      <option key={preset.value} value={preset.value}>
+                        {preset.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  {t('promptCases.category')}
+                  <select
+                    value={editor.category}
+                    onChange={(event) =>
+                      updateEditor('category', event.target.value)
+                    }
+                  >
+                    {PROMPT_CASE_CONTENT_CATEGORIES.map((category) => (
+                      <option key={category} value={category}>
+                        {getCategoryLabel(category)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  {t('promptCases.locale')}
+                  <select
+                    value={editor.locale}
+                    onChange={(event) =>
+                      updateEditor('locale', event.target.value)
+                    }
+                  >
+                    <option value="zh-CN">zh-CN</option>
+                    <option value="en-US">en-US</option>
+                  </select>
+                </label>
+                <label>
+                  {t('promptCases.packageSlug')}
+                  <select
+                    value={editor.packageSlug}
+                    onChange={(event) =>
+                      updateEditor('packageSlug', event.target.value)
+                    }
+                  >
+                    <option value="">{t('promptCases.noPackage')}</option>
+                    {editor.packageSlug &&
+                      !COMMERCIAL_PACKAGE_OPTIONS.includes(
+                        editor.packageSlug
+                      ) && (
+                        <option value={editor.packageSlug}>
+                          {editor.packageSlug}
+                        </option>
+                      )}
+                    {COMMERCIAL_PACKAGE_OPTIONS.map((packageSlug) => (
+                      <option key={packageSlug} value={packageSlug}>
+                        {td(`promptCases.packages.${packageSlug}`, {
+                          defaultValue: packageSlug
+                        })}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="wide">
+                  {t('promptCases.tags')}
+                  <input
+                    value={editor.tags.join(', ')}
+                    onChange={(event) =>
+                      updateEditor(
+                        'tags',
+                        event.target.value
+                          .split(/[,，]/)
+                          .map((tag) => tag.trim())
+                          .filter(Boolean)
+                      )
+                    }
+                  />
+                </label>
+                <label className="wide creator-prompt-case-url-action-field">
+                  {t('promptCases.authorUrl')}
+                  <div>
+                    <input
+                      value={editor.authorUrl}
+                      onChange={(event) =>
+                        updateEditor('authorUrl', event.target.value)
+                      }
+                    />
+                    <ShadcnButton
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      disabled={!editor.authorUrl.trim()}
+                      aria-label={td('promptCases.openSourceUrl', {
+                        defaultValue: '打开来源地址'
+                      })}
+                      title={td('promptCases.openSourceUrl', {
+                        defaultValue: '打开来源地址'
+                      })}
+                      onClick={() => openUrlInNewTab(editor.authorUrl)}
+                    >
+                      <ExternalLink />
+                    </ShadcnButton>
+                  </div>
+                </label>
+              </section>
+
+              <section className="creator-prompt-case-form-section creator-prompt-case-form-media">
+                <div className="creator-prompt-case-form-section-head">
+                  <strong>{t('promptCases.formSections.media')}</strong>
+                  <span>{editor.imageUrls.length}</span>
+                </div>
+                <label className="wide">
+                  {t('promptCases.imageUrls')}
+                  <textarea
+                    className="creator-prompt-case-url-list"
+                    value={editor.imageUrls.join('\n')}
+                    onChange={(event) =>
+                      updateEditor(
+                        'imageUrls',
+                        event.target.value
+                          .split(/\n+/)
+                          .map((url) => url.trim())
+                          .filter(Boolean)
+                      )
+                    }
+                  />
+                </label>
+                <label className="creator-prompt-case-upload">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(event) => void handleUpload(event)}
+                  />
+                  {isUploading ? (
+                    <Loader2 size={14} className="creator-spin-icon" />
+                  ) : (
+                    <ImagePlus size={14} />
+                  )}
+                  {t('promptCases.upload')}
+                </label>
+                {editor.imageUrls.length > 0 && (
+                  <div className="creator-prompt-case-form-images">
+                    {editor.imageUrls.map((url, index) => (
+                      <figure key={`${url}-${index}`}>
+                        <img
+                          src={getOptimizedPromptCaseImageUrl(url, {
+                            width: 180,
+                            quality: 72
+                          })}
+                          alt=""
+                          loading="lazy"
+                          decoding="async"
+                          referrerPolicy="no-referrer"
+                        />
+                        <ShadcnButton
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          aria-label={t('promptCases.removeImage') as string}
+                          onClick={() =>
+                            updateEditor(
+                              'imageUrls',
+                              editor.imageUrls.filter(
+                                (_, itemIndex) => itemIndex !== index
+                              )
+                            )
+                          }
+                        >
+                          <X />
+                        </ShadcnButton>
+                      </figure>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="creator-prompt-case-form-section creator-prompt-case-form-prompt">
+                <div className="creator-prompt-case-form-section-head">
+                  <strong>{t('promptCases.formSections.prompt')}</strong>
+                  <span>{t('promptCases.promptPreviewAutoHint')}</span>
+                </div>
+                <label className="creator-prompt-case-prompt-main wide">
+                  {t('promptCases.prompt')}
+                  <textarea
+                    value={editor.prompt}
+                    onChange={(event) =>
+                      updateEditor('prompt', event.target.value)
+                    }
+                  />
+                </label>
+              </section>
+
+              <details className="creator-prompt-case-advanced">
+                <summary>{t('promptCases.advancedFields')}</summary>
+                <section className="creator-prompt-case-form-section creator-prompt-case-form-basics">
+                  <label>
+                    {t('promptCases.slug')}
+                    <input
+                      value={editor.slug}
+                      onChange={(event) =>
+                        updateEditor('slug', event.target.value)
+                      }
+                    />
+                  </label>
+                  <label>
+                    {t('promptCases.commercialIntent')}
+                    <textarea
+                      value={editor.commercialIntent}
+                      placeholder={deriveCommercialIntent(editor)}
+                      onChange={(event) =>
+                        updateEditor('commercialIntent', event.target.value)
+                      }
+                    />
+                  </label>
+                  <label className="wide">
+                    可视化配方 JSON
+                    <textarea
+                      className="creator-prompt-case-visual-recipe-input"
+                      value={editor.visualRecipeText}
+                      placeholder={`{\n  "version": 1,\n  "selection": {\n    "character": "character-korean-glam-girl",\n    "expression": "expression-soft-smile",\n    "pose": "pose-casual-sitting"\n  }\n}`}
+                      onChange={(event) =>
+                        updateEditor('visualRecipeText', event.target.value)
+                      }
+                    />
+                  </label>
+                </section>
+              </details>
+
+              <section className="creator-prompt-case-form-section creator-prompt-case-form-switches">
+                <div className="creator-prompt-case-form-section-head">
+                  <strong>{t('promptCases.formSections.settings')}</strong>
+                </div>
+                <label className="creator-prompt-case-check">
+                  <input
+                    type="checkbox"
+                    checked={editor.isPublished}
+                    onChange={(event) =>
+                      updateEditor('isPublished', event.target.checked)
+                    }
+                  />
+                  {t('promptCases.published')}
+                </label>
+                <label className="creator-prompt-case-check">
+                  <input
+                    type="checkbox"
+                    checked={editor.featured}
+                    onChange={(event) =>
+                      updateEditor('featured', event.target.checked)
+                    }
+                  />
+                  {t('promptCases.featured')}
+                </label>
+                <label className="creator-prompt-case-check">
+                  <input
+                    type="checkbox"
+                    checked={editor.memberOnly}
+                    onChange={(event) =>
+                      updateEditor('memberOnly', event.target.checked)
+                    }
+                  />
+                  {t('promptCases.memberOnly')}
+                </label>
+              </section>
+            </div>
+          </div>
+  ) : null;
+const adminCaseEditorFooter = adminModalMode ? (
+            <div className="creator-prompt-case-admin-modal-actions">
+              <ShadcnButton
+                type="button"
+                variant="outline"
+                onClick={requestEditorClose}
+                disabled={isSaving || isUploading}
+              >
+                {t('common.cancel', { defaultValue: '取消' })}
+              </ShadcnButton>
+              <ShadcnButton
+                type="button"
+                className="creator-library-upload"
+                disabled={isSaving || isUploading}
+                onClick={() => void handleSave()}
+              >
+                {isSaving ? (
+                  <Loader2 data-icon="inline-start" />
+                ) : (
+                  <Check data-icon="inline-start" />
+                )}
+                {adminModalMode === 'create'
+                  ? t('promptCases.create')
+                  : t('promptCases.save')}
+              </ShadcnButton>
+            </div>
+          ) : null;
+
+  const draftImportBody = (
+        <div className="creator-prompt-case-admin-modal-body">
+          <div className="creator-prompt-case-form creator-prompt-case-form-compact creator-prompt-case-modal-form">
+            <section className="creator-prompt-case-form-section creator-prompt-case-draft-import-source">
+              <div className="creator-prompt-case-form-section-head">
+                <strong>
+                  {td('promptCases.draftImportSource', {
+                    defaultValue: '推文链接导入'
+                  })}
+                </strong>
+                <span>
+                  {td('promptCases.draftImportSourceHint', {
+                    defaultValue:
+                      '粘贴 X/Twitter 链接后提取，也可以直接手动填写。'
+                  })}
+                </span>
+              </div>
+              <label className="wide creator-prompt-case-draft-import-url">
+                {td('promptCases.tweetUrl', { defaultValue: '推文链接' })}
+                <div>
+                  <input
+                    value={draftImportForm.tweetUrl}
+                    placeholder="https://x.com/user/status/..."
+                    onChange={(event) =>
+                      updateDraftImportForm('tweetUrl', event.target.value)
+                    }
+                  />
+                  <ShadcnButton
+                    type="button"
+                    variant="outline"
+                    onClick={() => void handleDraftImportExtractTweet()}
+                    disabled={
+                      isDraftImportExtracting ||
+                      isDraftImportSaving ||
+                      isDraftImportUploading
+                    }
+                  >
+                    {isDraftImportExtracting ? (
+                      <Loader2 data-icon="inline-start" />
+                    ) : (
+                      <ExternalLink data-icon="inline-start" />
+                    )}
+                    {td('promptCases.extractTweetCase', {
+                      defaultValue: '提取'
+                    })}
+                  </ShadcnButton>
+                </div>
+              </label>
+              {isDraftImportExtracting && draftImportExtractProgress && (
+                <div className="creator-prompt-case-draft-import-progress">
+                  <Loader2 size={14} className="creator-spin-icon" />
+                  <span>{draftImportExtractProgress}</span>
+                </div>
+              )}
+            </section>
+
+            <section className="creator-prompt-case-form-section creator-prompt-case-form-basics">
+              <div className="creator-prompt-case-form-section-head">
+                <strong>{t('promptCases.formSections.basics')}</strong>
+                <span>
+                  {td('promptCases.draftImportBasicsHint', {
+                    defaultValue: '这些字段会直接进入新增草稿。'
+                  })}
+                </span>
+              </div>
+              <label className="wide">
+                {t('promptCases.title')}
+                <input
+                  value={draftImportForm.title}
+                  onChange={(event) =>
+                    updateDraftImportForm('title', event.target.value)
+                  }
+                />
+              </label>
+              <label>
+                {t('promptCases.category')}
+                <select
+                  value={draftImportForm.category}
+                  onChange={(event) =>
+                    updateDraftImportForm('category', event.target.value)
+                  }
+                >
+                  {PROMPT_CASE_CONTENT_CATEGORIES.map((category) => (
+                    <option key={category} value={category}>
+                      {getCategoryLabel(category)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="wide">
+                {t('promptCases.tags')}
+                <input
+                  value={draftImportForm.tagsText}
+                  onChange={(event) =>
+                    updateDraftImportForm('tagsText', event.target.value)
+                  }
+                />
+              </label>
+              <label className="wide creator-prompt-case-url-action-field">
+                {t('promptCases.sourceUrl')}
+                <div>
+                  <input
+                    value={getDraftImportSourceUrl(draftImportForm)}
+                    onChange={(event) =>
+                      setDraftImportForm((current) => ({
+                        ...current,
+                        generationSettings: {
+                          ...current.generationSettings,
+                          sourceUrl: event.target.value
+                        }
+                      }))
+                    }
+                  />
+                  <ShadcnButton
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    disabled={!getDraftImportSourceUrl(draftImportForm).trim()}
+                    aria-label={td('promptCases.openSourceUrl', {
+                      defaultValue: '打开来源地址'
+                    })}
+                    title={td('promptCases.openSourceUrl', {
+                      defaultValue: '打开来源地址'
+                    })}
+                    onClick={() =>
+                      openUrlInNewTab(getDraftImportSourceUrl(draftImportForm))
+                    }
+                  >
+                    <ExternalLink />
+                  </ShadcnButton>
+                </div>
+              </label>
+            </section>
+
+            <section className="creator-prompt-case-form-section creator-prompt-case-form-media">
+              <div className="creator-prompt-case-form-section-head">
+                <strong>{t('promptCases.formSections.media')}</strong>
+                <span>{draftImportForm.imageUrls.length}</span>
+              </div>
+              <label className="wide">
+                {t('promptCases.imageUrls')}
+                <textarea
+                  className="creator-prompt-case-url-list"
+                  value={draftImportForm.imageUrls.join('\n')}
+                  onChange={(event) => {
+                    const imageUrls = event.target.value
+                      .split(/\n+/)
+                      .map((url) => url.trim())
+                      .filter(Boolean);
+                    setDraftImportForm((current) => ({
+                      ...current,
+                      imageUrls,
+                      selectedImageUrl:
+                        imageUrls.find(
+                          (url) => url === current.selectedImageUrl
+                        ) ||
+                        imageUrls[0] ||
+                        ''
+                    }));
+                  }}
+                />
+              </label>
+              <label className="creator-prompt-case-upload">
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={(event) => void handleDraftImportImageUpload(event)}
+                />
+                {isDraftImportUploading ? (
+                  <Loader2 size={14} className="creator-spin-icon" />
+                ) : (
+                  <ImagePlus size={14} />
+                )}
+                {t('promptCases.upload')}
+              </label>
+              <PromptCaseDraftVideoPreview
+                videoUrls={getDraftFormVideoUrls(draftImportForm)}
+                posterUrl={
+                  draftImportForm.selectedImageUrl ||
+                  draftImportForm.imageUrls[0]
+                }
+                title={draftImportForm.title || ''}
+              />
+              {draftImportForm.imageUrls.length > 0 && (
+                <div className="creator-prompt-case-form-images">
+                  {draftImportForm.imageUrls.map((url, index) => (
+                    <figure key={`${url}-${index}`}>
+                      <img
+                        src={getOptimizedPromptCaseImageUrl(url, {
+                          width: 180,
+                          quality: 72
+                        })}
+                        alt=""
+                        loading="lazy"
+                        decoding="async"
+                        referrerPolicy="no-referrer"
+                      />
+                      <ShadcnButton
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        aria-label={t('promptCases.removeImage') as string}
+                        onClick={() =>
+                          setDraftImportForm((current) => {
+                            const imageUrls = current.imageUrls.filter(
+                              (_, itemIndex) => itemIndex !== index
+                            );
+                            return {
+                              ...current,
+                              imageUrls,
+                              selectedImageUrl:
+                                imageUrls.find(
+                                  (item) => item === current.selectedImageUrl
+                                ) ||
+                                imageUrls[0] ||
+                                ''
+                            };
+                          })
+                        }
+                      >
+                        <X />
+                      </ShadcnButton>
+                    </figure>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className="creator-prompt-case-form-section creator-prompt-case-form-prompt">
+              <div className="creator-prompt-case-form-section-head">
+                <strong>{t('promptCases.formSections.prompt')}</strong>
+                <span>{t('promptCases.promptPreviewAutoHint')}</span>
+              </div>
+              <label className="creator-prompt-case-prompt-main wide">
+                {t('promptCases.prompt')}
+                <textarea
+                  value={draftImportForm.prompt}
+                  onChange={(event) =>
+                    updateDraftImportForm('prompt', event.target.value)
+                  }
+                />
+              </label>
+            </section>
+
+            <details className="creator-prompt-case-advanced">
+              <summary>{t('promptCases.advancedFields')}</summary>
+              <section className="creator-prompt-case-form-section creator-prompt-case-form-basics">
+                <label>
+                  {t('promptCases.commercialIntent')}
+                  <textarea
+                    value={draftImportForm.commercialIntent}
+                    onChange={(event) =>
+                      updateDraftImportForm(
+                        'commercialIntent',
+                        event.target.value
+                      )
+                    }
+                  />
+                </label>
+                <label>
+                  {t('promptCases.negativePrompt')}
+                  <textarea
+                    value={draftImportForm.negativePrompt}
+                    onChange={(event) =>
+                      updateDraftImportForm(
+                        'negativePrompt',
+                        event.target.value
+                      )
+                    }
+                  />
+                </label>
+                <label className="wide">
+                  {td('promptCases.reviewNotes', {
+                    defaultValue: '审核备注'
+                  })}
+                  <textarea
+                    value={draftImportForm.reviewNotes}
+                    onChange={(event) =>
+                      updateDraftImportForm('reviewNotes', event.target.value)
+                    }
+                  />
+                </label>
+                <label className="creator-prompt-case-check">
+                  <input
+                    type="checkbox"
+                    checked={draftImportForm.memberOnly}
+                    onChange={(event) =>
+                      updateDraftImportForm('memberOnly', event.target.checked)
+                    }
+                  />
+                  {t('promptCases.memberOnly')}
+                </label>
+              </section>
+            </details>
+          </div>
+        </div>
+  );
+  const draftImportFooter = (
+<div className="creator-prompt-case-admin-modal-actions">
+            <ShadcnButton
+              type="button"
+              variant="outline"
+              onClick={requestDraftImportClose}
+              disabled={draftImportBusy}
+            >
+              {t('common.cancel', { defaultValue: '取消' })}
+            </ShadcnButton>
+            <ShadcnButton
+              type="button"
+              variant="outline"
+              disabled={
+                isDraftImportExtracting ||
+                isDraftImportSaving ||
+                isDraftImportUploading ||
+                isDraftImportGenerating
+              }
+              onClick={() => void handleDraftImportSave(true)}
+            >
+              {isDraftImportGenerating ? (
+                <Loader2 data-icon="inline-start" />
+              ) : (
+                <ImagePlus data-icon="inline-start" />
+              )}
+              {td('promptCases.saveAndGenerateImages', {
+                defaultValue: '保存并生成候选图'
+              })}
+            </ShadcnButton>
+            <ShadcnButton
+              type="button"
+              className="creator-library-upload"
+              disabled={
+                isDraftImportExtracting ||
+                isDraftImportSaving ||
+                isDraftImportUploading ||
+                isDraftImportGenerating
+              }
+              onClick={() => void handleDraftImportSave(false)}
+            >
+              {isDraftImportSaving ? (
+                <Loader2 data-icon="inline-start" />
+              ) : (
+                <Check data-icon="inline-start" />
+              )}
+              {td('promptCases.saveImportedDraft', {
+                defaultValue: '保存到草稿箱'
+              })}
+            </ShadcnButton>
+          </div>
+  );
+
+  const adminCaseEditorTitle =
+    adminModalMode === 'create'
+      ? t('promptCases.createModalTitle')
+      : t('promptCases.editModalTitle');
+
+  if (importRoute) {
+    return (
+      <div className="creator-prompt-case-editor-page">
+        <header className="creator-prompt-case-editor-page__head">
+          <button
+            type="button"
+            className="creator-prompt-case-editor-page__back"
+            onClick={() => requestDraftImportClose()}
+          >
+            ← {td('promptCases.backToAdmin', { defaultValue: '返回案例管理' })}
+          </button>
+          <h1>
+            {td('promptCases.draftImportModalTitle', {
+              defaultValue: '导入草稿箱案例'
+            })}
+          </h1>
+        </header>
+        <div className="creator-prompt-case-editor-page__body">
+          {error ? (
+            <p className="creator-prompt-case-editor-page__error" role="alert">
+              {error}
+            </p>
+          ) : null}
+          {draftImportBody}
+        </div>
+        <footer className="creator-prompt-case-editor-page__foot">
+          {draftImportFooter}
+        </footer>
+        {importDiscardConfirmation}
+      </div>
+    );
+  }
+
+  if (editorRoute) {
+    return (
+      <div className="creator-prompt-case-editor-page">
+        <header className="creator-prompt-case-editor-page__head">
+          <button
+            type="button"
+            className="creator-prompt-case-editor-page__back"
+            onClick={() => requestEditorClose()}
+            disabled={isSaving || isUploading}
+          >
+            ← {t('promptCases.backToAdmin', { defaultValue: '返回案例管理' })}
+          </button>
+          <h1>{adminCaseEditorTitle}</h1>
+        </header>
+        <div className="creator-prompt-case-editor-page__body">
+          {error ? (
+            <p className="creator-prompt-case-editor-page__error" role="alert">
+              {error}
+            </p>
+          ) : null}
+          {adminModalMode ? (
+            adminCaseEditorBody
+          ) : error ? null : (
+            <p className="creator-prompt-case-editor-page__status">
+              {t('promptCases.loading', { defaultValue: '正在加载案例…' })}
+            </p>
+          )}
+        </div>
+        <footer className="creator-prompt-case-editor-page__foot">
+          {adminCaseEditorFooter}
+        </footer>
+        {discardConfirmation}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -4100,361 +4959,10 @@ export function PromptCasesPanel({
           isDraftImportGenerating
         }
         className="creator-prompt-case-admin-modal creator-prompt-case-draft-import-modal"
-        onClose={closeDraftImportModal}
-        footer={
-          <div className="creator-prompt-case-admin-modal-actions">
-            <ShadcnButton
-              type="button"
-              variant="outline"
-              onClick={closeDraftImportModal}
-              disabled={
-                isDraftImportExtracting ||
-                isDraftImportSaving ||
-                isDraftImportUploading ||
-                isDraftImportGenerating
-              }
-            >
-              {t('common.cancel', { defaultValue: '取消' })}
-            </ShadcnButton>
-            <ShadcnButton
-              type="button"
-              variant="outline"
-              disabled={
-                isDraftImportExtracting ||
-                isDraftImportSaving ||
-                isDraftImportUploading ||
-                isDraftImportGenerating
-              }
-              onClick={() => void handleDraftImportSave(true)}
-            >
-              {isDraftImportGenerating ? (
-                <Loader2 data-icon="inline-start" />
-              ) : (
-                <ImagePlus data-icon="inline-start" />
-              )}
-              {td('promptCases.saveAndGenerateImages', {
-                defaultValue: '保存并生成候选图'
-              })}
-            </ShadcnButton>
-            <ShadcnButton
-              type="button"
-              className="creator-library-upload"
-              disabled={
-                isDraftImportExtracting ||
-                isDraftImportSaving ||
-                isDraftImportUploading ||
-                isDraftImportGenerating
-              }
-              onClick={() => void handleDraftImportSave(false)}
-            >
-              {isDraftImportSaving ? (
-                <Loader2 data-icon="inline-start" />
-              ) : (
-                <Check data-icon="inline-start" />
-              )}
-              {td('promptCases.saveImportedDraft', {
-                defaultValue: '保存到草稿箱'
-              })}
-            </ShadcnButton>
-          </div>
-        }
+        onClose={requestDraftImportClose}
+        footer={draftImportFooter}
       >
-        <div className="creator-prompt-case-admin-modal-body">
-          <div className="creator-prompt-case-form creator-prompt-case-form-compact creator-prompt-case-modal-form">
-            <section className="creator-prompt-case-form-section creator-prompt-case-draft-import-source">
-              <div className="creator-prompt-case-form-section-head">
-                <strong>
-                  {td('promptCases.draftImportSource', {
-                    defaultValue: '推文链接导入'
-                  })}
-                </strong>
-                <span>
-                  {td('promptCases.draftImportSourceHint', {
-                    defaultValue:
-                      '粘贴 X/Twitter 链接后提取，也可以直接手动填写。'
-                  })}
-                </span>
-              </div>
-              <label className="wide creator-prompt-case-draft-import-url">
-                {td('promptCases.tweetUrl', { defaultValue: '推文链接' })}
-                <div>
-                  <input
-                    value={draftImportForm.tweetUrl}
-                    placeholder="https://x.com/user/status/..."
-                    onChange={(event) =>
-                      updateDraftImportForm('tweetUrl', event.target.value)
-                    }
-                  />
-                  <ShadcnButton
-                    type="button"
-                    variant="outline"
-                    onClick={() => void handleDraftImportExtractTweet()}
-                    disabled={
-                      isDraftImportExtracting ||
-                      isDraftImportSaving ||
-                      isDraftImportUploading
-                    }
-                  >
-                    {isDraftImportExtracting ? (
-                      <Loader2 data-icon="inline-start" />
-                    ) : (
-                      <ExternalLink data-icon="inline-start" />
-                    )}
-                    {td('promptCases.extractTweetCase', {
-                      defaultValue: '提取'
-                    })}
-                  </ShadcnButton>
-                </div>
-              </label>
-              {isDraftImportExtracting && draftImportExtractProgress && (
-                <div className="creator-prompt-case-draft-import-progress">
-                  <Loader2 size={14} className="creator-spin-icon" />
-                  <span>{draftImportExtractProgress}</span>
-                </div>
-              )}
-            </section>
-
-            <section className="creator-prompt-case-form-section creator-prompt-case-form-basics">
-              <div className="creator-prompt-case-form-section-head">
-                <strong>{t('promptCases.formSections.basics')}</strong>
-                <span>
-                  {td('promptCases.draftImportBasicsHint', {
-                    defaultValue: '这些字段会直接进入新增草稿。'
-                  })}
-                </span>
-              </div>
-              <label className="wide">
-                {t('promptCases.title')}
-                <input
-                  value={draftImportForm.title}
-                  onChange={(event) =>
-                    updateDraftImportForm('title', event.target.value)
-                  }
-                />
-              </label>
-              <label>
-                {t('promptCases.category')}
-                <select
-                  value={draftImportForm.category}
-                  onChange={(event) =>
-                    updateDraftImportForm('category', event.target.value)
-                  }
-                >
-                  {PROMPT_CASE_CONTENT_CATEGORIES.map((category) => (
-                    <option key={category} value={category}>
-                      {getCategoryLabel(category)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="wide">
-                {t('promptCases.tags')}
-                <input
-                  value={draftImportForm.tagsText}
-                  onChange={(event) =>
-                    updateDraftImportForm('tagsText', event.target.value)
-                  }
-                />
-              </label>
-              <label className="wide creator-prompt-case-url-action-field">
-                {t('promptCases.sourceUrl')}
-                <div>
-                  <input
-                    value={getDraftImportSourceUrl(draftImportForm)}
-                    onChange={(event) =>
-                      setDraftImportForm((current) => ({
-                        ...current,
-                        generationSettings: {
-                          ...current.generationSettings,
-                          sourceUrl: event.target.value
-                        }
-                      }))
-                    }
-                  />
-                  <ShadcnButton
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    disabled={!getDraftImportSourceUrl(draftImportForm).trim()}
-                    aria-label={td('promptCases.openSourceUrl', {
-                      defaultValue: '打开来源地址'
-                    })}
-                    title={td('promptCases.openSourceUrl', {
-                      defaultValue: '打开来源地址'
-                    })}
-                    onClick={() =>
-                      openUrlInNewTab(getDraftImportSourceUrl(draftImportForm))
-                    }
-                  >
-                    <ExternalLink />
-                  </ShadcnButton>
-                </div>
-              </label>
-            </section>
-
-            <section className="creator-prompt-case-form-section creator-prompt-case-form-media">
-              <div className="creator-prompt-case-form-section-head">
-                <strong>{t('promptCases.formSections.media')}</strong>
-                <span>{draftImportForm.imageUrls.length}</span>
-              </div>
-              <label className="wide">
-                {t('promptCases.imageUrls')}
-                <textarea
-                  className="creator-prompt-case-url-list"
-                  value={draftImportForm.imageUrls.join('\n')}
-                  onChange={(event) => {
-                    const imageUrls = event.target.value
-                      .split(/\n+/)
-                      .map((url) => url.trim())
-                      .filter(Boolean);
-                    setDraftImportForm((current) => ({
-                      ...current,
-                      imageUrls,
-                      selectedImageUrl:
-                        imageUrls.find(
-                          (url) => url === current.selectedImageUrl
-                        ) ||
-                        imageUrls[0] ||
-                        ''
-                    }));
-                  }}
-                />
-              </label>
-              <label className="creator-prompt-case-upload">
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={(event) => void handleDraftImportImageUpload(event)}
-                />
-                {isDraftImportUploading ? (
-                  <Loader2 size={14} className="creator-spin-icon" />
-                ) : (
-                  <ImagePlus size={14} />
-                )}
-                {t('promptCases.upload')}
-              </label>
-              <PromptCaseDraftVideoPreview
-                videoUrls={getDraftFormVideoUrls(draftImportForm)}
-                posterUrl={
-                  draftImportForm.selectedImageUrl ||
-                  draftImportForm.imageUrls[0]
-                }
-                title={draftImportForm.title || ''}
-              />
-              {draftImportForm.imageUrls.length > 0 && (
-                <div className="creator-prompt-case-form-images">
-                  {draftImportForm.imageUrls.map((url, index) => (
-                    <figure key={`${url}-${index}`}>
-                      <img
-                        src={getOptimizedPromptCaseImageUrl(url, {
-                          width: 180,
-                          quality: 72
-                        })}
-                        alt=""
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                      />
-                      <ShadcnButton
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        aria-label={t('promptCases.removeImage') as string}
-                        onClick={() =>
-                          setDraftImportForm((current) => {
-                            const imageUrls = current.imageUrls.filter(
-                              (_, itemIndex) => itemIndex !== index
-                            );
-                            return {
-                              ...current,
-                              imageUrls,
-                              selectedImageUrl:
-                                imageUrls.find(
-                                  (item) => item === current.selectedImageUrl
-                                ) ||
-                                imageUrls[0] ||
-                                ''
-                            };
-                          })
-                        }
-                      >
-                        <X />
-                      </ShadcnButton>
-                    </figure>
-                  ))}
-                </div>
-              )}
-            </section>
-
-            <section className="creator-prompt-case-form-section creator-prompt-case-form-prompt">
-              <div className="creator-prompt-case-form-section-head">
-                <strong>{t('promptCases.formSections.prompt')}</strong>
-                <span>{t('promptCases.promptPreviewAutoHint')}</span>
-              </div>
-              <label className="creator-prompt-case-prompt-main wide">
-                {t('promptCases.prompt')}
-                <textarea
-                  value={draftImportForm.prompt}
-                  onChange={(event) =>
-                    updateDraftImportForm('prompt', event.target.value)
-                  }
-                />
-              </label>
-            </section>
-
-            <details className="creator-prompt-case-advanced">
-              <summary>{t('promptCases.advancedFields')}</summary>
-              <section className="creator-prompt-case-form-section creator-prompt-case-form-basics">
-                <label>
-                  {t('promptCases.commercialIntent')}
-                  <textarea
-                    value={draftImportForm.commercialIntent}
-                    onChange={(event) =>
-                      updateDraftImportForm(
-                        'commercialIntent',
-                        event.target.value
-                      )
-                    }
-                  />
-                </label>
-                <label>
-                  {t('promptCases.negativePrompt')}
-                  <textarea
-                    value={draftImportForm.negativePrompt}
-                    onChange={(event) =>
-                      updateDraftImportForm(
-                        'negativePrompt',
-                        event.target.value
-                      )
-                    }
-                  />
-                </label>
-                <label className="wide">
-                  {td('promptCases.reviewNotes', {
-                    defaultValue: '审核备注'
-                  })}
-                  <textarea
-                    value={draftImportForm.reviewNotes}
-                    onChange={(event) =>
-                      updateDraftImportForm('reviewNotes', event.target.value)
-                    }
-                  />
-                </label>
-                <label className="creator-prompt-case-check">
-                  <input
-                    type="checkbox"
-                    checked={draftImportForm.memberOnly}
-                    onChange={(event) =>
-                      updateDraftImportForm('memberOnly', event.target.checked)
-                    }
-                  />
-                  {t('promptCases.memberOnly')}
-                </label>
-              </section>
-            </details>
-          </div>
-        </div>
+        {draftImportBody}
       </Dialog>
 
       <Dialog
@@ -5193,335 +5701,12 @@ export function PromptCasesPanel({
         closeLabel={t('preview.close') as string}
         closeDisabled={isSaving || isUploading}
         className="creator-prompt-case-admin-modal"
-        onClose={() => {
-          if (!isSaving && !isUploading) {
-            closeAdminCaseModal();
-          }
-        }}
-        footer={
-          adminModalMode ? (
-            <div className="creator-prompt-case-admin-modal-actions">
-              <ShadcnButton
-                type="button"
-                variant="outline"
-                onClick={closeAdminCaseModal}
-                disabled={isSaving || isUploading}
-              >
-                {t('common.cancel', { defaultValue: '取消' })}
-              </ShadcnButton>
-              <ShadcnButton
-                type="button"
-                className="creator-library-upload"
-                disabled={isSaving || isUploading}
-                onClick={() => void handleSave()}
-              >
-                {isSaving ? (
-                  <Loader2 data-icon="inline-start" />
-                ) : (
-                  <Check data-icon="inline-start" />
-                )}
-                {adminModalMode === 'create'
-                  ? t('promptCases.create')
-                  : t('promptCases.save')}
-              </ShadcnButton>
-            </div>
-          ) : null
-        }
+        onClose={() => requestEditorClose()}
+        footer={adminCaseEditorFooter}
       >
-        {adminModalMode && (
-          <div className="creator-prompt-case-admin-modal-body">
-            <div className="creator-prompt-case-form creator-prompt-case-form-compact creator-prompt-case-modal-form">
-              <section className="creator-prompt-case-form-section creator-prompt-case-form-basics">
-                <div className="creator-prompt-case-form-section-head">
-                  <strong>{t('promptCases.formSections.basics')}</strong>
-                  <span>{t('promptCases.modalBasicsHint')}</span>
-                </div>
-                <label className="wide">
-                  {t('promptCases.title')}
-                  <input
-                    value={editor.title}
-                    onChange={(event) =>
-                      updateEditor('title', event.target.value)
-                    }
-                  />
-                </label>
-                <label>
-                  {t('promptCases.model')}
-                  <select
-                    value={editor.model}
-                    onChange={(event) =>
-                      updateEditor('model', event.target.value)
-                    }
-                  >
-                    {editor.model &&
-                      !PROMPT_CASE_MODEL_PRESETS.some(
-                        (preset) => preset.value === editor.model
-                      ) && <option value={editor.model}>{editor.model}</option>}
-                    {PROMPT_CASE_MODEL_PRESETS.map((preset) => (
-                      <option key={preset.value} value={preset.value}>
-                        {preset.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  {t('promptCases.category')}
-                  <select
-                    value={editor.category}
-                    onChange={(event) =>
-                      updateEditor('category', event.target.value)
-                    }
-                  >
-                    {PROMPT_CASE_CONTENT_CATEGORIES.map((category) => (
-                      <option key={category} value={category}>
-                        {getCategoryLabel(category)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  {t('promptCases.locale')}
-                  <select
-                    value={editor.locale}
-                    onChange={(event) =>
-                      updateEditor('locale', event.target.value)
-                    }
-                  >
-                    <option value="zh-CN">zh-CN</option>
-                    <option value="en-US">en-US</option>
-                  </select>
-                </label>
-                <label>
-                  {t('promptCases.packageSlug')}
-                  <select
-                    value={editor.packageSlug}
-                    onChange={(event) =>
-                      updateEditor('packageSlug', event.target.value)
-                    }
-                  >
-                    <option value="">{t('promptCases.noPackage')}</option>
-                    {editor.packageSlug &&
-                      !COMMERCIAL_PACKAGE_OPTIONS.includes(
-                        editor.packageSlug
-                      ) && (
-                        <option value={editor.packageSlug}>
-                          {editor.packageSlug}
-                        </option>
-                      )}
-                    {COMMERCIAL_PACKAGE_OPTIONS.map((packageSlug) => (
-                      <option key={packageSlug} value={packageSlug}>
-                        {td(`promptCases.packages.${packageSlug}`, {
-                          defaultValue: packageSlug
-                        })}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="wide">
-                  {t('promptCases.tags')}
-                  <input
-                    value={editor.tags.join(', ')}
-                    onChange={(event) =>
-                      updateEditor(
-                        'tags',
-                        event.target.value
-                          .split(/[,，]/)
-                          .map((tag) => tag.trim())
-                          .filter(Boolean)
-                      )
-                    }
-                  />
-                </label>
-                <label className="wide creator-prompt-case-url-action-field">
-                  {t('promptCases.authorUrl')}
-                  <div>
-                    <input
-                      value={editor.authorUrl}
-                      onChange={(event) =>
-                        updateEditor('authorUrl', event.target.value)
-                      }
-                    />
-                    <ShadcnButton
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      disabled={!editor.authorUrl.trim()}
-                      aria-label={td('promptCases.openSourceUrl', {
-                        defaultValue: '打开来源地址'
-                      })}
-                      title={td('promptCases.openSourceUrl', {
-                        defaultValue: '打开来源地址'
-                      })}
-                      onClick={() => openUrlInNewTab(editor.authorUrl)}
-                    >
-                      <ExternalLink />
-                    </ShadcnButton>
-                  </div>
-                </label>
-              </section>
-
-              <section className="creator-prompt-case-form-section creator-prompt-case-form-media">
-                <div className="creator-prompt-case-form-section-head">
-                  <strong>{t('promptCases.formSections.media')}</strong>
-                  <span>{editor.imageUrls.length}</span>
-                </div>
-                <label className="wide">
-                  {t('promptCases.imageUrls')}
-                  <textarea
-                    className="creator-prompt-case-url-list"
-                    value={editor.imageUrls.join('\n')}
-                    onChange={(event) =>
-                      updateEditor(
-                        'imageUrls',
-                        event.target.value
-                          .split(/\n+/)
-                          .map((url) => url.trim())
-                          .filter(Boolean)
-                      )
-                    }
-                  />
-                </label>
-                <label className="creator-prompt-case-upload">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(event) => void handleUpload(event)}
-                  />
-                  {isUploading ? (
-                    <Loader2 size={14} className="creator-spin-icon" />
-                  ) : (
-                    <ImagePlus size={14} />
-                  )}
-                  {t('promptCases.upload')}
-                </label>
-                {editor.imageUrls.length > 0 && (
-                  <div className="creator-prompt-case-form-images">
-                    {editor.imageUrls.map((url, index) => (
-                      <figure key={`${url}-${index}`}>
-                        <img
-                          src={getOptimizedPromptCaseImageUrl(url, {
-                            width: 180,
-                            quality: 72
-                          })}
-                          alt=""
-                          loading="lazy"
-                          decoding="async"
-                          referrerPolicy="no-referrer"
-                        />
-                        <ShadcnButton
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          aria-label={t('promptCases.removeImage') as string}
-                          onClick={() =>
-                            updateEditor(
-                              'imageUrls',
-                              editor.imageUrls.filter(
-                                (_, itemIndex) => itemIndex !== index
-                              )
-                            )
-                          }
-                        >
-                          <X />
-                        </ShadcnButton>
-                      </figure>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section className="creator-prompt-case-form-section creator-prompt-case-form-prompt">
-                <div className="creator-prompt-case-form-section-head">
-                  <strong>{t('promptCases.formSections.prompt')}</strong>
-                  <span>{t('promptCases.promptPreviewAutoHint')}</span>
-                </div>
-                <label className="creator-prompt-case-prompt-main wide">
-                  {t('promptCases.prompt')}
-                  <textarea
-                    value={editor.prompt}
-                    onChange={(event) =>
-                      updateEditor('prompt', event.target.value)
-                    }
-                  />
-                </label>
-              </section>
-
-              <details className="creator-prompt-case-advanced">
-                <summary>{t('promptCases.advancedFields')}</summary>
-                <section className="creator-prompt-case-form-section creator-prompt-case-form-basics">
-                  <label>
-                    {t('promptCases.slug')}
-                    <input
-                      value={editor.slug}
-                      onChange={(event) =>
-                        updateEditor('slug', event.target.value)
-                      }
-                    />
-                  </label>
-                  <label>
-                    {t('promptCases.commercialIntent')}
-                    <textarea
-                      value={editor.commercialIntent}
-                      placeholder={deriveCommercialIntent(editor)}
-                      onChange={(event) =>
-                        updateEditor('commercialIntent', event.target.value)
-                      }
-                    />
-                  </label>
-                  <label className="wide">
-                    可视化配方 JSON
-                    <textarea
-                      className="creator-prompt-case-visual-recipe-input"
-                      value={editor.visualRecipeText}
-                      placeholder={`{\n  "version": 1,\n  "selection": {\n    "character": "character-korean-glam-girl",\n    "expression": "expression-soft-smile",\n    "pose": "pose-casual-sitting"\n  }\n}`}
-                      onChange={(event) =>
-                        updateEditor('visualRecipeText', event.target.value)
-                      }
-                    />
-                  </label>
-                </section>
-              </details>
-
-              <section className="creator-prompt-case-form-section creator-prompt-case-form-switches">
-                <div className="creator-prompt-case-form-section-head">
-                  <strong>{t('promptCases.formSections.settings')}</strong>
-                </div>
-                <label className="creator-prompt-case-check">
-                  <input
-                    type="checkbox"
-                    checked={editor.isPublished}
-                    onChange={(event) =>
-                      updateEditor('isPublished', event.target.checked)
-                    }
-                  />
-                  {t('promptCases.published')}
-                </label>
-                <label className="creator-prompt-case-check">
-                  <input
-                    type="checkbox"
-                    checked={editor.featured}
-                    onChange={(event) =>
-                      updateEditor('featured', event.target.checked)
-                    }
-                  />
-                  {t('promptCases.featured')}
-                </label>
-                <label className="creator-prompt-case-check">
-                  <input
-                    type="checkbox"
-                    checked={editor.memberOnly}
-                    onChange={(event) =>
-                      updateEditor('memberOnly', event.target.checked)
-                    }
-                  />
-                  {t('promptCases.memberOnly')}
-                </label>
-              </section>
-            </div>
-          </div>
-        )}
+        {adminCaseEditorBody}
       </Dialog>
+      {discardConfirmation}
 
       {selectedCase && (
         <div

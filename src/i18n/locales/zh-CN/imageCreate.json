@@ -403,6 +403,8 @@
     }
   },
   "promptLibrary": {
+    "applyDialogTitle": "应用提示词",
+    "deleteConfirm": "删除后无法恢复，确定删除这条提示词？",
     "title": "提示词库",
     "entry": "提示词库",
     "savePrompt": "保存提示词",
