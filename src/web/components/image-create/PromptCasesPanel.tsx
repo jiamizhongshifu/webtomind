@@ -2430,6 +2430,10 @@ export function PromptCasesPanel({
       onOpenEditor('create');
       return;
     }
+    if (forceManageOpen) {
+      navigate(`${adminBasePath}/cases/new`);
+      return;
+    }
     const next = {
       ...toEditable(),
       locale: activeLocale,
@@ -2474,6 +2478,14 @@ export function PromptCasesPanel({
   const openEditCaseModal = async (caseItem: PromptCase) => {
     if (onOpenEditor) {
       onOpenEditor('edit', caseItem.sourceCaseId || caseItem.id);
+      return;
+    }
+    if (forceManageOpen) {
+      navigate(
+        `${adminBasePath}/cases/${encodeURIComponent(
+          caseItem.sourceCaseId || caseItem.id
+        )}/edit`
+      );
       return;
     }
     setError('');
@@ -2726,6 +2738,10 @@ export function PromptCasesPanel({
   const openDraftImportModal = () => {
     if (onOpenImport) {
       onOpenImport();
+      return;
+    }
+    if (forceManageOpen) {
+      navigate(`${adminBasePath}/cases/import`);
       return;
     }
     setDraftImportForm(createEmptyDraftImportForm());
