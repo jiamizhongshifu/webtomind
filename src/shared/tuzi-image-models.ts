@@ -1,6 +1,7 @@
 export type TuziImageModelId =
   | 'gpt-image-2'
   | 'gpt-image-2.5'
+  | 'gpt-image-2.6'
   | 'nano-banana'
   | 'nano-banana-2'
   | 'nano-banana-pro'
@@ -99,6 +100,25 @@ export const TUZI_IMAGE_MODEL_CONFIG: Record<
     provider: 'tuzi',
     group: 'recommended',
     badges: ['New', 'GPT Image 2.5'],
+    supportsTextToImage: true,
+    supportsReferenceImage: true,
+    supportsMultipleImages: true,
+    maxImageCount: 10,
+    maxReferenceImages: 4,
+    referenceTransport: 'images_edits',
+    preferredResponseFormat: 'b64_json',
+    allowProviderFallback: true,
+    recommendedImageSizes: withAllRatioSizes(['1152x2048']),
+    creditMultiplier: 1
+  },
+  'gpt-image-2.6': {
+    id: 'gpt-image-2.6',
+    apiModel: 'gpt-image-2.6',
+    label: 'GPT Image 2.6',
+    description: '最新一代通用图像生成与编辑模型，细节、文字与多图一致性进一步提升。',
+    provider: 'tuzi',
+    group: 'recommended',
+    badges: ['New', 'GPT Image 2.6'],
     supportsTextToImage: true,
     supportsReferenceImage: true,
     supportsMultipleImages: true,
@@ -287,6 +307,8 @@ export const TUZI_IMAGE_MODELS = Object.values(TUZI_IMAGE_MODEL_CONFIG).filter(
 const TUZI_MODEL_ALIASES: Record<string, TuziImageModelId> = {
   'gpt-image-2.5': 'gpt-image-2.5',
   'gpt image 2.5': 'gpt-image-2.5',
+  'gpt-image-2.6': 'gpt-image-2.6',
+  'gpt image 2.6': 'gpt-image-2.6',
   'gpt-image': 'gpt-image-2',
   'gpt-image-2': 'gpt-image-2',
   'gpt-image-2-vip': 'gpt-image-2',
@@ -340,6 +362,18 @@ export function isGptImage25Model(
   modelId: string | undefined
 ): modelId is 'gpt-image-2.5' {
   return modelId === 'gpt-image-2.5';
+}
+
+export function isGptImage26Model(
+  modelId: string | undefined
+): modelId is 'gpt-image-2.6' {
+  return modelId === 'gpt-image-2.6';
+}
+
+export function isGptImage25FamilyModel(
+  modelId: string | undefined
+): boolean {
+  return isGptImage25Model(modelId) || isGptImage26Model(modelId);
 }
 
 export function isSupportedChaoGptImage25ApiModel(

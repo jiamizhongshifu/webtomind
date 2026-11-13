@@ -51,6 +51,22 @@ describe('image creator model options', () => {
     ]);
   });
 
+  it('exposes GPT Image 2.6 with the generation capabilities of 2.5', () => {
+    const gptImage26 = modelOptions.find(
+      (model) => model.value === 'gpt-image-2.6'
+    );
+    expect(gptImage26).toMatchObject({
+      label: 'GPT Image 2.6',
+      maxImageCount: 10,
+      preferredResponseFormat: 'b64_json',
+      allowProviderFallback: true,
+      creditMultiplier: 1
+    });
+    expect(
+      modelOptions.filter((model) => model.value.startsWith('gpt-image-2.6'))
+    ).toHaveLength(1);
+  });
+
   it('clamps image count to the current model max', () => {
     const gptImage25 = modelOptions.find(
       (model) => model.value === 'gpt-image-2.5'

@@ -17,6 +17,26 @@ afterEach(() => {
 });
 
 describe('openai-compatible image provider', () => {
+  it('keeps the retired chaojitudou host disabled by default', () => {
+    process.env.OPENAI_COMPAT_IMAGE_ENABLED = 'true';
+    process.env.OPENAI_COMPAT_IMAGE_BASE_URL = 'https://api.chaojitudou.com/v1';
+    process.env.OPENAI_COMPAT_IMAGE_API_KEY = 'sk-test';
+    process.env.OPENAI_COMPAT_IMAGE_MODEL = 'gpt-image-2.5';
+    delete process.env.OPENAI_COMPAT_IMAGE_ALLOW_RETIRED_CHAO;
+
+    expect(resolveOpenAICompatibleImageConfig().enabled).toBe(false);
+  });
+
+  it('allows the retired host only with an explicit opt-in', () => {
+    process.env.OPENAI_COMPAT_IMAGE_ENABLED = 'true';
+    process.env.OPENAI_COMPAT_IMAGE_BASE_URL = 'https://api.chaojitudou.com/v1';
+    process.env.OPENAI_COMPAT_IMAGE_API_KEY = 'sk-test';
+    process.env.OPENAI_COMPAT_IMAGE_MODEL = 'gpt-image-2.5';
+    process.env.OPENAI_COMPAT_IMAGE_ALLOW_RETIRED_CHAO = 'true';
+
+    expect(resolveOpenAICompatibleImageConfig().enabled).toBe(true);
+  });
+
   it('stays disabled unless explicitly enabled by env', () => {
     delete process.env.OPENAI_COMPAT_IMAGE_ENABLED;
     process.env.OPENAI_COMPAT_IMAGE_BASE_URL = 'https://proxy.test/v1/';

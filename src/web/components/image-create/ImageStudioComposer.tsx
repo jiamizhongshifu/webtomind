@@ -1,4 +1,5 @@
 import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
+import { isGptImage25FamilyModel } from '@/shared/tuzi-image-models';
 import { useOverlayBehavior } from '@/shared/ui/useOverlayBehavior';
 import {
   useEffect,
@@ -315,7 +316,7 @@ export function ImageStudioComposer({
     selectedRatio
   );
   const selectableResolutionOptions =
-    currentModel?.value === 'gpt-image-2.5'
+    isGptImage25FamilyModel(currentModel?.value)
       ? imageResolutionOptions
       : availableResolutionOptions;
   const selectedResolution = getImageResolutionForImageSize(settings.imageSize);
@@ -870,7 +871,7 @@ export function ImageStudioComposer({
                       imageSize:
                         option.value === 'auto'
                           ? 'auto'
-                          : currentModel?.value === 'gpt-image-2.5'
+                          : isGptImage25FamilyModel(currentModel?.value)
                             ? getImageSizeForAspectRatioAndResolution(
                                 option.value,
                                 resolution
@@ -920,7 +921,7 @@ export function ImageStudioComposer({
                           ? '1:1'
                           : current.aspectRatio;
                       const imageSize =
-                        currentModel?.value === 'gpt-image-2.5'
+                        isGptImage25FamilyModel(currentModel?.value)
                           ? getImageSizeForAspectRatioAndResolution(
                               aspectRatio,
                               option.value

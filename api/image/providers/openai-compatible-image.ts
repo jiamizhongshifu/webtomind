@@ -161,10 +161,33 @@ interface ChaojitudouImageTask {
   conversation_id?: string;
 }
 
+export function isChaojitudouImageHost(
+  baseUrl: string | undefined
+): boolean {
+  try {
+    return /(^|\.)chaojitudou\.com$/i.test(new URL(baseUrl || '').hostname);
+  } catch {
+    return /chaojitudou\.com/i.test(baseUrl || '');
+  }
+}
+
 export function isOpenAICompatibleImageEnabled(
   env: NodeJS.ProcessEnv = process.env
 ): boolean {
-  return cleanProviderEnvValue(env.OPENAI_COMPAT_IMAGE_ENABLED) === 'true';
+  if (cleanProviderEnvValue(env.OPENAI_COMPAT_IMAGE_ENABLED) !== 'true') {
+    return false;
+  }
+  // The chaojitudou channel is retired for image generation; the provider can
+  // only run there when a test or an operator explicitly opts back in.
+  if (
+    isChaojitudouImageHost(
+      cleanProviderEnvValue(env.OPENAI_COMPAT_IMAGE_BASE_URL)
+    ) &&
+    !isTruthyProviderEnvValue(env.OPENAI_COMPAT_IMAGE_ALLOW_RETIRED_CHAO)
+  ) {
+    return false;
+  }
+  return true;
 }
 
 function cleanProviderEnvValue(value: string | undefined): string {
