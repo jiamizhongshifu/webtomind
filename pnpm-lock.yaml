@@ -9,6 +9,7 @@ overrides:
   '@modelcontextprotocol/client': 2.3.0
   '@modelcontextprotocol/core': 2.3.0
   '@hono/node-server': 2.1.8
+  hono: 4.13.18
   fast-uri: 3.1.9
   ip-address: 10.7.4
   moment: 2.31.0
@@ -194,8 +195,8 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
       hono:
-        specifier: ^4.13.11
-        version: 4.13.13
+        specifier: 4.13.18
+        version: 4.13.18
       html2canvas:
         specifier: ^1.4.1
         version: 1.4.1
@@ -414,8 +415,8 @@ importers:
         specifier: ^2.110.0
         version: 2.110.0
       hono:
-        specifier: ^4.13.11
-        version: 4.13.13
+        specifier: 4.13.18
+        version: 4.13.18
       pptxgenjs:
         specifier: ^4.0.1
         version: 4.0.1
@@ -530,7 +531,7 @@ importers:
         version: 0.21.0
       '@hono/node-server':
         specifier: 2.1.8
-        version: 2.1.8(hono@4.13.13)
+        version: 2.1.8(hono@4.13.18)
       '@mozilla/readability':
         specifier: ^0.6.0
         version: 0.6.0
@@ -547,8 +548,8 @@ importers:
         specifier: ^17.2.3
         version: 17.2.3
       hono:
-        specifier: ^4.13.11
-        version: 4.13.13
+        specifier: 4.13.18
+        version: 4.13.18
       https-proxy-agent:
         specifier: ^7.0.6
         version: 7.0.6
@@ -2072,13 +2073,13 @@ packages:
       yargs: 17.7.3
     dev: true
 
-  /@hono/node-server@2.1.8(hono@4.13.13):
+  /@hono/node-server@2.1.8(hono@4.13.18):
     resolution: {integrity: sha512-jdf7FHh6A1lzjpHHQUgxsg2GeER2vMetnAOfeActzcoli6jamlK+NAwL6Dsr5Fl3BS3tYUQzCdtZjU8Qxv7bEA==}
     engines: {node: '>=20'}
     peerDependencies:
-      hono: ^4 || ^5.0.0-0
+      hono: 4.13.18
     dependencies:
-      hono: 4.13.13
+      hono: 4.13.18
     dev: false
 
   /@hookform/resolvers@5.9.0(react-hook-form@7.85.0)(zod@4.6.6):
@@ -2750,7 +2751,7 @@ packages:
       '@cfworker/json-schema':
         optional: true
     dependencies:
-      '@hono/node-server': 2.1.8(hono@4.13.13)
+      '@hono/node-server': 2.1.8(hono@4.13.18)
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       content-type: 1.0.5
@@ -2760,7 +2761,7 @@ packages:
       eventsource-parser: 3.1.0
       express: 5.2.1
       express-rate-limit: 8.5.2(express@5.2.1)
-      hono: 4.13.13
+      hono: 4.13.18
       jose: 6.2.3
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -9203,8 +9204,8 @@ packages:
     resolution: {integrity: sha512-NnQpT6Z//+2IB2qovSUbKbrlXY1MOpi0JynZ9L2NNOuTJiNCyMSQj9k2laEj1v7CxU/Hb8oTWR98eT3mVpPQVQ==}
     dev: false
 
-  /hono@4.13.13:
-    resolution: {integrity: sha512-CQ46U0ZkAGmbT/4UxdzzGJpacP2IeKgY4a5/tOI9AABbpOMfK739wfDXmv1usCk+3RkKj1hQy4/fjhiwa2xlrA==}
+  /hono@4.13.18:
+    resolution: {integrity: sha512-H9q/E1XizaWstJxUW881dmLxEj+t/TrGGnyxINkm4+sK0qUwsMtFdo2BWI9Vs3cIS19MU6b6iCijoUoEf4f3DA==}
     engines: {node: '>=16.9.0'}
     dev: false
 
