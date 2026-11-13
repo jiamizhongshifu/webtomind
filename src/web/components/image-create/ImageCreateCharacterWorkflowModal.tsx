@@ -1,9 +1,6 @@
 import { X } from 'lucide-react';
 import { Button } from '@/shared/ui/radix/button';
-import {
-  Dialog as DialogRoot,
-  DialogContent
-} from '@/shared/ui/radix/dialog';
+import { DialogContent, DialogRoot } from '@/shared/ui/DialogPrimitives';
 import type { ImageCreatorRecipe } from '@/services/agent-api';
 import type {
   ImageCharacterCard,

@@ -41,7 +41,7 @@ import {
   NavigationLink,
   useOverlayBehavior
 } from '@/shared/ui';
-import { TextTooltip } from '@/shared/ui/radix/tooltip';
+import { TextTooltip } from '@/shared/ui/TooltipPrimitives';
 import { deleteImageSession } from '@/services/create-workspace-v2-api';
 // 账户菜单的样式也作用于匿名访客的登录入口（.create-side-nav-profile），
 // 保持在原位置静态引入；组件本身登录后才懒加载。
