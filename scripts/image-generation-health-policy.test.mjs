@@ -220,3 +220,51 @@ test('honours an explicit opt-out of the long-window fallback', () => {
   assert.equal(result.report, short);
   assert.equal(result.fallback, null);
 });
+
+test('judges reliability on technical failures, not moderation refusals', () => {
+  const result = evaluateImageGenerationHealth(
+    healthyReport({
+      failureRate: 0.44,
+      failureBreakdown: {
+        policyRefusals: 143,
+        technicalFailures: 20,
+        technicalFailureRateAmongNonPolicyTasks: 20 / 227
+      }
+    })
+  );
+  assert.equal(result.ok, true);
+  assert.ok(
+    result.warnings.some(
+      (warning) => warning.class === 'image_moderation_refusals_excluded'
+    )
+  );
+});
+
+test('still blocks when the technical failure rate exceeds the ceiling', () => {
+  const result = evaluateImageGenerationHealth(
+    healthyReport({
+      failureRate: 0.3,
+      failureBreakdown: {
+        policyRefusals: 10,
+        technicalFailures: 30,
+        technicalFailureRateAmongNonPolicyTasks: 0.3
+      }
+    })
+  );
+  assert.equal(result.ok, false);
+  assert.equal(
+    result.blockers[0].class,
+    'image_failure_rate_above_release_ceiling'
+  );
+});
+
+test('falls back to the raw failure rate when no breakdown exists', () => {
+  const result = evaluateImageGenerationHealth(
+    healthyReport({ failureRate: 0.44 })
+  );
+  assert.equal(result.ok, false);
+  assert.equal(
+    result.blockers[0].class,
+    'image_failure_rate_above_release_ceiling'
+  );
+});

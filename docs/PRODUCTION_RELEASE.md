@@ -36,7 +36,9 @@ both the public Git commit and `hostedOverlaySha256`.
 ## Temporary reliability override
 
 The release health gate blocks when the observed image failure rate exceeds
-`IMAGE_HEALTH_MAX_FAILURE_RATE` (default `0.1`). A release owner can raise it
+`IMAGE_HEALTH_MAX_FAILURE_RATE` (default `0.1`). Content-moderation refusals
+are reported separately and excluded from the reliability rate; they are a
+product decision, not a provider failure. A release owner can raise it
 for a deliberate, time-boxed risk acceptance by setting the repository variable
 `IMAGE_HEALTH_MAX_FAILURE_RATE` (for example `0.5`). The release keeps emitting
 `image_failure_rate_above_target` warnings and records the effective policy in

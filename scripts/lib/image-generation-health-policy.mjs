@@ -84,7 +84,16 @@ export function evaluateImageGenerationHealth(report, policy = {}) {
     return { ok: false, blockers, warnings, policy: effectivePolicy };
   }
 
-  const failureRate = asRate(report.failureRate);
+  const breakdown = report.failureBreakdown;
+  const policyRefusals = Number(breakdown?.policyRefusals || 0);
+  // Moderation refusals are a product decision, not a reliability failure.
+  // Prefer the technical rate over the non-policy cohort when the breakdown
+  // is present; fall back to the raw rate for older reports.
+  const failureRate = asRate(
+    breakdown?.technicalFailureRateAmongNonPolicyTasks ??
+      breakdown?.technicalFailureRate ??
+      report.failureRate
+  );
   if (failureRate === null) {
     blockers.push({
       class: 'image_failure_rate_unavailable',
@@ -104,6 +113,13 @@ export function evaluateImageGenerationHealth(report, policy = {}) {
     warnings.push({
       class: 'image_failure_rate_above_target',
       detail: `${(failureRate * 100).toFixed(1)}% exceeds the reliability target of ${(effectivePolicy.targetFailureRate * 100).toFixed(1)}%.`
+    });
+  }
+
+  if (policyRefusals > 0) {
+    warnings.push({
+      class: 'image_moderation_refusals_excluded',
+      detail: `${policyRefusals} task(s) were refused by content moderation and are excluded from the reliability rate.`
     });
   }
 
